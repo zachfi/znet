@@ -1,0 +1,8 @@
+---
+endpoint: 'http://rftoy1.example.com'
+nats_url: "nats://0.0.0.0:4222"
+rooms:
+  - name: living
+    ids: [4,5,6]
+  - name: porch
+    ids: [8,9]
