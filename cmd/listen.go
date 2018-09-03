@@ -29,13 +29,10 @@ import (
 // listenCmd represents the listen command
 var listenCmd = &cobra.Command{
 	Use:   "listen",
-	Short: "Turn all the lights in a configured room on/listen",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Listen for commands/events/messages on the bus",
+	Long: `Messages issued sent to the bus might be events, messages, or command requests.  The listen command here subscribes to a topic and handles what actions need to be taken.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+`,
 	Run: listen,
 }
 

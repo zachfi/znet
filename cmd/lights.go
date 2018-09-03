@@ -21,7 +21,7 @@ import (
 // lightsCmd represents the lights command
 var lightsCmd = &cobra.Command{
 	Use:   "lights",
-	Short: "",
+	Short: "Send an on/off command to the bus for a given room's lights.",
 	Long:  "",
 	Run:   run,
 }
