@@ -21,7 +21,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/xaque208/go-rftoy/rftoy"
+	"github.com/xaque208/rftoy/rftoy"
 	"github.com/xaque208/things/things"
 	"github.com/xaque208/znet/znet"
 )
