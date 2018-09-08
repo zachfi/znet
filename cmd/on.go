@@ -52,6 +52,8 @@ func on(cmd *cobra.Command, args []string) {
 	url := viper.GetString("nats.url")
 	topic := viper.GetString("nats.topic")
 
+	log.Debugf("Using nats %s on %s", url, topic)
+
 	client, err := things.NewClient(url, topic)
 	if err != nil {
 		log.Fatal(err)
@@ -62,7 +64,7 @@ func on(cmd *cobra.Command, args []string) {
 		Name: "lights",
 		Arguments: things.CommandArguments{
 			"state": "on",
-			"room":  "living",
+			"room":  roomName,
 		},
 	}
 
@@ -74,8 +76,6 @@ func on(cmd *cobra.Command, args []string) {
 		Commands: commands,
 	}
 
-	log.Error(msg)
-
+	log.Debugf("Sending message: %+v", msg)
 	client.EncodedConn.Publish(topic, msg)
-
 }

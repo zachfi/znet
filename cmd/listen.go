@@ -54,6 +54,7 @@ func lightsHandler(command things.Command) {
 		log.Fatal(err)
 	}
 
+	log.Debugf("Using RFToy at %s", z.Endpoint)
 	r := rftoy.RFToy{Address: z.Endpoint}
 
 	room, err := z.Room(roomName.(string))
@@ -77,7 +78,7 @@ func messageHandler(messages chan things.Message) {
 	for {
 		select {
 		case msg := <-messages:
-			log.Debugf("new message: %+v", msg)
+			log.Debugf("New message: %+v", msg)
 
 			for _, c := range msg.Commands {
 				if c.Name == "lights" {
@@ -110,7 +111,7 @@ func listen(cmd *cobra.Command, args []string) {
 		log.Error(err)
 	}
 	defer server.Close()
+
 	messages := make(chan things.Message)
 	server.Listen(messages, messageHandler)
-
 }
