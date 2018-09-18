@@ -28,18 +28,19 @@ func (a ArpWatch) Update() {
 			for _, h := range a.Hosts {
 				session, err := junos.NewSession(h, a.Auth)
 				if err != nil {
-					log.Fatal(err)
+					log.Error(err)
 				}
 
 				views, err := session.View("arp")
 				if err != nil {
-					log.Fatal(err)
+					log.Error(err)
 				}
 
 				for _, arp := range views.Arp.Entries {
 					result, err := redisClient.SIsMember(macsTable, arp.MACAddress).Result()
 					if err != nil {
 						log.Error(err)
+						continue
 					}
 
 					if result == false {
@@ -47,6 +48,7 @@ func (a ArpWatch) Update() {
 						_, err := redisClient.SAdd(macsTable, arp.MACAddress).Result()
 						if err != nil {
 							log.Error(err)
+							continue
 						}
 					}
 
@@ -54,7 +56,6 @@ func (a ArpWatch) Update() {
 					redisClient.HSet(keyName, "mac", arp.MACAddress)
 					redisClient.HSet(keyName, "ip", arp.IPAddress)
 					redisClient.Expire(keyName, 900*time.Second)
-
 				}
 
 			}

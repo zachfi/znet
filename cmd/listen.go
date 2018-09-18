@@ -136,7 +136,8 @@ func lightsHandler(command things.Command) {
 
 	z, err := znet.LoadConfig(cfgFile)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
+		return
 	}
 
 	log.Debugf("Using RFToy at %s", z.Endpoint)
@@ -144,7 +145,8 @@ func lightsHandler(command things.Command) {
 
 	room, err := z.Room(roomName.(string))
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
+		return
 	}
 
 	log.Infof("Turning %s room %s", state, room.Name)
@@ -195,7 +197,8 @@ func arpWatch(redisClient *redis.Client) {
 
 	hosts := viper.GetStringSlice("junos.hosts")
 	if len(hosts) == 0 {
-		log.Fatal("List of hosts required")
+		log.Error("List of hosts required")
+		return
 	}
 
 	auth := &junos.AuthMethod{
@@ -226,7 +229,8 @@ func arpWatch(redisClient *redis.Client) {
 					}
 
 					if len(r) == 0 {
-						log.Warnf("Empty data set for %s", i)
+						log.Debugf("Empty data set for %s", i)
+						break
 					}
 
 					macAddress.WithLabelValues(r["mac"], r["ip"]).Set(1)
