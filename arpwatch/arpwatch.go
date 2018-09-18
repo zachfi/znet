@@ -29,11 +29,13 @@ func (a ArpWatch) Update() {
 				session, err := junos.NewSession(h, a.Auth)
 				if err != nil {
 					log.Error(err)
+					continue
 				}
 
 				views, err := session.View("arp")
 				if err != nil {
 					log.Error(err)
+					continue
 				}
 
 				for _, arp := range views.Arp.Entries {
@@ -61,7 +63,7 @@ func (a ArpWatch) Update() {
 			}
 
 			log.Debugf("Sleeping")
-			time.Sleep(time.Second * 10)
+			time.Sleep(time.Second * 30)
 		}
 	}
 }
