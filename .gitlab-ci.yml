@@ -1,0 +1,10 @@
+---
+image: golang:1.11.4
+
+discover:
+  tags:
+    - 'linux'
+  script:
+    - 'env'
+    - 'uname -a'
+
