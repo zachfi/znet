@@ -109,8 +109,14 @@
     "encoders/builtin",
     "util"
   ]
-  revision = "fb0396ee0bdb8018b0fef30d6d1de798ce99cd05"
-  version = "v1.6.0"
+  revision = "13c7fc7590db68b18f2015600f8765a02d705b5d"
+  version = "v1.7.0"
+
+[[projects]]
+  name = "github.com/nats-io/nkeys"
+  packages = ["."]
+  revision = "1546a3320a8f195a5b5c84aef8309377c2e411d5"
+  version = "v0.0.2"
 
 [[projects]]
   name = "github.com/nats-io/nuid"
@@ -225,10 +231,10 @@
   revision = "68da7ed29fcb6fde19745d64a8bfa5d539ed8a69"
 
 [[projects]]
+  branch = "master"
   name = "github.com/xaque208/things"
   packages = ["things"]
-  revision = "43838d52a0052579a581a20864f481002bc54c97"
-  version = "v0.0.1"
+  revision = "bd17b90bf357ec30d7cd5b62ba281249ba598b04"
 
 [[projects]]
   branch = "master"
@@ -283,6 +289,18 @@
   version = "v2.2.6"
 
 [[projects]]
+  name = "gopkg.in/asn1-ber.v1"
+  packages = ["."]
+  revision = "f715ec2f112d1e4195b827ad68cf44017a3ef2b1"
+  version = "v1.3"
+
+[[projects]]
+  name = "gopkg.in/ldap.v2"
+  packages = ["."]
+  revision = "bb7a9ca6e4fbc2129e3db588a34bc970ffe811a9"
+  version = "v2.5.1"
+
+[[projects]]
   name = "gopkg.in/yaml.v2"
   packages = ["."]
   revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
@@ -291,6 +309,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d72eed4cf99c145e62ca5ad3a8157cbece734d85cd62b9b7719d4c3fcc9a211f"
+  inputs-digest = "82be216455fef9cd740be3e04959f7c9f50e6dc8b4209bf02c2c9c5468ce213b"
   solver-name = "gps-cdcl"
   solver-version = 1
