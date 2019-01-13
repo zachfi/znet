@@ -8,6 +8,7 @@ import (
 
 type NetworkHost struct {
 	Name       string
+	Domain     string
 	Platform   string
 	Group      string
 	Role       string
@@ -17,12 +18,14 @@ type NetworkHost struct {
 var defaultHostAttributes = []string{
 	"cn",
 	"dn",
+	"netHostDomain",
+	"netHostGroup",
 	"netHostNos",
 	"netHostRole",
 	"netHostType",
 }
 
-func GetNetworkHosts(l *ldap.Conn, baseDN string) []NetworkHost {
+func (z *Znet) GetNetworkHosts(l *ldap.Conn, baseDN string) []NetworkHost {
 	hosts := []NetworkHost{}
 
 	searchRequest := ldap.NewSearchRequest(
@@ -41,36 +44,48 @@ func GetNetworkHosts(l *ldap.Conn, baseDN string) []NetworkHost {
 	for _, e := range sr.Entries {
 		// log.Warnf("Entry: %+v", e)
 
-		z := NetworkHost{}
+		h := NetworkHost{}
 
 		for _, a := range e.Attributes {
 			// log.Warnf("Attribute: %+v", a)
 			// log.Warnf("ByteValues: %+v", a.ByteValues)
-			log.Warnf("%s stringValues: %+v", a.Name, stringValues(a))
+			// log.Warnf("%s stringValues: %+v", a.Name, stringValues(a))
 
 			switch a.Name {
 			case "cn":
 				{
-					z.Name = stringValues(a)[0]
+					h.Name = stringValues(a)[0]
 				}
 			case "netHostNos":
 				{
-					z.Platform = stringValues(a)[0]
+					h.Platform = stringValues(a)[0]
 				}
 			case "netHostType":
 				{
-					z.DeviceType = stringValues(a)[0]
+					h.DeviceType = stringValues(a)[0]
+				}
+			case "netHostRole":
+				{
+					h.Role = stringValues(a)[0]
+				}
+			case "netHostGroup":
+				{
+					h.Group = stringValues(a)[0]
+				}
+			case "netHostDomain":
+				{
+					h.Domain = stringValues(a)[0]
 				}
 			}
 		}
 
-		hosts = append(hosts, z)
+		hosts = append(hosts, h)
 	}
 
 	return hosts
 }
 
-func (h *NetworkHost) Configure(commit bool) {
-	log.Warnf("%+v", h)
-
-}
+// func (h *NetworkHost) Configure(commit bool) {
+// 	log.Warnf("%+v", h)
+//
+// }
