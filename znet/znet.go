@@ -56,7 +56,7 @@ func (z *Znet) ConfigureNetworkHost(host *NetworkHost, commit bool) {
 	// log.Warnf("Commit: %t", commit)
 	// log.Warnf("Host: %+v", host)
 	templates := z.TemplatesForDevice(*host)
-	// log.Debugf("Templates for host %s: %+v", host.Name, templates)
+	log.Debugf("Templates for host %s: %+v", host.Name, templates)
 
 	host.Data = z.DataForDevice(*host)
 	// log.Debugf("Data: %+v", host.Data)
@@ -69,13 +69,32 @@ func (z *Znet) ConfigureNetworkHost(host *NetworkHost, commit bool) {
 	}
 	log.Debugf("RenderedTemplates: %+v", renderedTemplates)
 
-	session.Config(renderedTemplates, "text", false)
+	err = session.Lock()
+	if err != nil {
+		log.Error(err)
+	}
+
+	err = session.Config(renderedTemplates, "text", false)
+	if err != nil {
+		log.Error(err)
+	}
+
 	diff, err := session.Diff(0)
 	if err != nil {
 		log.Error(err)
 	}
 	if len(diff) > 1 {
 		log.Infof("Configuration changes for %s: %s", host.HostName, diff)
+
+		err = session.Config("rollback", "text", false)
+		if err != nil {
+			log.Error(err)
+		}
+	}
+
+	err = session.Unlock()
+	if err != nil {
+		log.Error(err)
 	}
 
 	// log.Infof("Host: %+v", host)
