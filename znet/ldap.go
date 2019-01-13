@@ -4,13 +4,12 @@ import (
 	"crypto/tls"
 	"fmt"
 
-	log "github.com/sirupsen/logrus"
 	ldap "gopkg.in/ldap.v2"
 )
 
-func NewLDAPClient(config LdapConfig) (*ldap.Conn, error) {
+func (z *Znet) NewLDAPClient(config LdapConfig) (*ldap.Conn, error) {
 
-	log.Warnf("%+v", config)
+	// log.Warnf("%+v", config)
 
 	l, err := ldap.DialTLS(
 		"tcp",

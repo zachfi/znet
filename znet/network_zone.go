@@ -17,7 +17,7 @@ var defaultZoneAttributes = []string{
 	"ntpServers",
 }
 
-func GetNetworkZones(l *ldap.Conn, baseDN string) []NetworkZone {
+func (z *Znet) GetNetworkZones(l *ldap.Conn, baseDN string) []NetworkZone {
 	zones := []NetworkZone{}
 
 	searchRequest := ldap.NewSearchRequest(
