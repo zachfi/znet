@@ -13,10 +13,11 @@ import (
 type Config struct {
 	Rooms    []Room      `yaml:"rooms"`
 	Endpoint string      `yaml:"endpoint"`
-	nats     NatsConfig  `yaml:"nats,omitempty"`
-	junos    NatsConfig  `yaml:"junos,omitempty"`
-	redis    RedisConfig `yaml:"redis,omitempty"`
-	http     HttpConfig  `yaml:"http,omitempty"`
+	Nats     NatsConfig  `yaml:"nats,omitempty"`
+	Junos    NatsConfig  `yaml:"junos,omitempty"`
+	Redis    RedisConfig `yaml:"redis,omitempty"`
+	Http     HttpConfig  `yaml:"http,omitempty"`
+	Ldap     LdapConfig  `yaml:"ldap,omitempty"`
 }
 
 type NatsConfig struct {
@@ -36,6 +37,13 @@ type JunosConfig struct {
 
 type HttpConfig struct {
 	ListenAddress string
+}
+
+type LdapConfig struct {
+	BaseDN string
+	BindDN string
+	BindPW string
+	Host   string
 }
 
 type Room struct {

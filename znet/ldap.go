@@ -8,14 +8,7 @@ import (
 	ldap "gopkg.in/ldap.v2"
 )
 
-type LDAPConfig struct {
-	BaseDN string
-	BindDN string
-	BindPW string
-	Host   string
-}
-
-func NewLDAPClient(config LDAPConfig) (*ldap.Conn, error) {
+func NewLDAPClient(config LdapConfig) (*ldap.Conn, error) {
 
 	log.Warnf("%+v", config)
 
