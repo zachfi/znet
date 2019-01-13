@@ -1,18 +1,25 @@
 package znet
 
 import (
-	"log"
+	log "github.com/sirupsen/logrus"
 
 	ldap "gopkg.in/ldap.v2"
 )
 
 type NetworkHost struct {
-	Name string
+	Name       string
+	Platform   string
+	Group      string
+	Role       string
+	DeviceType string
 }
 
 var defaultHostAttributes = []string{
-	"dn",
 	"cn",
+	"dn",
+	"netHostNos",
+	"netHostRole",
+	"netHostType",
 }
 
 func GetNetworkHosts(l *ldap.Conn, baseDN string) []NetworkHost {
@@ -39,18 +46,31 @@ func GetNetworkHosts(l *ldap.Conn, baseDN string) []NetworkHost {
 		for _, a := range e.Attributes {
 			// log.Warnf("Attribute: %+v", a)
 			// log.Warnf("ByteValues: %+v", a.ByteValues)
+			log.Warnf("%s stringValues: %+v", a.Name, stringValues(a))
 
 			switch a.Name {
 			case "cn":
 				{
 					z.Name = stringValues(a)[0]
 				}
+			case "netHostNos":
+				{
+					z.Platform = stringValues(a)[0]
+				}
+			case "netHostType":
+				{
+					z.DeviceType = stringValues(a)[0]
+				}
 			}
-
 		}
 
 		hosts = append(hosts, z)
 	}
 
 	return hosts
+}
+
+func (h *NetworkHost) Configure(commit bool) {
+	log.Warnf("%+v", h)
+
 }
