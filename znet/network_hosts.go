@@ -8,11 +8,13 @@ import (
 
 type NetworkHost struct {
 	Name       string
+	HostName   string
 	Domain     string
 	Platform   string
 	Group      string
 	Role       string
 	DeviceType string
+	Data       HostData
 }
 
 var defaultHostAttributes = []string{
@@ -20,6 +22,7 @@ var defaultHostAttributes = []string{
 	"dn",
 	"netHostDomain",
 	"netHostGroup",
+	"netHostName",
 	"netHostNos",
 	"netHostRole",
 	"netHostType",
@@ -71,6 +74,10 @@ func (z *Znet) GetNetworkHosts(l *ldap.Conn, baseDN string) []NetworkHost {
 			case "netHostGroup":
 				{
 					h.Group = stringValues(a)[0]
+				}
+			case "netHostName":
+				{
+					h.HostName = stringValues(a)[0]
 				}
 			case "netHostDomain":
 				{
