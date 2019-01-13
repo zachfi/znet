@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/alecthomas/template"
+	"github.com/imdario/mergo"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -42,18 +43,24 @@ func (z *Znet) ConfigureNetworkHost(host *NetworkHost, commit bool) {
 	log.Infof("Templates for host %s: %+v", host.Name, templates)
 
 	for _, t := range templates {
-		result := z.RenderHostTemplate(*host, t)
+		result := z.RenderHostTemplateFile(*host, t)
 		log.Infof("Result: %+v", result)
-
 	}
 	// log.Infof("Host: %+v", host)
+
+	hierarchy := z.HierarchyForDevice(*host)
+	log.Infof("Hierarchy: %+v", hierarchy)
+
+	data := z.DataForDevice(*host)
+	log.Infof("Data: %+v", data)
 }
 
-func (z *Znet) TemplatePathsForDevice(host NetworkHost) []string {
-	var templates []string
+// TemplateStringsForDevice renders a list of template strings given a host.
+func (z *Znet) TemplateStringsForDevice(host NetworkHost, templates []string) []string {
+	var strings []string
 
-	for _, t := range z.Data.TemplatePaths {
-		tmpl, err := template.New("test").Parse(t)
+	for _, t := range templates {
+		tmpl, err := template.New("template").Parse(t)
 
 		var buf bytes.Buffer
 
@@ -62,19 +69,56 @@ func (z *Znet) TemplatePathsForDevice(host NetworkHost) []string {
 			log.Error(err)
 		}
 
-		templates = append(templates, buf.String())
+		strings = append(strings, buf.String())
 	}
 
-	return templates
+	return strings
+}
+
+func (z *Znet) DataForDevice(host NetworkHost) HostData {
+	hostData := HostData{}
+
+	for _, f := range z.HierarchyForDevice(host) {
+
+		fileHostData := HostData{}
+		loadYamlFile(f, &fileHostData)
+
+		if err := mergo.Merge(&hostData, fileHostData, mergo.WithOverride); err != nil {
+			log.Error(err)
+		}
+
+	}
+
+	return hostData
+}
+
+func (z *Znet) HierarchyForDevice(host NetworkHost) []string {
+	var files []string
+
+	paths := z.TemplateStringsForDevice(host, z.Data.Hierarchy)
+	log.Warnf("Data paths: %s", paths)
+
+	for _, p := range paths {
+		templateAbs := fmt.Sprintf("%s/%s/%s", z.ConfigDir, z.Data.DataDir, p)
+		if _, err := os.Stat(templateAbs); err == nil {
+			files = append(files, templateAbs)
+
+		} else if os.IsNotExist(err) {
+			log.Warnf("Data file %s does not exist", templateAbs)
+		}
+
+	}
+
+	return files
 }
 
 func (z *Znet) TemplatesForDevice(host NetworkHost) []string {
 	var files []string
 
-	paths := z.TemplatePathsForDevice(host)
+	paths := z.TemplateStringsForDevice(host, z.Data.TemplatePaths)
 
 	for _, p := range paths {
-		templateAbs := fmt.Sprintf("%s/%s", z.ConfigDir, p)
+		templateAbs := fmt.Sprintf("%s/%s/%s", z.ConfigDir, z.Data.TemplateDir, p)
 		if _, err := os.Stat(templateAbs); err == nil {
 			globPattern := fmt.Sprintf("%s/*.tmpl", templateAbs)
 			foundFiles, err := filepath.Glob(globPattern)
@@ -95,7 +139,8 @@ func (z *Znet) TemplatesForDevice(host NetworkHost) []string {
 	return files
 }
 
-func (z *Znet) RenderHostTemplate(host NetworkHost, path string) string {
+// RenderHostTemplateFile renders a template file using a Host object.
+func (z *Znet) RenderHostTemplateFile(host NetworkHost, path string) string {
 
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
