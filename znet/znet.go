@@ -167,6 +167,7 @@ func (z *Znet) TemplatesForDevice(host NetworkHost) []string {
 
 // RenderHostTemplateFile renders a template file using a Host object.
 func (z *Znet) RenderHostTemplateFile(host NetworkHost, path string) string {
+	log.Debugf("Rendering host template file %s for host %s", path, host.Name)
 
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
