@@ -9,7 +9,9 @@ import (
 
 	"github.com/alecthomas/template"
 	"github.com/imdario/mergo"
+	junos "github.com/scottdware/go-junos"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 type Znet struct {
@@ -36,23 +38,48 @@ func (z *Znet) LoadData(configDir string) {
 }
 
 func (z *Znet) ConfigureNetworkHost(host *NetworkHost, commit bool) {
+	auth := &junos.AuthMethod{
+		Username:   viper.GetString("junos.username"),
+		PrivateKey: viper.GetString("junos.keyfile"),
+	}
+
+	log.Errorf("%+v", host)
+	session, err := junos.NewSession(host.HostName, auth)
+	defer session.Close()
+	if err != nil {
+		log.Error(err)
+	}
+
+	log.Warnf("Auth: %+v", auth)
+
 	// log.Warnf("Znet: %+v", z)
 	// log.Warnf("Commit: %t", commit)
 	// log.Warnf("Host: %+v", host)
 	templates := z.TemplatesForDevice(*host)
 	log.Infof("Templates for host %s: %+v", host.Name, templates)
 
+	var renderedTemplates []string
 	for _, t := range templates {
 		result := z.RenderHostTemplateFile(*host, t)
-		log.Infof("Result: %+v", result)
+		renderedTemplates = append(renderedTemplates, result)
+		// log.Infof("Result: %+v", result)
 	}
+	log.Infof("RenderedTemplates: %+v", renderedTemplates)
+
+	session.Config(renderedTemplates, "text", false)
+	diff, err := session.Diff(0)
+	if err != nil {
+		log.Error(err)
+	}
+	log.Infof("Diff: %+v", diff)
+
 	// log.Infof("Host: %+v", host)
 
 	hierarchy := z.HierarchyForDevice(*host)
 	log.Infof("Hierarchy: %+v", hierarchy)
 
-	data := z.DataForDevice(*host)
-	log.Infof("Data: %+v", data)
+	host.Data = z.DataForDevice(*host)
+	log.Infof("Data: %+v", host.Data)
 }
 
 // TemplateStringsForDevice renders a list of template strings given a host.
