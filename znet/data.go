@@ -6,3 +6,7 @@ type Data struct {
 	DataDir       string   `yaml:"data_dir"`
 	Hierarchy     []string `yaml:"hierarchy"`
 }
+
+type HostData struct {
+	NTPServers []string `yaml:"ntp_servers"`
+}
