@@ -43,20 +43,23 @@ func (z *Znet) ConfigureNetworkHost(host *NetworkHost, commit bool) {
 		PrivateKey: viper.GetString("junos.keyfile"),
 	}
 
-	log.Errorf("%+v", host)
+	log.Debugf("Connecting to device: %s", host.HostName)
 	session, err := junos.NewSession(host.HostName, auth)
 	defer session.Close()
 	if err != nil {
 		log.Error(err)
 	}
 
-	log.Warnf("Auth: %+v", auth)
+	// log.Warnf("Auth: %+v", auth)
 
 	// log.Warnf("Znet: %+v", z)
 	// log.Warnf("Commit: %t", commit)
 	// log.Warnf("Host: %+v", host)
 	templates := z.TemplatesForDevice(*host)
-	log.Infof("Templates for host %s: %+v", host.Name, templates)
+	// log.Debugf("Templates for host %s: %+v", host.Name, templates)
+
+	host.Data = z.DataForDevice(*host)
+	// log.Debugf("Data: %+v", host.Data)
 
 	var renderedTemplates []string
 	for _, t := range templates {
@@ -64,22 +67,19 @@ func (z *Znet) ConfigureNetworkHost(host *NetworkHost, commit bool) {
 		renderedTemplates = append(renderedTemplates, result)
 		// log.Infof("Result: %+v", result)
 	}
-	log.Infof("RenderedTemplates: %+v", renderedTemplates)
+	log.Debugf("RenderedTemplates: %+v", renderedTemplates)
 
 	session.Config(renderedTemplates, "text", false)
 	diff, err := session.Diff(0)
 	if err != nil {
 		log.Error(err)
 	}
-	log.Infof("Diff: %+v", diff)
+	if len(diff) > 1 {
+		log.Infof("Configuration changes for %s: %s", host.HostName, diff)
+	}
 
 	// log.Infof("Host: %+v", host)
 
-	hierarchy := z.HierarchyForDevice(*host)
-	log.Infof("Hierarchy: %+v", hierarchy)
-
-	host.Data = z.DataForDevice(*host)
-	log.Infof("Data: %+v", host.Data)
 }
 
 // TemplateStringsForDevice renders a list of template strings given a host.
@@ -123,7 +123,6 @@ func (z *Znet) HierarchyForDevice(host NetworkHost) []string {
 	var files []string
 
 	paths := z.TemplateStringsForDevice(host, z.Data.Hierarchy)
-	log.Warnf("Data paths: %s", paths)
 
 	for _, p := range paths {
 		templateAbs := fmt.Sprintf("%s/%s/%s", z.ConfigDir, z.Data.DataDir, p)
