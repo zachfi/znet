@@ -15,6 +15,24 @@ type HostData struct {
 	IRBInterfaces         []IRBInterface        `yaml:"irb_interfaces"`
 	RouterAdvertisements  []RouterAdvertisement `yaml:"router_advertisements"`
 	BGP                   BGP                   `yaml:"bgp"`
+	Security              Security              `yaml:"security"`
+}
+
+type Security struct {
+	Zones []SecurityZone `yaml:"zones"`
+}
+
+type SecurityZone struct {
+	Name           string                  `yaml:"name"`
+	Screen         string                  `yaml:"screen"`
+	SystemServices []string                `yaml:"system_services"`
+	Protocols      []string                `yaml:"protocols"`
+	Interfaces     []SecurityZoneInterface `yaml:"interfaces"`
+}
+
+type SecurityZoneInterface struct {
+	Name           string   `yaml:"name"`
+	SystemServices []string `yaml:"system_services"`
 }
 
 type BGP struct {
