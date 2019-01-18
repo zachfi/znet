@@ -104,8 +104,6 @@ func (z *Znet) ConfigureNetworkHost(host *NetworkHost, commit bool) {
 		log.Error(err)
 	}
 
-	// log.Infof("Host: %+v", host)
-
 }
 
 // TemplateStringsForDevice renders a list of template strings given a host.
@@ -128,6 +126,7 @@ func (z *Znet) TemplateStringsForDevice(host NetworkHost, templates []string) []
 	return strings
 }
 
+// DataForDevice
 func (z *Znet) DataForDevice(host NetworkHost) HostData {
 	hostData := HostData{}
 
@@ -145,6 +144,7 @@ func (z *Znet) DataForDevice(host NetworkHost) HostData {
 	return hostData
 }
 
+// HierarchyForDevice retuns a list of file paths to consult for the data hierarchy.
 func (z *Znet) HierarchyForDevice(host NetworkHost) []string {
 	var files []string
 
@@ -164,6 +164,7 @@ func (z *Znet) HierarchyForDevice(host NetworkHost) []string {
 	return files
 }
 
+// TemplatesForDevice returns a list of template paths for a given host.
 func (z *Znet) TemplatesForDevice(host NetworkHost) []string {
 	var files []string
 
@@ -185,7 +186,6 @@ func (z *Znet) TemplatesForDevice(host NetworkHost) []string {
 		} else if os.IsNotExist(err) {
 			log.Warnf("Template path %s does not exist", templateAbs)
 		}
-
 	}
 
 	return files

@@ -51,7 +51,7 @@ func NewArpWatch() *ArpWatch {
 func (a *ArpWatch) Update() {
 	// redisClient := NewRedisClient()
 	// defer redisClient.Close()
-	log.Info("Arpwatch updating")
+	log.Debug("Arpwatch updating")
 
 	for _, h := range a.Hosts {
 		session, err := junos.NewSession(h, a.Auth)
@@ -66,7 +66,6 @@ func (a *ArpWatch) Update() {
 			log.Error(err)
 			continue
 		}
-		log.Errorf("%+v", views)
 
 		for _, arp := range views.Arp.Entries {
 			result, err := a.redisClient.SIsMember(macsTable, arp.MACAddress).Result()
