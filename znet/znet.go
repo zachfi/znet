@@ -212,8 +212,3 @@ func (z *Znet) RenderHostTemplateFile(host NetworkHost, path string) string {
 
 	return buf.String()
 }
-
-func (z *Znet) Listen(listenAddr string, killChan chan bool) {
-
-	z.Listener.Listen(listenAddr, killChan)
-}
