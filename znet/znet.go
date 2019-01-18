@@ -18,6 +18,7 @@ type Znet struct {
 	ConfigDir string
 	Config    Config
 	Data      Data
+	Listener  *Listener
 }
 
 func (z *Znet) LoadConfig(file string) {
@@ -27,6 +28,12 @@ func (z *Znet) LoadConfig(file string) {
 	loadYamlFile(filename, &config)
 
 	z.Config = config
+
+	var err error
+	z.Listener, err = NewListener(&z.Config)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func (z *Znet) LoadData(configDir string) {
@@ -204,4 +211,9 @@ func (z *Znet) RenderHostTemplateFile(host NetworkHost, path string) string {
 	}
 
 	return buf.String()
+}
+
+func (z *Znet) Listen(listenAddr string, killChan chan bool) {
+
+	z.Listener.Listen(listenAddr, killChan)
 }

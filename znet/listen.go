@@ -8,16 +8,14 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	junos "github.com/scottdware/go-junos"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 	"github.com/xaque208/rftoy/rftoy"
 	"github.com/xaque208/things/things"
 	"github.com/xaque208/znet/arpwatch"
 )
 
 type Listener struct {
-	config      *Config
+	Config      *Config
 	thingServer *things.Server
 	redisClient *redis.Client
 	httpServer  *http.Server
@@ -35,24 +33,25 @@ var (
 	}, []string{"mac", "ip"})
 )
 
-func NewListener(config *Config) (Listener, error) {
-	znetListener := Listener{
-		config: config,
+func NewListener(config *Config) (*Listener, error) {
+	l := &Listener{
+		Config: config,
 	}
 
 	var err error
 	prometheus.MustRegister(macAddress)
 
 	// Attach a things server
-	znetListener.thingServer, err = things.NewServer(znetListener.config.nats.URL, znetListener.config.nats.Topic)
+	log.Debugf("Using nats %s#%s", l.Config.Nats.URL, l.Config.Nats.Topic)
+	l.thingServer, err = things.NewServer(l.Config.Nats.URL, l.Config.Nats.Topic)
 	if err != nil {
-		return Listener{}, err
+		return &Listener{}, err
 	}
 
 	// Attach a redis client
-	znetListener.redisClient, err = NewRedisClient(znetListener.config.redis.Host)
+	l.redisClient, err = NewRedisClient(l.Config.Redis.Host)
 
-	return znetListener, nil
+	return l, nil
 }
 
 func (l *Listener) Listen(listenAddr string, ch chan bool) {
@@ -60,31 +59,33 @@ func (l *Listener) Listen(listenAddr string, ch chan bool) {
 
 	l.httpServer = httpListen(listenAddr)
 
-	// messages := make(chan things.Message)
-	// go l.thingServer.Listen(messages, messageHandler)
-	//
-	// log.Debug("Starting arpwatch")
-	// go arpWatch(l.redisConfig)
-	//
-	// log.Debugf("HTTP listening on %s", listenAddr)
-	// srv := httpListen(listenAddr)
+	messages := make(chan things.Message)
+	go l.messageHandler(messages)
+	go l.thingServer.Listen(messages)
 
-	defer l.shutdown()
+	log.Debug("Starting arpwatch")
+	go arpWatch(l.redisClient)
+
 	<-ch
+	l.Shutdown()
 }
 
-func (l *Listener) shutdown() {
+func (l *Listener) Shutdown() {
 	log.Info("ZNET Shutting Down")
 
-	log.Info("closing redis connection")
-	l.redisClient.Close()
+	// log.Info("closing redis connection")
+	// l.redisClient.Close()
 
-	// log.Info("halting things server")
-	// l.thingsServer.Close()
-	// l.httpServer.Shutdown(nil)
+	log.Info("halting Things server")
+	l.thingServer.Close()
+
+	log.Info("halting HTTP server")
+	l.httpServer.Shutdown(nil)
 }
 
 func httpListen(listenAddress string) *http.Server {
+	log.Debugf("HTTP listen on %s", listenAddress)
+
 	srv := &http.Server{Addr: listenAddress}
 
 	http.Handle("/metrics", promhttp.Handler())
@@ -107,10 +108,10 @@ func (l *Listener) lightsHandler(command things.Command) {
 		log.Errorf("Unknown light state received %s", state)
 	}
 
-	log.Debugf("Using RFToy at %s", l.config.Endpoint)
-	r := rftoy.RFToy{Address: l.config.Endpoint}
+	log.Debugf("Using RFToy at %s", l.Config.Endpoint)
+	r := rftoy.RFToy{Address: l.Config.Endpoint}
 
-	room, err := l.config.Room(roomName.(string))
+	room, err := l.Config.Room(roomName.(string))
 	if err != nil {
 		log.Error(err)
 		return
@@ -128,6 +129,7 @@ func (l *Listener) lightsHandler(command things.Command) {
 
 }
 
+// messageHandler
 func (l *Listener) messageHandler(messages chan things.Message) {
 	for {
 		select {
@@ -148,21 +150,7 @@ func (l *Listener) messageHandler(messages chan things.Message) {
 
 func arpWatch(redisClient *redis.Client) {
 
-	hosts := viper.GetStringSlice("junos.hosts")
-	if len(hosts) == 0 {
-		log.Error("List of hosts required")
-		return
-	}
-
-	auth := &junos.AuthMethod{
-		Username:   viper.GetString("junos.username"),
-		PrivateKey: viper.GetString("junos.keyfile"),
-	}
-
-	aw := arpwatch.ArpWatch{
-		Hosts: hosts,
-		Auth:  auth,
-	}
+	aw := arpwatch.NewArpWatch()
 
 	ticker := time.NewTicker(30 * time.Second)
 
@@ -171,7 +159,7 @@ func arpWatch(redisClient *redis.Client) {
 		for {
 			select {
 			default:
-				go aw.Update()
+				aw.Update()
 
 				data, err := redisClient.SMembers(macsList).Result()
 				if err != nil {

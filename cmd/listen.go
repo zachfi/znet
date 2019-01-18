@@ -15,7 +15,6 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"os/signal"
 	"strings"
@@ -69,16 +68,11 @@ func listen(cmd *cobra.Command, args []string) {
 
 	viper.AutomaticEnv()
 
-	fmt.Println(cfgFile)
-	znetConfig, err := znet.LoadConfig(cfgFile)
-	if err != nil {
-		log.Fatal(err)
-	}
+	z := znet.Znet{}
+	z.LoadConfig(cfgFile)
 
-	znetListener, err := znet.NewListener(znetConfig)
-	if err != nil {
-		log.Fatal(err)
-	}
+	z.Config.Nats.URL = viper.GetString("nats.url")
+	z.Config.Nats.Topic = viper.GetString("nats.topic")
 
 	go func() {
 		sig := <-sigs
@@ -86,5 +80,5 @@ func listen(cmd *cobra.Command, args []string) {
 		done <- true
 	}()
 
-	znetListener.Listen(listenAddr, done)
+	z.Listen(listenAddr, done)
 }
