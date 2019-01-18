@@ -166,27 +166,27 @@ type versionPackageInfo struct {
 // genSSHClientConfig is a wrapper function based around the auth method defined
 // (user/password or private key) which returns the SSH client configuration used to
 // connect.
-func genSSHClientConfig(auth *AuthMethod) (*ssh.ClientConfig, error) {
+func genSSHClientConfig(auth *AuthMethod) *ssh.ClientConfig {
 	var config *ssh.ClientConfig
 
 	if len(auth.Credentials) > 0 {
 		config = netconf.SSHConfigPassword(auth.Credentials[0], auth.Credentials[1])
 
-		return config, nil
+		return config
 	}
 
 	if len(auth.PrivateKey) > 0 {
 		config, err := netconf.SSHConfigPubKeyFile(auth.Username, auth.PrivateKey, auth.Passphrase)
 		if err != nil {
-			return config, err
+			panic(err)
 		}
 
 		config.HostKeyCallback = ssh.InsecureIgnoreHostKey()
 
-		return config, nil
+		return config
 	}
 
-	return config, nil
+	return config
 }
 
 // NewSession establishes a new connection to a Junos device that we will use
@@ -198,14 +198,11 @@ func genSSHClientConfig(auth *AuthMethod) (*ssh.ClientConfig, error) {
 // Please view the package documentation for AuthMethod on how to use these methods.
 func NewSession(host string, auth *AuthMethod) (*Junos, error) {
 	rex := regexp.MustCompile(`^.*\[(.*)\]`)
-	clientConfig, err := genSSHClientConfig(auth)
-	if err != nil {
-		return nil, err
-	}
+	clientConfig := genSSHClientConfig(auth)
 
 	s, err := netconf.DialSSH(host, clientConfig)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("error connecting to %s - %s", host, err))
+		panic(fmt.Errorf("error connecting to %s - %s", host, err))
 	}
 
 	reply, err := s.Exec(netconf.RawMethod(rpcVersion))
@@ -379,7 +376,7 @@ func (j *Junos) CommitAt(time string, message ...string) error {
 	command := fmt.Sprintf(rpcCommitAt, time)
 
 	if len(message) > 0 {
-		command = fmt.Sprintf(rpcCommitAtLog, time)
+		command = fmt.Sprintf(rpcCommitAtLog, time, message[0])
 	}
 
 	reply, err := j.Session.Exec(netconf.RawMethod(command))
