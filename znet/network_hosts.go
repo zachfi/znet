@@ -91,8 +91,3 @@ func (z *Znet) GetNetworkHosts(l *ldap.Conn, baseDN string) []NetworkHost {
 
 	return hosts
 }
-
-// func (h *NetworkHost) Configure(commit bool) {
-// 	log.Warnf("%+v", h)
-//
-// }

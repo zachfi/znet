@@ -8,11 +8,13 @@ type Data struct {
 }
 
 type HostData struct {
-	NTPServers            []string              `yaml:"ntp_servers" json:"ntp_servers"`
+	NTPServers            []string              `yaml:"ntp_servers"`
 	DHCPServer            string                `yaml:"dhcp_server"`
 	DHCPForwardInterfaces []string              `yaml:"dhcp_forward_interfaces"`
 	LLDPInterfaces        []string              `yaml:"lldp_interfaces"`
 	IRBInterfaces         []IRBInterface        `yaml:"irb_interfaces"`
+	AEInterfaces          []AEInterface         `yaml:"ae_interfaces"`
+	EthernetInterfaces    []EthernetInterface   `yaml:"eth_interfaces"`
 	RouterAdvertisements  []RouterAdvertisement `yaml:"router_advertisements"`
 	BGP                   BGP                   `yaml:"bgp"`
 	Security              Security              `yaml:"security"`
@@ -59,4 +61,28 @@ type IRBInterface struct {
 	Inet  []string `yaml:"inet"`
 	Inet6 []string `yaml:"inet6"`
 	MTU   int      `yaml:"mtu"`
+}
+
+type AEInterface struct {
+	Description string `yaml:"description"`
+	Name        string `yaml:"name"`
+	MTU         int    `yaml:"mtu"`
+	Options     struct {
+		MinimumLinks int      `yaml:"minimum_links"`
+		LACP         []string `yaml:"lacp"`
+	} `yaml:"options"`
+	EthernetSwitching EthernetSwitching `yaml:"ethernet_switching"`
+}
+
+type EthernetInterface struct {
+	Description       string            `yaml:"description"`
+	EthernetSwitching EthernetSwitching `yaml:"ethernet_switching"`
+	MTU               int               `yaml:"mtu"`
+	Name              string            `yaml:"name"`
+	NativeVlanId      int               `yaml:"native_vlan_id"`
+}
+
+type EthernetSwitching struct {
+	Mode  string   `yaml:"mode"`
+	VLANs []string `yaml:"vlans"`
 }
