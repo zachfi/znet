@@ -93,9 +93,17 @@ func (z *Znet) ConfigureNetworkHost(host *NetworkHost, commit bool) {
 	if len(diff) > 1 {
 		log.Infof("Configuration changes for %s: %s", host.HostName, diff)
 
-		err = session.Config("rollback", "text", false)
-		if err != nil {
-			log.Error(err)
+		if commit {
+			err = session.Commit()
+			if err != nil {
+				log.Error(err)
+			}
+		} else {
+			err = session.Config("rollback", "text", false)
+			if err != nil {
+				log.Error(err)
+			}
+
 		}
 	}
 
