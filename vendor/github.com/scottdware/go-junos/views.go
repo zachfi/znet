@@ -81,6 +81,7 @@ type PhysicalInterface struct {
 type LogicalInterface struct {
 	Name               string `xml:"name"`
 	MTU                string `xml:"address-family>mtu"`
+	CIDR               string `xml:"address-family>interface-address>ifa-destination"`
 	IPAddress          string `xml:"address-family>interface-address>ifa-local"`
 	LocalIndex         int    `xml:"local-index"`
 	SNMPIndex          int    `xml:"snmp-index"`
@@ -111,6 +112,20 @@ type Vlan struct {
 	Name             string   `xml:"l2ng-l2rtb-vlan-name"`
 	Tag              int      `xml:"l2ng-l2rtb-vlan-tag"`
 	MemberInterfaces []string `xml:"l2ng-l2rtb-vlan-member>l2ng-l2rtb-vlan-member-interface"`
+}
+
+type LLDPNeighbors struct {
+	Entries []LLDPNeighbor `xml:"lldp-neighbor-information"`
+}
+
+type LLDPNeighbor struct {
+	LocalPortId              string `xml:"lldp-local-port-id"`
+	LocalParentInterfaceName string `xml:"lldp-local-parent-interface-name"`
+	RemoteChassisIdSubtype   string `xml:"lldp-remote-chassis-id-subtype"`
+	RemoteChassisId          string `xml:"lldp-remote-chassis-id"`
+	RemotePortDescription    string `xml:"lldp-remote-port-description"`
+	RemotePortId             string `xml:"lldp-remote-port-id"`
+	RemoteSystemName         string `xml:"lldp-remote-system-name"`
 }
 
 // EthernetSwitchingTable contains the ethernet-switching table on the device.
@@ -388,17 +403,18 @@ type Rule struct {
 // hardware platforms, such as the "VirtualChassis" view on an SRX.
 type Views struct {
 	Arp            ArpTable
-	Route          RoutingTable
-	Interface      Interfaces
-	Vlan           Vlans
-	EthernetSwitch EthernetSwitchingTable
-	Inventory      HardwareInventory
-	VirtualChassis VirtualChassis
 	BGP            BGPTable
-	StaticNat      StaticNats
-	SourceNat      SourceNats
-	Storage        Storage
+	EthernetSwitch EthernetSwitchingTable
 	FirewallPolicy FirewallPolicy
+	Interface      Interfaces
+	Inventory      HardwareInventory
+	LLDPNeighbors  LLDPNeighbors
+	Route          RoutingTable
+	SourceNat      SourceNats
+	StaticNat      StaticNats
+	Storage        Storage
+	VirtualChassis VirtualChassis
+	Vlan           Vlans
 }
 
 var (
@@ -407,6 +423,7 @@ var (
 		"route":          "<get-route-information/>",
 		"interface":      "<get-interface-information/>",
 		"vlan":           "<get-vlan-information/>",
+		"lldp":           "<get-lldp-neighbors-information/>",
 		"ethernetswitch": "<get-ethernet-switching-table-information/>",
 		"inventory":      "<get-chassis-inventory/>",
 		"virtualchassis": "<get-virtual-chassis-information/>",
@@ -455,7 +472,6 @@ func (j *Junos) View(view string, option ...string) (*Views, error) {
 		}
 	}
 
-	fmt.Println(len(option))
 	if view == "interface" && len(option) > 0 {
 		rpcIntName := fmt.Sprintf("<get-interface-information><interface-name>%s</interface-name></get-interface-information>", option[0])
 		reply, err = j.Session.Exec(netconf.RawMethod(rpcIntName))
@@ -516,6 +532,16 @@ func (j *Junos) View(view string, option ...string) (*Views, error) {
 		}
 
 		results.Vlan = vlan
+
+	case "lldp":
+		var lldpNeighbors LLDPNeighbors
+		formatted := strings.Replace(reply.Data, "\n", "", -1)
+
+		if err := xml.Unmarshal([]byte(formatted), &lldpNeighbors); err != nil {
+			return nil, err
+		}
+
+		results.LLDPNeighbors = lldpNeighbors
 	case "ethernetswitch":
 		var ethtable EthernetSwitchingTable
 		formatted := strings.Replace(reply.Data, "\n", "", -1)
