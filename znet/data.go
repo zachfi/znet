@@ -77,6 +77,7 @@ type AEInterface struct {
 type EthernetInterface struct {
 	Description       string            `yaml:"description"`
 	EthernetSwitching EthernetSwitching `yaml:"ethernet_switching"`
+	EthernetOptions   []string          `yaml:"ethernet_options"`
 	MTU               int               `yaml:"mtu"`
 	Name              string            `yaml:"name"`
 	NativeVlanId      int               `yaml:"native_vlan_id"`
