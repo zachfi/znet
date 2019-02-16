@@ -21,7 +21,15 @@ type HostData struct {
 }
 
 type Security struct {
-	Zones []SecurityZone `yaml:"zones"`
+	Zones          []SecurityZone         `yaml:"zones"`
+	Policies       []SecurityPolicies     `yaml:"policies"`
+	SimplePolicies []SimpleSecurityPolicy `yaml:"simple_policies"`
+}
+
+type SimpleSecurityPolicy struct {
+	From string   `yaml:"from"`
+	To   []string `yaml:"to"`
+	Then string   `yaml:"then"`
 }
 
 type SecurityZone struct {
@@ -30,6 +38,18 @@ type SecurityZone struct {
 	SystemServices []string                `yaml:"system_services"`
 	Protocols      []string                `yaml:"protocols"`
 	Interfaces     []SecurityZoneInterface `yaml:"interfaces"`
+}
+
+type SecurityPolicies struct {
+	From     string           `yaml:"from"`
+	To       string           `yaml:"to"`
+	Policies []SecurityPolicy `yaml:"policies"`
+}
+
+type SecurityPolicy struct {
+	Name  string   `yaml:"name"`
+	Match []string `yaml:"match"`
+	Then  []string `yaml:"then"`
 }
 
 type SecurityZoneInterface struct {
