@@ -73,8 +73,8 @@ func (l *Listener) Listen(listenAddr string, ch chan bool) {
 	go l.messageHandler(messages)
 	go l.thingServer.Listen(messages)
 
-	log.Debug("Starting arpwatch")
-	go arpWatch(l.redisClient)
+	// log.Debug("Starting arpwatch")
+	// go arpWatch(l.redisClient)
 
 	<-ch
 	l.Shutdown()
