@@ -68,8 +68,7 @@ func listen(cmd *cobra.Command, args []string) {
 
 	viper.AutomaticEnv()
 
-	z := znet.Znet{}
-	z.LoadConfig(cfgFile)
+	z := znet.NewZnet(cfgFile)
 
 	z.Config.Nats.URL = viper.GetString("nats.url")
 	z.Config.Nats.Topic = viper.GetString("nats.topic")
@@ -80,5 +79,5 @@ func listen(cmd *cobra.Command, args []string) {
 		done <- true
 	}()
 
-	z.Listener.Listen(listenAddr, done)
+	z.Listen(listenAddr, done)
 }

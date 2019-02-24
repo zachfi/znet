@@ -33,6 +33,16 @@ var (
 	}, []string{"mac", "ip"})
 )
 
+func (z *Znet) Listen(listenAddr string, ch chan bool) {
+	var err error
+	z.listener, err = NewListener(&z.Config)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	z.listener.Listen(listenAddr, ch)
+}
+
 func NewListener(config *Config) (*Listener, error) {
 	l := &Listener{
 		Config: config,
@@ -55,7 +65,7 @@ func NewListener(config *Config) (*Listener, error) {
 }
 
 func (l *Listener) Listen(listenAddr string, ch chan bool) {
-	log.Info("ZNET Listening")
+	log.Infof("Listening on %s", listenAddr)
 
 	l.httpServer = httpListen(listenAddr)
 
@@ -84,8 +94,6 @@ func (l *Listener) Shutdown() {
 }
 
 func httpListen(listenAddress string) *http.Server {
-	log.Debugf("HTTP listen on %s", listenAddress)
-
 	srv := &http.Server{Addr: listenAddress}
 
 	http.Handle("/metrics", promhttp.Handler())

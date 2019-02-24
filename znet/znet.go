@@ -18,7 +18,13 @@ type Znet struct {
 	ConfigDir string
 	Config    Config
 	Data      Data
-	Listener  *Listener
+	listener  *Listener
+}
+
+func NewZnet(file string) *Znet {
+	z := &Znet{}
+	z.LoadConfig(file)
+	return z
 }
 
 func (z *Znet) LoadConfig(file string) {
@@ -28,12 +34,6 @@ func (z *Znet) LoadConfig(file string) {
 	loadYamlFile(filename, &config)
 
 	z.Config = config
-
-	var err error
-	z.Listener, err = NewListener(&z.Config)
-	if err != nil {
-		log.Fatal(err)
-	}
 }
 
 func (z *Znet) LoadData(configDir string) {
