@@ -34,7 +34,7 @@ var commit bool
 func init() {
 	rootCmd.AddCommand(netconfigCmd)
 
-	netconfigCmd.PersistentFlags().BoolVarP(&commit, "commit", "c", false, "Commit the configuration")
+	netconfigCmd.PersistentFlags().BoolVarP(&commit, "commit", "", false, "Commit the configuration")
 }
 
 func netconfig(cmd *cobra.Command, args []string) {
