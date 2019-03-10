@@ -74,7 +74,7 @@ func (z *Znet) ConfigureNetworkHost(host *NetworkHost, commit bool) {
 		renderedTemplates = append(renderedTemplates, result)
 		// log.Infof("Result: %+v", result)
 	}
-	// log.Debugf("RenderedTemplates: %+v", renderedTemplates)
+	log.Debugf("RenderedTemplates: %+v", renderedTemplates)
 
 	err = session.Lock()
 	if err != nil {
