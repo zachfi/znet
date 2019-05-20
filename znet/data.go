@@ -18,6 +18,7 @@ type HostData struct {
 	RouterAdvertisements  []RouterAdvertisement `yaml:"router_advertisements"`
 	BGP                   BGP                   `yaml:"bgp"`
 	Security              Security              `yaml:"security"`
+	VLANs                 []VLAN                `yaml:"vlans"`
 }
 
 type Security struct {
@@ -122,6 +123,14 @@ type EthernetInterface struct {
 }
 
 type EthernetSwitching struct {
-	Mode  string   `yaml:"mode"`
-	VLANs []string `yaml:"vlans"`
+	Mode         string   `yaml:"mode"`
+	StormControl string   `yaml:"storm_control"`
+	VLANs        []string `yaml:"vlans"`
+}
+
+type VLAN struct {
+	Name        string `yaml:"name"`
+	ID          int    `yaml:"id"`
+	Description string `yaml:"description"`
+	L3Interface string `yaml:"l3_interface"`
 }
