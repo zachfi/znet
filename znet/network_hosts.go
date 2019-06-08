@@ -34,7 +34,7 @@ func (z *Znet) GetNetworkHosts(l *ldap.Conn, baseDN string) []NetworkHost {
 	searchRequest := ldap.NewSearchRequest(
 		baseDN,
 		ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
-		"(&(objectClass=netHost)(cn=*))",
+		"(&(objectClass=netHost)(cn=*)(netHostNos=junos))",
 		defaultHostAttributes,
 		nil,
 	)
