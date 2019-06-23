@@ -78,5 +78,8 @@ func off(cmd *cobra.Command, args []string) {
 	}
 
 	log.Debugf("Sending message: %+v", msg)
-	client.EncodedConn.Publish(topic, msg)
+	err = client.EncodedConn.Publish(topic, msg)
+	if err != nil {
+		log.Error(err)
+	}
 }
