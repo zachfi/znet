@@ -43,7 +43,6 @@ func init() {
 	rootCmd.AddCommand(listenCmd)
 
 	listenCmd.PersistentFlags().StringVarP(&listenAddr, "listen", "l", ":9100", "Specify listen address")
-
 }
 
 func listen(cmd *cobra.Command, args []string) {

@@ -1,7 +1,6 @@
 package znet
 
 import (
-	"errors"
 	"fmt"
 )
 
@@ -53,5 +52,5 @@ func (c *Config) Room(name string) (Room, error) {
 		}
 	}
 
-	return Room{}, errors.New(fmt.Sprintf("Room %s not found in config", name))
+	return Room{}, fmt.Errorf("Room %s not found in config", name)
 }

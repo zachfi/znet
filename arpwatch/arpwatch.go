@@ -14,12 +14,14 @@ const (
 	macsTable = "macs"
 )
 
+// ArpWatch is a Junos ARP table reader for prometheus export.
 type ArpWatch struct {
 	Hosts       []string
 	Auth        *junos.AuthMethod
 	redisClient *redis.Client
 }
 
+// NewArpWatch loads configuration to create a new ArpWatch object for return.
 func NewArpWatch() *ArpWatch {
 	hosts := viper.GetStringSlice("junos.hosts")
 	if len(hosts) == 0 {
@@ -48,6 +50,7 @@ func NewArpWatch() *ArpWatch {
 	return aw
 }
 
+// Update reaches out to each device to update the arp table held in redis.
 func (a *ArpWatch) Update() {
 	// redisClient := NewRedisClient()
 	// defer redisClient.Close()
@@ -55,11 +58,11 @@ func (a *ArpWatch) Update() {
 
 	for _, h := range a.Hosts {
 		session, err := junos.NewSession(h, a.Auth)
-		defer session.Close()
 		if err != nil {
 			log.Error(err)
 			continue
 		}
+		defer session.Close()
 
 		views, err := session.View("arp")
 		if err != nil {
@@ -74,7 +77,7 @@ func (a *ArpWatch) Update() {
 				continue
 			}
 
-			if result == false {
+			if !result {
 				log.Infof("New MACAddress seen: %+v", arp.MACAddress)
 				_, err := a.redisClient.SAdd(macsTable, arp.MACAddress).Result()
 				if err != nil {

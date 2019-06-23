@@ -1,7 +1,7 @@
 package znet
 
 import (
-	"fmt"
+	"context"
 	"net/http"
 	"time"
 
@@ -11,20 +11,15 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/xaque208/rftoy/rftoy"
 	"github.com/xaque208/things/things"
-	"github.com/xaque208/znet/arpwatch"
 )
 
+// Listener is a znet server
 type Listener struct {
 	Config      *Config
 	thingServer *things.Server
 	redisClient *redis.Client
 	httpServer  *http.Server
 }
-
-const (
-	macsList  = "macs"
-	macsTable = "mac:*"
-)
 
 var (
 	macAddress = prometheus.NewGaugeVec(prometheus.GaugeOpts{
@@ -33,6 +28,7 @@ var (
 	}, []string{"mac", "ip"})
 )
 
+// Listen starts the znet listener
 func (z *Znet) Listen(listenAddr string, ch chan bool) {
 	var err error
 	z.listener, err = NewListener(&z.Config)
@@ -43,6 +39,7 @@ func (z *Znet) Listen(listenAddr string, ch chan bool) {
 	z.listener.Listen(listenAddr, ch)
 }
 
+// NewListener builds a new Listener object from the received configuration.
 func NewListener(config *Config) (*Listener, error) {
 	l := &Listener{
 		Config: config,
@@ -60,10 +57,14 @@ func NewListener(config *Config) (*Listener, error) {
 
 	// Attach a redis client
 	l.redisClient, err = NewRedisClient(l.Config.Redis.Host)
+	if err != nil {
+		return &Listener{}, err
+	}
 
 	return l, nil
 }
 
+// Listen starts the http listener
 func (l *Listener) Listen(listenAddr string, ch chan bool) {
 	log.Infof("Listening on %s", listenAddr)
 
@@ -73,13 +74,11 @@ func (l *Listener) Listen(listenAddr string, ch chan bool) {
 	go l.messageHandler(messages)
 	go l.thingServer.Listen(messages)
 
-	// log.Debug("Starting arpwatch")
-	// go arpWatch(l.redisClient)
-
 	<-ch
 	l.Shutdown()
 }
 
+// Shutdown closes down the to the message bus and shuts down the HTTP server.
 func (l *Listener) Shutdown() {
 	log.Info("ZNET Shutting Down")
 
@@ -90,7 +89,10 @@ func (l *Listener) Shutdown() {
 	l.thingServer.Close()
 
 	log.Info("halting HTTP server")
-	l.httpServer.Shutdown(nil)
+	err := l.httpServer.Shutdown(context.TODO())
+	if err != nil {
+		log.Error(err)
+	}
 }
 
 func httpListen(listenAddress string) *http.Server {
@@ -139,59 +141,16 @@ func (l *Listener) lightsHandler(command things.Command) {
 
 // messageHandler
 func (l *Listener) messageHandler(messages chan things.Message) {
-	for {
-		select {
-		case msg := <-messages:
-			log.Debugf("New message: %+v", msg)
+	for msg := range messages {
+		log.Debugf("New message: %+v", msg)
 
-			for _, c := range msg.Commands {
-				if c.Name == "lights" {
-					go l.lightsHandler(c)
-				} else {
-					log.Warnf("Unknown command %s", c.Name)
-				}
+		for _, c := range msg.Commands {
+			if c.Name == "lights" {
+				go l.lightsHandler(c)
+			} else {
+				log.Warnf("Unknown command %s", c.Name)
 			}
-
 		}
+
 	}
-}
-
-func arpWatch(redisClient *redis.Client) {
-
-	aw := arpwatch.NewArpWatch()
-
-	ticker := time.NewTicker(30 * time.Second)
-
-	go func() {
-
-		for {
-			select {
-			default:
-				aw.Update()
-
-				data, err := redisClient.SMembers(macsList).Result()
-				if err != nil {
-					log.Error(err)
-				}
-
-				for _, i := range data {
-					r, err := redisClient.HGetAll(fmt.Sprintf("mac:%s", i)).Result()
-					if err != nil {
-						log.Error(err)
-					}
-
-					if len(r) == 0 {
-						log.Debugf("Empty data set for %s", i)
-						break
-					}
-
-					macAddress.WithLabelValues(r["mac"], r["ip"]).Set(1)
-				}
-
-				<-ticker.C
-			}
-		}
-
-	}()
-
 }
