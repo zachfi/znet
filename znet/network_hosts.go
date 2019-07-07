@@ -6,35 +6,43 @@ import (
 	ldap "gopkg.in/ldap.v2"
 )
 
+// NetworkHost is a device that connects to the network.
 type NetworkHost struct {
-	Name       string
-	HostName   string
-	Domain     string
-	Platform   string
-	Group      string
-	Role       string
-	DeviceType string
-	Data       HostData
+	Name        string
+	HostName    string
+	Domain      string
+	Platform    string
+	Group       string
+	Role        string
+	DeviceType  string
+	Data        HostData
+	Watch       bool
+	Description string
+	MACAddress  []string
 }
 
 var defaultHostAttributes = []string{
 	"cn",
 	"dn",
+	"macAddress",
+	"netHostDescription",
 	"netHostDomain",
 	"netHostGroup",
 	"netHostName",
-	"netHostNos",
+	"netHostPlatform",
 	"netHostRole",
 	"netHostType",
+	"netHostWatch",
 }
 
+// GetNetworkHosts retrieves the NetworkHost objects from LDAP given an LDPA connection and baseDN.
 func (z *Znet) GetNetworkHosts(l *ldap.Conn, baseDN string) []NetworkHost {
 	hosts := []NetworkHost{}
 
 	searchRequest := ldap.NewSearchRequest(
 		baseDN,
 		ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
-		"(&(objectClass=netHost)(cn=*)(netHostNos=junos))",
+		"(&(objectClass=netHost)(cn=*))",
 		defaultHostAttributes,
 		nil,
 	)
@@ -45,21 +53,16 @@ func (z *Znet) GetNetworkHosts(l *ldap.Conn, baseDN string) []NetworkHost {
 	}
 
 	for _, e := range sr.Entries {
-		// log.Warnf("Entry: %+v", e)
-
 		h := NetworkHost{}
 
 		for _, a := range e.Attributes {
-			// log.Warnf("Attribute: %+v", a)
-			// log.Warnf("ByteValues: %+v", a.ByteValues)
-			// log.Warnf("%s stringValues: %+v", a.Name, stringValues(a))
 
 			switch a.Name {
 			case "cn":
 				{
 					h.Name = stringValues(a)[0]
 				}
-			case "netHostNos":
+			case "netHostPlatform":
 				{
 					h.Platform = stringValues(a)[0]
 				}
@@ -82,6 +85,24 @@ func (z *Znet) GetNetworkHosts(l *ldap.Conn, baseDN string) []NetworkHost {
 			case "netHostDomain":
 				{
 					h.Domain = stringValues(a)[0]
+				}
+			case "netHostWatch":
+				{
+					h.Watch = boolValues(a)[0]
+				}
+			case "netHostDescription":
+				{
+					h.Description = stringValues(a)[0]
+				}
+			case "macAddress":
+				{
+					addrs := []string{}
+
+					for _, x := range stringValues(a) {
+						addrs = append(addrs, x)
+					}
+
+					h.MACAddress = addrs
 				}
 			}
 		}

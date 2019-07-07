@@ -40,3 +40,14 @@ func stringValues(a *ldap.EntryAttribute) []string {
 
 	return values
 }
+
+func boolValues(a *ldap.EntryAttribute) []bool {
+	var values []bool
+
+	for _, b := range a.ByteValues {
+		fmt.Printf("FUCKing bool %+v", b)
+		// values = append(values, b.(bool))
+	}
+
+	return values
+}

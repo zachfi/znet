@@ -250,12 +250,6 @@
   revision = "bd17b90bf357ec30d7cd5b62ba281249ba598b04"
 
 [[projects]]
-  name = "github.com/xaque208/weigh"
-  packages = ["weigh"]
-  revision = "8b22c218e922ced263e68bf5032ab2213d6d3ec7"
-  version = "v1.0.2"
-
-[[projects]]
   branch = "master"
   name = "github.com/ziutek/telnet"
   packages = ["."]
@@ -328,6 +322,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "9ea63600771fa6bffde7b26efb9ec099b31e03b7f9f1496b8c16672fdb32a3f3"
+  inputs-digest = "e397d669868c48a31bb111ed6ba32e16b7c2f51e8d55776f0a1c88053e8dcbf6"
   solver-name = "gps-cdcl"
   solver-version = 1
