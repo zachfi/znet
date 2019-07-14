@@ -99,11 +99,7 @@ func (z *Znet) GetNetworkHosts(l *ldap.Conn, baseDN string) ([]NetworkHost, erro
 			case "macAddress":
 				{
 					addrs := []string{}
-
-					for _, x := range stringValues(a) {
-						addrs = append(addrs, x)
-					}
-
+					addrs = append(addrs, stringValues(a)...)
 					h.MACAddress = addrs
 				}
 			}
