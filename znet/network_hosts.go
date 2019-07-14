@@ -36,7 +36,7 @@ var defaultHostAttributes = []string{
 }
 
 // GetNetworkHosts retrieves the NetworkHost objects from LDAP given an LDPA connection and baseDN.
-func (z *Znet) GetNetworkHosts(l *ldap.Conn, baseDN string) []NetworkHost {
+func (z *Znet) GetNetworkHosts(l *ldap.Conn, baseDN string) ([]NetworkHost, error) {
 	hosts := []NetworkHost{}
 
 	searchRequest := ldap.NewSearchRequest(
@@ -47,9 +47,11 @@ func (z *Znet) GetNetworkHosts(l *ldap.Conn, baseDN string) []NetworkHost {
 		nil,
 	)
 
+	log.Infof("Searching LDAP with query: %s", searchRequest.Filter)
+
 	sr, err := l.Search(searchRequest)
 	if err != nil {
-		log.Fatal(err)
+		return []NetworkHost{}, err
 	}
 
 	for _, e := range sr.Entries {
@@ -110,5 +112,5 @@ func (z *Znet) GetNetworkHosts(l *ldap.Conn, baseDN string) []NetworkHost {
 		hosts = append(hosts, h)
 	}
 
-	return hosts
+	return hosts, nil
 }

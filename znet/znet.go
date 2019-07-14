@@ -11,7 +11,6 @@ import (
 	"github.com/imdario/mergo"
 	junos "github.com/scottdware/go-junos"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 )
 
 // Znet is the core object for this project.  It keeps track of the data, configuration and flow control for starting the server process.
@@ -49,16 +48,12 @@ func (z *Znet) LoadData(configDir string) {
 }
 
 // ConfigureNetworkHost renders the templates using associated data for a network host.  The hosts about which to load the templates, are retrieved from LDAP.
-func (z *Znet) ConfigureNetworkHost(host *NetworkHost, commit bool) {
-	auth := &junos.AuthMethod{
-		Username:   viper.GetString("junos.username"),
-		PrivateKey: viper.GetString("junos.keyfile"),
-	}
-
+func (z *Znet) ConfigureNetworkHost(host *NetworkHost, commit bool, auth *junos.AuthMethod) error {
 	log.Debugf("Connecting to device: %s", host.HostName)
+	log.Debugf("Using auth: %+v", auth)
 	session, err := junos.NewSession(host.HostName, auth)
 	if err != nil {
-		log.Error(err)
+		return err
 	}
 
 	defer session.Close()
@@ -84,17 +79,17 @@ func (z *Znet) ConfigureNetworkHost(host *NetworkHost, commit bool) {
 
 	err = session.Lock()
 	if err != nil {
-		log.Error(err)
+		return err
 	}
 
 	err = session.Config(renderedTemplates, "text", false)
 	if err != nil {
-		log.Error(err)
+		return err
 	}
 
 	diff, err := session.Diff(0)
 	if err != nil {
-		log.Error(err)
+		return err
 	}
 
 	if len(diff) > 1 {
@@ -103,12 +98,12 @@ func (z *Znet) ConfigureNetworkHost(host *NetworkHost, commit bool) {
 		if commit {
 			err = session.Commit()
 			if err != nil {
-				log.Error(err)
+				return err
 			}
 		} else {
 			err = session.Config("rollback", "text", false)
 			if err != nil {
-				log.Error(err)
+				return err
 			}
 
 		}
@@ -116,9 +111,10 @@ func (z *Znet) ConfigureNetworkHost(host *NetworkHost, commit bool) {
 
 	err = session.Unlock()
 	if err != nil {
-		log.Error(err)
+		return err
 	}
 
+	return nil
 }
 
 // TemplateStringsForDevice renders a list of template strings given a host.
