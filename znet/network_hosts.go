@@ -19,6 +19,7 @@ type NetworkHost struct {
 	Watch       bool
 	Description string
 	MACAddress  []string
+	Environment map[string]string
 }
 
 var defaultHostAttributes = []string{
@@ -56,6 +57,7 @@ func (z *Znet) GetNetworkHosts(l *ldap.Conn, baseDN string) ([]NetworkHost, erro
 
 	for _, e := range sr.Entries {
 		h := NetworkHost{}
+		h.Environment = z.Environment
 
 		for _, a := range e.Attributes {
 

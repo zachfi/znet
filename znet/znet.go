@@ -15,16 +15,22 @@ import (
 
 // Znet is the core object for this project.  It keeps track of the data, configuration and flow control for starting the server process.
 type Znet struct {
-	ConfigDir string
-	Config    Config
-	Data      Data
-	listener  *Listener
+	ConfigDir   string
+	Config      Config
+	Data        Data
+	Environment map[string]string
+	listener    *Listener
 }
 
 // NewZnet creates and returns a new Znet object.
 func NewZnet(file string) *Znet {
 	z := &Znet{}
 	z.LoadConfig(file)
+	err := z.LoadEnvironment()
+	if err != nil {
+		log.Error(err)
+	}
+
 	return z
 }
 
@@ -49,7 +55,7 @@ func (z *Znet) LoadData(configDir string) {
 
 // ConfigureNetworkHost renders the templates using associated data for a network host.  The hosts about which to load the templates, are retrieved from LDAP.
 func (z *Znet) ConfigureNetworkHost(host *NetworkHost, commit bool, auth *junos.AuthMethod) error {
-	log.Debugf("Connecting to device: %s", host.HostName)
+
 	log.Debugf("Using auth: %+v", auth)
 	session, err := junos.NewSession(host.HostName, auth)
 	if err != nil {

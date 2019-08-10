@@ -7,7 +7,8 @@ import (
 	ldap "gopkg.in/ldap.v2"
 )
 
-func (z *Znet) NewLDAPClient(config LdapConfig) (*ldap.Conn, error) {
+// NewLDAPClient constructs an LDAP client to return.
+func (z *Znet) NewLDAPClient(config LDAPConfig) (*ldap.Conn, error) {
 
 	// log.Warnf("%+v", config)
 
@@ -45,7 +46,7 @@ func boolValues(a *ldap.EntryAttribute) []bool {
 	var values []bool
 
 	for _, b := range a.ByteValues {
-		fmt.Printf("FUCKing bool %+v", b)
+		fmt.Printf("Received bool: %b", b)
 		// values = append(values, b.(bool))
 	}
 
