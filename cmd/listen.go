@@ -74,7 +74,7 @@ func listen(cmd *cobra.Command, args []string) {
 
 	go func() {
 		sig := <-sigs
-		log.Warnf("Caught signal: %s", sig.String())
+		log.Warnf("caught signal: %s", sig.String())
 		done <- true
 	}()
 

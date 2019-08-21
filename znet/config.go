@@ -10,6 +10,7 @@ type Config struct {
 	Endpoint     string              `yaml:"endpoint,omitempty"`
 	Environments []EnvironmentConfig `yaml:"environments,omitempty"`
 	Nats         NatsConfig          `yaml:"nats,omitempty"`
+	Hue          HueConfig           `yaml:"hue,omitempty"`
 	Junos        JunosConfig         `yaml:"junos,omitempty"`
 	Redis        RedisConfig         `yaml:"redis,omitempty"`
 	HTTP         HTTPConfig          `yaml:"http,omitempty"`
@@ -25,6 +26,11 @@ type EnvironmentConfig struct {
 type NatsConfig struct {
 	URL   string
 	Topic string
+}
+
+type HueConfig struct {
+	Endpoint string `yaml:"endpoint"`
+	User     string `yaml:"user"`
 }
 
 type RedisConfig struct {
@@ -55,8 +61,9 @@ type VaultConfig struct {
 }
 
 type Room struct {
-	Name string `yaml:"name"`
-	IDs  []int  `yaml:"ids"`
+	Name   string `yaml:"name"`
+	IDs    []int  `yaml:"ids"`
+	HueIDs []int  `yaml:"hue"`
 }
 
 func (c *Config) Room(name string) (Room, error) {
