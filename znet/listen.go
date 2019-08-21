@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/amimof/huego"
 	"github.com/go-redis/redis"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -110,9 +111,16 @@ func httpListen(listenAddress string) *http.Server {
 }
 
 func (l *Listener) lightsHandler(command things.Command) {
+	var roomName string
+	var state string
 
-	roomName := command.Arguments["room"]
-	state := command.Arguments["state"]
+	if val, ok := command.Arguments["room"]; ok {
+		roomName = val.(string)
+	}
+
+	if val, ok := command.Arguments["state"]; ok {
+		state = val.(string)
+	}
 
 	if state != "on" && state != "off" {
 		log.Errorf("Unknown light state received %s", state)
@@ -121,7 +129,36 @@ func (l *Listener) lightsHandler(command things.Command) {
 	log.Debugf("Using RFToy at %s", l.Config.Endpoint)
 	r := rftoy.RFToy{Address: l.Config.Endpoint}
 
-	room, err := l.Config.Room(roomName.(string))
+	// Use when setting up a new user.
+	// bridge, err := huego.Discover()
+	// if err != nil {
+	// 	log.Error(err)
+	// }
+	//
+	// user, err := bridge.CreateUser("znet")
+	// if err != nil {
+	// 	log.Error(err)
+	// }
+	// log.Warnf("User: %+v", user)
+
+	// bridge = bridge.Login(user)
+	bridge := huego.New(l.Config.Hue.Endpoint, l.Config.Hue.User)
+
+	log.Warnf("Bridge: %+v", bridge)
+
+	light, err := bridge.GetLights()
+	if err != nil {
+		log.Error(err)
+	}
+	log.Warnf("Light: %+v", light)
+
+	groups, err := bridge.GetGroups()
+	if err != nil {
+		log.Error(err)
+	}
+	log.Warnf("Groups: %+v", groups)
+
+	room, err := l.Config.Room(roomName)
 	if err != nil {
 		log.Error(err)
 		return
@@ -135,6 +172,26 @@ func (l *Listener) lightsHandler(command things.Command) {
 			r.Off(sid)
 		}
 		time.Sleep(2 * time.Second)
+	}
+
+	for _, i := range room.HueIDs {
+		group, err := bridge.GetGroup(i)
+		if err != nil {
+			log.Error(err)
+			continue
+		}
+
+		if state == "on" {
+			err = group.On()
+			if err != nil {
+				log.Error(err)
+			}
+		} else if state == "off" {
+			err = group.Off()
+			if err != nil {
+				log.Error(err)
+			}
+		}
 	}
 
 }
