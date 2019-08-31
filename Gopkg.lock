@@ -321,10 +321,10 @@
   revision = "68da7ed29fcb6fde19745d64a8bfa5d539ed8a69"
 
 [[projects]]
-  branch = "master"
   name = "github.com/xaque208/things"
   packages = ["things"]
-  revision = "bd17b90bf357ec30d7cd5b62ba281249ba598b04"
+  revision = "9e455e89effb48f85247a3e999824bd3bf4b2eac"
+  version = "v0.0.2"
 
 [[projects]]
   branch = "master"

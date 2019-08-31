@@ -89,12 +89,13 @@ type Routing struct {
 }
 
 type PolicyOptions struct {
-	Statements []PolicyStatement `yaml:"statements"`
+	Statements map[string]PolicyStatement `yaml:"statements"`
 }
 
 type PolicyStatement struct {
 	Name  string       `yaml:"name"`
 	Terms []PolicyTerm `yaml:"terms"`
+	Then  string       `yaml:"then"`
 }
 
 type PolicyTerm struct {
@@ -134,6 +135,12 @@ type IRBInterface struct {
 	MTU   int      `yaml:"mtu"`
 }
 
+type InetUnit struct {
+	Inet  []string `yaml:"inet"`
+	Inet6 []string `yaml:"inet6"`
+	MTU   int      `yaml:"mtu"`
+}
+
 type AEInterface struct {
 	Description string `yaml:"description"`
 	Name        string `yaml:"name"`
@@ -143,6 +150,7 @@ type AEInterface struct {
 		LACP         []string `yaml:"lacp"`
 	} `yaml:"options"`
 	EthernetSwitching EthernetSwitching `yaml:"ethernet_switching"`
+	Units             []InetUnit        `yaml:"units,omitempty"`
 }
 
 type EthernetInterface struct {
@@ -155,9 +163,9 @@ type EthernetInterface struct {
 }
 
 type EthernetSwitching struct {
-	Mode         string   `yaml:"mode"`
-	StormControl string   `yaml:"storm_control"`
-	VLANs        []string `yaml:"vlans"`
+	Mode         string   `yaml:"mode,omitempty"`
+	StormControl string   `yaml:"storm_control,omitempty"`
+	VLANs        []string `yaml:"vlans,omitempty"`
 }
 
 type VLAN struct {

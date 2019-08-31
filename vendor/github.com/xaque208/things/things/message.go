@@ -9,9 +9,9 @@ type Message struct {
 }
 
 type SensorReading struct {
-	Name  string  `json:"name,omitempty"`
-	Value float32 `json:"value,omitempty"`
-	Unit  string  `json:"unit,omitempty"`
+	Name     string  `json:"name,omitempty"`
+	Celcius  float32 `json:"celcius,omitempty"`
+	Humidity float32 `json:"humidity,omitempty"`
 }
 
 type Event struct {
