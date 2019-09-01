@@ -48,10 +48,11 @@ type HTTPConfig struct {
 }
 
 type LDAPConfig struct {
-	BaseDN string
-	BindDN string
-	BindPW string
-	Host   string
+	BaseDN    string
+	BindDN    string
+	BindPW    string
+	Host      string
+	UnknownDN string
 }
 
 type VaultConfig struct {
