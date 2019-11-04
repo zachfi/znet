@@ -2,9 +2,14 @@ package znet
 
 import (
 	"fmt"
+	"io/ioutil"
+	"net"
+	"os"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/crypto/ssh"
+	"golang.org/x/crypto/ssh/agent"
 
 	ldap "gopkg.in/ldap.v2"
 )
@@ -81,21 +86,21 @@ func (z *Znet) RecordUnknownHost(l *ldap.Conn, baseDN string, address string, ma
 	return nil
 }
 
-// GetNetworkHosts retrieves the NetworkHost objects from LDAP given an LDPA connection and baseDN.
-func (z *Znet) GetNetworkHosts(l *ldap.Conn, baseDN string) ([]NetworkHost, error) {
+// NetworkHosts retrieves the NetworkHost objects from LDAP given an LDPA connection and baseDN.
+func (z *Znet) NetworkHosts() ([]NetworkHost, error) {
 	hosts := []NetworkHost{}
 
 	searchRequest := ldap.NewSearchRequest(
-		baseDN,
+		z.Config.LDAP.BaseDN,
 		ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
 		"(&(objectClass=netHost)(cn=*))",
 		defaultHostAttributes,
 		nil,
 	)
 
-	log.Infof("Searching LDAP with query: %s", searchRequest.Filter)
+	log.Infof("Searching LDAP base %s with query: %s", z.Config.LDAP.BaseDN, searchRequest.Filter)
 
-	sr, err := l.Search(searchRequest)
+	sr, err := z.ldapClient.Search(searchRequest)
 	if err != nil {
 		return []NetworkHost{}, err
 	}

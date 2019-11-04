@@ -3,17 +3,19 @@ package znet
 import (
 	"io/ioutil"
 
-	log "github.com/sirupsen/logrus"
 	yaml "gopkg.in/yaml.v2"
 )
 
-func loadYamlFile(filename string, data interface{}) {
+func loadYamlFile(filename string, data interface{}) error {
 	yamlFile, err := ioutil.ReadFile(filename)
 	if err != nil {
-		log.Error(err)
+		return err
 	}
+
 	err = yaml.Unmarshal(yamlFile, data)
 	if err != nil {
-		log.Error(err)
+		return err
 	}
+
+	return nil
 }

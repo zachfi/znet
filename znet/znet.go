@@ -11,6 +11,7 @@ import (
 	"github.com/imdario/mergo"
 	junos "github.com/scottdware/go-junos"
 	log "github.com/sirupsen/logrus"
+	ldap "gopkg.in/ldap.v2"
 )
 
 // Znet is the core object for this project.  It keeps track of the data, configuration and flow control for starting the server process.
@@ -20,28 +21,48 @@ type Znet struct {
 	Data        Data
 	Environment map[string]string
 	listener    *Listener
+	ldapClient  *ldap.Conn
 }
 
 // NewZnet creates and returns a new Znet object.
-func NewZnet(file string) *Znet {
+func NewZnet(file string) (*Znet, error) {
 	z := &Znet{}
-	z.LoadConfig(file)
-	err := z.LoadEnvironment()
+
+	config, err := loadConfig(file)
 	if err != nil {
-		log.Error(err)
+		return &Znet{}, err
 	}
 
-	return z
+	z.Config = config
+
+	if config.LDAP.BindDN != "" && config.LDAP.BindPW != "" {
+		ldapConn, err := NewLDAPClient(config.LDAP)
+		if err != nil {
+			return &Znet{}, fmt.Errorf("Failed LDAP connection: %s", err)
+		}
+
+		z.ldapClient = ldapConn
+	}
+
+	err = z.LoadEnvironment()
+	if err != nil {
+		return &Znet{}, fmt.Errorf("Failed to load environment: %s", err)
+	}
+
+	return z, nil
 }
 
 // LoadConfig receives a file path for a configuration to load.
-func (z *Znet) LoadConfig(file string) {
+func loadConfig(file string) (Config, error) {
 	filename, _ := filepath.Abs(file)
 	log.Debugf("Loading config from: %s", filename)
 	config := Config{}
-	loadYamlFile(filename, &config)
+	err := loadYamlFile(filename, &config)
+	if err != nil {
+		return Config{}, err
+	}
 
-	z.Config = config
+	return config, nil
 }
 
 // LoadData receives a configuration directory from which to load the data for Znet.
@@ -54,9 +75,9 @@ func (z *Znet) LoadData(configDir string) {
 }
 
 // ConfigureNetworkHost renders the templates using associated data for a network host.  The hosts about which to load the templates, are retrieved from LDAP.
-func (z *Znet) ConfigureNetworkHost(host *NetworkHost, commit bool, auth *junos.AuthMethod) error {
+func (z *Znet) ConfigureNetworkHost(host *NetworkHost, commit bool, auth *junos.AuthMethod, show bool) error {
 
-	log.Debugf("Using auth: %+v", auth)
+	// log.Debugf("Using auth: %+v", auth)
 	session, err := junos.NewSession(host.HostName, auth)
 	if err != nil {
 		return err
@@ -70,7 +91,7 @@ func (z *Znet) ConfigureNetworkHost(host *NetworkHost, commit bool, auth *junos.
 	// log.Warnf("Commit: %t", commit)
 	// log.Warnf("Host: %+v", host)
 	templates := z.TemplatesForDevice(*host)
-	log.Debugf("Templates for host %s: %+v", host.Name, templates)
+	// log.Debugf("Templates for host %s: %+v", host.Name, templates)
 
 	host.Data = z.DataForDevice(*host)
 	// log.Debugf("Data: %+v", host.Data)
@@ -81,7 +102,10 @@ func (z *Znet) ConfigureNetworkHost(host *NetworkHost, commit bool, auth *junos.
 		renderedTemplates = append(renderedTemplates, result)
 		// log.Infof("Result: %+v", result)
 	}
-	log.Debugf("RenderedTemplates: %+v", renderedTemplates)
+
+	if show {
+		log.Debugf("RenderedTemplates: %+v", renderedTemplates)
+	}
 
 	err = session.Lock()
 	if err != nil {
@@ -211,7 +235,7 @@ func (z *Znet) TemplatesForDevice(host NetworkHost) []string {
 
 // RenderHostTemplateFile renders a template file using a Host object.
 func (z *Znet) RenderHostTemplateFile(host NetworkHost, path string) string {
-	log.Debugf("Rendering host template file %s for host %s", path, host.Name)
+	// log.Debugf("Rendering host template file %s for host %s", path, host.Name)
 
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -232,4 +256,12 @@ func (z *Znet) RenderHostTemplateFile(host NetworkHost, path string) string {
 	}
 
 	return buf.String()
+}
+
+// Close calls
+func (z *Znet) Close() error {
+
+	z.ldapClient.Close()
+
+	return nil
 }

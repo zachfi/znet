@@ -8,7 +8,7 @@ import (
 )
 
 // NewLDAPClient constructs an LDAP client to return.
-func (z *Znet) NewLDAPClient(config LDAPConfig) (*ldap.Conn, error) {
+func NewLDAPClient(config LDAPConfig) (*ldap.Conn, error) {
 
 	// log.Warnf("%+v", config)
 
@@ -29,7 +29,6 @@ func (z *Znet) NewLDAPClient(config LDAPConfig) (*ldap.Conn, error) {
 	}
 
 	return l, nil
-
 }
 
 func stringValues(a *ldap.EntryAttribute) []string {
