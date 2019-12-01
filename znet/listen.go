@@ -2,6 +2,7 @@ package znet
 
 import (
 	"context"
+	"net"
 	"net/http"
 	"time"
 
@@ -12,6 +13,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/xaque208/rftoy/rftoy"
 	"github.com/xaque208/things/things"
+	pb "github.com/xaque208/znet/rpc"
+	"google.golang.org/grpc"
 )
 
 // Listener is a znet server
@@ -20,6 +23,35 @@ type Listener struct {
 	thingServer *things.Server
 	redisClient *redis.Client
 	httpServer  *http.Server
+}
+
+// RPC Listener
+type znetListener struct {
+	inventory *Inventory
+}
+
+func (r *znetListener) Search(ctx context.Context, request *pb.SearchRequest) (*pb.SearchResponse, error) {
+	response := &pb.SearchResponse{}
+
+	hosts, err := r.inventory.NetworkHosts()
+	if err != nil {
+		log.Error(err)
+	}
+
+	for _, h := range hosts {
+		host := &pb.Host{
+			CommonName:  h.Name,
+			Description: h.Description,
+			Platform:    h.Platform,
+			Type:        h.DeviceType,
+		}
+
+		response.Hosts = append(response.Hosts, host)
+	}
+
+	log.Warnf("%+v: ", r)
+
+	return response, nil
 }
 
 var (
@@ -37,7 +69,35 @@ func (z *Znet) Listen(listenAddr string, ch chan bool) {
 		log.Fatal(err)
 	}
 
+	z.listenRPC()
+
 	z.listener.Listen(listenAddr, ch)
+}
+
+func (z *Znet) listenRPC() {
+
+	if z.Config.RPC.ListenAddress != "" {
+		log.Debugf("Starting RPC listener on %s", z.Config.RPC.ListenAddress)
+
+		rpcListener := &znetListener{
+			inventory: z.Inventory,
+		}
+
+		go func() {
+			lis, err := net.Listen("tcp", z.Config.RPC.ListenAddress)
+			if err != nil {
+				log.Fatalf("failed to listen: %v", err)
+			}
+			grpcServer := grpc.NewServer()
+			pb.RegisterInventoryServer(grpcServer, rpcListener)
+			err = grpcServer.Serve(lis)
+			if err != nil {
+				log.Error(err)
+			}
+
+		}()
+	}
+
 }
 
 // NewListener builds a new Listener object from the received configuration.
