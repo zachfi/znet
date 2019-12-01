@@ -16,6 +16,7 @@ type Config struct {
 	HTTP         HTTPConfig          `yaml:"http,omitempty"`
 	LDAP         LDAPConfig          `yaml:"ldap,omitempty"`
 	Vault        VaultConfig         `yaml:"vault,omitempty"`
+	RPC          RPCConfig           `yaml:"rpc,omitempty"`
 }
 
 type EnvironmentConfig struct {
@@ -45,6 +46,11 @@ type JunosConfig struct {
 
 type HTTPConfig struct {
 	ListenAddress string
+}
+
+type RPCConfig struct {
+	ListenAddress string
+	ServerAddress string
 }
 
 type LDAPConfig struct {
