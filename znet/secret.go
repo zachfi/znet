@@ -8,7 +8,7 @@ import (
 )
 
 // NewSecretClient receives a configuration and returns a client for Vault.
-func (z *Znet) NewSecretClient(config VaultConfig) (*api.Client, error) {
+func NewSecretClient(config VaultConfig) (*api.Client, error) {
 
 	apiConfig := &api.Config{
 		Address: config.Host,
@@ -19,7 +19,7 @@ func (z *Znet) NewSecretClient(config VaultConfig) (*api.Client, error) {
 		return &api.Client{}, err
 	}
 
-	token, err := ioutil.ReadFile(z.Config.Vault.TokenPath)
+	token, err := ioutil.ReadFile(config.TokenPath)
 	if err != nil {
 		log.Error(err)
 	}

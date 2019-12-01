@@ -21,32 +21,46 @@ type Znet struct {
 	Data        Data
 	Environment map[string]string
 	listener    *Listener
-	ldapClient  *ldap.Conn
+	// TODO deprecate ldapclient use at Znet, move to Inventory
+	ldapClient *ldap.Conn
+	Inventory  *Inventory
 }
 
 // NewZnet creates and returns a new Znet object.
 func NewZnet(file string) (*Znet, error) {
-	z := &Znet{}
 
 	config, err := loadConfig(file)
 	if err != nil {
 		return &Znet{}, err
 	}
 
-	z.Config = config
-
+	var ldapClient *ldap.Conn
 	if config.LDAP.BindDN != "" && config.LDAP.BindPW != "" {
 		ldapConn, err := NewLDAPClient(config.LDAP)
 		if err != nil {
 			return &Znet{}, fmt.Errorf("Failed LDAP connection: %s", err)
 		}
 
-		z.ldapClient = ldapConn
+		ldapClient = ldapConn
+	} else {
+		log.Warn("Not enough configuration data for LDAP client")
 	}
 
-	err = z.LoadEnvironment()
+	environment, err := LoadEnvironment(config.Vault, "default")
 	if err != nil {
-		return &Znet{}, fmt.Errorf("Failed to load environment: %s", err)
+		log.Errorf("Failed to load environment: %s", err)
+	}
+
+	inventory := &Inventory{
+		config:     config.LDAP,
+		ldapClient: ldapClient,
+	}
+
+	z := &Znet{
+		Config:      config,
+		ldapClient:  ldapClient,
+		Environment: environment,
+		Inventory:   inventory,
 	}
 
 	return z, nil
@@ -268,6 +282,7 @@ func (z *Znet) RenderHostTemplateFile(host NetworkHost, path string) string {
 func (z *Znet) Close() error {
 
 	z.ldapClient.Close()
+	z.Inventory.ldapClient.Close()
 
 	return nil
 }
