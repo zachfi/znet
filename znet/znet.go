@@ -69,7 +69,10 @@ func loadConfig(file string) (Config, error) {
 func (z *Znet) LoadData(configDir string) {
 	log.Debugf("Loading data from: %s", configDir)
 	dataConfig := Data{}
-	loadYamlFile(fmt.Sprintf("%s/%s", configDir, "data.yaml"), &dataConfig)
+	err := loadYamlFile(fmt.Sprintf("%s/%s", configDir, "data.yaml"), &dataConfig)
+	if err != nil {
+		log.Error(err)
+	}
 
 	z.Data = dataConfig
 }
@@ -177,7 +180,10 @@ func (z *Znet) DataForDevice(host NetworkHost) HostData {
 	for _, f := range z.HierarchyForDevice(host) {
 
 		fileHostData := HostData{}
-		loadYamlFile(f, &fileHostData)
+		err := loadYamlFile(f, &fileHostData)
+		if err != nil {
+			log.Error(err)
+		}
 
 		if err := mergo.Merge(&hostData, fileHostData, mergo.WithOverride); err != nil {
 			log.Error(err)
