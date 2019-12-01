@@ -23,7 +23,7 @@ var lightsCmd = &cobra.Command{
 	Use:   "lights",
 	Short: "Send an on/off command to the bus for a given room's lights.",
 	Long:  "",
-	Run:   run,
+	Run:   runLights,
 }
 
 var roomName string
@@ -35,5 +35,5 @@ func init() {
 	lightsCmd.Flags().BoolP("verbose", "v", false, "Raise verbosity")
 }
 
-func run(cmd *cobra.Command, args []string) {
+func runLights(cmd *cobra.Command, args []string) {
 }
