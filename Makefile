@@ -1,7 +1,7 @@
 PROJECT_NAME := $(shell basename $(shell pwd))
 PROJECT_VER  := $(shell git describe --tags --always --dirty)
 GO_PKGS      := $(shell go list ./... | grep -v -e "/vendor/" -e "/example")
-GO_FILES     := $(shell find cmd pkg -type f -name "*.go")
+GO_FILES     := $(shell find cmd -type f -name "*.go")
 NATIVEOS     := $(shell go version | awk -F '[ /]' '{print $$4}')
 NATIVEARCH   := $(shell go version | awk -F '[ /]' '{print $$5}')
 SRCDIR       ?= .
@@ -63,10 +63,8 @@ validate: deps
 
 compile-only:
 	@echo "=== $(PROJECT_NAME) === [ compile          ]: building commands:"
-	$(GO) build -ldflags=$(LDFLAGS) -o $(BUILD_DIR)/$(PROJECT_NAME) .; \
-	# @for b in $(BINS); do \
-	# 	echo "=== $(PROJECT_NAME) === [ compile          ]:     $$b"; \
-	# done
+	$(GO) build -ldflags=$(LDFLAGS) -o $(BUILD_DIR)/$(PROJECT_NAME) .;
+	protoc -I rpc/ rpc/rpc.proto --go_out=plugins=grpc:rpc
 
 compile: deps compile-only
 
