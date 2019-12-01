@@ -38,11 +38,13 @@ var listenCmd = &cobra.Command{
 }
 
 var listenAddr string
+var rpcListenAddr string
 
 func init() {
 	rootCmd.AddCommand(listenCmd)
 
-	listenCmd.PersistentFlags().StringVarP(&listenAddr, "listen", "l", ":9100", "Specify listen address")
+	listenCmd.PersistentFlags().StringVarP(&listenAddr, "listen", "l", ":9100", "Specify HTTP listen address")
+	listenCmd.PersistentFlags().StringVarP(&rpcListenAddr, "rpc", "r", ":8800", "Specify RPC listen address")
 }
 
 func listen(cmd *cobra.Command, args []string) {
@@ -67,10 +69,15 @@ func listen(cmd *cobra.Command, args []string) {
 
 	viper.AutomaticEnv()
 
-	z := znet.NewZnet(cfgFile)
+	z, err := znet.NewZnet(cfgFile)
+	if err != nil {
+		log.Error(err)
+	}
 
 	z.Config.Nats.URL = viper.GetString("nats.url")
 	z.Config.Nats.Topic = viper.GetString("nats.topic")
+
+	z.Config.RPC.ListenAddress = viper.GetString("rpc.listen")
 
 	go func() {
 		sig := <-sigs
