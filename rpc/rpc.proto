@@ -2,14 +2,11 @@ syntax = "proto3";
 
 message SearchRequest {
   string hosts = 1;
-  string location = 2;
+  string domain = 2;
   string kernel = 3;
 }
 
-message SearchResponse {
-  repeated Host hosts = 1;
-}
-
+message SearchResponse { repeated Host hosts = 1; }
 
 message Host {
   string common_name = 1;
@@ -18,7 +15,6 @@ message Host {
   string type = 4;
 }
 
-
 service Inventory {
-  rpc Search (SearchRequest) returns (SearchResponse);
+  rpc Search(SearchRequest) returns (SearchResponse) {}
 }
