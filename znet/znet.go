@@ -24,6 +24,7 @@ type Znet struct {
 	// TODO deprecate ldapclient use at Znet, move to Inventory
 	ldapClient *ldap.Conn
 	Inventory  *Inventory
+	Lights     *Lights
 }
 
 // NewZnet creates and returns a new Znet object.
@@ -56,11 +57,14 @@ func NewZnet(file string) (*Znet, error) {
 		ldapClient: ldapClient,
 	}
 
+	lights := NewLights(config.Lights)
+
 	z := &Znet{
 		Config:      config,
 		ldapClient:  ldapClient,
 		Environment: environment,
 		Inventory:   inventory,
+		Lights:      lights,
 	}
 
 	return z, nil

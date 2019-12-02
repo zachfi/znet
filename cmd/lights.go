@@ -15,7 +15,16 @@
 package cmd
 
 import (
+	"context"
+	"os"
+
+	"github.com/jedib0t/go-pretty/table"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+	pb "github.com/xaque208/znet/rpc"
+	"github.com/xaque208/znet/znet"
+	"google.golang.org/grpc"
 )
 
 // lightsCmd represents the lights command
@@ -36,4 +45,52 @@ func init() {
 }
 
 func runLights(cmd *cobra.Command, args []string) {
+
+	if verbose {
+		log.SetLevel(log.DebugLevel)
+	} else {
+		log.SetLevel(log.WarnLevel)
+	}
+
+	z, err := znet.NewZnet(cfgFile)
+	if err != nil {
+		log.Error(err)
+	}
+
+	z.Config.RPC.ServerAddress = viper.GetString("rpc.server")
+
+	var opts []grpc.DialOption
+	opts = append(opts, grpc.WithInsecure())
+
+	conn, err := grpc.Dial(z.Config.RPC.ServerAddress, opts...)
+	if err != nil {
+		log.Error(err)
+	}
+	defer conn.Close()
+
+	lc := pb.NewLightsClient(conn)
+
+	req := &pb.LightRequest{}
+
+	res, err := lc.Status(context.Background(), req)
+	if err != nil {
+		log.Error(err)
+	}
+
+	log.Infof("RPC Response: %+v", res)
+
+	t := table.NewWriter()
+	t.SetOutputMirror(os.Stdout)
+	t.AppendHeader(table.Row{"ID", "Type"})
+
+	for _, h := range res.Lights {
+		t.AppendRow([]interface{}{
+			h.Id,
+			h.Name,
+			h.Type,
+		})
+	}
+
+	// t.AppendFooter(table.Row{"", "", "Total", 10000})
+	t.Render()
 }

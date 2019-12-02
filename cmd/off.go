@@ -15,11 +15,16 @@
 package cmd
 
 import (
+	"context"
+
 	nats "github.com/nats-io/go-nats"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/xaque208/things/things"
+	pb "github.com/xaque208/znet/rpc"
+	"github.com/xaque208/znet/znet"
+	"google.golang.org/grpc"
 )
 
 // offCmd represents the off command
@@ -82,4 +87,34 @@ func off(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Error(err)
 	}
+
+	z, err := znet.NewZnet(cfgFile)
+	if err != nil {
+		log.Error(err)
+	}
+
+	z.Config.RPC.ServerAddress = viper.GetString("rpc.server")
+
+	var opts []grpc.DialOption
+	opts = append(opts, grpc.WithInsecure())
+
+	conn, err := grpc.Dial(z.Config.RPC.ServerAddress, opts...)
+	if err != nil {
+		log.Error(err)
+	}
+	defer conn.Close()
+
+	lc := pb.NewLightsClient(conn)
+
+	req := &pb.LightZone{
+		Name: roomName,
+	}
+
+	res, err := lc.Off(context.Background(), req)
+	if err != nil {
+		log.Error(err)
+	}
+
+	log.Infof("RPC Response: %+v", res)
+
 }

@@ -82,7 +82,7 @@ func runInv(cmd *cobra.Command, args []string) {
 
 	for _, h := range res.Hosts {
 		t.AppendRow([]interface{}{
-			h.CommonName,
+			h.Name,
 			h.Platform,
 			h.Type,
 			h.Description,

@@ -63,10 +63,14 @@ validate: deps
 
 compile-only:
 	@echo "=== $(PROJECT_NAME) === [ compile          ]: building commands:"
+	protoc -I rpc/ rpc/rpc.proto --go_out=plugins=grpc:rpc
 	$(GO) build -ldflags=$(LDFLAGS) -o $(BUILD_DIR)/$(PROJECT_NAME) .;
+
+proto:
+	@echo "=== $(PROJECT_NAME) === [ proto compile    ]: compiling protobufs:"
 	protoc -I rpc/ rpc/rpc.proto --go_out=plugins=grpc:rpc
 
-compile: deps compile-only
+compile: deps proto compile-only
 
 coverage:
 	@echo "=== $(PROJECT_NAME) === [ coverage         ]: generating coverage results..."

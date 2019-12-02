@@ -4,14 +4,11 @@ import (
 	"context"
 	"net"
 	"net/http"
-	"time"
 
-	"github.com/amimof/huego"
 	"github.com/go-redis/redis"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
-	"github.com/xaque208/rftoy/rftoy"
 	"github.com/xaque208/things/things"
 	pb "github.com/xaque208/znet/rpc"
 	"google.golang.org/grpc"
@@ -23,35 +20,6 @@ type Listener struct {
 	thingServer *things.Server
 	redisClient *redis.Client
 	httpServer  *http.Server
-}
-
-// RPC Listener
-type znetListener struct {
-	inventory *Inventory
-}
-
-func (r *znetListener) Search(ctx context.Context, request *pb.SearchRequest) (*pb.SearchResponse, error) {
-	response := &pb.SearchResponse{}
-
-	hosts, err := r.inventory.NetworkHosts()
-	if err != nil {
-		log.Error(err)
-	}
-
-	for _, h := range hosts {
-		host := &pb.Host{
-			CommonName:  h.Name,
-			Description: h.Description,
-			Platform:    h.Platform,
-			Type:        h.DeviceType,
-		}
-
-		response.Hosts = append(response.Hosts, host)
-	}
-
-	log.Warnf("%+v: ", r)
-
-	return response, nil
 }
 
 var (
@@ -79,8 +47,12 @@ func (z *Znet) listenRPC() {
 	if z.Config.RPC.ListenAddress != "" {
 		log.Debugf("Starting RPC listener on %s", z.Config.RPC.ListenAddress)
 
-		rpcListener := &znetListener{
+		inventoryServer := &inventoryServer{
 			inventory: z.Inventory,
+		}
+
+		lightServer := &lightServer{
+			lights: z.Lights,
 		}
 
 		go func() {
@@ -89,7 +61,10 @@ func (z *Znet) listenRPC() {
 				log.Fatalf("failed to listen: %v", err)
 			}
 			grpcServer := grpc.NewServer()
-			pb.RegisterInventoryServer(grpcServer, rpcListener)
+
+			pb.RegisterInventoryServer(grpcServer, inventoryServer)
+			pb.RegisterLightsServer(grpcServer, lightServer)
+
 			err = grpcServer.Serve(lis)
 			if err != nil {
 				log.Error(err)
@@ -133,7 +108,7 @@ func (l *Listener) Listen(listenAddr string, ch chan bool) {
 
 	messages := make(chan things.Message)
 	go l.messageHandler(messages)
-	go l.thingServer.Listen(messages)
+	// go l.thingServer.Listen(messages)
 
 	<-ch
 	l.Shutdown()
@@ -170,103 +145,13 @@ func httpListen(listenAddress string) *http.Server {
 	return srv
 }
 
-func (l *Listener) lightsHandler(command things.Command) {
-	var roomName string
-	var state string
-
-	if val, ok := command.Arguments["room"]; ok {
-		roomName = val.(string)
-	}
-
-	if val, ok := command.Arguments["state"]; ok {
-		state = val.(string)
-	}
-
-	if state != "on" && state != "off" {
-		log.Errorf("Unknown light state received %s", state)
-	}
-
-	log.Debugf("Using RFToy at %s", l.Config.Endpoint)
-	r := rftoy.RFToy{Address: l.Config.Endpoint}
-
-	// Use when setting up a new user.
-	// bridge, err := huego.Discover()
-	// if err != nil {
-	// 	log.Error(err)
-	// }
-	//
-	// user, err := bridge.CreateUser("znet")
-	// if err != nil {
-	// 	log.Error(err)
-	// }
-	// log.Warnf("User: %+v", user)
-
-	// bridge = bridge.Login(user)
-	bridge := huego.New(l.Config.Hue.Endpoint, l.Config.Hue.User)
-
-	log.Warnf("Bridge: %+v", bridge)
-
-	light, err := bridge.GetLights()
-	if err != nil {
-		log.Error(err)
-	}
-	log.Warnf("Light: %+v", light)
-
-	groups, err := bridge.GetGroups()
-	if err != nil {
-		log.Error(err)
-	}
-	log.Warnf("Groups: %+v", groups)
-
-	room, err := l.Config.Room(roomName)
-	if err != nil {
-		log.Error(err)
-		return
-	}
-
-	log.Infof("Turning %s room %s", state, room.Name)
-	for _, sid := range room.IDs {
-		if state == "on" {
-			r.On(sid)
-		} else if state == "off" {
-			r.Off(sid)
-		}
-		time.Sleep(2 * time.Second)
-	}
-
-	for _, i := range room.HueIDs {
-		group, err := bridge.GetGroup(i)
-		if err != nil {
-			log.Error(err)
-			continue
-		}
-
-		if state == "on" {
-			err = group.On()
-			if err != nil {
-				log.Error(err)
-			}
-		} else if state == "off" {
-			err = group.Off()
-			if err != nil {
-				log.Error(err)
-			}
-		}
-	}
-
-}
-
 // messageHandler
 func (l *Listener) messageHandler(messages chan things.Message) {
 	for msg := range messages {
 		log.Debugf("New message: %+v", msg)
 
 		for _, c := range msg.Commands {
-			if c.Name == "lights" {
-				go l.lightsHandler(c)
-			} else {
-				log.Warnf("Unknown command %s", c.Name)
-			}
+			log.Warnf("Unknown command %s", c.Name)
 		}
 
 	}

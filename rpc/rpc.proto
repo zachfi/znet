@@ -9,12 +9,34 @@ message SearchRequest {
 message SearchResponse { repeated Host hosts = 1; }
 
 message Host {
-  string common_name = 1;
+  string name = 1;
   string description = 2;
   string platform = 3;
-  string type = 4;
+  string version = 4;
+  string type = 5;
 }
 
 service Inventory {
   rpc Search(SearchRequest) returns (SearchResponse) {}
+}
+
+message LightZone {
+  string name = 1;
+  int32 id = 2;
+}
+
+message Light {
+  string type = 1;
+  int32 id = 2;
+  string name = 3;
+}
+
+message LightRequest {}
+
+message LightResponse { repeated Light lights = 1; }
+
+service Lights {
+  rpc Off(LightZone) returns (LightResponse) {}
+  rpc On(LightZone) returns (LightResponse) {}
+  rpc Status(LightRequest) returns (LightResponse) {}
 }

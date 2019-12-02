@@ -15,11 +15,14 @@
 package cmd
 
 import (
-	nats "github.com/nats-io/go-nats"
+	"context"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/xaque208/things/things"
+	pb "github.com/xaque208/znet/rpc"
+	"github.com/xaque208/znet/znet"
+	"google.golang.org/grpc"
 )
 
 // onCmd represents the on command
@@ -46,39 +49,32 @@ func on(cmd *cobra.Command, args []string) {
 		log.SetLevel(log.WarnLevel)
 	}
 
-	viper.SetDefault("nats.url", nats.DefaultURL)
-	viper.SetDefault("nats.topic", "things")
-
-	url := viper.GetString("nats.url")
-	topic := viper.GetString("nats.topic")
-
-	log.Debugf("Using nats %s on %s", url, topic)
-
-	client, err := things.NewClient(url, topic)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer client.Close()
-
-	natsCommand := things.Command{
-		Name: "lights",
-		Arguments: things.CommandArguments{
-			"state": "on",
-			"room":  roomName,
-		},
-	}
-
-	var commands []things.Command
-	commands = append(commands, natsCommand)
-
-	msg := things.Message{
-		Device:   "Znet CLI",
-		Commands: commands,
-	}
-
-	log.Debugf("Sending message: %+v", msg)
-	err = client.EncodedConn.Publish(topic, msg)
+	z, err := znet.NewZnet(cfgFile)
 	if err != nil {
 		log.Error(err)
 	}
+
+	z.Config.RPC.ServerAddress = viper.GetString("rpc.server")
+
+	var opts []grpc.DialOption
+	opts = append(opts, grpc.WithInsecure())
+
+	conn, err := grpc.Dial(z.Config.RPC.ServerAddress, opts...)
+	if err != nil {
+		log.Error(err)
+	}
+	defer conn.Close()
+
+	lc := pb.NewLightsClient(conn)
+
+	req := &pb.LightZone{
+		Name: roomName,
+	}
+
+	res, err := lc.On(context.Background(), req)
+	if err != nil {
+		log.Error(err)
+	}
+
+	log.Infof("RPC Response: %+v", res)
 }
