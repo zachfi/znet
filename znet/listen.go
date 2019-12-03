@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/go-redis/redis"
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 	"github.com/xaque208/things/things"
@@ -21,13 +20,6 @@ type Listener struct {
 	redisClient *redis.Client
 	httpServer  *http.Server
 }
-
-var (
-	macAddress = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "mac",
-		Help: "MAC Address",
-	}, []string{"mac", "ip"})
-)
 
 // Listen starts the znet listener
 func (z *Znet) Listen(listenAddr string, ch chan bool) {
@@ -82,7 +74,6 @@ func NewListener(config *Config) (*Listener, error) {
 	}
 
 	var err error
-	prometheus.MustRegister(macAddress)
 
 	// Attach a things server
 	log.Debugf("Using nats %s#%s", l.Config.Nats.URL, l.Config.Nats.Topic)

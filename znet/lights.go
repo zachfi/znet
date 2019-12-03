@@ -39,12 +39,20 @@ func (l *Lights) On(roomName string) {
 	for _, g := range groups {
 		for _, i := range room.HueIDs {
 			if g.ID == i {
-				log.Debugf("Turning on group %+v", g)
+				log.Debugf("Turning on %d lights in HUE group %s", len(g.Lights), g.Name)
 				err := g.On()
 				if err != nil {
 					log.Error(err)
 				}
 			}
+		}
+	}
+
+	log.Debugf("Turning on rftoy lights: %+v", room.IDs)
+	for _, i := range room.IDs {
+		err := l.RFToy.On(i)
+		if err != nil {
+			log.Error(err)
 		}
 	}
 
@@ -62,17 +70,24 @@ func (l *Lights) Off(roomName string) {
 	if err != nil {
 		log.Error(err)
 	}
-	log.Warnf("Groups: %+v", groups)
 
 	for _, g := range groups {
 		for _, i := range room.HueIDs {
 			if g.ID == i {
-				log.Debugf("Turning off group %+v", g)
+				log.Debugf("Turning off %d lights in HUE group %s", len(g.Lights), g.Name)
 				err := g.Off()
 				if err != nil {
 					log.Error(err)
 				}
 			}
+		}
+	}
+
+	log.Debugf("Turning off rftoy lights: %+v", room.IDs)
+	for _, i := range room.IDs {
+		err := l.RFToy.Off(i)
+		if err != nil {
+			log.Error(err)
 		}
 	}
 

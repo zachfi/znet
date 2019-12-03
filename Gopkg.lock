@@ -287,8 +287,8 @@
     "log",
     "model"
   ]
-  revision = "31bed53e4047fd6c510e43a941f90cb31be0972a"
-  version = "v0.6.0"
+  revision = "287d3e634a1e550c9e463dd7e5a75a422c614505"
+  version = "v0.7.0"
 
 [[projects]]
   name = "github.com/prometheus/procfs"
@@ -367,7 +367,7 @@
   branch = "master"
   name = "github.com/xaque208/rftoy"
   packages = ["rftoy"]
-  revision = "68da7ed29fcb6fde19745d64a8bfa5d539ed8a69"
+  revision = "4727b87c34619533519abb4260afd477833e265b"
 
 [[projects]]
   name = "github.com/xaque208/things"
@@ -550,6 +550,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "fa0900d901b33a7fcbfac136ce468acc0a17698d1260f7bf80e8ec1b97be7b26"
+  inputs-digest = "e67639a39a3501251e28b72ff11fd723ce616c37339090529f9ee196d96a1c0b"
   solver-name = "gps-cdcl"
   solver-version = 1
