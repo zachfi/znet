@@ -32,7 +32,7 @@ func NewZnet(file string) (*Znet, error) {
 
 	config, err := loadConfig(file)
 	if err != nil {
-		return &Znet{}, err
+		return &Znet{}, fmt.Errorf("failed to load config file %s: %s", file, err)
 	}
 
 	var ldapClient *ldap.Conn
@@ -47,7 +47,12 @@ func NewZnet(file string) (*Znet, error) {
 		log.Warn("Not enough configuration data for LDAP client")
 	}
 
-	environment, err := LoadEnvironment(config.Vault, "default")
+	e, err := GetEnvironmentConfig(config.Environments, "default")
+	if err != nil {
+		log.Error(err)
+	}
+
+	environment, err := LoadEnvironment(config.Vault, e)
 	if err != nil {
 		log.Errorf("Failed to load environment: %s", err)
 	}
@@ -89,7 +94,7 @@ func (z *Znet) LoadData(configDir string) {
 	dataConfig := Data{}
 	err := loadYamlFile(fmt.Sprintf("%s/%s", configDir, "data.yaml"), &dataConfig)
 	if err != nil {
-		log.Error(err)
+		log.Errorf("failed to load yaml file %s: %s", configDir, err)
 	}
 
 	z.Data = dataConfig
@@ -263,16 +268,19 @@ func (z *Znet) RenderHostTemplateFile(host NetworkHost, path string) string {
 
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
-		log.Error(err)
+		log.Errorf("failed read path: %s", err)
 	}
 
 	str := string(b)
 	tmpl, err := template.New("test").Parse(str)
 	if err != nil {
-		log.Error(err)
+		log.Errorf("failed to parse template %s: %s", path, err)
 	}
 
 	var buf bytes.Buffer
+
+	// Attach the znet Environment to the host
+	host.Environment = z.Environment
 
 	err = tmpl.Execute(&buf, host)
 	if err != nil {
