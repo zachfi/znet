@@ -161,6 +161,7 @@ type EthernetInterface struct {
 	MTU               int               `yaml:"mtu"`
 	Name              string            `yaml:"name"`
 	NativeVlanId      int               `yaml:"native_vlan_id"`
+	Units             []InetUnit        `yaml:"units"`
 }
 
 type EthernetSwitching struct {
