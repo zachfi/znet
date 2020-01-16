@@ -44,7 +44,7 @@ var defaultHostAttributes = []string{
 	"netHostWatch",
 }
 
-func (z *Znet) RecordUnknownHost(l *ldap.Conn, baseDN string, address string, mac string) error {
+func (z *Znet) RecordUnknownHost(baseDN string, address string, mac string) error {
 
 	cn := strings.Replace(mac, ":", "", -1)
 
@@ -58,7 +58,7 @@ func (z *Znet) RecordUnknownHost(l *ldap.Conn, baseDN string, address string, ma
 
 	log.Debugf("Searching LDAP with query: %s", searchRequest.Filter)
 
-	sr, err := l.Search(searchRequest)
+	sr, err := z.ldapClient.Search(searchRequest)
 	if err != nil {
 		return err
 	}
@@ -77,7 +77,7 @@ func (z *Znet) RecordUnknownHost(l *ldap.Conn, baseDN string, address string, ma
 	a.Attribute("cn", []string{cn})
 	a.Attribute("v4Address", []string{address})
 	a.Attribute("macAddress", []string{mac})
-	err = l.Add(a)
+	err = z.ldapClient.Add(a)
 	if err != nil {
 		log.Errorf("%+v", a)
 		return err
