@@ -47,6 +47,8 @@ func (z *Znet) listenRPC() {
 			lights: z.Lights,
 		}
 
+		// commandServer := &commandServer{}
+
 		go func() {
 			lis, err := net.Listen("tcp", z.Config.RPC.ListenAddress)
 			if err != nil {
@@ -56,6 +58,7 @@ func (z *Znet) listenRPC() {
 
 			pb.RegisterInventoryServer(grpcServer, inventoryServer)
 			pb.RegisterLightsServer(grpcServer, lightServer)
+			// pb.RegisterCommandServer(grpcServer, commandServer)
 
 			err = grpcServer.Serve(lis)
 			if err != nil {
@@ -141,9 +144,9 @@ func (l *Listener) messageHandler(messages chan things.Message) {
 	for msg := range messages {
 		log.Debugf("New message: %+v", msg)
 
-		for _, c := range msg.Commands {
-			log.Warnf("Unknown command %s", c.Name)
-		}
+		// for _, c := range msg.Commands {
+		// 	log.Warnf("Unknown command %s", c.Name)
+		// }
 
 	}
 }
