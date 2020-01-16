@@ -56,7 +56,7 @@ func (z *Znet) RecordUnknownHost(l *ldap.Conn, baseDN string, address string, ma
 		nil,
 	)
 
-	log.Infof("Searching LDAP with query: %s", searchRequest.Filter)
+	log.Debugf("Searching LDAP with query: %s", searchRequest.Filter)
 
 	sr, err := l.Search(searchRequest)
 	if err != nil {
@@ -138,7 +138,7 @@ func (h *NetworkHost) Update() (*ssh.Conn, error) {
 	// }
 	//
 	// log.Info(out)
-	log.Infof("Connection: %+v", connection)
+	log.Debugf("Connection: %+v", connection)
 
 	return nil, nil
 }
