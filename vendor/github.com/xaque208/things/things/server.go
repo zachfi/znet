@@ -26,7 +26,7 @@ func NewServer(url, topic string) (*Server, error) {
 		Topic: topic,
 	}
 
-	log.Debugf("Things Server using nats: %+v", server)
+	log.Debugf("Connecting to nats %s topic %s", url, topic)
 
 	var err error
 

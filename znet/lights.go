@@ -71,7 +71,11 @@ func (l *Lights) Off(roomName string) {
 		log.Error(err)
 	}
 
+	log.Infof("Received lights off request for %s: %+v", roomName, room)
+
 	for _, g := range groups {
+		log.Infof("Inspecting group: %+v", g)
+
 		for _, i := range room.HueIDs {
 			if g.ID == i {
 				log.Debugf("Turning off %d lights in HUE group %s", len(g.Lights), g.Name)
@@ -83,14 +87,15 @@ func (l *Lights) Off(roomName string) {
 		}
 	}
 
-	log.Debugf("Turning off rftoy lights: %+v", room.IDs)
-	for _, i := range room.IDs {
-		err := l.RFToy.Off(i)
-		if err != nil {
-			log.Error(err)
+	if len(room.IDs) > 0 {
+		log.Debugf("Turning off rftoy lights: %+v", room.IDs)
+		for _, i := range room.IDs {
+			err := l.RFToy.Off(i)
+			if err != nil {
+				log.Error(err)
+			}
 		}
 	}
-
 }
 
 func (l *Lights) Status() []huego.Light {

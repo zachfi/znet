@@ -5,7 +5,6 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/go-redis/redis"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 	"github.com/xaque208/things/things"
@@ -17,7 +16,6 @@ import (
 type Listener struct {
 	Config      *Config
 	thingServer *things.Server
-	redisClient *redis.Client
 	httpServer  *http.Server
 }
 
@@ -79,14 +77,8 @@ func NewListener(config *Config) (*Listener, error) {
 	var err error
 
 	// Attach a things server
-	log.Debugf("Using nats %s#%s", l.Config.Nats.URL, l.Config.Nats.Topic)
+	log.Debugf("Creating thingServer with config: %s#%s", l.Config.Nats.URL, l.Config.Nats.Topic)
 	l.thingServer, err = things.NewServer(l.Config.Nats.URL, l.Config.Nats.Topic)
-	if err != nil {
-		return &Listener{}, err
-	}
-
-	// Attach a redis client
-	l.redisClient, err = NewRedisClient(l.Config.Redis.Host)
 	if err != nil {
 		return &Listener{}, err
 	}
@@ -97,7 +89,6 @@ func NewListener(config *Config) (*Listener, error) {
 // Listen starts the http listener
 func (l *Listener) Listen(listenAddr string, ch chan bool) {
 	log.Infof("Listening on %s", listenAddr)
-
 	l.httpServer = httpListen(listenAddr)
 
 	messages := make(chan things.Message)
@@ -111,9 +102,6 @@ func (l *Listener) Listen(listenAddr string, ch chan bool) {
 // Shutdown closes down the to the message bus and shuts down the HTTP server.
 func (l *Listener) Shutdown() {
 	log.Info("ZNET Shutting Down")
-
-	// log.Info("closing redis connection")
-	// l.redisClient.Close()
 
 	log.Info("halting Things server")
 	l.thingServer.Close()

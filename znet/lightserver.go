@@ -37,9 +37,10 @@ func (l *lightServer) Status(ctx context.Context, request *pb.LightRequest) (*pb
 	for _, light := range lights {
 
 		x := &pb.Light{
-			Name: light.Name,
-			Type: light.Type,
-			Id:   int32(light.ID),
+			Name:  light.Name,
+			Type:  light.Type,
+			Id:    int32(light.ID),
+			State: light.State.On,
 		}
 
 		response.Lights = append(response.Lights, x)
