@@ -71,7 +71,7 @@ func listen(cmd *cobra.Command, args []string) {
 
 	z, err := znet.NewZnet(cfgFile)
 	if err != nil {
-		log.Error(err)
+		log.Fatal(err)
 	}
 
 	z.Config.Nats.URL = viper.GetString("nats.url")

@@ -29,6 +29,7 @@ message Light {
   string type = 1;
   int32 id = 2;
   string name = 3;
+  bool state = 4;
 }
 
 message LightRequest {}

@@ -77,17 +77,18 @@ func runLights(cmd *cobra.Command, args []string) {
 		log.Error(err)
 	}
 
-	log.Infof("RPC Response: %+v", res)
+	log.Debugf("RPC Response: %+v", res)
 
 	t := table.NewWriter()
 	t.SetOutputMirror(os.Stdout)
-	t.AppendHeader(table.Row{"ID", "Type"})
+	t.AppendHeader(table.Row{"ID", "Name", "Type", "On"})
 
 	for _, h := range res.Lights {
 		t.AppendRow([]interface{}{
 			h.Id,
 			h.Name,
 			h.Type,
+			h.State,
 		})
 	}
 

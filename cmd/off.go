@@ -17,11 +17,9 @@ package cmd
 import (
 	"context"
 
-	nats "github.com/nats-io/go-nats"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/xaque208/things/things"
 	pb "github.com/xaque208/znet/rpc"
 	"github.com/xaque208/znet/znet"
 	"google.golang.org/grpc"
@@ -45,47 +43,10 @@ func init() {
 }
 
 func off(cmd *cobra.Command, args []string) {
-
 	if verbose {
 		log.SetLevel(log.DebugLevel)
 	} else {
 		log.SetLevel(log.WarnLevel)
-	}
-
-	viper.SetDefault("nats.url", nats.DefaultURL)
-	viper.SetDefault("nats.topic", "things")
-
-	url := viper.GetString("nats.url")
-	topic := viper.GetString("nats.topic")
-
-	log.Debugf("Using nats %s on %s", url, topic)
-
-	client, err := things.NewClient(url, topic)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer client.Close()
-
-	natsCommand := things.Command{
-		Name: "lights",
-		Arguments: things.CommandArguments{
-			"state": "off",
-			"room":  roomName,
-		},
-	}
-
-	var commands []things.Command
-	commands = append(commands, natsCommand)
-
-	msg := things.Message{
-		Device:   "Znet CLI",
-		Commands: commands,
-	}
-
-	log.Debugf("Sending message: %+v", msg)
-	err = client.EncodedConn.Publish(topic, msg)
-	if err != nil {
-		log.Error(err)
 	}
 
 	z, err := znet.NewZnet(cfgFile)
