@@ -47,7 +47,7 @@ func NewZnet(file string) (*Znet, error) {
 		log.Warn("Not enough configuration data for LDAP client")
 	}
 
-	e, err := GetEnvironmentConfig(config.Environments, "default")
+	e, err := GetEnvironmentConfig(config.Environments, "common")
 	if err != nil {
 		log.Error(err)
 	}
@@ -111,11 +111,6 @@ func (z *Znet) ConfigureNetworkHost(host *NetworkHost, commit bool, auth *junos.
 
 	defer session.Close()
 
-	// log.Warnf("Auth: %+v", auth)
-
-	// log.Warnf("Znet: %+v", z)
-	// log.Warnf("Commit: %t", commit)
-	// log.Warnf("Host: %+v", host)
 	templates := z.TemplatesForDevice(*host)
 	// log.Debugf("Templates for host %s: %+v", host.Name, templates)
 
@@ -135,12 +130,19 @@ func (z *Znet) ConfigureNetworkHost(host *NetworkHost, commit bool, auth *junos.
 
 	err = session.Lock()
 	if err != nil {
-		return err
+		return fmt.Errorf("Unable to lock session on %s: %s", host.HostName, err)
 	}
+
+	defer func() {
+		err = session.Unlock()
+		if err != nil {
+			log.Errorf("Error unlocking session on %s: %s", host.HostName, err)
+		}
+	}()
 
 	err = session.Config(renderedTemplates, "text", false)
 	if err != nil {
-		return err
+		return fmt.Errorf("Unable to load configuration on %s: %s", host.HostName, err)
 	}
 
 	diff, err := session.Diff(0)
@@ -163,11 +165,6 @@ func (z *Znet) ConfigureNetworkHost(host *NetworkHost, commit bool, auth *junos.
 			}
 
 		}
-	}
-
-	err = session.Unlock()
-	if err != nil {
-		return err
 	}
 
 	return nil
