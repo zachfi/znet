@@ -16,6 +16,11 @@ package main
 
 import "github.com/xaque208/znet/cmd"
 
+var (
+	// VERSION is set during build
+	Version = "0.0.1"
+)
+
 func main() {
-	cmd.Execute()
+	cmd.Execute(Version)
 }
