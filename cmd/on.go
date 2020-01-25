@@ -67,7 +67,7 @@ func on(cmd *cobra.Command, args []string) {
 
 	lc := pb.NewLightsClient(conn)
 
-	req := &pb.LightZone{
+	req := &pb.LightGroup{
 		Name: roomName,
 	}
 

@@ -36,16 +36,17 @@ var lightsCmd = &cobra.Command{
 }
 
 var roomName string
+var roomBrightness uint8
 
 func init() {
 	rootCmd.AddCommand(lightsCmd)
 
 	lightsCmd.PersistentFlags().StringVarP(&roomName, "room", "r", "", "Specify a configured room")
+	lightsCmd.PersistentFlags().Uint8VarP(&roomBrightness, "brightness", "b", 254, "Set the brightness of the room")
 	lightsCmd.Flags().BoolP("verbose", "v", false, "Raise verbosity")
 }
 
 func runLights(cmd *cobra.Command, args []string) {
-
 	if verbose {
 		log.SetLevel(log.DebugLevel)
 	} else {
@@ -70,28 +71,36 @@ func runLights(cmd *cobra.Command, args []string) {
 
 	lc := pb.NewLightsClient(conn)
 
-	req := &pb.LightRequest{}
-
-	res, err := lc.Status(context.Background(), req)
-	if err != nil {
-		log.Error(err)
+	state := &pb.State{
+		On:         roomBrightness > 0,
+		Brightness: int32(roomBrightness),
 	}
 
-	log.Debugf("RPC Response: %+v", res)
+	req := &pb.LightGroup{
+		Name:  roomName,
+		State: state,
+	}
+
+	res, err := lc.Brightness(context.Background(), req)
+	if err != nil {
+		log.Errorf("RPC Error: %s Response: %+v", err, res)
+	}
 
 	t := table.NewWriter()
 	t.SetOutputMirror(os.Stdout)
-	t.AppendHeader(table.Row{"ID", "Name", "Type", "On"})
+	t.AppendHeader(table.Row{"Name", "Id", "Type", "Brightness", "On"})
 
-	for _, h := range res.Lights {
+	for _, g := range res.Groups {
 		t.AppendRow([]interface{}{
-			h.Id,
-			h.Name,
-			h.Type,
-			h.State,
+			g.Name,
+			g.Id,
+			g.Type,
+			g.State.Brightness,
+			g.State.On,
 		})
 	}
 
 	// t.AppendFooter(table.Row{"", "", "Total", 10000})
 	t.Render()
+
 }
