@@ -187,58 +187,11 @@ func (m *Host) GetType() string {
 	return ""
 }
 
-type LightZone struct {
-	Name                 string   `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Id                   int32    `protobuf:"varint,2,opt,name=id,proto3" json:"id,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *LightZone) Reset()         { *m = LightZone{} }
-func (m *LightZone) String() string { return proto.CompactTextString(m) }
-func (*LightZone) ProtoMessage()    {}
-func (*LightZone) Descriptor() ([]byte, []int) {
-	return fileDescriptor_77a6da22d6a3feb1, []int{3}
-}
-
-func (m *LightZone) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_LightZone.Unmarshal(m, b)
-}
-func (m *LightZone) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_LightZone.Marshal(b, m, deterministic)
-}
-func (m *LightZone) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_LightZone.Merge(m, src)
-}
-func (m *LightZone) XXX_Size() int {
-	return xxx_messageInfo_LightZone.Size(m)
-}
-func (m *LightZone) XXX_DiscardUnknown() {
-	xxx_messageInfo_LightZone.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_LightZone proto.InternalMessageInfo
-
-func (m *LightZone) GetName() string {
-	if m != nil {
-		return m.Name
-	}
-	return ""
-}
-
-func (m *LightZone) GetId() int32 {
-	if m != nil {
-		return m.Id
-	}
-	return 0
-}
-
 type Light struct {
 	Type                 string   `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"`
 	Id                   int32    `protobuf:"varint,2,opt,name=id,proto3" json:"id,omitempty"`
 	Name                 string   `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	State                bool     `protobuf:"varint,4,opt,name=state,proto3" json:"state,omitempty"`
+	State                *State   `protobuf:"bytes,4,opt,name=state,proto3" json:"state,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -248,7 +201,7 @@ func (m *Light) Reset()         { *m = Light{} }
 func (m *Light) String() string { return proto.CompactTextString(m) }
 func (*Light) ProtoMessage()    {}
 func (*Light) Descriptor() ([]byte, []int) {
-	return fileDescriptor_77a6da22d6a3feb1, []int{4}
+	return fileDescriptor_77a6da22d6a3feb1, []int{3}
 }
 
 func (m *Light) XXX_Unmarshal(b []byte) error {
@@ -290,11 +243,129 @@ func (m *Light) GetName() string {
 	return ""
 }
 
-func (m *Light) GetState() bool {
+func (m *Light) GetState() *State {
 	if m != nil {
 		return m.State
 	}
+	return nil
+}
+
+type LightGroup struct {
+	Type                 string   `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"`
+	Id                   int32    `protobuf:"varint,2,opt,name=id,proto3" json:"id,omitempty"`
+	Name                 string   `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	State                *State   `protobuf:"bytes,4,opt,name=state,proto3" json:"state,omitempty"`
+	Lights               []int32  `protobuf:"varint,5,rep,packed,name=lights,proto3" json:"lights,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *LightGroup) Reset()         { *m = LightGroup{} }
+func (m *LightGroup) String() string { return proto.CompactTextString(m) }
+func (*LightGroup) ProtoMessage()    {}
+func (*LightGroup) Descriptor() ([]byte, []int) {
+	return fileDescriptor_77a6da22d6a3feb1, []int{4}
+}
+
+func (m *LightGroup) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_LightGroup.Unmarshal(m, b)
+}
+func (m *LightGroup) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_LightGroup.Marshal(b, m, deterministic)
+}
+func (m *LightGroup) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_LightGroup.Merge(m, src)
+}
+func (m *LightGroup) XXX_Size() int {
+	return xxx_messageInfo_LightGroup.Size(m)
+}
+func (m *LightGroup) XXX_DiscardUnknown() {
+	xxx_messageInfo_LightGroup.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_LightGroup proto.InternalMessageInfo
+
+func (m *LightGroup) GetType() string {
+	if m != nil {
+		return m.Type
+	}
+	return ""
+}
+
+func (m *LightGroup) GetId() int32 {
+	if m != nil {
+		return m.Id
+	}
+	return 0
+}
+
+func (m *LightGroup) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
+func (m *LightGroup) GetState() *State {
+	if m != nil {
+		return m.State
+	}
+	return nil
+}
+
+func (m *LightGroup) GetLights() []int32 {
+	if m != nil {
+		return m.Lights
+	}
+	return nil
+}
+
+type State struct {
+	On                   bool     `protobuf:"varint,1,opt,name=on,proto3" json:"on,omitempty"`
+	Brightness           int32    `protobuf:"varint,2,opt,name=brightness,proto3" json:"brightness,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *State) Reset()         { *m = State{} }
+func (m *State) String() string { return proto.CompactTextString(m) }
+func (*State) ProtoMessage()    {}
+func (*State) Descriptor() ([]byte, []int) {
+	return fileDescriptor_77a6da22d6a3feb1, []int{5}
+}
+
+func (m *State) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_State.Unmarshal(m, b)
+}
+func (m *State) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_State.Marshal(b, m, deterministic)
+}
+func (m *State) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_State.Merge(m, src)
+}
+func (m *State) XXX_Size() int {
+	return xxx_messageInfo_State.Size(m)
+}
+func (m *State) XXX_DiscardUnknown() {
+	xxx_messageInfo_State.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_State proto.InternalMessageInfo
+
+func (m *State) GetOn() bool {
+	if m != nil {
+		return m.On
+	}
 	return false
+}
+
+func (m *State) GetBrightness() int32 {
+	if m != nil {
+		return m.Brightness
+	}
+	return 0
 }
 
 type LightRequest struct {
@@ -307,7 +378,7 @@ func (m *LightRequest) Reset()         { *m = LightRequest{} }
 func (m *LightRequest) String() string { return proto.CompactTextString(m) }
 func (*LightRequest) ProtoMessage()    {}
 func (*LightRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_77a6da22d6a3feb1, []int{5}
+	return fileDescriptor_77a6da22d6a3feb1, []int{6}
 }
 
 func (m *LightRequest) XXX_Unmarshal(b []byte) error {
@@ -329,17 +400,18 @@ func (m *LightRequest) XXX_DiscardUnknown() {
 var xxx_messageInfo_LightRequest proto.InternalMessageInfo
 
 type LightResponse struct {
-	Lights               []*Light `protobuf:"bytes,1,rep,name=lights,proto3" json:"lights,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	Lights               []*Light      `protobuf:"bytes,1,rep,name=lights,proto3" json:"lights,omitempty"`
+	Groups               []*LightGroup `protobuf:"bytes,2,rep,name=groups,proto3" json:"groups,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}      `json:"-"`
+	XXX_unrecognized     []byte        `json:"-"`
+	XXX_sizecache        int32         `json:"-"`
 }
 
 func (m *LightResponse) Reset()         { *m = LightResponse{} }
 func (m *LightResponse) String() string { return proto.CompactTextString(m) }
 func (*LightResponse) ProtoMessage()    {}
 func (*LightResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_77a6da22d6a3feb1, []int{6}
+	return fileDescriptor_77a6da22d6a3feb1, []int{7}
 }
 
 func (m *LightResponse) XXX_Unmarshal(b []byte) error {
@@ -367,12 +439,20 @@ func (m *LightResponse) GetLights() []*Light {
 	return nil
 }
 
+func (m *LightResponse) GetGroups() []*LightGroup {
+	if m != nil {
+		return m.Groups
+	}
+	return nil
+}
+
 func init() {
 	proto.RegisterType((*SearchRequest)(nil), "SearchRequest")
 	proto.RegisterType((*SearchResponse)(nil), "SearchResponse")
 	proto.RegisterType((*Host)(nil), "Host")
-	proto.RegisterType((*LightZone)(nil), "LightZone")
 	proto.RegisterType((*Light)(nil), "Light")
+	proto.RegisterType((*LightGroup)(nil), "LightGroup")
+	proto.RegisterType((*State)(nil), "State")
 	proto.RegisterType((*LightRequest)(nil), "LightRequest")
 	proto.RegisterType((*LightResponse)(nil), "LightResponse")
 }
@@ -380,30 +460,34 @@ func init() {
 func init() { proto.RegisterFile("rpc.proto", fileDescriptor_77a6da22d6a3feb1) }
 
 var fileDescriptor_77a6da22d6a3feb1 = []byte{
-	// 360 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x92, 0x51, 0x4b, 0xfb, 0x30,
-	0x14, 0xc5, 0xd7, 0x76, 0xed, 0x7f, 0xbd, 0xfb, 0xaf, 0xc2, 0x65, 0x48, 0x99, 0x20, 0x23, 0xbe,
-	0x4c, 0xc4, 0x0c, 0xe6, 0x8b, 0x1f, 0x41, 0x41, 0x18, 0x74, 0xec, 0xc5, 0xb7, 0xba, 0x66, 0xae,
-	0xb8, 0x25, 0x35, 0xc9, 0x06, 0x03, 0x9f, 0xfd, 0xdc, 0xd2, 0x34, 0xed, 0x36, 0x15, 0x7c, 0xcb,
-	0x39, 0xb9, 0xf9, 0xdd, 0xd3, 0x7b, 0x0b, 0xa1, 0x2c, 0x16, 0xb4, 0x90, 0x42, 0x0b, 0x32, 0x87,
-	0xde, 0x8c, 0xa5, 0x72, 0xb1, 0x4a, 0xd8, 0xfb, 0x96, 0x29, 0x8d, 0x7d, 0xf0, 0x57, 0x42, 0x69,
-	0x15, 0x3b, 0x43, 0x67, 0x14, 0x26, 0x95, 0xc0, 0x73, 0x08, 0x32, 0xb1, 0x49, 0x73, 0x1e, 0xbb,
-	0xc6, 0xb6, 0xaa, 0xf4, 0xdf, 0x98, 0xe4, 0x6c, 0x1d, 0x7b, 0x95, 0x5f, 0x29, 0x72, 0x0b, 0x51,
-	0x8d, 0x55, 0x85, 0xe0, 0x8a, 0xe1, 0xc5, 0x81, 0xeb, 0x8d, 0xba, 0x13, 0x9f, 0x3e, 0x08, 0xa5,
-	0x2d, 0x9e, 0x7c, 0x3a, 0xd0, 0x2e, 0x35, 0x22, 0xb4, 0x79, 0xba, 0x61, 0xb6, 0xb9, 0x39, 0xe3,
-	0x10, 0xba, 0x19, 0x53, 0x0b, 0x99, 0x17, 0x3a, 0x17, 0x75, 0x80, 0x63, 0x0b, 0x07, 0xd0, 0x29,
-	0xd6, 0xa9, 0x5e, 0x0a, 0xb9, 0xb1, 0x39, 0x1a, 0x8d, 0x31, 0xfc, 0xdb, 0x31, 0xa9, 0xca, 0x97,
-	0x6d, 0x73, 0x55, 0xcb, 0xb2, 0x97, 0xde, 0x17, 0x2c, 0xf6, 0xab, 0x5e, 0xe5, 0x99, 0x8c, 0x21,
-	0x7c, 0xca, 0x5f, 0x57, 0xfa, 0x59, 0x70, 0xf6, 0x6b, 0x98, 0x08, 0xdc, 0x3c, 0x33, 0x19, 0xfc,
-	0xc4, 0xcd, 0x33, 0x32, 0x07, 0xdf, 0x3c, 0x68, 0x68, 0xce, 0x81, 0xf6, 0xbd, 0xb8, 0x01, 0x7a,
-	0x47, 0xc0, 0x3e, 0xf8, 0x4a, 0xa7, 0x9a, 0x99, 0x74, 0x9d, 0xa4, 0x12, 0x24, 0x82, 0xff, 0x06,
-	0x6b, 0xb7, 0x42, 0xc6, 0xd0, 0xb3, 0xda, 0x8e, 0xf3, 0x12, 0x82, 0x75, 0x69, 0xd4, 0xf3, 0x0c,
-	0x68, 0x75, 0x6f, 0xdd, 0xc9, 0x3d, 0x84, 0x8f, 0x7c, 0xc7, 0xb8, 0x16, 0x72, 0x8f, 0x37, 0x10,
-	0x54, 0xdb, 0xc0, 0x88, 0x9e, 0x6c, 0x7b, 0x70, 0x46, 0x4f, 0xd7, 0x44, 0x5a, 0x93, 0x0f, 0x08,
-	0x0c, 0x4a, 0xe1, 0x15, 0x78, 0xd3, 0xe5, 0x12, 0x81, 0x36, 0x23, 0x19, 0x44, 0xf4, 0x24, 0x06,
-	0x69, 0x21, 0x01, 0x77, 0xca, 0xff, 0xa8, 0xb9, 0x86, 0x60, 0xa6, 0x53, 0xbd, 0x55, 0xd8, 0xa3,
-	0xc7, 0x9f, 0xf5, 0xb3, 0xf4, 0x25, 0x30, 0xbf, 0xe5, 0xdd, 0x57, 0x00, 0x00, 0x00, 0xff, 0xff,
-	0x99, 0x0d, 0x05, 0xe0, 0xa3, 0x02, 0x00, 0x00,
+	// 428 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x93, 0xcf, 0x8e, 0xd3, 0x30,
+	0x10, 0xc6, 0x37, 0x49, 0x6d, 0xb6, 0x53, 0x1a, 0xa4, 0x11, 0x42, 0x51, 0x41, 0xab, 0xca, 0xcb,
+	0xa1, 0x68, 0x85, 0x0f, 0xe1, 0x00, 0x67, 0x2e, 0x80, 0xb4, 0xd2, 0x4a, 0x59, 0x38, 0x72, 0xc8,
+	0x36, 0xee, 0x36, 0xa2, 0xb5, 0x83, 0xed, 0xae, 0xb4, 0x3c, 0x00, 0x2f, 0xc3, 0x4b, 0x22, 0xff,
+	0x69, 0x9a, 0x4a, 0x48, 0x3d, 0x71, 0xf3, 0xf7, 0xcd, 0x64, 0x7e, 0x63, 0xcf, 0x04, 0xc6, 0xba,
+	0x5b, 0xf2, 0x4e, 0x2b, 0xab, 0xd8, 0x37, 0x98, 0xde, 0x8a, 0x5a, 0x2f, 0xd7, 0x95, 0xf8, 0xb9,
+	0x13, 0xc6, 0xe2, 0x73, 0x20, 0x6b, 0x65, 0xac, 0x29, 0x92, 0x79, 0xb2, 0x18, 0x57, 0x41, 0xe0,
+	0x0b, 0xa0, 0x8d, 0xda, 0xd6, 0xad, 0x2c, 0x52, 0x6f, 0x47, 0xe5, 0xfc, 0x1f, 0x42, 0x4b, 0xb1,
+	0x29, 0xb2, 0xe0, 0x07, 0xc5, 0xde, 0x42, 0xbe, 0x2f, 0x6b, 0x3a, 0x25, 0x8d, 0xc0, 0x97, 0x87,
+	0xba, 0xd9, 0x62, 0x52, 0x12, 0xfe, 0x59, 0x19, 0x1b, 0xcb, 0xb3, 0xdf, 0x09, 0x8c, 0x9c, 0x46,
+	0x84, 0x91, 0xac, 0xb7, 0x22, 0xc2, 0xfd, 0x19, 0xe7, 0x30, 0x69, 0x84, 0x59, 0xea, 0xb6, 0xb3,
+	0xad, 0xda, 0x37, 0x30, 0xb4, 0x70, 0x06, 0xe7, 0xdd, 0xa6, 0xb6, 0x2b, 0xa5, 0xb7, 0xb1, 0x8f,
+	0x5e, 0x63, 0x01, 0x4f, 0x1e, 0x84, 0x36, 0xee, 0xcb, 0x91, 0x0f, 0xed, 0xa5, 0x63, 0xd9, 0xc7,
+	0x4e, 0x14, 0x24, 0xb0, 0xdc, 0x99, 0x7d, 0x07, 0x72, 0xdd, 0xde, 0xaf, 0x6d, 0x1f, 0x4c, 0x0e,
+	0x41, 0xcc, 0x21, 0x6d, 0x1b, 0xcf, 0x27, 0x55, 0xda, 0x36, 0x7d, 0xb3, 0xd9, 0xa0, 0xd9, 0x57,
+	0x40, 0x8c, 0xad, 0xad, 0xf0, 0xb0, 0x49, 0x49, 0xf9, 0xad, 0x53, 0x55, 0x30, 0xd9, 0x2f, 0x00,
+	0x5f, 0xfe, 0x93, 0x56, 0xbb, 0xee, 0xff, 0x30, 0xdc, 0x48, 0x36, 0x8e, 0x61, 0x0a, 0x32, 0xcf,
+	0x16, 0xa4, 0x8a, 0x8a, 0xbd, 0x07, 0xe2, 0xf3, 0x1c, 0x42, 0x49, 0x0f, 0x3d, 0xaf, 0x52, 0x25,
+	0xf1, 0x02, 0xe0, 0x4e, 0xbb, 0x1c, 0x29, 0x8c, 0x89, 0xe8, 0x81, 0xc3, 0x72, 0x78, 0xea, 0x9b,
+	0x8e, 0x1b, 0xc2, 0xbe, 0xc2, 0x34, 0xea, 0x38, 0xda, 0x8b, 0x9e, 0x18, 0x66, 0x4b, 0x79, 0x88,
+	0x47, 0x17, 0x2f, 0x81, 0xde, 0xbb, 0x0b, 0xbb, 0xe2, 0x2e, 0x3e, 0xe1, 0x87, 0x47, 0xa8, 0x62,
+	0xa8, 0xfc, 0x00, 0xe3, 0x2f, 0xf2, 0x41, 0x48, 0xab, 0xf4, 0x23, 0x5e, 0x01, 0x0d, 0xeb, 0x83,
+	0x39, 0x3f, 0x5a, 0xcf, 0xd9, 0x33, 0x7e, 0xbc, 0x57, 0xec, 0xac, 0xfc, 0x93, 0x00, 0xbd, 0x0e,
+	0xa4, 0xd7, 0x90, 0xdd, 0xac, 0x56, 0x38, 0x04, 0xcc, 0x72, 0x7e, 0xd4, 0x2d, 0x3b, 0xc3, 0x4b,
+	0x48, 0x6f, 0xe4, 0xa9, 0xa4, 0x37, 0x40, 0xdd, 0x73, 0xed, 0x0c, 0x4e, 0xf9, 0xf0, 0xfa, 0xff,
+	0x48, 0xbd, 0x02, 0xf8, 0xd8, 0x3f, 0xd7, 0x89, 0xba, 0x77, 0xd4, 0xff, 0x77, 0xef, 0xfe, 0x06,
+	0x00, 0x00, 0xff, 0xff, 0x77, 0x2c, 0x9d, 0x58, 0x84, 0x03, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -482,9 +566,10 @@ var _Inventory_serviceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type LightsClient interface {
-	Off(ctx context.Context, in *LightZone, opts ...grpc.CallOption) (*LightResponse, error)
-	On(ctx context.Context, in *LightZone, opts ...grpc.CallOption) (*LightResponse, error)
+	Off(ctx context.Context, in *LightGroup, opts ...grpc.CallOption) (*LightResponse, error)
+	On(ctx context.Context, in *LightGroup, opts ...grpc.CallOption) (*LightResponse, error)
 	Status(ctx context.Context, in *LightRequest, opts ...grpc.CallOption) (*LightResponse, error)
+	Brightness(ctx context.Context, in *LightGroup, opts ...grpc.CallOption) (*LightResponse, error)
 }
 
 type lightsClient struct {
@@ -495,7 +580,7 @@ func NewLightsClient(cc *grpc.ClientConn) LightsClient {
 	return &lightsClient{cc}
 }
 
-func (c *lightsClient) Off(ctx context.Context, in *LightZone, opts ...grpc.CallOption) (*LightResponse, error) {
+func (c *lightsClient) Off(ctx context.Context, in *LightGroup, opts ...grpc.CallOption) (*LightResponse, error) {
 	out := new(LightResponse)
 	err := c.cc.Invoke(ctx, "/Lights/Off", in, out, opts...)
 	if err != nil {
@@ -504,7 +589,7 @@ func (c *lightsClient) Off(ctx context.Context, in *LightZone, opts ...grpc.Call
 	return out, nil
 }
 
-func (c *lightsClient) On(ctx context.Context, in *LightZone, opts ...grpc.CallOption) (*LightResponse, error) {
+func (c *lightsClient) On(ctx context.Context, in *LightGroup, opts ...grpc.CallOption) (*LightResponse, error) {
 	out := new(LightResponse)
 	err := c.cc.Invoke(ctx, "/Lights/On", in, out, opts...)
 	if err != nil {
@@ -522,11 +607,21 @@ func (c *lightsClient) Status(ctx context.Context, in *LightRequest, opts ...grp
 	return out, nil
 }
 
+func (c *lightsClient) Brightness(ctx context.Context, in *LightGroup, opts ...grpc.CallOption) (*LightResponse, error) {
+	out := new(LightResponse)
+	err := c.cc.Invoke(ctx, "/Lights/Brightness", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // LightsServer is the server API for Lights service.
 type LightsServer interface {
-	Off(context.Context, *LightZone) (*LightResponse, error)
-	On(context.Context, *LightZone) (*LightResponse, error)
+	Off(context.Context, *LightGroup) (*LightResponse, error)
+	On(context.Context, *LightGroup) (*LightResponse, error)
 	Status(context.Context, *LightRequest) (*LightResponse, error)
+	Brightness(context.Context, *LightGroup) (*LightResponse, error)
 }
 
 func RegisterLightsServer(s *grpc.Server, srv LightsServer) {
@@ -534,7 +629,7 @@ func RegisterLightsServer(s *grpc.Server, srv LightsServer) {
 }
 
 func _Lights_Off_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LightZone)
+	in := new(LightGroup)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -546,13 +641,13 @@ func _Lights_Off_Handler(srv interface{}, ctx context.Context, dec func(interfac
 		FullMethod: "/Lights/Off",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LightsServer).Off(ctx, req.(*LightZone))
+		return srv.(LightsServer).Off(ctx, req.(*LightGroup))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Lights_On_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LightZone)
+	in := new(LightGroup)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -564,7 +659,7 @@ func _Lights_On_Handler(srv interface{}, ctx context.Context, dec func(interface
 		FullMethod: "/Lights/On",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LightsServer).On(ctx, req.(*LightZone))
+		return srv.(LightsServer).On(ctx, req.(*LightGroup))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -587,6 +682,24 @@ func _Lights_Status_Handler(srv interface{}, ctx context.Context, dec func(inter
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Lights_Brightness_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LightGroup)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LightsServer).Brightness(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Lights/Brightness",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LightsServer).Brightness(ctx, req.(*LightGroup))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Lights_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "Lights",
 	HandlerType: (*LightsServer)(nil),
@@ -602,6 +715,10 @@ var _Lights_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Status",
 			Handler:    _Lights_Status_Handler,
+		},
+		{
+			MethodName: "Brightness",
+			Handler:    _Lights_Brightness_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
