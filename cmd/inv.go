@@ -52,7 +52,7 @@ func runInv(cmd *cobra.Command, args []string) {
 	if verbose {
 		log.SetLevel(log.DebugLevel)
 	} else {
-		log.SetLevel(log.WarnLevel)
+		log.SetLevel(log.InfoLevel)
 	}
 
 	z, err := znet.NewZnet(cfgFile)
@@ -98,10 +98,11 @@ func runInv(cmd *cobra.Command, args []string) {
 
 	t = table.NewWriter()
 	t.SetOutputMirror(os.Stdout)
-	t.AppendHeader(table.Row{"IP", "MAC"})
+	t.AppendHeader(table.Row{"Name", "IP", "MAC"})
 
 	for _, h := range res.UnknownHosts {
 		t.AppendRow([]interface{}{
+			h.Name,
 			h.Ip,
 			h.Mac,
 		})
@@ -112,9 +113,9 @@ func runInv(cmd *cobra.Command, args []string) {
 
 	if adopt != "" {
 		for _, h := range res.UnknownHosts {
-			log.Infof("looking for adopt %s", adopt)
 			if strings.ToLower(h.Mac) == strings.ToLower(adopt) {
 				x := znet.UnknownHost{
+					Name:       h.Name,
 					MACAddress: h.Mac,
 					IP:         h.Ip,
 				}

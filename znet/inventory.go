@@ -29,7 +29,7 @@ func (i *Inventory) NetworkHosts() ([]NetworkHost, error) {
 		nil,
 	)
 
-	log.Debugf("Searching LDAP base %s with query: %s: %+v", i.config.BaseDN, searchRequest.Filter, i.ldapClient)
+	log.Debugf("Searching LDAP base %s with query: %s", i.config.BaseDN, searchRequest.Filter)
 
 	if i.ldapClient.IsClosing() {
 		log.Warnf("LDAP connection is closing")

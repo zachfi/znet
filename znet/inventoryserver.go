@@ -37,8 +37,9 @@ func (r *inventoryServer) Search(ctx context.Context, request *pb.SearchRequest)
 
 	for _, h := range unknownHosts {
 		host := &pb.UnknownHost{
-			Ip:  h.IP,
-			Mac: h.MACAddress,
+			Name: h.Name,
+			Ip:   h.IP,
+			Mac:  h.MACAddress,
 		}
 
 		response.UnknownHosts = append(response.UnknownHosts, host)

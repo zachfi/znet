@@ -187,7 +187,7 @@ func (z *Znet) AdoptUnknownHost(u UnknownHost, baseDN string) {
 	a := ldap.NewAddRequest(dn, []ldap.Control{})
 	a.Attribute("objectClass", []string{"netHost", "top"})
 	a.Attribute("cn", []string{cn})
-	a.Attribute("v4Address", []string{u.IP})
+	// a.Attribute("v4Address", []string{u.IP})
 	a.Attribute("macAddress", []string{u.MACAddress})
 
 	err = z.Inventory.ldapClient.Add(a)
@@ -195,10 +195,11 @@ func (z *Znet) AdoptUnknownHost(u UnknownHost, baseDN string) {
 		log.Error(err)
 	}
 
-	delDN := fmt.Sprintf("cn=%s,ou=unknown,ou=network,dc=znet")
+	delDN := fmt.Sprintf("cn=%s,cn=unknown,ou=network,dc=znet", u.Name)
+
 	d := ldap.NewDelRequest(delDN, []ldap.Control{})
 
-	log.Infof("Deleting object: %s", delDN)
+	log.Infof("Deleting object: %s", d)
 	err = z.Inventory.ldapClient.Del(d)
 	if err != nil {
 		log.Error(err)
