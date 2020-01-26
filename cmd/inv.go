@@ -113,7 +113,7 @@ func runInv(cmd *cobra.Command, args []string) {
 
 	if adopt != "" {
 		for _, h := range res.UnknownHosts {
-			if strings.ToLower(h.Mac) == strings.ToLower(adopt) {
+			if strings.EqualFold(h.Mac, adopt) {
 				x := znet.UnknownHost{
 					Name:       h.Name,
 					MACAddress: h.Mac,

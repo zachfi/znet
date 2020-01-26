@@ -32,12 +32,14 @@ func NewLDAPClient(config LDAPConfig) (*ldap.Conn, error) {
 		return &ldap.Conn{}, err
 	}
 
+	// Handle reconnection
 	go func() {
 		t := time.NewTicker(2 * time.Second)
 		for {
 			<-t.C
 
 			if l.IsClosing() {
+				log.Debugf("Old L is closing: %+v", l)
 				log.Debug("LDAP Reconnecting...")
 				newl, err := ldap.DialTLS(
 					"tcp",

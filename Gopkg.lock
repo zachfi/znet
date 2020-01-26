@@ -524,18 +524,6 @@
   version = "v2.2.6"
 
 [[projects]]
-  name = "gopkg.in/asn1-ber.v1"
-  packages = ["."]
-  revision = "f715ec2f112d1e4195b827ad68cf44017a3ef2b1"
-  version = "v1.3"
-
-[[projects]]
-  name = "gopkg.in/ldap.v2"
-  packages = ["."]
-  revision = "bb7a9ca6e4fbc2129e3db588a34bc970ffe811a9"
-  version = "v2.5.1"
-
-[[projects]]
   name = "gopkg.in/square/go-jose.v2"
   packages = [
     ".",
@@ -555,6 +543,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "52365bb72602685183a9a8760016d49c45396f877ff42e22e951b91624029eab"
+  inputs-digest = "731888825e7798bf454215a03629b9bf981b851fa2516c7ac9520a199cf8027e"
   solver-name = "gps-cdcl"
   solver-version = 1
