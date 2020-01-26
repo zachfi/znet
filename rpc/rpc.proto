@@ -6,7 +6,15 @@ message SearchRequest {
   string kernel = 3;
 }
 
-message SearchResponse { repeated Host hosts = 1; }
+message SearchResponse {
+  repeated Host hosts = 1;
+  repeated UnknownHost unknown_hosts = 2;
+}
+
+message UnknownHost {
+  string mac = 1;
+  string ip = 2;
+}
 
 message Host {
   string name = 1;
@@ -45,7 +53,7 @@ message LightRequest {}
 message LightResponse {
   repeated Light lights = 1;
   repeated LightGroup groups = 2;
-  }
+}
 
 service Lights {
   rpc Off(LightGroup) returns (LightResponse) {}
