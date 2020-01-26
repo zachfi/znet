@@ -1,6 +1,7 @@
 package znet
 
 type UnknownHost struct {
+	Name       string
 	IP         string
 	MACAddress string
 }

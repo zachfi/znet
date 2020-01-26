@@ -7,11 +7,10 @@ import (
 	"os"
 	"strings"
 
+	ldap "github.com/go-ldap/ldap"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
-
-	ldap "gopkg.in/ldap.v2"
 )
 
 // NetworkHost is a device that connects to the network.
@@ -58,7 +57,7 @@ func (z *Znet) RecordUnknownHost(baseDN string, address string, mac string) erro
 
 	log.Debugf("Searching LDAP with query: %s", searchRequest.Filter)
 
-	sr, err := z.ldapClient.Search(searchRequest)
+	sr, err := z.Inventory.ldapClient.Search(searchRequest)
 	if err != nil {
 		return err
 	}
@@ -72,12 +71,12 @@ func (z *Znet) RecordUnknownHost(baseDN string, address string, mac string) erro
 
 	dn := fmt.Sprintf("cn=%s,%s", cn, baseDN)
 
-	a := ldap.NewAddRequest(dn)
+	a := ldap.NewAddRequest(dn, []ldap.Control{})
 	a.Attribute("objectClass", []string{"unknownNetHost", "top"})
 	a.Attribute("cn", []string{cn})
 	a.Attribute("v4Address", []string{address})
 	a.Attribute("macAddress", []string{mac})
-	err = z.ldapClient.Add(a)
+	err = z.Inventory.ldapClient.Add(a)
 	if err != nil {
 		log.Errorf("%+v", a)
 		return err

@@ -3,14 +3,18 @@ package znet
 import (
 	"crypto/tls"
 	"fmt"
+	"time"
 
-	ldap "gopkg.in/ldap.v2"
+	ldap "github.com/go-ldap/ldap"
+	log "github.com/sirupsen/logrus"
 )
 
 // NewLDAPClient constructs an LDAP client to return.
 func NewLDAPClient(config LDAPConfig) (*ldap.Conn, error) {
 
-	// log.Warnf("%+v", config)
+	if config.BindDN == "" || config.BindPW == "" {
+		return &ldap.Conn{}, fmt.Errorf("Incomplete LDAP credentials")
+	}
 
 	l, err := ldap.DialTLS(
 		"tcp",
@@ -27,6 +31,34 @@ func NewLDAPClient(config LDAPConfig) (*ldap.Conn, error) {
 	if err != nil {
 		return &ldap.Conn{}, err
 	}
+
+	go func() {
+		t := time.NewTicker(2 * time.Second)
+		for {
+			<-t.C
+
+			if l.IsClosing() {
+				log.Debug("LDAP Reconnecting...")
+				newl, err := ldap.DialTLS(
+					"tcp",
+					fmt.Sprintf("%s:%d", config.Host, 636),
+					&tls.Config{InsecureSkipVerify: true},
+				)
+				if err != nil {
+					log.Error(err)
+				}
+
+				err = newl.Bind(config.BindDN, config.BindPW)
+				if err != nil {
+					log.Error(err)
+				}
+
+				log.Debugf("New L is: %+v", newl)
+
+				*l = *newl
+			}
+		}
+	}()
 
 	return l, nil
 }

@@ -3,8 +3,8 @@ package znet
 import (
 	"fmt"
 
+	ldap "github.com/go-ldap/ldap"
 	log "github.com/sirupsen/logrus"
-	ldap "gopkg.in/ldap.v2"
 )
 
 type Inventory struct {
@@ -29,7 +29,11 @@ func (i *Inventory) NetworkHosts() ([]NetworkHost, error) {
 		nil,
 	)
 
-	log.Debugf("Searching LDAP base %s with query: %s", i.config.BaseDN, searchRequest.Filter)
+	log.Debugf("Searching LDAP base %s with query: %s: %+v", i.config.BaseDN, searchRequest.Filter, i.ldapClient)
+
+	if i.ldapClient.IsClosing() {
+		log.Warnf("LDAP connection is closing")
+	}
 
 	sr, err := i.ldapClient.Search(searchRequest)
 	if err != nil {
@@ -121,6 +125,10 @@ func (i *Inventory) UnknownHosts() ([]UnknownHost, error) {
 
 		for _, a := range e.Attributes {
 			switch a.Name {
+			case "cn":
+				{
+					h.Name = stringValues(a)[0]
+				}
 			case "v4Address":
 				{
 					h.IP = stringValues(a)[0]

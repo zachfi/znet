@@ -17,6 +17,7 @@ package cmd
 import (
 	"context"
 	"os"
+	"strings"
 
 	"github.com/jedib0t/go-pretty/table"
 	log "github.com/sirupsen/logrus"
@@ -36,12 +37,15 @@ var invCmd = &cobra.Command{
 }
 
 var rpcServer string
+var adopt string
 
 func init() {
 	rootCmd.AddCommand(invCmd)
 
 	invCmd.PersistentFlags().StringVarP(&rpcServer, "rpc", "r", ":8800", "Specify RPC server address")
 	invCmd.Flags().BoolP("verbose", "v", false, "Raise verbosity")
+
+	invCmd.PersistentFlags().StringVarP(&adopt, "adopt", "a", "", "Adopt an unknown host by MAC address")
 }
 
 func runInv(cmd *cobra.Command, args []string) {
@@ -105,5 +109,18 @@ func runInv(cmd *cobra.Command, args []string) {
 
 	// t.AppendFooter(table.Row{"", "", "Total", 10000})
 	t.Render()
+
+	if adopt != "" {
+		for _, h := range res.UnknownHosts {
+			log.Infof("looking for adopt %s", adopt)
+			if strings.ToLower(h.Mac) == strings.ToLower(adopt) {
+				x := znet.UnknownHost{
+					MACAddress: h.Mac,
+					IP:         h.Ip,
+				}
+				z.AdoptUnknownHost(x, "cn=new,ou=network,dc=znet")
+			}
+		}
+	}
 
 }

@@ -1,8 +1,8 @@
 package znet
 
 import (
-	"github.com/prometheus/common/log"
-	ldap "gopkg.in/ldap.v2"
+	ldap "github.com/go-ldap/ldap"
+	log "github.com/sirupsen/logrus"
 )
 
 type NetworkZone struct {

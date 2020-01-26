@@ -8,10 +8,11 @@ import (
 	"path/filepath"
 
 	"github.com/alecthomas/template"
+	ldap "github.com/go-ldap/ldap"
 	"github.com/imdario/mergo"
 	junos "github.com/scottdware/go-junos"
 	log "github.com/sirupsen/logrus"
-	ldap "gopkg.in/ldap.v2"
+	"github.com/tcnksm/go-input"
 )
 
 // Znet is the core object for this project.  It keeps track of the data, configuration and flow control for starting the server process.
@@ -22,9 +23,9 @@ type Znet struct {
 	Environment map[string]string
 	listener    *Listener
 	// TODO deprecate ldapclient use at Znet, move to Inventory
-	ldapClient *ldap.Conn
-	Inventory  *Inventory
-	Lights     *Lights
+	// ldapClient *ldap.Conn
+	Inventory *Inventory
+	Lights    *Lights
 }
 
 // NewZnet creates and returns a new Znet object.
@@ -36,15 +37,9 @@ func NewZnet(file string) (*Znet, error) {
 	}
 
 	var ldapClient *ldap.Conn
-	if config.LDAP.BindDN != "" && config.LDAP.BindPW != "" {
-		ldapConn, err := NewLDAPClient(config.LDAP)
-		if err != nil {
-			return &Znet{}, fmt.Errorf("Failed LDAP connection: %s", err)
-		}
-
-		ldapClient = ldapConn
-	} else {
-		log.Warn("Not enough configuration data for LDAP client")
+	ldapClient, err = NewLDAPClient(config.LDAP)
+	if err != nil {
+		return &Znet{}, fmt.Errorf("Failed LDAP connection: %s", err)
 	}
 
 	e, err := GetEnvironmentConfig(config.Environments, "common")
@@ -66,7 +61,6 @@ func NewZnet(file string) (*Znet, error) {
 
 	z := &Znet{
 		Config:      config,
-		ldapClient:  ldapClient,
 		Environment: environment,
 		Inventory:   inventory,
 		Lights:      lights,
@@ -168,6 +162,47 @@ func (z *Znet) ConfigureNetworkHost(host *NetworkHost, commit bool, auth *junos.
 	}
 
 	return nil
+}
+
+func (z *Znet) AdoptUnknownHost(u UnknownHost, baseDN string) {
+	log.Infof("Adopting host: %+v", u)
+
+	ui := &input.UI{
+		Writer: os.Stdout,
+		Reader: os.Stdin,
+	}
+
+	query := "Which CN to assign?"
+	cn, err := ui.Ask(query, &input.Options{
+		Default:  "newhost",
+		Required: true,
+		Loop:     true,
+	})
+	if err != nil {
+		log.Error(err)
+	}
+
+	dn := fmt.Sprintf("cn=%s,%s", cn, baseDN)
+
+	a := ldap.NewAddRequest(dn, []ldap.Control{})
+	a.Attribute("objectClass", []string{"netHost", "top"})
+	a.Attribute("cn", []string{cn})
+	a.Attribute("v4Address", []string{u.IP})
+	a.Attribute("macAddress", []string{u.MACAddress})
+
+	err = z.Inventory.ldapClient.Add(a)
+	if err != nil {
+		log.Error(err)
+	}
+
+	delDN := fmt.Sprintf("cn=%s,ou=unknown,ou=network,dc=znet")
+	d := ldap.NewDelRequest(delDN, []ldap.Control{})
+
+	log.Infof("Deleting object: %s", delDN)
+	err = z.Inventory.ldapClient.Del(d)
+	if err != nil {
+		log.Error(err)
+	}
 }
 
 // TemplateStringsForDevice renders a list of template strings given a host.
@@ -290,7 +325,6 @@ func (z *Znet) RenderHostTemplateFile(host NetworkHost, path string) string {
 // Close calls
 func (z *Znet) Close() error {
 
-	z.ldapClient.Close()
 	z.Inventory.ldapClient.Close()
 
 	return nil
