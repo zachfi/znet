@@ -47,6 +47,18 @@
   version = "v1.4.7"
 
 [[projects]]
+  name = "github.com/go-asn1-ber/asn1-ber"
+  packages = ["."]
+  revision = "29be175fc3a3b1787c008093b829fbfee40decd6"
+  version = "v1.4"
+
+[[projects]]
+  name = "github.com/go-ldap/ldap"
+  packages = ["."]
+  revision = "a4f79d8a7cda1dcfbe9efafbd1e1621608881e93"
+  version = "v3.1.5"
+
+[[projects]]
   name = "github.com/go-openapi/errors"
   packages = ["."]
   revision = "0b2a0a1f89aa2eec2d13e03cd80ab0fdaf01f8ce"
@@ -351,6 +363,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/tcnksm/go-input"
+  packages = ["."]
+  revision = "548a7d7a8ee8fcb3d013fae6acf857da56165975"
+
+[[projects]]
+  branch = "master"
   name = "github.com/xaque208/rftoy"
   packages = ["rftoy"]
   revision = "4727b87c34619533519abb4260afd477833e265b"
@@ -392,7 +410,8 @@
     "pbkdf2",
     "poly1305",
     "ssh",
-    "ssh/agent"
+    "ssh/agent",
+    "ssh/terminal"
   ]
   revision = "9756ffdc24725223350eb3266ffb92590d28f278"
 
@@ -536,6 +555,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "27c8855566a8533bac2638aafef05ce41d96c13bdc1a5d4a250795cccbf00645"
+  inputs-digest = "52365bb72602685183a9a8760016d49c45396f877ff42e22e951b91624029eab"
   solver-name = "gps-cdcl"
   solver-version = 1

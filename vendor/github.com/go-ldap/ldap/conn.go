@@ -1,7 +1,3 @@
-// Copyright 2011 The Go Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
 package ldap
 
 import (
@@ -10,11 +6,12 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/url"
 	"sync"
 	"sync/atomic"
 	"time"
 
-	"gopkg.in/asn1-ber.v1"
+	ber "github.com/go-asn1-ber/asn1-ber"
 )
 
 const (
@@ -28,6 +25,13 @@ const (
 	MessageFinish = 3
 	// MessageTimeout indicates the client-specified timeout for a particular message ID has been reached
 	MessageTimeout = 4
+)
+
+const (
+	// DefaultLdapPort default ldap port for pure TCP connection
+	DefaultLdapPort = "389"
+	// DefaultLdapsPort default ldap port for SSL connection
+	DefaultLdapsPort = "636"
 )
 
 // PacketResponse contains the packet or error encountered reading a response
@@ -81,10 +85,13 @@ const (
 
 // Conn represents an LDAP Connection
 type Conn struct {
+	// requestTimeout is loaded atomically
+	// so we need to ensure 64-bit alignment on 32-bit platforms.
+	requestTimeout      int64
 	conn                net.Conn
 	isTLS               bool
 	closing             uint32
-	closeErr            atomicValue
+	closeErr            atomic.Value
 	isStartingTLS       bool
 	Debug               debugging
 	chanConfirm         chan struct{}
@@ -94,7 +101,6 @@ type Conn struct {
 	wgClose             sync.WaitGroup
 	outstandingRequests uint
 	messageMutex        sync.Mutex
-	requestTimeout      int64
 }
 
 var _ Client = &Conn{}
@@ -106,8 +112,63 @@ var _ Client = &Conn{}
 // multiple places will probably result in undesired behaviour.
 var DefaultTimeout = 60 * time.Second
 
+// DialOpt configures DialContext.
+type DialOpt func(*DialContext)
+
+// DialWithDialer updates net.Dialer in DialContext.
+func DialWithDialer(d *net.Dialer) DialOpt {
+	return func(dc *DialContext) {
+		dc.d = d
+	}
+}
+
+// DialWithTLSConfig updates tls.Config in DialContext.
+func DialWithTLSConfig(tc *tls.Config) DialOpt {
+	return func(dc *DialContext) {
+		dc.tc = tc
+	}
+}
+
+// DialContext contains necessary parameters to dial the given ldap URL.
+type DialContext struct {
+	d  *net.Dialer
+	tc *tls.Config
+}
+
+func (dc *DialContext) dial(u *url.URL) (net.Conn, error) {
+	if u.Scheme == "ldapi" {
+		if u.Path == "" || u.Path == "/" {
+			u.Path = "/var/run/slapd/ldapi"
+		}
+		return dc.d.Dial("unix", u.Path)
+	}
+
+	host, port, err := net.SplitHostPort(u.Host)
+	if err != nil {
+		// we asume that error is due to missing port
+		host = u.Host
+		port = ""
+	}
+
+	switch u.Scheme {
+	case "ldap":
+		if port == "" {
+			port = DefaultLdapPort
+		}
+		return dc.d.Dial("tcp", net.JoinHostPort(host, port))
+	case "ldaps":
+		if port == "" {
+			port = DefaultLdapsPort
+		}
+		return tls.DialWithDialer(dc.d, "tcp", net.JoinHostPort(host, port), dc.tc)
+	}
+
+	return nil, fmt.Errorf("Unknown scheme '%s'", u.Scheme)
+}
+
 // Dial connects to the given address on the given network using net.Dial
 // and then returns a new Conn for the connection.
+// @deprecated Use DialURL instead.
 func Dial(network, addr string) (*Conn, error) {
 	c, err := net.DialTimeout(network, addr, DefaultTimeout)
 	if err != nil {
@@ -120,19 +181,40 @@ func Dial(network, addr string) (*Conn, error) {
 
 // DialTLS connects to the given address on the given network using tls.Dial
 // and then returns a new Conn for the connection.
+// @deprecated Use DialURL instead.
 func DialTLS(network, addr string, config *tls.Config) (*Conn, error) {
-	dc, err := net.DialTimeout(network, addr, DefaultTimeout)
+	c, err := tls.DialWithDialer(&net.Dialer{Timeout: DefaultTimeout}, network, addr, config)
 	if err != nil {
-		return nil, NewError(ErrorNetwork, err)
-	}
-	c := tls.Client(dc, config)
-	err = c.Handshake()
-	if err != nil {
-		// Handshake error, close the established connection before we return an error
-		dc.Close()
 		return nil, NewError(ErrorNetwork, err)
 	}
 	conn := NewConn(c, true)
+	conn.Start()
+	return conn, nil
+}
+
+// DialURL connects to the given ldap URL.
+// The following schemas are supported: ldap://, ldaps://, ldapi://.
+// On success a new Conn for the connection is returned.
+func DialURL(addr string, opts ...DialOpt) (*Conn, error) {
+	u, err := url.Parse(addr)
+	if err != nil {
+		return nil, NewError(ErrorNetwork, err)
+	}
+
+	var dc DialContext
+	for _, opt := range opts {
+		opt(&dc)
+	}
+	if dc.d == nil {
+		dc.d = &net.Dialer{Timeout: DefaultTimeout}
+	}
+
+	c, err := dc.dial(u)
+	if err != nil {
+		return nil, NewError(ErrorNetwork, err)
+	}
+
+	conn := NewConn(c, u.Scheme == "ldaps")
 	conn.Start()
 	return conn, nil
 }
@@ -152,13 +234,13 @@ func NewConn(conn net.Conn, isTLS bool) *Conn {
 
 // Start initializes goroutines to read responses and process messages
 func (l *Conn) Start() {
+	l.wgClose.Add(1)
 	go l.reader()
 	go l.processMessages()
-	l.wgClose.Add(1)
 }
 
-// isClosing returns whether or not we're currently closing.
-func (l *Conn) isClosing() bool {
+// IsClosing returns whether or not we're currently closing.
+func (l *Conn) IsClosing() bool {
 	return atomic.LoadUint32(&l.closing) == 1
 }
 
@@ -239,25 +321,36 @@ func (l *Conn) StartTLS(config *tls.Config) error {
 			l.Close()
 			return err
 		}
-		ber.PrintPacket(packet)
+		l.Debug.PrintPacket(packet)
 	}
 
-	if resultCode, message := getLDAPResultCode(packet); resultCode == LDAPResultSuccess {
+	if err := GetLDAPError(packet); err == nil {
 		conn := tls.Client(l.conn, config)
 
-		if err := conn.Handshake(); err != nil {
+		if connErr := conn.Handshake(); connErr != nil {
 			l.Close()
-			return NewError(ErrorNetwork, fmt.Errorf("TLS handshake failed (%v)", err))
+			return NewError(ErrorNetwork, fmt.Errorf("TLS handshake failed (%v)", connErr))
 		}
 
 		l.isTLS = true
 		l.conn = conn
 	} else {
-		return NewError(resultCode, fmt.Errorf("ldap: cannot StartTLS (%s)", message))
+		return err
 	}
 	go l.reader()
 
 	return nil
+}
+
+// TLSConnectionState returns the client's TLS connection state.
+// The return values are their zero values if StartTLS did
+// not succeed.
+func (l *Conn) TLSConnectionState() (state tls.ConnectionState, ok bool) {
+	tc, ok := l.conn.(*tls.Conn)
+	if !ok {
+		return
+	}
+	return tc.ConnectionState(), true
 }
 
 func (l *Conn) sendMessage(packet *ber.Packet) (*messageContext, error) {
@@ -265,7 +358,7 @@ func (l *Conn) sendMessage(packet *ber.Packet) (*messageContext, error) {
 }
 
 func (l *Conn) sendMessageWithFlags(packet *ber.Packet, flags sendMessageFlags) (*messageContext, error) {
-	if l.isClosing() {
+	if l.IsClosing() {
 		return nil, NewError(ErrorNetwork, errors.New("ldap: connection closed"))
 	}
 	l.messageMutex.Lock()
@@ -304,7 +397,7 @@ func (l *Conn) sendMessageWithFlags(packet *ber.Packet, flags sendMessageFlags) 
 func (l *Conn) finishMessage(msgCtx *messageContext) {
 	close(msgCtx.done)
 
-	if l.isClosing() {
+	if l.IsClosing() {
 		return
 	}
 
@@ -325,7 +418,7 @@ func (l *Conn) finishMessage(msgCtx *messageContext) {
 func (l *Conn) sendProcessMessage(message *messagePacket) bool {
 	l.messageMutex.Lock()
 	defer l.messageMutex.Unlock()
-	if l.isClosing() {
+	if l.IsClosing() {
 		return false
 	}
 	l.chanMessage <- message
@@ -340,7 +433,7 @@ func (l *Conn) processMessages() {
 		for messageID, msgCtx := range l.messageContexts {
 			// If we are closing due to an error, inform anyone who
 			// is waiting about the error.
-			if l.isClosing() && l.closeErr.Load() != nil {
+			if l.IsClosing() && l.closeErr.Load() != nil {
 				msgCtx.sendResponse(&PacketResponse{Error: l.closeErr.Load().(error)})
 			}
 			l.Debug.Printf("Closing channel for MessageID %d", messageID)
@@ -400,8 +493,8 @@ func (l *Conn) processMessages() {
 				if msgCtx, ok := l.messageContexts[message.MessageID]; ok {
 					msgCtx.sendResponse(&PacketResponse{message.Packet, nil})
 				} else {
-					log.Printf("Received unexpected message %d, %v", message.MessageID, l.isClosing())
-					ber.PrintPacket(message.Packet)
+					log.Printf("Received unexpected message %d, %v", message.MessageID, l.IsClosing())
+					l.Debug.PrintPacket(message.Packet)
 				}
 			case MessageTimeout:
 				// Handle the timeout by closing the channel
@@ -442,13 +535,15 @@ func (l *Conn) reader() {
 		packet, err := ber.ReadPacket(l.conn)
 		if err != nil {
 			// A read error is expected here if we are closing the connection...
-			if !l.isClosing() {
+			if !l.IsClosing() {
 				l.closeErr.Store(fmt.Errorf("unable to read LDAP response packet: %s", err))
-				l.Debug.Printf("reader error: %s", err.Error())
+				l.Debug.Printf("reader error: %s", err)
 			}
 			return
 		}
-		addLDAPDescriptions(packet)
+		if err := addLDAPDescriptions(packet); err != nil {
+			l.Debug.Printf("descriptions error: %s", err)
+		}
 		if len(packet.Children) == 0 {
 			l.Debug.Printf("Received bad ldap packet")
 			continue
