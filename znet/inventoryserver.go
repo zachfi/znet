@@ -3,7 +3,6 @@ package znet
 import (
 	"context"
 
-	log "github.com/sirupsen/logrus"
 	pb "github.com/xaque208/znet/rpc"
 )
 
@@ -17,7 +16,7 @@ func (r *inventoryServer) Search(ctx context.Context, request *pb.SearchRequest)
 
 	hosts, err := r.inventory.NetworkHosts()
 	if err != nil {
-		log.Error(err)
+		return response, err
 	}
 
 	for _, h := range hosts {
@@ -31,7 +30,19 @@ func (r *inventoryServer) Search(ctx context.Context, request *pb.SearchRequest)
 		response.Hosts = append(response.Hosts, host)
 	}
 
-	log.Warnf("%+v: ", r)
+	unknownHosts, err := r.inventory.UnknownHosts()
+	if err != nil {
+		return response, err
+	}
+
+	for _, h := range unknownHosts {
+		host := &pb.UnknownHost{
+			Ip:  h.IP,
+			Mac: h.MACAddress,
+		}
+
+		response.UnknownHosts = append(response.UnknownHosts, host)
+	}
 
 	return response, nil
 }

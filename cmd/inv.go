@@ -92,4 +92,18 @@ func runInv(cmd *cobra.Command, args []string) {
 	// t.AppendFooter(table.Row{"", "", "Total", 10000})
 	t.Render()
 
+	t = table.NewWriter()
+	t.SetOutputMirror(os.Stdout)
+	t.AppendHeader(table.Row{"IP", "MAC"})
+
+	for _, h := range res.UnknownHosts {
+		t.AppendRow([]interface{}{
+			h.Ip,
+			h.Mac,
+		})
+	}
+
+	// t.AppendFooter(table.Row{"", "", "Total", 10000})
+	t.Render()
+
 }
