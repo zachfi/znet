@@ -17,7 +17,7 @@ package main
 import "github.com/xaque208/znet/cmd"
 
 var (
-	// VERSION is set during build
+	// Version is set during build
 	Version = "0.0.1"
 )
 

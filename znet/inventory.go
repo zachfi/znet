@@ -7,6 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// Inventory holds hte coniguration and clients necessary to retrieve information from data sources.
 type Inventory struct {
 	config     LDAPConfig
 	ldapClient *ldap.Conn
@@ -97,6 +98,7 @@ func (i *Inventory) NetworkHosts() ([]NetworkHost, error) {
 	return hosts, nil
 }
 
+// UnknownHosts retrieves unknownHost objects from LDAP.
 func (i *Inventory) UnknownHosts() ([]UnknownHost, error) {
 
 	if i.ldapClient == nil {
