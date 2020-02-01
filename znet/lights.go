@@ -97,12 +97,3 @@ func (l *Lights) Off(roomName string) {
 		}
 	}
 }
-
-func (l *Lights) Status() []huego.Light {
-	lights, err := l.HUE.GetLights()
-	if err != nil {
-		log.Error(err)
-	}
-
-	return lights
-}

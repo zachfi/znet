@@ -50,7 +50,7 @@ func runLights(cmd *cobra.Command, args []string) {
 	if verbose {
 		log.SetLevel(log.DebugLevel)
 	} else {
-		log.SetLevel(log.WarnLevel)
+		log.SetLevel(log.InfoLevel)
 	}
 
 	z, err := znet.NewZnet(cfgFile)
@@ -81,15 +81,28 @@ func runLights(cmd *cobra.Command, args []string) {
 
 	t := table.NewWriter()
 	t.SetOutputMirror(os.Stdout)
-	t.AppendHeader(table.Row{"Name", "Id", "Type", "Brightness", "On"})
+	t.AppendHeader(table.Row{"Name", "Id", "Type", "Brightness", "On", "Lights"})
 
 	for _, g := range res.Groups {
+
 		t.AppendRow([]interface{}{
 			g.Name,
 			g.Id,
 			g.Type,
 			g.State.Brightness,
 			g.State.On,
+			g.Lights,
+		})
+	}
+
+	for _, l := range res.Lights {
+
+		t.AppendRow([]interface{}{
+			l.Name,
+			l.Id,
+			l.Type,
+			l.State.Brightness,
+			l.State.On,
 		})
 	}
 

@@ -34,10 +34,10 @@ LDFLAGS='-X main.Version=$(PROJECT_VER)'
 all: build
 
 # Humans running make:
-build: check-version clean validate test coverage compile
+build: check-version clean test coverage compile
 
 # Build command for CI tooling
-build-ci: check-version clean validate test compile-only
+build-ci: check-version clean test compile-only
 
 clean:
 	@echo "=== $(PROJECT_NAME) === [ clean            ]: removing binaries and coverage file..."
@@ -51,15 +51,7 @@ tools-update: check-version
 	@echo "=== $(PROJECT_NAME) === [ tools-update     ]: Updating tools required by the project..."
 	@$(GO) get -u $(GOTOOLS)
 
-deps: tools deps-only
-
-deps-only:
-	@echo "=== $(PROJECT_NAME) === [ deps             ]: Installing package dependencies required by the project..."
-	@$(GOVENDOR) ensure
-
-validate: deps
-	@echo "=== $(PROJECT_NAME) === [ validate         ]: Validating source code running $(GOLINTER)..."
-	@$(GOLINTER) run ./...
+# deps: tools deps-only
 
 compile-only:
 	@echo "=== $(PROJECT_NAME) === [ compile          ]: building commands:"
@@ -70,7 +62,7 @@ proto:
 	@echo "=== $(PROJECT_NAME) === [ proto compile    ]: compiling protobufs:"
 	protoc -I rpc/ rpc/rpc.proto --go_out=plugins=grpc:rpc
 
-compile: deps proto compile-only
+compile: proto compile-only
 
 coverage:
 	@echo "=== $(PROJECT_NAME) === [ coverage         ]: generating coverage results..."
@@ -104,7 +96,7 @@ document:
 	done
 
 test-only: test-unit test-integration
-test: test-deps test-only
+test: test-only
 
 check-version:
 ifdef GOOS
