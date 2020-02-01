@@ -71,19 +71,12 @@ func runLights(cmd *cobra.Command, args []string) {
 
 	lc := pb.NewLightsClient(conn)
 
-	state := &pb.State{
-		On:         roomBrightness > 0,
-		Brightness: int32(roomBrightness),
-	}
+	req := &pb.LightRequest{}
 
-	req := &pb.LightGroup{
-		Name:  roomName,
-		State: state,
-	}
-
-	res, err := lc.Brightness(context.Background(), req)
+	res, err := lc.Status(context.Background(), req)
 	if err != nil {
 		log.Errorf("RPC Error: %s Response: %+v", err, res)
+		return
 	}
 
 	t := table.NewWriter()
