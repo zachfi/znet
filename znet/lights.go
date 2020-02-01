@@ -1,6 +1,9 @@
 package znet
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/amimof/huego"
 	log "github.com/sirupsen/logrus"
 	"github.com/xaque208/rftoy/rftoy"
@@ -22,69 +25,100 @@ func NewLights(config LightsConfig) *Lights {
 	}
 }
 
-// On turns off the Hue lights for a room.
-func (l *Lights) On(roomName string) {
-	room, err := l.config.Room(roomName)
+// GetLight calls the Hue bridge and looks for a light, that, when normalized, matches the name received.
+func (l *Lights) GetLight(lightName string) (*huego.Light, error) {
+	lights, err := l.HUE.GetLights()
 	if err != nil {
 		log.Error(err)
-		return
 	}
 
+	for _, g := range lights {
+		flatName := strings.ToLower(strings.ReplaceAll(g.Name, " ", "_"))
+
+		if lightName == flatName {
+			return &g, nil
+		}
+
+	}
+
+	return &huego.Light{}, fmt.Errorf("Light %s not found", lightName)
+}
+
+// GetGroup calls the Hue bridge and looks for a group, that, when normalized, matches the name received.
+func (l *Lights) GetGroup(groupName string) (*huego.Group, error) {
 	groups, err := l.HUE.GetGroups()
 	if err != nil {
 		log.Error(err)
 	}
-	log.Warnf("Groups: %+v", groups)
 
 	for _, g := range groups {
-		for _, i := range room.HueIDs {
-			if g.ID == i {
-				log.Debugf("Turning on %d lights in HUE group %s", len(g.Lights), g.Name)
-				err := g.On()
-				if err != nil {
-					log.Error(err)
-				}
+		flatName := strings.ToLower(strings.ReplaceAll(g.Name, " ", "_"))
+
+		if groupName == flatName {
+			return &g, nil
+		}
+	}
+
+	return &huego.Group{}, fmt.Errorf("Group %s not found", groupName)
+}
+
+// On turns off the Hue lights for a room.
+func (l *Lights) On(groupName string) {
+	room, err := l.config.Room(groupName)
+	if err != nil {
+		log.Error(err)
+	}
+
+	g, err := l.GetGroup(groupName)
+	if err != nil {
+		log.Error(err)
+
+		light, err := l.GetLight(groupName)
+		if err != nil {
+			log.Error(err)
+		} else {
+			log.Debugf("Turning on light %s", light.Name)
+			light.On()
+		}
+
+	} else {
+		log.Debugf("Turning on light group %s", g.Name)
+		g.On()
+	}
+
+	if len(room.IDs) > 0 {
+		log.Debugf("Turning on rftoy lights: %+v", room.IDs)
+		for _, i := range room.IDs {
+			err := l.RFToy.On(i)
+			if err != nil {
+				log.Error(err)
 			}
 		}
 	}
-
-	log.Debugf("Turning on rftoy lights: %+v", room.IDs)
-	for _, i := range room.IDs {
-		err := l.RFToy.On(i)
-		if err != nil {
-			log.Error(err)
-		}
-	}
-
 }
 
 // Off turns off the Hue lights for a room.
-func (l *Lights) Off(roomName string) {
-	room, err := l.config.Room(roomName)
-	if err != nil {
-		log.Error(err)
-		return
-	}
-
-	groups, err := l.HUE.GetGroups()
+func (l *Lights) Off(groupName string) {
+	room, err := l.config.Room(groupName)
 	if err != nil {
 		log.Error(err)
 	}
 
-	log.Infof("Received lights off request for %s: %+v", roomName, room)
+	g, err := l.GetGroup(groupName)
+	if err != nil {
+		log.Error(err)
 
-	for _, g := range groups {
-		log.Infof("Inspecting group: %+v", g)
-
-		for _, i := range room.HueIDs {
-			if g.ID == i {
-				log.Debugf("Turning off %d lights in HUE group %s", len(g.Lights), g.Name)
-				err := g.Off()
-				if err != nil {
-					log.Error(err)
-				}
-			}
+		light, err := l.GetLight(groupName)
+		if err != nil {
+			log.Error(err)
+		} else {
+			log.Debugf("Turning off light %s", light.Name)
+			light.Off()
 		}
+
+	} else {
+		log.Debugf("Turning off light group %s", g.Name)
+		g.Off()
 	}
 
 	if len(room.IDs) > 0 {
