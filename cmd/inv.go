@@ -36,7 +36,6 @@ var invCmd = &cobra.Command{
 	Run:   runInv,
 }
 
-var rpcServer string
 var adopt string
 
 func init() {

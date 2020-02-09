@@ -24,6 +24,7 @@ import (
 var cfgFile string
 var verbose bool
 var Version string
+var rpcServer string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{

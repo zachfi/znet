@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/xaque208/things/things"
 )
 
 // Listener is a znet server
@@ -27,10 +26,6 @@ func NewListener(config *Config) (*Listener, error) {
 func (l *Listener) Listen(listenAddr string, ch chan bool) {
 	log.Infof("Listening on %s", listenAddr)
 	l.httpServer = httpListen(listenAddr)
-
-	messages := make(chan things.Message)
-	go l.messageHandler(messages)
-	// go l.thingServer.Listen(messages)
 
 	<-ch
 	l.Shutdown()
