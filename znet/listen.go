@@ -1,7 +1,6 @@
 package znet
 
 import (
-	"context"
 	"net"
 	"net/http"
 
@@ -11,13 +10,6 @@ import (
 	pb "github.com/xaque208/znet/rpc"
 	"google.golang.org/grpc"
 )
-
-// Listener is a znet server
-type Listener struct {
-	Config      *Config
-	thingServer *things.Server
-	httpServer  *http.Server
-}
 
 // Listen starts the znet listener
 func (z *Znet) Listen(listenAddr string, ch chan bool) {
@@ -66,51 +58,6 @@ func (z *Znet) listenRPC() {
 		}()
 	}
 
-}
-
-// NewListener builds a new Listener object from the received configuration.
-func NewListener(config *Config) (*Listener, error) {
-	l := &Listener{
-		Config: config,
-	}
-
-	var err error
-
-	// Attach a things server
-	log.Debugf("Creating thingServer with config: %s#%s", l.Config.Nats.URL, l.Config.Nats.Topic)
-	l.thingServer, err = things.NewServer(l.Config.Nats.URL, l.Config.Nats.Topic)
-	if err != nil {
-		return &Listener{}, err
-	}
-
-	return l, nil
-}
-
-// Listen starts the http listener
-func (l *Listener) Listen(listenAddr string, ch chan bool) {
-	log.Infof("Listening on %s", listenAddr)
-	l.httpServer = httpListen(listenAddr)
-
-	messages := make(chan things.Message)
-	go l.messageHandler(messages)
-	// go l.thingServer.Listen(messages)
-
-	<-ch
-	l.Shutdown()
-}
-
-// Shutdown closes down the to the message bus and shuts down the HTTP server.
-func (l *Listener) Shutdown() {
-	log.Info("ZNET Shutting Down")
-
-	log.Info("halting Things server")
-	l.thingServer.Close()
-
-	log.Info("halting HTTP server")
-	err := l.httpServer.Shutdown(context.TODO())
-	if err != nil {
-		log.Error(err)
-	}
 }
 
 func httpListen(listenAddress string) *http.Server {
