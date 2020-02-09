@@ -6,7 +6,6 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
-	"github.com/xaque208/things/things"
 	pb "github.com/xaque208/znet/rpc"
 	"google.golang.org/grpc"
 )
@@ -72,16 +71,4 @@ func httpListen(listenAddress string) *http.Server {
 	}()
 
 	return srv
-}
-
-// messageHandler
-func (l *Listener) messageHandler(messages chan things.Message) {
-	for msg := range messages {
-		log.Debugf("New message: %+v", msg)
-
-		// for _, c := range msg.Commands {
-		// 	log.Warnf("Unknown command %s", c.Name)
-		// }
-
-	}
 }
