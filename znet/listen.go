@@ -6,6 +6,8 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
+	"github.com/xaque208/znet/internal/events"
+	"github.com/xaque208/znet/internal/timer"
 	pb "github.com/xaque208/znet/rpc"
 	"google.golang.org/grpc"
 )
@@ -18,13 +20,25 @@ func (z *Znet) Listen(listenAddr string, ch chan bool) {
 		log.Fatal(err)
 	}
 
+	consumers := []events.Consumer{
+		z.Lights,
+		timer.NewConsumer(),
+	}
+
+	log.Infof("Consumers: %+v", consumers)
+
+	z.EventChannel = make(chan events.Event)
+	z.EventConsumers = make(map[string][]events.Handler)
+
+	z.initEventConsumers(consumers)
+	z.initEventConsumer()
 	z.listenRPC()
 
 	z.listener.Listen(listenAddr, ch)
 }
 
+// listenRPC starts the RPC server and all the services.
 func (z *Znet) listenRPC() {
-
 	if z.Config.RPC.ListenAddress != "" {
 		log.Debugf("Starting RPC listener on %s", z.Config.RPC.ListenAddress)
 
@@ -36,7 +50,15 @@ func (z *Znet) listenRPC() {
 			lights: z.Lights,
 		}
 
-		// commandServer := &commandServer{}
+		events := []string{
+			"TimerExpired",
+			"NamedTimer",
+		}
+
+		eventServer := &eventServer{
+			eventNames: events,
+			ch:         z.EventChannel,
+		}
 
 		go func() {
 			lis, err := net.Listen("tcp", z.Config.RPC.ListenAddress)
@@ -47,7 +69,7 @@ func (z *Znet) listenRPC() {
 
 			pb.RegisterInventoryServer(grpcServer, inventoryServer)
 			pb.RegisterLightsServer(grpcServer, lightServer)
-			// pb.RegisterCommandServer(grpcServer, commandServer)
+			pb.RegisterEventsServer(grpcServer, eventServer)
 
 			err = grpcServer.Serve(lis)
 			if err != nil {
@@ -56,7 +78,6 @@ func (z *Znet) listenRPC() {
 
 		}()
 	}
-
 }
 
 func httpListen(listenAddress string) *http.Server {
@@ -71,4 +92,34 @@ func httpListen(listenAddress string) *http.Server {
 	}()
 
 	return srv
+}
+
+// initEventConsumers updates the EventConsumers map for each consumer, to
+// append a handler for the discovered topic keys.
+func (z *Znet) initEventConsumers(consumers []events.Consumer) {
+	for _, e := range consumers {
+		subs := e.Subscriptions()
+		for k, handlers := range subs {
+			for _, x := range handlers {
+				z.EventConsumers[k] = append(z.EventConsumers[k], x)
+			}
+		}
+	}
+}
+
+// initEventConsumer starts a routine that never ends to read from the
+// EventChannel and execute the loaded handlers with the event Payload.
+func (z *Znet) initEventConsumer() {
+	go func(ch chan events.Event) {
+		for e := range ch {
+			log.Warnf("z.EventConsumers: %+v", z.EventConsumers)
+
+			if handlers, ok := z.EventConsumers[e.Name]; ok {
+				log.Infof("Handling message %s", e.Name)
+				for _, h := range handlers {
+					h(e.Payload)
+				}
+			}
+		}
+	}(z.EventChannel)
 }

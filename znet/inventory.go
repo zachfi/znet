@@ -122,6 +122,8 @@ func (i *Inventory) UnknownHosts() ([]UnknownHost, error) {
 		return []UnknownHost{}, err
 	}
 
+	log.Debugf("LDAP Response: %+v", sr)
+
 	for _, e := range sr.Entries {
 		h := UnknownHost{}
 

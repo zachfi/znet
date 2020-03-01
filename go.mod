@@ -18,24 +18,30 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/nats-io/gnatsd v1.4.1 // indirect
 	github.com/nats-io/go-nats v1.7.2
+	github.com/nats-io/nkeys v0.1.3 // indirect
+	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/pelletier/go-toml v1.4.0 // indirect
 	github.com/pierrec/lz4 v2.2.7+incompatible // indirect
 	github.com/prometheus/client_golang v1.1.0
-	github.com/prometheus/common v0.7.0 // indirect
+	github.com/prometheus/common v0.7.0
 	github.com/prometheus/procfs v0.0.4 // indirect
 	github.com/scottdware/go-junos v0.0.0-20190812172236-2fce6f5c1db4
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/afero v1.2.2 // indirect
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
+	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.6.2
+	github.com/stretchr/testify v1.4.0 // indirect
 	github.com/tcnksm/go-input v0.0.0-20180404061846-548a7d7a8ee8
 	github.com/xaque208/rftoy v0.0.0-20191203015236-4727b87c3461
-	github.com/xaque208/things v0.0.3-0.20200201185304-44650c643324
 	go.mongodb.org/mongo-driver v1.1.1 // indirect
 	golang.org/x/crypto v0.0.0-20200128174031-69ecbb4d6d5d
 	golang.org/x/net v0.0.0-20190923162816-aa69164e4478 // indirect
+	golang.org/x/sys v0.0.0-20190922100055-0a153f010e69 // indirect
+	golang.org/x/text v0.3.2 // indirect
 	google.golang.org/genproto v0.0.0-20191115221424-83cc0476cb11 // indirect
 	google.golang.org/grpc v1.25.1
+	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/yaml.v2 v2.2.7
 )

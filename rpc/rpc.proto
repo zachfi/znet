@@ -63,3 +63,19 @@ service Lights {
 
   rpc Brightness(LightGroup) returns (LightResponse) {}
 }
+
+message Event {
+  string name = 1;
+  bytes payload = 2;
+}
+
+message EventResponse {
+  bool errors = 1;
+  string message = 2;
+}
+
+service Events {
+  rpc NoticeEvent(Event) returns (EventResponse) {}
+}
+
+

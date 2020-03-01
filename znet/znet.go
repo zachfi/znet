@@ -13,19 +13,28 @@ import (
 	junos "github.com/scottdware/go-junos"
 	log "github.com/sirupsen/logrus"
 	"github.com/tcnksm/go-input"
+	"github.com/xaque208/znet/internal/events"
+	"github.com/xaque208/znet/internal/lights"
 )
 
-// Znet is the core object for this project.  It keeps track of the data, configuration and flow control for starting the server process.
+// Znet is the core object for this project.  It keeps track of the data,
+// configuration and flow control for starting the server process.
 type Znet struct {
 	ConfigDir   string
 	Config      Config
 	Data        Data
 	Environment map[string]string
-	listener    *Listener
-	// TODO deprecate ldapclient use at Znet, move to Inventory
-	// ldapClient *ldap.Conn
+	// listener is the HTTP listener.
+	listener  *Listener
 	Inventory *Inventory
-	Lights    *Lights
+	Lights    *lights.Lights
+
+	// EventChannel is the channel to which the RPC eventServer writes events.
+	EventChannel chan events.Event
+
+	// EventConsumers is the map between event names and which event handlers to
+	// call with the event event payload.
+	EventConsumers map[string][]events.Handler
 }
 
 // NewZnet creates and returns a new Znet object.
@@ -57,7 +66,7 @@ func NewZnet(file string) (*Znet, error) {
 		ldapClient: ldapClient,
 	}
 
-	lights := NewLights(config.Lights)
+	lights := lights.NewLights(config.Lights)
 
 	z := &Znet{
 		Config:      config,

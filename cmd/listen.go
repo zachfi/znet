@@ -76,7 +76,6 @@ func listen(cmd *cobra.Command, args []string) {
 
 	z.Config.Nats.URL = viper.GetString("nats.url")
 	z.Config.Nats.Topic = viper.GetString("nats.topic")
-
 	z.Config.RPC.ListenAddress = viper.GetString("rpc.listen")
 
 	go func() {

@@ -6,11 +6,12 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/xaque208/znet/internal/lights"
 	pb "github.com/xaque208/znet/rpc"
 )
 
 type lightServer struct {
-	lights *Lights
+	lights *lights.Lights
 }
 
 func (l *lightServer) Off(ctx context.Context, request *pb.LightGroup) (*pb.LightResponse, error) {
@@ -106,42 +107,9 @@ func (l *lightServer) Status(ctx context.Context, request *pb.LightRequest) (*pb
 func (l *lightServer) Brightness(ctx context.Context, request *pb.LightGroup) (*pb.LightResponse, error) {
 	response := &pb.LightResponse{}
 
-	room, err := l.lights.config.Room(request.Name)
-	if err != nil {
-		return response, err
-	}
+	log.Infof("request: %+v", *request)
 
-	groups, err := l.lights.HUE.GetGroups()
-	if err != nil {
-		return response, err
-	}
-
-	for _, g := range groups {
-		for _, i := range room.HueIDs {
-			if g.ID == i {
-				log.Debugf("Setting brightness for group %s: %+v", g.Name, g.State)
-				err := g.Bri(uint8(request.State.Brightness))
-				if err != nil {
-					return response, err
-				}
-
-				state := &pb.State{
-					On:         g.State.On,
-					Brightness: int32(g.State.Bri),
-				}
-
-				x := &pb.LightGroup{
-					Name:  g.Name,
-					Type:  g.Type,
-					Id:    int32(g.ID),
-					State: state,
-				}
-
-				response.Groups = append(response.Groups, x)
-			}
-		}
-
-	}
+	l.lights.Dim(request.Name, request.State.Brightness)
 
 	return response, nil
 }
