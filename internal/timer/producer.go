@@ -17,21 +17,53 @@ var eventNames []string
 
 // EventProducer implements events.Producer with an attached GRPC connection.
 type EventProducer struct {
-	conn *grpc.ClientConn
+	conn   *grpc.ClientConn
+	Config TimerConfig
 }
 
 // NewProducer creates a new EventProducer to implement events.Producer and
 // attach the received GRPC connection.
 func NewProducer(conn *grpc.ClientConn, config TimerConfig) events.Producer {
 	var producer events.Producer = &EventProducer{
-		conn: conn,
+		conn:   conn,
+		Config: config,
 	}
+
+	SpawnReloader(producer, config)
+	SpawnProducers(producer, config)
 
 	return producer
 }
 
-// SpawnProducers creates go routines that wait for a period of time and then produce an event.
+// SpawnReloader creates a Go routine that waits on a timer for the next
+// midnight to arrive, which schedules the next timers, and the next reloader.
+func SpawnReloader(producer events.Producer, config TimerConfig) {
+	now := time.Now()
+	tomorrowNow := now.Add(time.Hour * 24)
+
+	loc, err := time.LoadLocation(config.TimeZone)
+	if err != nil {
+		log.Error(err)
+	}
+
+	nextMidnight := time.Date(tomorrowNow.Year(), tomorrowNow.Month(), tomorrowNow.Day(), 0, 0, 0, 0, loc)
+	timeRemaining := time.Until(nextMidnight)
+
+	log.Debug("spawning timer reloader")
+	go func(timeRemaining time.Duration, producer events.Producer, config TimerConfig) {
+		t := time.NewTimer(timeRemaining)
+		<-t.C
+
+		SpawnReloader(producer, config)
+		SpawnProducers(producer, config)
+	}(timeRemaining, producer, config)
+}
+
+// SpawnProducers creates go routines that wait for a period of time and then
+// produce an event.  Only events in the future for the current day are
+// scheduled.  This is called daily by SpawnReloader at midnight.
 func SpawnProducers(producer events.Producer, config TimerConfig) {
+	log.Debug("spawning timers")
 
 	for _, e := range config.Events {
 		loc, err := time.LoadLocation(config.TimeZone)
@@ -61,24 +93,23 @@ func SpawnProducers(producer events.Producer, config TimerConfig) {
 		}(e.Days)
 
 		if !weekDayMatch {
-			log.Debugf("skipping non-weekday match")
+			log.Tracef("skipping non-weekday match")
 			continue
 		}
 
 		if timeRemaining <= 0 {
-			log.Debugf("skipping past event %s", e.Produce)
+			log.Tracef("skipping past event %s", e.Produce)
 			continue
 		}
 
 		if timeRemaining > 0 {
-			log.Debugf("timer %s ending at %+s", e.Produce, d)
-
 			t := time.Now()
-
 			ev := NamedTimer{
 				Name: e.Produce,
 				Time: &t,
 			}
+
+			log.Debugf("starting timer %s ending at %+s", e.Produce, d)
 
 			go func(timeRemaining time.Duration, producer events.Producer, event NamedTimer) {
 				t := time.NewTimer(timeRemaining)
