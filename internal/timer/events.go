@@ -7,27 +7,32 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	pb "github.com/xaque208/znet/rpc"
-	// "github.com/xaque208/znet/internal/events"
 )
 
+// EventNames are the available named events that this package exports.
+var EventNames []string
+
 func init() {
-	names := []string{
+	EventNames = []string{
 		"TimerExpired",
 		"NamedTimer",
 	}
-
-	for _, n := range names {
-		eventNames = append(eventNames, n)
-
-	}
 }
 
-type TimerExpired struct {
+// ExpiredTimer is the event for an expiration of a clock timer.
+type ExpiredTimer struct {
 	// events.Event
 	Time *time.Time
 }
 
-func (t *TimerExpired) Make() *pb.Event {
+// NamedTimer is the event for which you might wish to refer by name.
+type NamedTimer struct {
+	Name string
+	Time *time.Time
+}
+
+// Make creates the RPC request from the marshaled ExpiredTimer object.
+func (t *ExpiredTimer) Make() *pb.Event {
 	payload, err := json.Marshal(t)
 	if err != nil {
 		log.Error(err)
@@ -41,11 +46,7 @@ func (t *TimerExpired) Make() *pb.Event {
 	return req
 }
 
-type NamedTimer struct {
-	Name string
-	Time *time.Time
-}
-
+// Make creates the RPC request from the marshaled NamedTimer object.
 func (t *NamedTimer) Make(name string) *pb.Event {
 	payload, err := json.Marshal(t)
 	if err != nil {

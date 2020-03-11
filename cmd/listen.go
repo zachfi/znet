@@ -48,6 +48,12 @@ func init() {
 }
 
 func listen(cmd *cobra.Command, args []string) {
+	formatter := log.TextFormatter{
+		FullTimestamp: true,
+	}
+
+	log.SetFormatter(&formatter)
+
 	if verbose {
 		log.SetLevel(log.DebugLevel)
 	} else {

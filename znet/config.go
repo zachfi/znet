@@ -17,39 +17,45 @@ type Config struct {
 	Vault        VaultConfig         `yaml:"vault,omitempty"`
 	RPC          RPCConfig           `yaml:"rpc,omitempty"`
 	Lights       lights.LightsConfig `yaml:"lights,omitempty"`
-	Events       EventsConfig        `yaml:"events,omitempty"`
-	Timer        timer.TimerConfig   `yaml:"timer,omitempty"`
+	Timer        timer.Config        `yaml:"timer,omitempty"`
 }
 
+// EnvironmentConfig is the environment configuration.
 type EnvironmentConfig struct {
 	Name         string   `yaml:"name,omitempty"`
 	SecretValues []string `yaml:"secret_values,omitempty"`
 }
 
+// NatsConfig is the NATs configuration.
 type NatsConfig struct {
 	URL   string
 	Topic string
 }
 
+// RedisConfig is the configuration for redis.
 type RedisConfig struct {
 	Host string
 }
 
+// JunosConfig is the configuration for Junos devices.
 type JunosConfig struct {
 	Hosts      []string
 	Username   string
 	PrivateKey string
 }
 
+// HTTPConfig is the configuration for the listening HTTP server.
 type HTTPConfig struct {
 	ListenAddress string
 }
 
+// RPCConfig is the configuration for the RPC client and server.
 type RPCConfig struct {
 	ListenAddress string
 	ServerAddress string
 }
 
+// LDAPConfig is the client configuration for LDAP.
 type LDAPConfig struct {
 	BaseDN    string `yaml:"basedn"`
 	BindDN    string `yaml:"binddn"`
@@ -58,11 +64,9 @@ type LDAPConfig struct {
 	UnknownDN string `yaml:"unknowndn"`
 }
 
+// VaultConfig is the client configuration for Vault.
 type VaultConfig struct {
 	Host      string
 	TokenPath string `yaml:"token_path,omitempty"`
 	VaultPath string `yaml:"vault_path,omitempty"`
-}
-
-type EventsConfig struct {
 }

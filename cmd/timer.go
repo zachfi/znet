@@ -23,6 +23,11 @@ func init() {
 }
 
 func runTimer(cmd *cobra.Command, args []string) {
+	formatter := log.TextFormatter{
+		FullTimestamp: true,
+	}
+
+	log.SetFormatter(&formatter)
 	if verbose {
 		log.SetLevel(log.DebugLevel)
 	} else {
@@ -45,8 +50,8 @@ func runTimer(cmd *cobra.Command, args []string) {
 	}
 	defer conn.Close()
 
-	producer := timer.NewProducer(conn, z.Config.Timer)
-	timer.SpawnProducers(producer, z.Config.Timer)
+	// The returned producer is never used.
+	timer.NewProducer(conn, z.Config.Timer)
 
 	sigs := make(chan os.Signal, 1)
 	done := make(chan bool, 1)

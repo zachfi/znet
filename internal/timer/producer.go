@@ -13,17 +13,16 @@ import (
 	"google.golang.org/grpc"
 )
 
-var eventNames []string
-
-// EventProducer implements events.Producer with an attached GRPC connection.
+// EventProducer implements events.Producer with an attached GRPC connection
+// and a configuration.
 type EventProducer struct {
 	conn   *grpc.ClientConn
-	Config TimerConfig
+	Config Config
 }
 
 // NewProducer creates a new EventProducer to implement events.Producer and
 // attach the received GRPC connection.
-func NewProducer(conn *grpc.ClientConn, config TimerConfig) events.Producer {
+func NewProducer(conn *grpc.ClientConn, config Config) events.Producer {
 	var producer events.Producer = &EventProducer{
 		conn:   conn,
 		Config: config,
@@ -37,7 +36,7 @@ func NewProducer(conn *grpc.ClientConn, config TimerConfig) events.Producer {
 
 // SpawnReloader creates a Go routine that waits on a timer for the next
 // midnight to arrive, which schedules the next timers, and the next reloader.
-func SpawnReloader(producer events.Producer, config TimerConfig) {
+func SpawnReloader(producer events.Producer, config Config) {
 	now := time.Now()
 	tomorrowNow := now.Add(time.Hour * 24)
 
@@ -50,7 +49,7 @@ func SpawnReloader(producer events.Producer, config TimerConfig) {
 	timeRemaining := time.Until(nextMidnight)
 
 	log.Debug("spawning timer reloader")
-	go func(timeRemaining time.Duration, producer events.Producer, config TimerConfig) {
+	go func(timeRemaining time.Duration, producer events.Producer, config Config) {
 		t := time.NewTimer(timeRemaining)
 		<-t.C
 
@@ -62,7 +61,7 @@ func SpawnReloader(producer events.Producer, config TimerConfig) {
 // SpawnProducers creates go routines that wait for a period of time and then
 // produce an event.  Only events in the future for the current day are
 // scheduled.  This is called daily by SpawnReloader at midnight.
-func SpawnProducers(producer events.Producer, config TimerConfig) {
+func SpawnProducers(producer events.Producer, config Config) {
 	log.Debug("spawning timers")
 
 	for _, e := range config.Events {
@@ -124,19 +123,19 @@ func SpawnProducers(producer events.Producer, config TimerConfig) {
 	}
 }
 
-func (e *EventProducer) Names() []string {
-	return eventNames
-}
-
+// Produce satisies the events.Producer interface.  Match the supported event
+// types to know which event to notice, and then send notice of the event to
+// the RPC server.
 func (e *EventProducer) Produce(ev interface{}) error {
+	// Create the RPC client
 	ec := pb.NewEventsClient(e.conn)
 	t := reflect.TypeOf(ev).String()
 
 	var req *pb.Event
 
 	switch t {
-	case "timer.TimerExpired":
-		x := ev.(TimerExpired)
+	case "timer.ExpiredTimer":
+		x := ev.(ExpiredTimer)
 		req = x.Make()
 	case "timer.NamedTimer":
 		x := ev.(NamedTimer)
@@ -145,7 +144,7 @@ func (e *EventProducer) Produce(ev interface{}) error {
 		return fmt.Errorf("Unhandled event type: %T", ev)
 	}
 
-	log.Debugf("producing event %+v", req)
+	log.Tracef("producing event %+v", req)
 	res, err := ec.NoticeEvent(context.Background(), req)
 	if err != nil {
 		return err

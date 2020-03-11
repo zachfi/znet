@@ -22,10 +22,10 @@ func (z *Znet) Listen(listenAddr string, ch chan bool) {
 
 	consumers := []events.Consumer{
 		z.Lights,
-		timer.NewConsumer(),
+		z,
 	}
 
-	log.Infof("Consumers: %+v", consumers)
+	log.Tracef("consumers: %+v", consumers)
 
 	z.EventChannel = make(chan events.Event)
 	z.EventConsumers = make(map[string][]events.Handler)
@@ -35,6 +35,12 @@ func (z *Znet) Listen(listenAddr string, ch chan bool) {
 	z.listenRPC()
 
 	z.listener.Listen(listenAddr, ch)
+}
+
+// Subscriptions is yet to be used, but conforms to the interface for generating consumers of named events.
+func (z *Znet) Subscriptions() map[string][]events.Handler {
+	s := events.NewSubscriptions()
+	return s.Table
 }
 
 // listenRPC starts the RPC server and all the services.
@@ -50,21 +56,19 @@ func (z *Znet) listenRPC() {
 			lights: z.Lights,
 		}
 
-		events := []string{
-			"TimerExpired",
-			"NamedTimer",
-		}
-
 		eventServer := &eventServer{
-			eventNames: events,
+			eventNames: timer.EventNames,
 			ch:         z.EventChannel,
 		}
+
+		eventServer.RegisterEvents(timer.EventNames)
 
 		go func() {
 			lis, err := net.Listen("tcp", z.Config.RPC.ListenAddress)
 			if err != nil {
 				log.Fatalf("failed to listen: %v", err)
 			}
+
 			grpcServer := grpc.NewServer()
 
 			pb.RegisterInventoryServer(grpcServer, inventoryServer)
@@ -75,7 +79,6 @@ func (z *Znet) listenRPC() {
 			if err != nil {
 				log.Error(err)
 			}
-
 		}()
 	}
 }

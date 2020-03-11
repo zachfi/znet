@@ -42,8 +42,7 @@ func (l *Lights) Subscriptions() map[string][]events.Handler {
 }
 
 func (l *Lights) eventHandler(bits []byte) error {
-	log.Warnf("Have l: %+v", l)
-	log.Warnf("Lights.eventHandler: %+v", string(bits))
+	log.Tracef("Lights.eventHandler: %+v", string(bits))
 
 	var e timer.NamedTimer
 
@@ -157,10 +156,12 @@ func (l *Lights) Off(groupName string) {
 		log.Error(err)
 	}
 
+	// try the light by group first
 	g, err := l.GetGroup(groupName)
 	if err != nil {
 		log.Error(err)
 
+		// then try to get just the light
 		light, err := l.GetLight(groupName)
 		if err != nil {
 			log.Error(err)
