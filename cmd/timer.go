@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 
+	"github.com/xaque208/znet/internal/astro"
 	"github.com/xaque208/znet/internal/timer"
 	"github.com/xaque208/znet/znet"
 )
@@ -52,6 +53,7 @@ func runTimer(cmd *cobra.Command, args []string) {
 
 	// The returned producer is never used.
 	timer.NewProducer(conn, z.Config.Timer)
+	astro.NewProducer(conn, z.Config.Astro)
 
 	sigs := make(chan os.Signal, 1)
 	done := make(chan bool, 1)

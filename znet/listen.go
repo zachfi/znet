@@ -6,6 +6,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
+	"github.com/xaque208/znet/internal/astro"
 	"github.com/xaque208/znet/internal/events"
 	"github.com/xaque208/znet/internal/timer"
 	pb "github.com/xaque208/znet/rpc"
@@ -62,6 +63,7 @@ func (z *Znet) listenRPC() {
 		}
 
 		eventServer.RegisterEvents(timer.EventNames)
+		eventServer.RegisterEvents(astro.EventNames)
 
 		go func() {
 			lis, err := net.Listen("tcp", z.Config.RPC.ListenAddress)

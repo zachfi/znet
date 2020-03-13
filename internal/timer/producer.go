@@ -123,7 +123,7 @@ func SpawnProducers(producer events.Producer, config Config) {
 	}
 }
 
-// Produce satisies the events.Producer interface.  Match the supported event
+// Produce implements the events.Producer interface.  Match the supported event
 // types to know which event to notice, and then send notice of the event to
 // the RPC server.
 func (e *EventProducer) Produce(ev interface{}) error {

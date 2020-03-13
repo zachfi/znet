@@ -1,6 +1,7 @@
 package znet
 
 import (
+	"github.com/xaque208/znet/internal/astro"
 	"github.com/xaque208/znet/internal/lights"
 	"github.com/xaque208/znet/internal/timer"
 )
@@ -18,6 +19,7 @@ type Config struct {
 	RPC          RPCConfig           `yaml:"rpc,omitempty"`
 	Lights       lights.LightsConfig `yaml:"lights,omitempty"`
 	Timer        timer.Config        `yaml:"timer,omitempty"`
+	Astro        astro.Config        `yaml:"astro,omitempty"`
 }
 
 // EnvironmentConfig is the environment configuration.
