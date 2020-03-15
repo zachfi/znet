@@ -115,7 +115,7 @@ func SpawnProducers(producer events.Producer, config Config) {
 				t := time.Now()
 				event.Time = &t
 
-				log.Info("Producing event %s", event.Name)
+				log.Infof("Producing event %s", event.Name)
 				err := producer.Produce(ev)
 				if err != nil {
 					log.Error(err)
