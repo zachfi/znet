@@ -71,7 +71,6 @@ func listen(cmd *cobra.Command, args []string) {
 
 	viper.SetDefault("nats.url", nats.DefaultURL)
 	viper.SetDefault("nats.topic", "things")
-	viper.SetDefault("redis.host", "localhost")
 
 	viper.AutomaticEnv()
 

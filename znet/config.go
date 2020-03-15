@@ -12,7 +12,6 @@ type Config struct {
 	Environments []EnvironmentConfig `yaml:"environments,omitempty"`
 	Nats         NatsConfig          `yaml:"nats,omitempty"`
 	Junos        JunosConfig         `yaml:"junos,omitempty"`
-	Redis        RedisConfig         `yaml:"redis,omitempty"`
 	HTTP         HTTPConfig          `yaml:"http,omitempty"`
 	LDAP         LDAPConfig          `yaml:"ldap,omitempty"`
 	Vault        VaultConfig         `yaml:"vault,omitempty"`
@@ -32,11 +31,6 @@ type EnvironmentConfig struct {
 type NatsConfig struct {
 	URL   string
 	Topic string
-}
-
-// RedisConfig is the configuration for redis.
-type RedisConfig struct {
-	Host string
 }
 
 // JunosConfig is the configuration for Junos devices.
