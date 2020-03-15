@@ -14,8 +14,8 @@ type Room struct {
 	HueIDs []int  `yaml:"hue"`
 
 	// Names of events
-	On  []string `yaml:"on"`
-	Off []string `yaml:"off"`
+	On  []string `yaml:"turn_on"`
+	Off []string `yaml:"turn_off"`
 	Dim []string `yaml:"dim"`
 }
 
