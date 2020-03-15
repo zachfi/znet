@@ -165,6 +165,16 @@ func SpawnProducers(producer events.Producer, config Config) {
 		}
 
 		if timeUntilSunset > 0 {
+
+			preSunset := timeUntilSunset - (1 * time.Hour)
+
+			preEv := AstroEvent{
+				Name: "PreSunset",
+			}
+
+			log.Debugf("starting timer PreSunset at %s", preSunset)
+			go f(preSunset, producer, preEv)
+
 			ev := AstroEvent{
 				Name: "Sunset",
 			}
