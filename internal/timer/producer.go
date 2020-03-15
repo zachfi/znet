@@ -102,18 +102,20 @@ func SpawnProducers(producer events.Producer, config Config) {
 		}
 
 		if timeRemaining > 0 {
-			t := time.Now()
 			ev := NamedTimer{
 				Name: e.Produce,
-				Time: &t,
 			}
 
 			log.Debugf("starting timer %s ending at %+s", e.Produce, d)
 
 			go func(timeRemaining time.Duration, producer events.Producer, event NamedTimer) {
-				t := time.NewTimer(timeRemaining)
-				<-t.C
+				ti := time.NewTimer(timeRemaining)
+				<-ti.C
 
+				t := time.Now()
+				event.Time = &t
+
+				log.Info("Producing event %s", event.Name)
 				err := producer.Produce(ev)
 				if err != nil {
 					log.Error(err)
