@@ -32,7 +32,7 @@ func runTimer(cmd *cobra.Command, args []string) {
 	if verbose {
 		log.SetLevel(log.DebugLevel)
 	} else {
-		log.SetLevel(log.WarnLevel)
+		log.SetLevel(log.InfoLevel)
 	}
 
 	z, err := znet.NewZnet(cfgFile)
