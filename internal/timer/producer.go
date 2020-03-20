@@ -106,7 +106,7 @@ func SpawnProducers(producer events.Producer, config Config) {
 				Name: e.Produce,
 			}
 
-			log.Debugf("starting timer %s ending at %+s", e.Produce, d)
+			log.Infof("starting timer %s ending at %+s", e.Produce, d)
 
 			go func(timeRemaining time.Duration, producer events.Producer, event NamedTimer) {
 				ti := time.NewTimer(timeRemaining)

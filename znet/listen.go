@@ -47,7 +47,7 @@ func (z *Znet) Subscriptions() map[string][]events.Handler {
 // listenRPC starts the RPC server and all the services.
 func (z *Znet) listenRPC() {
 	if z.Config.RPC.ListenAddress != "" {
-		log.Debugf("Starting RPC listener on %s", z.Config.RPC.ListenAddress)
+		log.Infof("Starting RPC listener on %s", z.Config.RPC.ListenAddress)
 
 		inventoryServer := &inventoryServer{
 			inventory: z.Inventory,
@@ -120,7 +120,7 @@ func (z *Znet) initEventConsumer() {
 			log.Warnf("z.EventConsumers: %+v", z.EventConsumers)
 
 			if handlers, ok := z.EventConsumers[e.Name]; ok {
-				log.Infof("Handling message %s", e.Name)
+				log.Infof("handling message %s", e.Name)
 				for _, h := range handlers {
 					h(e.Payload)
 				}
