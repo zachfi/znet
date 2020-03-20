@@ -37,7 +37,7 @@ func runTimer(cmd *cobra.Command, args []string) {
 
 	z, err := znet.NewZnet(cfgFile)
 	if err != nil {
-		log.Error(err)
+		log.Fatal(err)
 	}
 
 	z.Config.RPC.ServerAddress = viper.GetString("rpc.server")

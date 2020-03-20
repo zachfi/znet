@@ -48,7 +48,7 @@ func NewZnet(file string) (*Znet, error) {
 	var ldapClient *ldap.Conn
 	ldapClient, err = NewLDAPClient(config.LDAP)
 	if err != nil {
-		return &Znet{}, fmt.Errorf("Failed LDAP connection: %s", err)
+		log.Errorf("failed LDAP connection: %s", err)
 	}
 
 	e, err := GetEnvironmentConfig(config.Environments, "common")
