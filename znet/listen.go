@@ -117,7 +117,7 @@ func (z *Znet) initEventConsumers(consumers []events.Consumer) {
 func (z *Znet) initEventConsumer() {
 	go func(ch chan events.Event) {
 		for e := range ch {
-			log.Warnf("z.EventConsumers: %+v", z.EventConsumers)
+			log.Debugf("z.EventConsumers: %+v", z.EventConsumers)
 
 			if handlers, ok := z.EventConsumers[e.Name]; ok {
 				log.Infof("handling message %s", e.Name)

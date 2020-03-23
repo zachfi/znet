@@ -60,7 +60,7 @@ func init() {
 	if verbose {
 		log.SetLevel(log.DebugLevel)
 	} else {
-		log.SetLevel(log.WarnLevel)
+		log.SetLevel(log.InfoLevel)
 	}
 }
 
