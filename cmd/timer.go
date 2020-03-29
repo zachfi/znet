@@ -45,15 +45,27 @@ func runTimer(cmd *cobra.Command, args []string) {
 	var opts []grpc.DialOption
 	opts = append(opts, grpc.WithInsecure())
 
-	conn, err := grpc.Dial(z.Config.RPC.ServerAddress, opts...)
+	xConn, err := grpc.Dial(z.Config.RPC.ServerAddress, opts...)
 	if err != nil {
 		log.Error(err)
 	}
-	defer conn.Close()
+	defer xConn.Close()
 
-	// The returned producer is never used.
-	timer.NewProducer(conn, z.Config.Timer)
-	astro.NewProducer(conn, z.Config.Astro)
+	yConn, err := grpc.Dial(z.Config.RPC.ServerAddress, opts...)
+	if err != nil {
+		log.Error(err)
+	}
+	defer yConn.Close()
+
+	y := astro.NewProducer(yConn, z.Config.Astro)
+	y.Start()
+
+	x := timer.NewProducer(xConn, z.Config.Timer)
+	x.Start()
+
+	// log.Infof("x: %+v", x)
+	// log.Infof("y: %+v", y)
+	//
 
 	sigs := make(chan os.Signal, 1)
 	done := make(chan bool, 1)
@@ -65,4 +77,6 @@ func runTimer(cmd *cobra.Command, args []string) {
 	}()
 
 	<-done
+	y.Stop()
+	x.Stop()
 }
