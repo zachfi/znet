@@ -17,12 +17,12 @@ import (
 type Lights struct {
 	RFToy  *rftoy.RFToy
 	HUE    *huego.Bridge
-	config LightsConfig
+	config Config
 }
 
 // NewLights creates and returns a new Lights object based on the received
 // configuration.
-func NewLights(config LightsConfig) *Lights {
+func NewLights(config Config) *Lights {
 	return &Lights{
 		HUE:    huego.New(config.Hue.Endpoint, config.Hue.User),
 		RFToy:  &rftoy.RFToy{Address: config.RFToy.Endpoint},
@@ -34,6 +34,8 @@ func NewLights(config LightsConfig) *Lights {
 func (l *Lights) Subscriptions() map[string][]events.Handler {
 	s := events.NewSubscriptions()
 
+	s.Subscribe("PreSunset", l.eventHandler)
+	s.Subscribe("Sunset", l.eventHandler)
 	s.Subscribe("Sunrise", l.eventHandler)
 	s.Subscribe("TimerExpired", l.eventHandler)
 	s.Subscribe("NamedTimer", l.eventHandler)
@@ -41,12 +43,12 @@ func (l *Lights) Subscriptions() map[string][]events.Handler {
 	return s.Table
 }
 
-func (l *Lights) eventHandler(bits []byte) error {
-	log.Tracef("Lights.eventHandler: %+v", string(bits))
+func (l *Lights) eventHandler(payload events.Payload) error {
+	log.Debugf("Lights.eventHandler: %+v", string(payload))
 
 	var e timer.NamedTimer
 
-	err := json.Unmarshal(bits, &e)
+	err := json.Unmarshal(payload, &e)
 	if err != nil {
 		return fmt.Errorf("failed to unmarshal %T: %s", e, err)
 	}
@@ -70,18 +72,26 @@ func (l *Lights) eventHandler(bits []byte) error {
 			}
 		}
 
+		for _, o := range room.Alert {
+			if o == e.Name {
+				l.Alert(room.Name, "alert")
+			}
+		}
+
 	}
 
 	return nil
 }
 
-// GetLight calls the Hue bridge and looks for a light, that, when normalized,
+// getLight calls the Hue bridge and looks for a light, that, when normalized,
 // matches the name received.
-func (l *Lights) GetLight(lightName string) (*huego.Light, error) {
+func (l *Lights) getLight(lightName string) (*huego.Light, error) {
 	lights, err := l.HUE.GetLights()
 	if err != nil {
 		log.Error(err)
 	}
+
+	log.Tracef("lights: %+v", lights)
 
 	for _, g := range lights {
 		flatName := strings.ToLower(strings.ReplaceAll(g.Name, " ", "_"))
@@ -92,16 +102,18 @@ func (l *Lights) GetLight(lightName string) (*huego.Light, error) {
 
 	}
 
-	return &huego.Light{}, fmt.Errorf("Light %s not found", lightName)
+	return &huego.Light{}, fmt.Errorf("light %s not found", lightName)
 }
 
 // GetGroup calls the Hue bridge and looks for a group, that, when normalized,
 // matches the name received.
-func (l *Lights) GetGroup(groupName string) (*huego.Group, error) {
+func (l *Lights) getGroup(groupName string) (*huego.Group, error) {
 	groups, err := l.HUE.GetGroups()
 	if err != nil {
 		log.Error(err)
 	}
+
+	log.Tracef("found HUE groups: %+v", groups)
 
 	for _, g := range groups {
 		flatName := strings.ToLower(strings.ReplaceAll(g.Name, " ", "_"))
@@ -111,7 +123,7 @@ func (l *Lights) GetGroup(groupName string) (*huego.Group, error) {
 		}
 	}
 
-	return &huego.Group{}, fmt.Errorf("Group %s not found", groupName)
+	return &huego.Group{}, fmt.Errorf("group %s not found", groupName)
 }
 
 // On turns off the Hue lights for a room.
@@ -121,25 +133,25 @@ func (l *Lights) On(groupName string) {
 		log.Error(err)
 	}
 
-	g, err := l.GetGroup(groupName)
+	g, err := l.getGroup(groupName)
 	if err != nil {
 		log.Error(err)
 
-		light, err := l.GetLight(groupName)
+		light, err := l.getLight(groupName)
 		if err != nil {
 			log.Error(err)
 		} else {
-			log.Debugf("Turning on light %s", light.Name)
+			log.Debugf("turning on light %s", light.Name)
 			light.On()
 		}
 
 	} else {
-		log.Debugf("Turning on light group %s", g.Name)
+		log.Debugf("turning on light group %s", g.Name)
 		g.On()
 	}
 
 	if len(room.IDs) > 0 {
-		log.Debugf("Turning on rftoy lights: %+v", room.IDs)
+		log.Debugf("turning on rftoy lights: %+v", room.IDs)
 		for _, i := range room.IDs {
 			err := l.RFToy.On(i)
 			if err != nil {
@@ -157,21 +169,21 @@ func (l *Lights) Off(groupName string) {
 	}
 
 	// try the light by group first
-	g, err := l.GetGroup(groupName)
+	g, err := l.getGroup(groupName)
 	if err != nil {
 		log.Error(err)
 
 		// then try to get just the light
-		light, err := l.GetLight(groupName)
+		light, err := l.getLight(groupName)
 		if err != nil {
 			log.Error(err)
 		} else {
-			log.Debugf("Turning off light %s", light.Name)
+			log.Debugf("turning off light %s", light.Name)
 			light.Off()
 		}
 
 	} else {
-		log.Debugf("Turning off light group %s", g.Name)
+		log.Debugf("turning off light group %s", g.Name)
 		g.Off()
 	}
 
@@ -206,6 +218,33 @@ func (l *Lights) Dim(groupName string, brightness int32) {
 					log.Error(err)
 				}
 			}
+		}
+	}
+}
+
+func (l *Lights) Alert(groupName string, alertName string) {
+	g, err := l.getGroup(groupName)
+	if err != nil {
+		log.Error(err)
+
+		// then try to get just the light
+		light, err := l.getLight(groupName)
+		if err != nil {
+			log.Error(err)
+		} else {
+			log.Debugf("alert light %s", light.Name)
+
+			err := light.Alert("select")
+			if err != nil {
+				log.Error(err)
+			}
+		}
+
+	} else {
+		log.Debugf("alert light group %s", g.Name)
+		err := g.Alert("select")
+		if err != nil {
+			log.Error(err)
 		}
 	}
 }

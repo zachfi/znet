@@ -19,8 +19,9 @@ import (
 
 // EventProducer implements events.Producer with an attached GRPC connection.
 type EventProducer struct {
-	conn   *grpc.ClientConn
-	Config Config
+	conn    *grpc.ClientConn
+	config  Config
+	diechan chan bool
 }
 
 // NewProducer creates a new EventProducer to implement events.Producer and
@@ -28,37 +29,100 @@ type EventProducer struct {
 func NewProducer(conn *grpc.ClientConn, config Config) events.Producer {
 	var producer events.Producer = &EventProducer{
 		conn:   conn,
-		Config: config,
+		config: config,
 	}
-
-	SpawnReloader(producer, config)
-	SpawnProducers(producer, config)
 
 	return producer
 }
 
-// SpawnReloader creates a Go routine that waits on a timer for the next
-// midnight to arrive, which schedules the next timers, and the next reloader.
-func SpawnReloader(producer events.Producer, config Config) {
-	now := time.Now()
-	tomorrowNow := now.Add(time.Hour * 24)
+func (e *EventProducer) Start() error {
+	log.Info("starting astro eventProducer")
 
-	loc, err := time.LoadLocation(config.TimeZone)
+	e.diechan = make(chan bool)
+	e.scheduler()
+	log.Error("FUCK")
+
+	return nil
+}
+
+func (e *EventProducer) Stop() error {
+	e.diechan <- true
+	close(e.diechan)
+
+	return nil
+}
+
+func (e *EventProducer) scheduleEvents(sch *events.Scheduler) error {
+	clientConf := api.Config{
+		Address: e.config.MetricsURL,
+	}
+
+	client, err := api.NewClient(clientConf)
 	if err != nil {
 		log.Error(err)
 	}
 
-	nextMidnight := time.Date(tomorrowNow.Year(), tomorrowNow.Month(), tomorrowNow.Day(), 0, 0, 0, 0, loc)
-	timeRemaining := time.Until(nextMidnight)
+	for _, l := range e.config.Locations {
+		sunriseTime := queryForTime(client, fmt.Sprintf("owm_sunrise_time{location=\"%s\"}", l))
+		sunsetTime := queryForTime(client, fmt.Sprintf("owm_sunset_time{location=\"%s\"}", l))
 
-	log.Debug("spawning astro reloader")
-	go func(timeRemaining time.Duration, producer events.Producer, config Config) {
-		t := time.NewTimer(timeRemaining)
-		<-t.C
+		sch.Set(sunriseTime, "Sunrise")
+		sch.Set(sunsetTime, "Sunset")
 
-		SpawnReloader(producer, config)
-		SpawnProducers(producer, config)
-	}(timeRemaining, producer, config)
+		preSunset := sunsetTime.Add(-1 * time.Hour)
+
+		sch.Set(preSunset, "PreSunset")
+	}
+
+	return nil
+}
+
+func (e *EventProducer) scheduler() error {
+	log.Debug("timer scheduler started")
+
+	sch := events.NewScheduler()
+
+	e.scheduleEvents(sch)
+	// e.scheduleRepeatEvents(sch)
+
+	log.Infof("%d astro events scheduled", len(sch.All()))
+
+	otherchan := make(chan bool, 1)
+
+	go func() {
+		for {
+			log.Info("astro")
+			names := sch.WaitForNext()
+
+			for _, n := range names {
+				now := time.Now()
+
+				ev := AstroEvent{
+					Name: n,
+					Time: &now,
+				}
+
+				err := e.Produce(ev)
+				if err != nil {
+					log.Error(err)
+				}
+
+				sch.Step()
+			}
+		}
+	}()
+
+	for {
+		select {
+		case <-otherchan:
+
+		case <-e.diechan:
+			log.Debugf("scheduler dying")
+			return nil
+		}
+	}
+
+	return nil
 }
 
 // Produce implements the events.Producer interface.  Match the supported event
@@ -76,10 +140,10 @@ func (e *EventProducer) Produce(ev interface{}) error {
 		x := ev.(AstroEvent)
 		req = x.Make()
 	default:
-		return fmt.Errorf("Unhandled event type: %T", ev)
+		return fmt.Errorf("unhandled event type: %T", ev)
 	}
 
-	log.Tracef("producing event %+v", req)
+	log.Tracef("producing RPC event %+v", req)
 	res, err := ec.NoticeEvent(context.Background(), req)
 	if err != nil {
 		return err
@@ -121,68 +185,4 @@ func queryForTime(client api.Client, query string) time.Time {
 	}
 
 	return time.Time{}
-}
-
-func SpawnProducers(producer events.Producer, config Config) {
-
-	clientConf := api.Config{
-		Address: config.MetricsURL,
-	}
-
-	client, err := api.NewClient(clientConf)
-	if err != nil {
-		log.Error(err)
-	}
-
-	for _, l := range config.Locations {
-		sunriseTime := queryForTime(client, fmt.Sprintf("owm_sunrise_time{location=\"%s\"}", l))
-		sunsetTime := queryForTime(client, fmt.Sprintf("owm_sunset_time{location=\"%s\"}", l))
-
-		timeUntilSunrise := time.Until(sunriseTime)
-		timeUntilSunset := time.Until(sunsetTime)
-
-		// The function to create the RPC event.
-		f := func(timeRemaining time.Duration, producer events.Producer, event AstroEvent) {
-			t := time.NewTimer(timeRemaining)
-			<-t.C
-
-			now := time.Now()
-			event.Time = &now
-
-			err := producer.Produce(event)
-			if err != nil {
-				log.Error(err)
-			}
-		}
-
-		if timeUntilSunrise > 0 {
-			ev := AstroEvent{
-				Name: "Sunrise",
-			}
-
-			log.Debugf("starting timer Sunrise at %s", sunsetTime)
-			go f(timeUntilSunrise, producer, ev)
-		}
-
-		if timeUntilSunset > 0 {
-
-			preSunset := timeUntilSunset - (1 * time.Hour)
-
-			preEv := AstroEvent{
-				Name: "PreSunset",
-			}
-
-			log.Debugf("starting timer PreSunset at %s", preSunset)
-			go f(preSunset, producer, preEv)
-
-			ev := AstroEvent{
-				Name: "Sunset",
-			}
-
-			log.Debugf("starting timer Sunset at %s", sunsetTime)
-			go f(timeUntilSunset, producer, ev)
-		}
-
-	}
-
 }

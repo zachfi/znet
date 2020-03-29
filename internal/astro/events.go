@@ -13,9 +13,7 @@ var EventNames []string
 
 func init() {
 	EventNames = []string{
-		"PreSunset",
-		"Sunrise",
-		"Sunset",
+		"AstroEvent",
 	}
 }
 

@@ -16,7 +16,7 @@ type Config struct {
 	LDAP         LDAPConfig          `yaml:"ldap,omitempty"`
 	Vault        VaultConfig         `yaml:"vault,omitempty"`
 	RPC          RPCConfig           `yaml:"rpc,omitempty"`
-	Lights       lights.LightsConfig `yaml:"lights,omitempty"`
+	Lights       lights.Config       `yaml:"lights,omitempty"`
 	Timer        timer.Config        `yaml:"timer,omitempty"`
 	Astro        astro.Config        `yaml:"astro,omitempty"`
 }
