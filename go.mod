@@ -6,6 +6,7 @@ require (
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
 	github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d // indirect
 	github.com/amimof/huego v0.0.0-20191031212646-fbe1857ba8f5
+	github.com/apex/log v1.1.2
 	github.com/frankban/quicktest v1.7.2 // indirect
 	github.com/go-ldap/ldap v3.0.2+incompatible
 	github.com/go-openapi/strfmt v0.19.3 // indirect

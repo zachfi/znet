@@ -16,8 +16,9 @@ import (
 // EventProducer implements events.Producer with an attached GRPC connection
 // and a configuration.
 type EventProducer struct {
-	conn   *grpc.ClientConn
-	Config Config
+	conn    *grpc.ClientConn
+	config  Config
+	diechan chan bool
 }
 
 // NewProducer creates a new EventProducer to implement events.Producer and
@@ -25,53 +26,39 @@ type EventProducer struct {
 func NewProducer(conn *grpc.ClientConn, config Config) events.Producer {
 	var producer events.Producer = &EventProducer{
 		conn:   conn,
-		Config: config,
+		config: config,
 	}
-
-	SpawnReloader(producer, config)
-	SpawnProducers(producer, config)
 
 	return producer
 }
 
-// SpawnReloader creates a Go routine that waits on a timer for the next
-// midnight to arrive, which schedules the next timers, and the next reloader.
-func SpawnReloader(producer events.Producer, config Config) {
-	now := time.Now()
-	tomorrowNow := now.Add(time.Hour * 24)
+func (e *EventProducer) Start() error {
+	log.Info("starting timer eventProducer")
 
-	loc, err := time.LoadLocation(config.TimeZone)
-	if err != nil {
-		log.Error(err)
-	}
+	e.diechan = make(chan bool)
+	e.scheduler()
 
-	nextMidnight := time.Date(tomorrowNow.Year(), tomorrowNow.Month(), tomorrowNow.Day(), 0, 0, 0, 0, loc)
-	timeRemaining := time.Until(nextMidnight)
-
-	log.Debug("spawning timer reloader")
-	go func(timeRemaining time.Duration, producer events.Producer, config Config) {
-		t := time.NewTimer(timeRemaining)
-		<-t.C
-
-		SpawnReloader(producer, config)
-		SpawnProducers(producer, config)
-	}(timeRemaining, producer, config)
+	return nil
 }
 
-// SpawnProducers creates go routines that wait for a period of time and then
-// produce an event.  Only events in the future for the current day are
-// scheduled.  This is called daily by SpawnReloader at midnight.
-func SpawnProducers(producer events.Producer, config Config) {
-	log.Debug("spawning timers")
+func (e *EventProducer) Stop() error {
+	e.diechan <- true
+	close(e.diechan)
 
-	for _, e := range config.Events {
-		loc, err := time.LoadLocation(config.TimeZone)
+	return nil
+}
+
+func (e *EventProducer) scheduleEvents(scheduledEvents *events.Scheduler) error {
+
+	for _, v := range e.config.Events {
+
+		loc, err := time.LoadLocation(e.config.TimeZone)
 		if err != nil {
 			log.Error(err)
 			continue
 		}
 
-		t, err := time.ParseInLocation("15:04:05", e.Time, loc)
+		t, err := time.ParseInLocation("15:04:05", v.Time, loc)
 		if err != nil {
 			log.Error(err)
 			continue
@@ -89,7 +76,7 @@ func SpawnProducers(producer events.Producer, config Config) {
 			}
 
 			return false
-		}(e.Days)
+		}(v.Days)
 
 		if !weekDayMatch {
 			log.Tracef("skipping non-weekday match")
@@ -101,28 +88,94 @@ func SpawnProducers(producer events.Producer, config Config) {
 			continue
 		}
 
+		log.Infof("future event: %+v", d)
+
 		if timeRemaining > 0 {
-			ev := NamedTimer{
-				Name: e.Produce,
+			scheduledEvents.Set(d, v.Produce)
+		}
+
+	}
+
+	return nil
+}
+
+func (e *EventProducer) scheduleRepeatEvents(scheduledEvents *events.Scheduler) error {
+
+	// Stop calculating events beyond this time.
+	end := time.Now().Add(time.Duration(e.config.FutureLimit) * time.Second)
+	scheduledEvents.Set(end, "ReloadConfig")
+
+	for _, v := range e.config.RepeatEvents {
+		next := time.Now()
+		for {
+			next = next.Add(time.Duration(v.Every.Seconds) * time.Second)
+
+			log.Tracef("Repeat evert is: %+v", v.Every.Seconds)
+			log.Tracef("Next is: %+v", next)
+			log.Tracef("End is: %+v", end)
+			log.Tracef("next.Before(end) is: %+v", next.Before(end))
+
+			// TODO make the map handling here simpler.  Perhaps use the Scheduler interface
+			// e.Schedule.Set(next, v.Produce)
+
+			if next.Before(end) {
+				scheduledEvents.Set(next, v.Produce)
+				continue
 			}
 
-			log.Infof("starting timer %s ending at %+s", e.Produce, d)
+			break
+		}
+	}
 
-			go func(timeRemaining time.Duration, producer events.Producer, event NamedTimer) {
-				ti := time.NewTimer(timeRemaining)
-				<-ti.C
+	return nil
+}
 
-				t := time.Now()
-				event.Time = &t
+func (e *EventProducer) scheduler() error {
+	log.Debug("timer scheduler started")
 
-				log.Infof("Producing event %s", event.Name)
-				err := producer.Produce(ev)
+	sch := events.NewScheduler()
+
+	e.scheduleEvents(sch)
+	e.scheduleRepeatEvents(sch)
+
+	log.Infof("%d timer events scheduled", len(sch.All()))
+
+	otherchan := make(chan bool, 1)
+
+	go func() {
+		for {
+			names := sch.WaitForNext()
+
+			for _, n := range names {
+				now := time.Now()
+
+				ev := NamedTimer{
+					Name: n,
+					Time: &now,
+				}
+
+				err := e.Produce(ev)
+>>>>>>> 3e68a2c... chore(internal): update to the new contract
 				if err != nil {
 					log.Error(err)
 				}
-			}(timeRemaining, producer, ev)
+
+				sch.Step()
+			}
+		}
+	}()
+
+	for {
+		select {
+		case <-otherchan:
+
+		case <-e.diechan:
+			log.Debugf("scheduler dying")
+			return nil
 		}
 	}
+
+	return nil
 }
 
 // Produce implements the events.Producer interface.  Match the supported event
@@ -143,10 +196,10 @@ func (e *EventProducer) Produce(ev interface{}) error {
 		x := ev.(NamedTimer)
 		req = x.Make(x.Name)
 	default:
-		return fmt.Errorf("Unhandled event type: %T", ev)
+		return fmt.Errorf("unhandled event type: %T", ev)
 	}
 
-	log.Tracef("producing event %+v", req)
+	log.Tracef("producing RPC event %+v", req)
 	res, err := ec.NoticeEvent(context.Background(), req)
 	if err != nil {
 		return err

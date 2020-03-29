@@ -40,7 +40,6 @@ func (e *EventProducer) Start() error {
 
 	e.diechan = make(chan bool)
 	e.scheduler()
-	log.Error("FUCK")
 
 	return nil
 }
