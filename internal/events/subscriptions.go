@@ -7,11 +7,9 @@ type Subscriptions struct {
 
 // NewSubscriptions creates a new Subscriptions object.
 func NewSubscriptions() Subscriptions {
-	s := Subscriptions{
+	return Subscriptions{
 		Table: make(map[string][]Handler),
 	}
-
-	return s
 }
 
 // Subscribe updates the table for a given event name with a given handler.
