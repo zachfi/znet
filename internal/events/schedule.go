@@ -7,26 +7,29 @@ import (
 	"github.com/apex/log"
 )
 
-// Scheduler
+// Scheduler holds timeSlice objects and provides an methods to update them..
 type Scheduler struct {
-	timeSlice *timeSlice
+	timeSlice *TimeSlice
 }
 
+// NewScheduler returns a new Scheduler.
 func NewScheduler() *Scheduler {
 	return &Scheduler{
-		timeSlice: &timeSlice{},
+		timeSlice: &TimeSlice{},
 	}
 }
 
-func (s *Scheduler) All() timeSlice {
+// All returns all current timeSlice objects.
+func (s *Scheduler) All() TimeSlice {
 	return *s.timeSlice
 }
 
+// Next determines the next occurring event in the series.
 func (s *Scheduler) Next() time.Time {
 
 	keys := []time.Time{}
 
-	for k, _ := range *s.timeSlice {
+	for k := range *s.timeSlice {
 		keys = append(keys, k)
 	}
 
@@ -37,10 +40,13 @@ func (s *Scheduler) Next() time.Time {
 	return keys[0]
 }
 
+// NamesForTime returns all events names that are scheduled for a given timeSlice.
 func (s *Scheduler) NamesForTime(t time.Time) []string {
 	return (*s.timeSlice)[t]
 }
 
+// WaitForNext is a blocking function that waits for the next available time to
+// arrive before returning the names to the caller.
 func (s *Scheduler) WaitForNext() []string {
 	next := s.Next()
 
@@ -56,10 +62,14 @@ func (s *Scheduler) WaitForNext() []string {
 	return s.NamesForTime(next)
 }
 
+// Step deletes the next timeslice.  This is determined to be the timeslice
+// that has just run.  The expectataion is that Step() is called once the
+// events have completed firing to advance to the next position in time.
 func (s *Scheduler) Step() {
 	delete(*s.timeSlice, s.Next())
 }
 
+// Set appends the name given to the time slot given.
 func (s *Scheduler) Set(t time.Time, name string) {
 
 	if _, ok := (*s.timeSlice)[t]; !ok {
@@ -82,4 +92,5 @@ func (s *Scheduler) Set(t time.Time, name string) {
 
 }
 
-type timeSlice map[time.Time][]string
+// TimeSlice is an association between a specific time, and the names of the events that should fire at that time.
+type TimeSlice map[time.Time][]string

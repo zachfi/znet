@@ -13,6 +13,7 @@ import (
 	junos "github.com/scottdware/go-junos"
 	log "github.com/sirupsen/logrus"
 	"github.com/tcnksm/go-input"
+
 	"github.com/xaque208/znet/internal/events"
 	"github.com/xaque208/znet/internal/lights"
 )
@@ -145,7 +146,7 @@ func (z *Znet) ConfigureNetworkHost(host *NetworkHost, commit bool, auth *junos.
 
 	err = session.Config(renderedTemplates, "text", false)
 	if err != nil {
-		return fmt.Errorf("Unable to load configuration on %s: %s", host.HostName, err)
+		return fmt.Errorf("unable to load configuration on %s: %s", host.HostName, err)
 	}
 
 	diff, err := session.Diff(0)
@@ -154,7 +155,7 @@ func (z *Znet) ConfigureNetworkHost(host *NetworkHost, commit bool, auth *junos.
 	}
 
 	if len(diff) > 1 {
-		log.Infof("Configuration changes for %s: %s", host.HostName, diff)
+		log.Infof("configuration changes for %s: %s", host.HostName, diff)
 
 		if commit {
 			err = session.Commit()
@@ -173,6 +174,7 @@ func (z *Znet) ConfigureNetworkHost(host *NetworkHost, commit bool, auth *junos.
 	return nil
 }
 
+// AdoptUnknownHost converts an UnknownHost into a known host in LDAP.
 func (z *Znet) AdoptUnknownHost(u UnknownHost, baseDN string) {
 	log.Infof("Adopting host: %+v", u)
 
@@ -208,7 +210,7 @@ func (z *Znet) AdoptUnknownHost(u UnknownHost, baseDN string) {
 
 	d := ldap.NewDelRequest(delDN, []ldap.Control{})
 
-	log.Infof("Deleting object: %s", d)
+	log.Infof("deleting object: %s", d)
 	err = z.Inventory.ldapClient.Del(d)
 	if err != nil {
 		log.Error(err)
@@ -289,9 +291,9 @@ func (z *Znet) TemplatesForDevice(host NetworkHost) []string {
 		templateAbs := fmt.Sprintf("%s/%s/%s", z.ConfigDir, z.Data.TemplateDir, p)
 		if _, err := os.Stat(templateAbs); err == nil {
 			globPattern := fmt.Sprintf("%s/*.tmpl", templateAbs)
-			foundFiles, err := filepath.Glob(globPattern)
-			if err != nil {
-				log.Error(err)
+			foundFiles, globErr := filepath.Glob(globPattern)
+			if globErr != nil {
+				log.Error(globErr)
 			} else {
 				files = append(files, foundFiles...)
 			}

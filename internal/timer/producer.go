@@ -8,9 +8,10 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
+
 	"github.com/xaque208/znet/internal/events"
 	pb "github.com/xaque208/znet/rpc"
-	"google.golang.org/grpc"
 )
 
 // EventProducer implements events.Producer with an attached GRPC connection
@@ -32,15 +33,20 @@ func NewProducer(conn *grpc.ClientConn, config Config) events.Producer {
 	return producer
 }
 
+// Start initializes the producer.
 func (e *EventProducer) Start() error {
 	log.Info("starting timer eventProducer")
 
 	e.diechan = make(chan bool)
-	e.scheduler()
+	err := e.scheduler()
+	if err != nil {
+		log.Error(err)
+	}
 
 	return nil
 }
 
+// Stop shuts down the producer.
 func (e *EventProducer) Stop() error {
 	e.diechan <- true
 	close(e.diechan)
@@ -84,7 +90,7 @@ func (e *EventProducer) scheduleEvents(scheduledEvents *events.Scheduler) error 
 		}
 
 		if timeRemaining <= 0 {
-			log.Tracef("skipping past event %s", e.Produce)
+			log.Tracef("skipping past event %s", v.Produce)
 			continue
 		}
 
@@ -135,8 +141,15 @@ func (e *EventProducer) scheduler() error {
 
 	sch := events.NewScheduler()
 
-	e.scheduleEvents(sch)
-	e.scheduleRepeatEvents(sch)
+	err := e.scheduleEvents(sch)
+	if err != nil {
+		log.Error(err)
+	}
+
+	err = e.scheduleRepeatEvents(sch)
+	if err != nil {
+		log.Error(err)
+	}
 
 	log.Infof("%d timer events scheduled", len(sch.All()))
 
@@ -175,7 +188,6 @@ func (e *EventProducer) scheduler() error {
 		}
 	}
 
-	return nil
 }
 
 // Produce implements the events.Producer interface.  Match the supported event

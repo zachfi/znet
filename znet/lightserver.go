@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
+
 	"github.com/xaque208/znet/internal/lights"
 	pb "github.com/xaque208/znet/rpc"
 )
@@ -54,7 +55,7 @@ func (l *lightServer) Status(ctx context.Context, request *pb.LightRequest) (*pb
 		newName := strings.ToLower(strings.ReplaceAll(light.Name, " ", "_"))
 
 		if light.Name != newName {
-			err := light.Rename(newName)
+			err = light.Rename(newName)
 			if err != nil {
 				log.Error(err)
 			}
@@ -119,7 +120,7 @@ func (l *lightServer) Alert(ctx context.Context, request *pb.LightGroup) (*pb.Li
 
 	log.Infof("request: %+v", *request)
 
-	l.lights.Alert(request.Name, "select")
+	l.lights.Alert(request.Name)
 
 	return response, nil
 }

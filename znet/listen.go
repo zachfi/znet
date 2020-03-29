@@ -6,11 +6,12 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
+
 	"github.com/xaque208/znet/internal/astro"
 	"github.com/xaque208/znet/internal/events"
 	"github.com/xaque208/znet/internal/timer"
 	pb "github.com/xaque208/znet/rpc"
-	"google.golang.org/grpc"
 )
 
 // Listen starts the znet listener.  The Listener is responsible for starting
@@ -109,9 +110,7 @@ func (z *Znet) initEventConsumers(consumers []events.Consumer) {
 	for _, e := range consumers {
 		subs := e.Subscriptions()
 		for k, handlers := range subs {
-			for _, x := range handlers {
-				z.EventConsumers[k] = append(z.EventConsumers[k], x)
-			}
+			z.EventConsumers[k] = append(z.EventConsumers[k], handlers...)
 		}
 	}
 }
@@ -126,7 +125,10 @@ func (z *Znet) initEventConsumer() {
 			if handlers, ok := z.EventConsumers[e.Name]; ok {
 				log.Tracef("listener heard event %s: %s", e.Name, string(e.Payload))
 				for _, h := range handlers {
-					h(e.Payload)
+					err := h(e.Payload)
+					if err != nil {
+						log.Error(err)
+					}
 				}
 			}
 		}

@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	log "github.com/sirupsen/logrus"
+
 	"github.com/xaque208/znet/internal/events"
 	pb "github.com/xaque208/znet/rpc"
 )
@@ -32,27 +33,26 @@ func (e *eventServer) RegisterEvents(nameSet ...[]string) {
 	}
 
 	for _, set := range nameSet {
-		for _, s := range set {
-			e.eventNames = append(e.eventNames, s)
-		}
+		e.eventNames = append(e.eventNames, set...)
 	}
 }
 
-func (l *eventServer) NoticeEvent(ctx context.Context, request *pb.Event) (*pb.EventResponse, error) {
+// NoticeEvent is the call when an event should be fired.
+func (e *eventServer) NoticeEvent(ctx context.Context, request *pb.Event) (*pb.EventResponse, error) {
 	response := &pb.EventResponse{}
 
-	if l.ValidEventName(request.Name) {
+	if e.ValidEventName(request.Name) {
 		ev := events.Event{
 			Name:    request.Name,
 			Payload: request.Payload,
 		}
 
-		l.ch <- ev
+		e.ch <- ev
 	} else {
 		response.Errors = true
 		response.Message = fmt.Sprintf("unknown RPC event name: %s", request.Name)
 		log.Tracef("payload: %s", request.Payload)
-		log.Tracef("known events: %+v", l.eventNames)
+		log.Tracef("known events: %+v", e.eventNames)
 	}
 
 	return response, nil

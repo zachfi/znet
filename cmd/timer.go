@@ -49,19 +49,37 @@ func runTimer(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Error(err)
 	}
-	defer xConn.Close()
+
+	defer func() {
+		err = xConn.Close()
+		if err != nil {
+			log.Error(err)
+		}
+	}()
 
 	yConn, err := grpc.Dial(z.Config.RPC.ServerAddress, opts...)
 	if err != nil {
 		log.Error(err)
 	}
-	defer yConn.Close()
+
+	defer func() {
+		err = yConn.Close()
+		if err != nil {
+			log.Error(err)
+		}
+	}()
 
 	y := astro.NewProducer(yConn, z.Config.Astro)
-	y.Start()
+	err = y.Start()
+	if err != nil {
+		log.Error(err)
+	}
 
 	x := timer.NewProducer(xConn, z.Config.Timer)
-	x.Start()
+	err = x.Start()
+	if err != nil {
+		log.Error(err)
+	}
 
 	// log.Infof("x: %+v", x)
 	// log.Infof("y: %+v", y)
@@ -77,6 +95,14 @@ func runTimer(cmd *cobra.Command, args []string) {
 	}()
 
 	<-done
-	y.Stop()
-	x.Stop()
+
+	err = y.Stop()
+	if err != nil {
+		log.Error(err)
+	}
+
+	err = x.Stop()
+	if err != nil {
+		log.Error(err)
+	}
 }

@@ -7,3 +7,6 @@ type Event struct {
 	Name    string
 	Payload Payload
 }
+
+// Payload is the json string that is passed as part of an event.
+type Payload []byte

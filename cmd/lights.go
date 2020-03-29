@@ -22,9 +22,10 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"google.golang.org/grpc"
+
 	pb "github.com/xaque208/znet/rpc"
 	"github.com/xaque208/znet/znet"
-	"google.golang.org/grpc"
 )
 
 // lightsCmd represents the lights command
@@ -67,7 +68,13 @@ func runLights(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Error(err)
 	}
-	defer conn.Close()
+
+	defer func() {
+		err = conn.Close()
+		if err != nil {
+			log.Error(err)
+		}
+	}()
 
 	lc := pb.NewLightsClient(conn)
 

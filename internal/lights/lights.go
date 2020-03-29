@@ -8,6 +8,7 @@ import (
 	"github.com/amimof/huego"
 	log "github.com/sirupsen/logrus"
 	"github.com/xaque208/rftoy/rftoy"
+
 	"github.com/xaque208/znet/internal/events"
 	"github.com/xaque208/znet/internal/timer"
 )
@@ -74,7 +75,7 @@ func (l *Lights) eventHandler(payload events.Payload) error {
 
 		for _, o := range room.Alert {
 			if o == e.Name {
-				l.Alert(room.Name, "alert")
+				l.Alert(room.Name)
 			}
 		}
 
@@ -136,18 +137,25 @@ func (l *Lights) On(groupName string) {
 	g, err := l.getGroup(groupName)
 	if err != nil {
 		log.Error(err)
+		var light *huego.Light
 
-		light, err := l.getLight(groupName)
+		light, err = l.getLight(groupName)
 		if err != nil {
 			log.Error(err)
 		} else {
 			log.Debugf("turning on light %s", light.Name)
-			light.On()
+			err = light.On()
+			if err != nil {
+				log.Error(err)
+			}
 		}
 
 	} else {
 		log.Debugf("turning on light group %s", g.Name)
-		g.On()
+		err = g.On()
+		if err != nil {
+			log.Error(err)
+		}
 	}
 
 	if len(room.IDs) > 0 {
@@ -172,19 +180,26 @@ func (l *Lights) Off(groupName string) {
 	g, err := l.getGroup(groupName)
 	if err != nil {
 		log.Error(err)
+		var light *huego.Light
 
 		// then try to get just the light
-		light, err := l.getLight(groupName)
+		light, err = l.getLight(groupName)
 		if err != nil {
 			log.Error(err)
 		} else {
 			log.Debugf("turning off light %s", light.Name)
-			light.Off()
+			err = light.Off()
+			if err != nil {
+				log.Error(err)
+			}
 		}
 
 	} else {
 		log.Debugf("turning off light group %s", g.Name)
-		g.Off()
+		err = g.Off()
+		if err != nil {
+			log.Error(err)
+		}
 	}
 
 	if len(room.IDs) > 0 {
@@ -198,6 +213,7 @@ func (l *Lights) Off(groupName string) {
 	}
 }
 
+// Dim modifies the brightness of a light group.
 func (l *Lights) Dim(groupName string, brightness int32) {
 	room, err := l.config.Room(groupName)
 	if err != nil {
@@ -222,7 +238,8 @@ func (l *Lights) Dim(groupName string, brightness int32) {
 	}
 }
 
-func (l *Lights) Alert(groupName string, alertName string) {
+// Alert blinks all lights in the given light group.
+func (l *Lights) Alert(groupName string) {
 	g, err := l.getGroup(groupName)
 	if err != nil {
 		log.Error(err)

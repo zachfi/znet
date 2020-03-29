@@ -3,6 +3,7 @@ package cmd
 import (
 	"os"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -20,7 +21,10 @@ To configure your zsh shell to load completions for each session add to your zsh
 . <(znet completion)
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		rootCmd.GenZshCompletion(os.Stdout)
+		err := rootCmd.GenZshCompletion(os.Stdout)
+		if err != nil {
+			log.Error(err)
+		}
 	},
 }
 

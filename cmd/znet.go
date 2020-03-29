@@ -23,19 +23,19 @@ import (
 
 var cfgFile string
 var verbose bool
-var Version string
+var trace bool
 var rpcServer string
+
+// Version is the version of the project
+var Version string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "znet",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
+	Short: "znet",
+	Long: `ZNet 
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	//	Run: func(cmd *cobra.Command, args []string) { },
@@ -56,8 +56,17 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.znet.yaml)")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Increase verbosity")
+	rootCmd.PersistentFlags().BoolVarP(&trace, "trace", "", false, "Trace level verbosity")
 
-	if verbose {
+	formatter := log.TextFormatter{
+		FullTimestamp: true,
+	}
+
+	log.SetFormatter(&formatter)
+
+	if trace {
+		log.SetLevel(log.TraceLevel)
+	} else if verbose {
 		log.SetLevel(log.DebugLevel)
 	} else {
 		log.SetLevel(log.InfoLevel)
@@ -85,7 +94,7 @@ func initConfig() {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		log.Debugf("Using config file: %s", viper.ConfigFileUsed())
+		log.Debugf("using config file: %s", viper.ConfigFileUsed())
 		cfgFile = viper.ConfigFileUsed()
 	}
 }

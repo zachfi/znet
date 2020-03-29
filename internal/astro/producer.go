@@ -12,9 +12,10 @@ import (
 	v1 "github.com/prometheus/client_golang/api/prometheus/v1"
 	"github.com/prometheus/common/model"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
+
 	"github.com/xaque208/znet/internal/events"
 	pb "github.com/xaque208/znet/rpc"
-	"google.golang.org/grpc"
 )
 
 // EventProducer implements events.Producer with an attached GRPC connection.
@@ -35,15 +36,20 @@ func NewProducer(conn *grpc.ClientConn, config Config) events.Producer {
 	return producer
 }
 
+// Start initializes the producer.
 func (e *EventProducer) Start() error {
 	log.Info("starting astro eventProducer")
 
 	e.diechan = make(chan bool)
-	e.scheduler()
+	err := e.scheduler()
+	if err != nil {
+		log.Error(err)
+	}
 
 	return nil
 }
 
+// Stop shuts down the producer.
 func (e *EventProducer) Stop() error {
 	e.diechan <- true
 	close(e.diechan)
@@ -81,8 +87,10 @@ func (e *EventProducer) scheduler() error {
 
 	sch := events.NewScheduler()
 
-	e.scheduleEvents(sch)
-	// e.scheduleRepeatEvents(sch)
+	err := e.scheduleEvents(sch)
+	if err != nil {
+		log.Error(err)
+	}
 
 	log.Infof("%d astro events scheduled", len(sch.All()))
 
@@ -96,7 +104,7 @@ func (e *EventProducer) scheduler() error {
 			for _, n := range names {
 				now := time.Now()
 
-				ev := AstroEvent{
+				ev := SolarEvent{
 					Name: n,
 					Time: &now,
 				}
@@ -120,8 +128,6 @@ func (e *EventProducer) scheduler() error {
 			return nil
 		}
 	}
-
-	return nil
 }
 
 // Produce implements the events.Producer interface.  Match the supported event
@@ -135,8 +141,8 @@ func (e *EventProducer) Produce(ev interface{}) error {
 	var req *pb.Event
 
 	switch t {
-	case "astro.AstroEvent":
-		x := ev.(AstroEvent)
+	case "astro.SolarEvent":
+		x := ev.(SolarEvent)
 		req = x.Make()
 	default:
 		return fmt.Errorf("unhandled event type: %T", ev)

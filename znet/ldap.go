@@ -13,7 +13,7 @@ import (
 func NewLDAPClient(config LDAPConfig) (*ldap.Conn, error) {
 
 	if config.BindDN == "" || config.BindPW == "" {
-		return &ldap.Conn{}, fmt.Errorf("Incomplete LDAP credentials")
+		return &ldap.Conn{}, fmt.Errorf("incomplete LDAP credentials")
 	}
 
 	l, err := ldap.DialTLS(
@@ -39,9 +39,11 @@ func NewLDAPClient(config LDAPConfig) (*ldap.Conn, error) {
 			<-t.C
 
 			if l.IsClosing() {
-				log.Debugf("Old L is closing: %+v", l)
-				log.Debug("LDAP Reconnecting...")
-				newl, err := ldap.DialTLS(
+				log.Debug("reconnecting to LDAP...")
+				var err error
+				l.Close()
+
+				l, err = ldap.DialTLS(
 					"tcp",
 					fmt.Sprintf("%s:%d", config.Host, 636),
 					&tls.Config{InsecureSkipVerify: true},
@@ -50,14 +52,10 @@ func NewLDAPClient(config LDAPConfig) (*ldap.Conn, error) {
 					log.Error(err)
 				}
 
-				err = newl.Bind(config.BindDN, config.BindPW)
+				err = l.Bind(config.BindDN, config.BindPW)
 				if err != nil {
 					log.Error(err)
 				}
-
-				log.Debugf("New L is: %+v", newl)
-
-				*l = *newl
 			}
 		}
 	}()

@@ -43,6 +43,7 @@ var defaultHostAttributes = []string{
 	"netHostWatch",
 }
 
+// RecordUnknownHost stores an IP and MAC with a name to LDAP.
 func (z *Znet) RecordUnknownHost(baseDN string, address string, mac string) error {
 
 	cn := strings.Replace(mac, ":", "", -1)
@@ -85,6 +86,7 @@ func (z *Znet) RecordUnknownHost(baseDN string, address string, mac string) erro
 	return nil
 }
 
+// Update should upgrade a network host.
 func (h *NetworkHost) Update() (*ssh.Conn, error) {
 
 	sshConfig := &ssh.ClientConfig{
@@ -100,7 +102,7 @@ func (h *NetworkHost) Update() (*ssh.Conn, error) {
 
 	connection, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", h.HostName, 22), sshConfig)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to dial: %s", err)
+		return nil, fmt.Errorf("failed to dial: %s", err)
 	}
 
 	// session, err := connection.NewSession()
@@ -142,6 +144,7 @@ func (h *NetworkHost) Update() (*ssh.Conn, error) {
 	return nil, nil
 }
 
+// SSHAgent builds the AuthMethod for SSH.
 func SSHAgent() ssh.AuthMethod {
 	if sshAgent, err := net.Dial("unix", os.Getenv("SSH_AUTH_SOCK")); err == nil {
 		return ssh.PublicKeysCallback(agent.NewClient(sshAgent).Signers)
@@ -149,6 +152,7 @@ func SSHAgent() ssh.AuthMethod {
 	return nil
 }
 
+// PublicKeyFile builds the AuthMethod for SSH.
 func PublicKeyFile(file string) ssh.AuthMethod {
 	buffer, err := ioutil.ReadFile(file)
 	if err != nil {

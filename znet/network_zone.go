@@ -5,6 +5,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// NetworkZone is a logical partition.
 type NetworkZone struct {
 	Name       string
 	NTPServers []string
@@ -17,6 +18,7 @@ var defaultZoneAttributes = []string{
 	"ntpServers",
 }
 
+// GetNetworkZones retrieves the NetworkHost objects from LDAP.
 func (z *Znet) GetNetworkZones(l *ldap.Conn, baseDN string) []NetworkZone {
 	zones := []NetworkZone{}
 
