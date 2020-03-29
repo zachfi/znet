@@ -113,3 +113,13 @@ func (l *lightServer) Brightness(ctx context.Context, request *pb.LightGroup) (*
 
 	return response, nil
 }
+
+func (l *lightServer) Alert(ctx context.Context, request *pb.LightGroup) (*pb.LightResponse, error) {
+	response := &pb.LightResponse{}
+
+	log.Infof("request: %+v", *request)
+
+	l.lights.Alert(request.Name, "select")
+
+	return response, nil
+}
