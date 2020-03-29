@@ -25,6 +25,8 @@ func (e *eventServer) ValidEventName(name string) bool {
 }
 
 func (e *eventServer) RegisterEvents(nameSet ...[]string) {
+	log.Debugf("eventServer registering %d events: %+v", len(nameSet[0]), nameSet)
+
 	if len(e.eventNames) == 0 {
 		e.eventNames = make([]string, 1)
 	}
@@ -48,9 +50,9 @@ func (l *eventServer) NoticeEvent(ctx context.Context, request *pb.Event) (*pb.E
 		l.ch <- ev
 	} else {
 		response.Errors = true
-		response.Message = fmt.Sprintf("Unknown event name: %s", request.Name)
-		log.Infof("payload: %s", request.Payload)
-		log.Infof("known events: %+v", l.eventNames)
+		response.Message = fmt.Sprintf("unknown RPC event name: %s", request.Name)
+		log.Tracef("payload: %s", request.Payload)
+		log.Tracef("known events: %+v", l.eventNames)
 	}
 
 	return response, nil

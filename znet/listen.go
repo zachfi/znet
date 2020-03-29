@@ -13,7 +13,9 @@ import (
 	"google.golang.org/grpc"
 )
 
-// Listen starts the znet listener
+// Listen starts the znet listener.  The Listener is responsible for starting
+// up all the event handling threads, and then blocking on the final HTTP
+// listener.
 func (z *Znet) Listen(listenAddr string, ch chan bool) {
 	var err error
 	z.listener, err = NewListener(&z.Config)
@@ -21,12 +23,13 @@ func (z *Znet) Listen(listenAddr string, ch chan bool) {
 		log.Fatal(err)
 	}
 
+	// Each events.Consumer here is later used
 	consumers := []events.Consumer{
 		z.Lights,
 		z,
 	}
 
-	log.Tracef("consumers: %+v", consumers)
+	log.Tracef("%d event consumers", len(consumers))
 
 	z.EventChannel = make(chan events.Event)
 	z.EventConsumers = make(map[string][]events.Handler)
@@ -38,7 +41,8 @@ func (z *Znet) Listen(listenAddr string, ch chan bool) {
 	z.listener.Listen(listenAddr, ch)
 }
 
-// Subscriptions is yet to be used, but conforms to the interface for generating consumers of named events.
+// Subscriptions is yet to be used, but conforms to the interface for
+// generating consumers of named events.
 func (z *Znet) Subscriptions() map[string][]events.Handler {
 	s := events.NewSubscriptions()
 	return s.Table
@@ -47,7 +51,7 @@ func (z *Znet) Subscriptions() map[string][]events.Handler {
 // listenRPC starts the RPC server and all the services.
 func (z *Znet) listenRPC() {
 	if z.Config.RPC.ListenAddress != "" {
-		log.Infof("Starting RPC listener on %s", z.Config.RPC.ListenAddress)
+		log.Infof("starting RPC listener %s", z.Config.RPC.ListenAddress)
 
 		inventoryServer := &inventoryServer{
 			inventory: z.Inventory,
@@ -68,7 +72,7 @@ func (z *Znet) listenRPC() {
 		go func() {
 			lis, err := net.Listen("tcp", z.Config.RPC.ListenAddress)
 			if err != nil {
-				log.Fatalf("failed to listen: %v", err)
+				log.Fatalf("failed to listen: %s", err)
 			}
 
 			grpcServer := grpc.NewServer()
@@ -117,10 +121,10 @@ func (z *Znet) initEventConsumers(consumers []events.Consumer) {
 func (z *Znet) initEventConsumer() {
 	go func(ch chan events.Event) {
 		for e := range ch {
-			log.Debugf("z.EventConsumers: %+v", z.EventConsumers)
+			log.Debugf("total %d z.EventConsumers", len(z.EventConsumers))
 
 			if handlers, ok := z.EventConsumers[e.Name]; ok {
-				log.Infof("handling message %s", e.Name)
+				log.Tracef("listener heard event %s: %s", e.Name, string(e.Payload))
 				for _, h := range handlers {
 					h(e.Payload)
 				}

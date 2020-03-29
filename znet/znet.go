@@ -81,7 +81,7 @@ func NewZnet(file string) (*Znet, error) {
 // LoadConfig receives a file path for a configuration to load.
 func loadConfig(file string) (Config, error) {
 	filename, _ := filepath.Abs(file)
-	log.Debugf("Loading config from: %s", filename)
+	log.Debugf("loading config from: %s", filename)
 	config := Config{}
 	err := loadYamlFile(filename, &config)
 	if err != nil {
@@ -93,7 +93,7 @@ func loadConfig(file string) (Config, error) {
 
 // LoadData receives a configuration directory from which to load the data for Znet.
 func (z *Znet) LoadData(configDir string) {
-	log.Debugf("Loading data from: %s", configDir)
+	log.Debugf("loading data from: %s", configDir)
 	dataConfig := Data{}
 	err := loadYamlFile(fmt.Sprintf("%s/%s", configDir, "data.yaml"), &dataConfig)
 	if err != nil {
@@ -128,18 +128,18 @@ func (z *Znet) ConfigureNetworkHost(host *NetworkHost, commit bool, auth *junos.
 	}
 
 	if show {
-		log.Debugf("RenderedTemplates: %+v", renderedTemplates)
+		log.Debugf("renderedTemplates: %+v", renderedTemplates)
 	}
 
 	err = session.Lock()
 	if err != nil {
-		return fmt.Errorf("Unable to lock session on %s: %s", host.HostName, err)
+		return fmt.Errorf("unable to lock session on %s: %s", host.HostName, err)
 	}
 
 	defer func() {
 		err = session.Unlock()
 		if err != nil {
-			log.Errorf("Error unlocking session on %s: %s", host.HostName, err)
+			log.Errorf("error unlocking session on %s: %s", host.HostName, err)
 		}
 	}()
 
@@ -259,7 +259,7 @@ func (z *Znet) DataForDevice(host NetworkHost) HostData {
 	return hostData
 }
 
-// HierarchyForDevice retuns a list of file paths to consult for the data hierarchy.
+// HierarchyForDevice returns a list of file paths to consult for the data hierarchy.
 func (z *Znet) HierarchyForDevice(host NetworkHost) []string {
 	var files []string
 

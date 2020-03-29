@@ -9,7 +9,7 @@ import (
 // GetEnvironmentConfig receives a slice of environment configurations and returns the one that matches the given name.
 func GetEnvironmentConfig(environments []EnvironmentConfig, envName string) (EnvironmentConfig, error) {
 
-	log.Debugf("Looking for environment %s: %+v", envName, environments)
+	log.Debugf("looking for environment %s: %+v", envName, environments)
 
 	for _, e := range environments {
 		if e.Name == envName {
@@ -17,7 +17,7 @@ func GetEnvironmentConfig(environments []EnvironmentConfig, envName string) (Env
 		}
 	}
 
-	return EnvironmentConfig{}, fmt.Errorf("No environment with name %s found", envName)
+	return EnvironmentConfig{}, fmt.Errorf("no environment with name %s found", envName)
 }
 
 // LoadEnvironment reads reads environment variables out of vault for return.
@@ -25,7 +25,7 @@ func LoadEnvironment(config VaultConfig, e EnvironmentConfig) (map[string]string
 
 	environment := make(map[string]string)
 	if config.Host == "" || config.VaultPath == "" {
-		return map[string]string{}, fmt.Errorf("Incomplete vault configuration, unable to load Environment")
+		return map[string]string{}, fmt.Errorf("incomplete vault configuration, unable to load Environment")
 	}
 
 	s, err := NewSecretClient(config)
