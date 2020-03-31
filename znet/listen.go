@@ -119,9 +119,9 @@ func (z *Znet) initEventConsumers(consumers []events.Consumer) {
 // EventChannel and execute the loaded handlers with the event Payload.
 func (z *Znet) initEventConsumer() {
 	go func(ch chan events.Event) {
-		for e := range ch {
-			log.Debugf("total %d z.EventConsumers", len(z.EventConsumers))
+		log.Debugf("total %d z.EventConsumers", len(z.EventConsumers))
 
+		for e := range ch {
 			if handlers, ok := z.EventConsumers[e.Name]; ok {
 				log.Tracef("listener heard event %s: %s", e.Name, string(e.Payload))
 				for _, h := range handlers {

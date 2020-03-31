@@ -36,12 +36,14 @@ func NewProducer(conn *grpc.ClientConn, config Config) events.Producer {
 // Start initializes the producer.
 func (e *EventProducer) Start() error {
 	log.Info("starting timer eventProducer")
-
 	e.diechan = make(chan bool)
-	err := e.scheduler()
-	if err != nil {
-		log.Error(err)
-	}
+
+	go func() {
+		err := e.scheduler()
+		if err != nil {
+			log.Error(err)
+		}
+	}()
 
 	return nil
 }

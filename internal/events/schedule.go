@@ -25,7 +25,7 @@ func (s *Scheduler) All() TimeSlice {
 }
 
 // Next determines the next occurring event in the series.
-func (s *Scheduler) Next() time.Time {
+func (s *Scheduler) Next() *time.Time {
 
 	keys := []time.Time{}
 
@@ -33,11 +33,15 @@ func (s *Scheduler) Next() time.Time {
 		keys = append(keys, k)
 	}
 
+	if len(keys) == 0 {
+		return nil
+	}
+
 	sort.Slice(keys, func(i, j int) bool {
 		return keys[i].Before(keys[j])
 	})
 
-	return keys[0]
+	return &keys[0]
 }
 
 // NamesForTime returns all events names that are scheduled for a given timeSlice.
@@ -50,23 +54,27 @@ func (s *Scheduler) NamesForTime(t time.Time) []string {
 func (s *Scheduler) WaitForNext() []string {
 	next := s.Next()
 
-	if time.Now().After(next) {
+	if next == nil {
+		return []string{}
+	}
+
+	if time.Now().After(*next) {
 		log.Infof("sending past event: %s", next)
-		return s.NamesForTime(next)
+		return s.NamesForTime(*next)
 	}
 
 	log.Infof("waiting until: %s", next)
-	ti := time.NewTimer(time.Until(next))
+	ti := time.NewTimer(time.Until(*next))
 	<-ti.C
 
-	return s.NamesForTime(next)
+	return s.NamesForTime(*next)
 }
 
 // Step deletes the next timeslice.  This is determined to be the timeslice
 // that has just run.  The expectataion is that Step() is called once the
 // events have completed firing to advance to the next position in time.
 func (s *Scheduler) Step() {
-	delete(*s.timeSlice, s.Next())
+	delete(*s.timeSlice, *s.Next())
 }
 
 // Set appends the name given to the time slot given.
