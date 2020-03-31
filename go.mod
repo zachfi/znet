@@ -11,9 +11,10 @@ require (
 	github.com/go-ldap/ldap v3.0.2+incompatible
 	github.com/go-openapi/strfmt v0.19.3 // indirect
 	github.com/golang/protobuf v1.3.2
-	github.com/hashicorp/go-retryablehttp v0.6.2 // indirect
+	github.com/hashicorp/go-retryablehttp v0.6.4 // indirect
 	github.com/hashicorp/vault/api v1.0.5-0.20190814205542-3b036e58e950
-	github.com/imdario/mergo v0.3.8
+	github.com/imdario/mergo v0.3.9
+	github.com/jarcoal/httpmock v1.0.5 // indirect
 	github.com/jedib0t/go-pretty v4.3.0+incompatible
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/mattn/go-runewidth v0.0.4 // indirect
@@ -24,12 +25,12 @@ require (
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/pelletier/go-toml v1.4.0 // indirect
 	github.com/pierrec/lz4 v2.2.7+incompatible // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_golang v1.1.0
 	github.com/prometheus/common v0.7.0
 	github.com/prometheus/procfs v0.0.4 // indirect
 	github.com/scottdware/go-junos v0.0.0-20190812172236-2fce6f5c1db4
 	github.com/sirupsen/logrus v1.4.2
-	github.com/smartystreets/assertions v1.0.0 // indirect
 	github.com/spf13/afero v1.2.2 // indirect
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
@@ -43,6 +44,7 @@ require (
 	golang.org/x/net v0.0.0-20200114155413-6afb5195e5aa // indirect
 	golang.org/x/sys v0.0.0-20191026070338-33540a1f6037 // indirect
 	golang.org/x/text v0.3.2 // indirect
+	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
 	google.golang.org/genproto v0.0.0-20191115221424-83cc0476cb11 // indirect
 	google.golang.org/grpc v1.25.1
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect

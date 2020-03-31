@@ -168,7 +168,6 @@ func (e *EventProducer) scheduler() error {
 				}
 
 				err := e.Produce(ev)
->>>>>>> 3e68a2c... chore(internal): update to the new contract
 				if err != nil {
 					log.Error(err)
 				}
