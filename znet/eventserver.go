@@ -25,16 +25,14 @@ func (e *eventServer) ValidEventName(name string) bool {
 	return false
 }
 
-func (e *eventServer) RegisterEvents(nameSet ...[]string) {
-	log.Debugf("eventServer registering %d events: %+v", len(nameSet[0]), nameSet)
+func (e *eventServer) RegisterEvents(nameSet []string) {
+	log.Debugf("eventServer registering %d events: %+v", len(nameSet), nameSet)
 
 	if len(e.eventNames) == 0 {
 		e.eventNames = make([]string, 1)
 	}
 
-	for _, set := range nameSet {
-		e.eventNames = append(e.eventNames, set...)
-	}
+	e.eventNames = append(e.eventNames, nameSet...)
 }
 
 // NoticeEvent is the call when an event should be fired.

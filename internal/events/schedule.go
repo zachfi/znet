@@ -59,8 +59,12 @@ func (s *Scheduler) WaitForNext() []string {
 	}
 
 	if time.Now().After(*next) {
-		log.Infof("sending past event: %s", next)
-		return s.NamesForTime(*next)
+
+		// Send past events under 30 seconds old.
+		if time.Since(*next) < time.Duration(30)*time.Second {
+			log.Infof("sending recent event: %s", next)
+			return s.NamesForTime(*next)
+		}
 	}
 
 	log.Infof("waiting until: %s", next)
@@ -74,7 +78,11 @@ func (s *Scheduler) WaitForNext() []string {
 // that has just run.  The expectataion is that Step() is called once the
 // events have completed firing to advance to the next position in time.
 func (s *Scheduler) Step() {
-	delete(*s.timeSlice, *s.Next())
+	next := s.Next()
+
+	if next != nil {
+		delete(*s.timeSlice, *s.Next())
+	}
 }
 
 // Set appends the name given to the time slot given.
