@@ -100,8 +100,12 @@ func (e *EventProducer) scheduler() error {
 
 	go func() {
 		for {
-			log.Info("astro")
 			names := sch.WaitForNext()
+
+			if len(names) == 0 {
+				log.Debugf("no astro names found, sleeping")
+				time.Sleep(1 * time.Hour)
+			}
 
 			for _, n := range names {
 				now := time.Now()
@@ -117,6 +121,7 @@ func (e *EventProducer) scheduler() error {
 				}
 
 				sch.Step()
+
 			}
 		}
 	}()
