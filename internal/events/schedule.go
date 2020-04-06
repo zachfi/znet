@@ -4,7 +4,7 @@ import (
 	"sort"
 	"time"
 
-	"github.com/apex/log"
+	log "github.com/sirupsen/logrus"
 )
 
 // Scheduler holds timeSlice objects and provides an methods to update them..
@@ -87,10 +87,16 @@ func (s *Scheduler) Step() {
 
 // Set appends the name given to the time slot given.
 func (s *Scheduler) Set(t time.Time, name string) {
+	if time.Until(t) < 0 {
+		log.Warnf("not scheduling past event %s for %s", name, t)
+		return
+	}
 
 	if _, ok := (*s.timeSlice)[t]; !ok {
 		(*s.timeSlice)[t] = make([]string, 1)
 	}
+
+	log.Debugf("scheduling future event %s for %s", name, t)
 
 	timeHasName := func(names []string) bool {
 		for _, n := range names {

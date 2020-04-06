@@ -73,10 +73,13 @@ func (e *EventProducer) scheduleEvents(sch *events.Scheduler) error {
 		sunriseTime := queryForTime(client, fmt.Sprintf("owm_sunrise_time{location=\"%s\"}", l))
 		sunsetTime := queryForTime(client, fmt.Sprintf("owm_sunset_time{location=\"%s\"}", l))
 
+		log.Tracef("astro found sunriseTime: %+v", sunriseTime)
+		log.Tracef("astro found sunsetTime: %+v", sunsetTime)
+
 		sch.Set(sunriseTime, "Sunrise")
 		sch.Set(sunsetTime, "Sunset")
 
-		preSunset := sunsetTime.Add(-1 * time.Hour)
+		preSunset := sunsetTime.Add(-75 * time.Minute)
 
 		sch.Set(preSunset, "PreSunset")
 	}
@@ -85,7 +88,7 @@ func (e *EventProducer) scheduleEvents(sch *events.Scheduler) error {
 }
 
 func (e *EventProducer) scheduler() error {
-	log.Debug("timer scheduler started")
+	log.Debug("astro scheduler started")
 
 	sch := events.NewScheduler()
 
@@ -94,7 +97,7 @@ func (e *EventProducer) scheduler() error {
 		log.Error(err)
 	}
 
-	log.Infof("%d astro events scheduled", len(sch.All()))
+	log.Infof("%d astro events scheduled: %+v", len(sch.All()), sch.All())
 
 	otherchan := make(chan bool, 1)
 

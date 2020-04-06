@@ -96,8 +96,6 @@ func (e *EventProducer) scheduleEvents(scheduledEvents *events.Scheduler) error 
 			continue
 		}
 
-		log.Infof("future event: %+v", d)
-
 		if timeRemaining > 0 {
 			scheduledEvents.Set(d, v.Produce)
 		}
