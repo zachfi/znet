@@ -83,7 +83,6 @@ func runTimer(cmd *cobra.Command, args []string) {
 
 	// log.Infof("x: %+v", x)
 	// log.Infof("y: %+v", y)
-	//
 
 	sigs := make(chan os.Signal, 1)
 	done := make(chan bool, 1)

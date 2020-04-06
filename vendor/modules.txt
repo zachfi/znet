@@ -7,8 +7,6 @@ github.com/alecthomas/template/parse
 github.com/alecthomas/units
 # github.com/amimof/huego v0.0.0-20191031212646-fbe1857ba8f5
 github.com/amimof/huego
-# github.com/apex/log v1.1.2
-github.com/apex/log
 # github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a
 github.com/asaskevich/govalidator
 # github.com/beorn7/perks v1.0.1
@@ -101,8 +99,6 @@ github.com/pelletier/go-toml
 # github.com/pierrec/lz4 v2.2.7+incompatible
 github.com/pierrec/lz4
 github.com/pierrec/lz4/internal/xxh32
-# github.com/pkg/errors v0.9.1
-github.com/pkg/errors
 # github.com/prometheus/client_golang v1.1.0
 github.com/prometheus/client_golang/api
 github.com/prometheus/client_golang/api/prometheus/v1
