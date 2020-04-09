@@ -2,23 +2,25 @@ package znet
 
 import (
 	"github.com/xaque208/znet/internal/astro"
+	"github.com/xaque208/znet/internal/gitwatch"
 	"github.com/xaque208/znet/internal/lights"
 	"github.com/xaque208/znet/internal/timer"
 )
 
 // Config stores the items that are required to configure this project.
 type Config struct {
-	Rooms        []lights.Room       `yaml:"rooms,omitempty"`
-	Environments []EnvironmentConfig `yaml:"environments,omitempty"`
-	Nats         NatsConfig          `yaml:"nats,omitempty"`
-	Junos        JunosConfig         `yaml:"junos,omitempty"`
-	HTTP         HTTPConfig          `yaml:"http,omitempty"`
-	LDAP         LDAPConfig          `yaml:"ldap,omitempty"`
-	Vault        VaultConfig         `yaml:"vault,omitempty"`
-	RPC          RPCConfig           `yaml:"rpc,omitempty"`
-	Lights       lights.Config       `yaml:"lights,omitempty"`
-	Timer        timer.Config        `yaml:"timer,omitempty"`
 	Astro        astro.Config        `yaml:"astro,omitempty"`
+	Environments []EnvironmentConfig `yaml:"environments,omitempty"`
+	GitWatch     gitwatch.Config     `yaml:"gitwatch,omitempty"`
+	HTTP         HTTPConfig          `yaml:"http,omitempty"`
+	Junos        JunosConfig         `yaml:"junos,omitempty"`
+	LDAP         LDAPConfig          `yaml:"ldap,omitempty"`
+	Lights       lights.Config       `yaml:"lights,omitempty"`
+	Nats         NatsConfig          `yaml:"nats,omitempty"`
+	Rooms        []lights.Room       `yaml:"rooms,omitempty"`
+	RPC          RPCConfig           `yaml:"rpc,omitempty"`
+	Timer        timer.Config        `yaml:"timer,omitempty"`
+	Vault        VaultConfig         `yaml:"vault,omitempty"`
 }
 
 // EnvironmentConfig is the environment configuration.
