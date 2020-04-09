@@ -124,6 +124,7 @@ func (z *Znet) initEventConsumer() {
 		log.Debugf("total %d z.EventConsumers", len(z.EventConsumers))
 
 		for e := range ch {
+			log.Tracef("event: %+v", e)
 			if handlers, ok := z.EventConsumers[e.Name]; ok {
 				log.Tracef("listener heard event %s: %s", e.Name, string(e.Payload))
 				for _, h := range handlers {
