@@ -29,7 +29,9 @@ func runTimer(cmd *cobra.Command, args []string) {
 	}
 
 	log.SetFormatter(&formatter)
-	if verbose {
+	if trace {
+		log.SetLevel(log.TraceLevel)
+	} else if verbose {
 		log.SetLevel(log.DebugLevel)
 	} else {
 		log.SetLevel(log.InfoLevel)
