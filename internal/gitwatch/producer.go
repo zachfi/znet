@@ -173,7 +173,6 @@ func (e *EventProducer) watcher() error {
 					}
 
 					now := time.Now()
-
 					ev := NewCommits{
 						Name: repo.Name,
 						URL:  repo.URL,
