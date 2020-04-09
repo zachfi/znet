@@ -120,7 +120,6 @@ func (e *EventProducer) watcher() error {
 					}
 				}
 
-				// log.Debugf("opening repo: %s", repo.Name)
 				r, err := git.PlainOpen(cacheDir)
 				if err != nil {
 					log.Error(err)
