@@ -165,7 +165,13 @@ func (e *EventProducer) watcher() error {
 						Commit: afterHead.Hash(),
 						Mode:   git.HardReset,
 					})
+					if err != nil {
+						log.Error(err)
+					}
 
+					err = w.Pull(&git.PullOptions{
+						RemoteName: "origin",
+					})
 					if err != nil {
 						log.Error(err)
 					}
