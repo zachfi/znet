@@ -132,7 +132,7 @@ func (e *EventProducer) watcher() error {
 				}
 
 				opts := &git.FetchOptions{
-					RefSpecs: []gitConfig.RefSpec{"refs/*:refs/*", "HEAD:refs/heads/HEAD"},
+					RefSpecs: []gitConfig.RefSpec{"+refs/heads/*:refs/remotes/origin/*"},
 					Tags:     git.AllTags,
 				}
 
