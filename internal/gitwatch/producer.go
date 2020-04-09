@@ -99,8 +99,6 @@ func (e *EventProducer) watcher() error {
 		case <-e.diechan:
 			return nil
 		case t := <-ticker.C:
-			log.Debugf("Tick at %s", t.Format(time.RFC3339))
-
 			for _, repo := range e.config.Repos {
 
 				if repo.Name == "" {
@@ -172,11 +170,10 @@ func (e *EventProducer) watcher() error {
 						log.Error(err)
 					}
 
-					now := time.Now()
 					ev := NewCommits{
 						Name: repo.Name,
 						URL:  repo.URL,
-						Time: &now,
+						Time: &t,
 						Hash: afterHead.Hash().String(),
 					}
 
