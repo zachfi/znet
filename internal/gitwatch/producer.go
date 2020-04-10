@@ -10,10 +10,13 @@ import (
 
 	git "github.com/go-git/go-git/v5"
 	gitConfig "github.com/go-git/go-git/v5/config"
-	"github.com/xaque208/znet/internal/events"
+	"github.com/go-git/go-git/v5/plumbing"
 	"google.golang.org/grpc"
 
+	"github.com/xaque208/znet/internal/events"
+
 	log "github.com/sirupsen/logrus"
+
 	pb "github.com/xaque208/znet/rpc"
 )
 
@@ -70,8 +73,11 @@ func (e *EventProducer) Produce(ev interface{}) error {
 	var req *pb.Event
 
 	switch t {
-	case "gitwatch.NewCommits":
-		x := ev.(NewCommits)
+	case "gitwatch.NewCommit":
+		x := ev.(NewCommit)
+		req = x.Make()
+	case "gitwatch.NewTag":
+		x := ev.(NewTag)
 		req = x.Make()
 	default:
 		return fmt.Errorf("unhandled event type: %T", ev)
@@ -102,7 +108,7 @@ func (e *EventProducer) watcher() error {
 			for _, repo := range e.config.Repos {
 
 				if repo.Name == "" {
-					log.Error("repo name cannot be empty: %+v", repo)
+					log.Errorf("repo name cannot be empty: %+v", repo)
 					continue
 				}
 
@@ -110,12 +116,12 @@ func (e *EventProducer) watcher() error {
 
 				_, err := os.Stat(cacheDir)
 				if err != nil {
-					_, err := git.PlainClone(cacheDir, false, &git.CloneOptions{
+					_, cloneErr := git.PlainClone(cacheDir, false, &git.CloneOptions{
 						URL:      repo.URL,
 						Progress: os.Stdout,
 					})
-					if err != nil {
-						log.Error(err)
+					if cloneErr != nil {
+						log.Error(cloneErr)
 						continue
 					}
 				}
@@ -125,62 +131,32 @@ func (e *EventProducer) watcher() error {
 					log.Error(err)
 				}
 
-				remote, err := r.Remote("origin")
+				newHead, newTags, err := updateRepo(r)
 				if err != nil {
 					log.Error(err)
+					continue
 				}
 
-				opts := &git.FetchOptions{
-					// RefSpecs: []gitConfig.RefSpec{"+refs/heads/*:refs/remotes/origin/*"},
-					RefSpecs: []gitConfig.RefSpec{"refs/*:refs/*", "HEAD:refs/heads/HEAD"},
-					Tags:     git.AllTags,
-				}
-
-				beforeHead, err := r.Head()
-				if err != nil {
-					log.Errorf("head error: %s", err)
-				}
-
-				err = remote.Fetch(opts)
-				if err != nil {
-					if err != git.NoErrAlreadyUpToDate {
-						log.Errorf("fetch error: %s", err)
-					}
-				}
-
-				w, err := r.Worktree()
-				if err != nil {
-					log.Error(err)
-				}
-
-				afterHead, err := r.Head()
-				if err != nil {
-					log.Errorf("head error: %s", err)
-				}
-
-				if beforeHead.Hash() != afterHead.Hash() {
-					log.Warnf("resetting to HEAD: %s", afterHead.Hash())
-
-					err := w.Reset(&git.ResetOptions{
-						Commit: afterHead.Hash(),
-						Mode:   git.HardReset,
-					})
-					if err != nil {
-						log.Error(err)
-					}
-
-					err = w.Pull(&git.PullOptions{
-						RemoteName: "origin",
-					})
-					if err != nil {
-						log.Error(err)
-					}
-
-					ev := NewCommits{
+				if newHead != "" {
+					ev := NewCommit{
 						Name: repo.Name,
 						URL:  repo.URL,
 						Time: &t,
-						Hash: afterHead.Hash().String(),
+						Hash: newHead,
+					}
+
+					err = e.Produce(ev)
+					if err != nil {
+						log.Error(err)
+					}
+				}
+
+				for _, r := range newTags {
+					ev := NewTag{
+						Name: repo.Name,
+						URL:  repo.URL,
+						Time: &t,
+						Tag:  r,
 					}
 
 					err = e.Produce(ev)
@@ -189,7 +165,119 @@ func (e *EventProducer) watcher() error {
 					}
 
 				}
+
 			}
+
 		}
 	}
+}
+
+func updateRepo(repo *git.Repository) (string, []string, error) {
+	var newHead string
+	var newTags []string
+	var err error
+
+	remote, err := repo.Remote("origin")
+	if err != nil {
+		log.Error(err)
+	}
+
+	opts := &git.FetchOptions{
+		// RefSpecs: []gitConfig.RefSpec{"+refs/heads/*:refs/remotes/origin/*"},
+		RefSpecs: []gitConfig.RefSpec{"refs/*:refs/*", "HEAD:refs/heads/HEAD"},
+		Tags:     git.AllTags,
+	}
+
+	beforeHead := head(repo)
+	beforeTags := tags(repo)
+
+	err = remote.Fetch(opts)
+	if err != nil {
+		if err != git.NoErrAlreadyUpToDate {
+			log.Errorf("fetch error: %s", err)
+		}
+	}
+
+	w, err := repo.Worktree()
+	if err != nil {
+		log.Error(err)
+	}
+
+	afterHead := head(repo)
+	afterTags := tags(repo)
+
+	if beforeHead != afterHead {
+		newHead = afterHead.String()
+
+		log.Infof("resetting HEAD: %s", newHead)
+
+		err = w.Reset(&git.ResetOptions{
+			Commit: afterHead,
+			Mode:   git.HardReset,
+		})
+		if err != nil {
+			log.Error(err)
+		}
+
+		err = w.Pull(&git.PullOptions{
+			RemoteName: "origin",
+		})
+		if err != nil {
+			log.Error(err)
+		}
+
+	}
+
+	for _, r := range afterTags {
+		seen := func(n string) bool {
+			for _, s := range beforeTags {
+				if s == n {
+					return true
+				}
+			}
+
+			return false
+		}(r)
+
+		if !seen {
+			newTags = append(newTags, r)
+		}
+	}
+
+	return newHead, newTags, err
+}
+
+func head(repo *git.Repository) plumbing.Hash {
+	head, err := repo.Head()
+	if err != nil {
+		log.Errorf("head error: %s", err)
+	}
+
+	return head.Hash()
+}
+
+func tags(repo *git.Repository) []string {
+	result, err := repo.Tags()
+	if err != nil {
+		log.Errorf("tags error: %s", err)
+		return []string{}
+	}
+
+	var tags []string
+
+	err = result.ForEach(func(repo *plumbing.Reference) error {
+		x := *repo
+
+		// log.Tracef("r.Name().Short(): %+v", x.Name().Short())
+
+		tags = append(tags, x.Name().Short())
+
+		return nil
+	})
+	if err != nil {
+		log.Errorf("tags.ForEach() error: %s", err)
+		return []string{}
+	}
+
+	return tags
 }

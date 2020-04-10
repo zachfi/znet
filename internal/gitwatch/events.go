@@ -15,21 +15,28 @@ var EventNames []string
 
 func init() {
 	EventNames = []string{
-		"NewCommits",
+		"NewCommit",
+		"NewTag",
 	}
 }
 
-// ExpiredTimer is the event for an expiration of a clock timer.
-type NewCommits struct {
-	// events.Event
+// NewCommit is an event
+type NewCommit struct {
 	Time *time.Time
 	Name string
 	URL  string
 	Hash string
 }
 
+type NewTag struct {
+	Time *time.Time
+	Name string
+	URL  string
+	Tag  string
+}
+
 // Make creates the RPC request from the marshaled ExpiredTimer object.
-func (c *NewCommits) Make() *pb.Event {
+func (c *NewCommit) Make() *pb.Event {
 	payload, err := json.Marshal(c)
 	if err != nil {
 		log.Error(err)
@@ -37,6 +44,21 @@ func (c *NewCommits) Make() *pb.Event {
 
 	req := &pb.Event{
 		Name:    reflect.TypeOf(*c).Name(),
+		Payload: payload,
+	}
+
+	return req
+}
+
+// Make creates the RPC request from the marshaled ExpiredTimer object.
+func (e *NewTag) Make() *pb.Event {
+	payload, err := json.Marshal(e)
+	if err != nil {
+		log.Error(err)
+	}
+
+	req := &pb.Event{
+		Name:    reflect.TypeOf(*e).Name(),
 		Payload: payload,
 	}
 
