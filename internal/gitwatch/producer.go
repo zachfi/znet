@@ -11,12 +11,10 @@ import (
 	git "github.com/go-git/go-git/v5"
 	gitConfig "github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/xaque208/znet/internal/events"
 	"google.golang.org/grpc"
 
-	"github.com/xaque208/znet/internal/events"
-
 	log "github.com/sirupsen/logrus"
-
 	pb "github.com/xaque208/znet/rpc"
 )
 
@@ -44,19 +42,19 @@ func (e *EventProducer) Start() error {
 	log.Info("starting gitwatch eventProducer")
 	e.diechan = make(chan bool)
 
-	// go func() {
-	err := e.watcher()
-	if err != nil {
-		log.Error(err)
-	}
-	// }()
+	go func(done chan bool) {
+		err := e.watcher(done)
+		if err != nil {
+			log.Error(err)
+		}
+	}(e.diechan)
 
 	return nil
 }
 
 // Stop shuts down the producer.
 func (e *EventProducer) Stop() error {
-	e.diechan <- true
+	// e.diechan <- true
 	close(e.diechan)
 
 	return nil
@@ -96,13 +94,13 @@ func (e *EventProducer) Produce(ev interface{}) error {
 	return nil
 }
 
-func (e *EventProducer) watcher() error {
+func (e *EventProducer) watcher(done chan bool) error {
 
 	ticker := time.NewTicker(10 * time.Second)
 
 	for {
 		select {
-		case <-e.diechan:
+		case <-done:
 			return nil
 		case t := <-ticker.C:
 			for _, repo := range e.config.Repos {

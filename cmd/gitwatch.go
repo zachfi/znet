@@ -46,18 +46,6 @@ func runGitwatch(cmd *cobra.Command, args []string) {
 	var opts []grpc.DialOption
 	opts = append(opts, grpc.WithInsecure())
 
-	xConn, err := grpc.Dial(z.Config.RPC.ServerAddress, opts...)
-	if err != nil {
-		log.Error(err)
-	}
-
-	defer func() {
-		err = xConn.Close()
-		if err != nil {
-			log.Error(err)
-		}
-	}()
-
 	conn, err := grpc.Dial(z.Config.RPC.ServerAddress, opts...)
 	if err != nil {
 		log.Error(err)
@@ -75,8 +63,6 @@ func runGitwatch(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Error(err)
 	}
-
-	log.Infof("x: %+v", x)
 
 	sigs := make(chan os.Signal, 1)
 	done := make(chan bool, 1)
