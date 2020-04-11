@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"reflect"
 	"time"
@@ -11,6 +12,7 @@ import (
 	git "github.com/go-git/go-git/v5"
 	gitConfig "github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/xaque208/znet/internal/events"
 	"google.golang.org/grpc"
 
@@ -96,7 +98,7 @@ func (e *EventProducer) Produce(ev interface{}) error {
 
 func (e *EventProducer) watcher(done chan bool) error {
 
-	ticker := time.NewTicker(10 * time.Second)
+	ticker := time.NewTicker(time.Duration(e.config.Interval) * time.Second)
 
 	for {
 		select {
@@ -112,12 +114,33 @@ func (e *EventProducer) watcher(done chan bool) error {
 
 				cacheDir := fmt.Sprintf("%s/%s", e.config.CacheDir, repo.Name)
 
-				_, err := os.Stat(cacheDir)
-				if err != nil {
-					_, cloneErr := git.PlainClone(cacheDir, false, &git.CloneOptions{
+				var cloneOpts *git.CloneOptions
+
+				if e.config.SSHKeyPath != "" {
+					var publicKey *ssh.PublicKeys
+					sshPath := e.config.SSHKeyPath
+					sshKey, _ := ioutil.ReadFile(sshPath)
+					publicKey, keyError := ssh.NewPublicKeys("git", []byte(sshKey), "")
+					if keyError != nil {
+						log.Error(keyError)
+						continue
+					}
+
+					cloneOpts = &git.CloneOptions{
 						URL:      repo.URL,
 						Progress: os.Stdout,
-					})
+						Auth:     publicKey,
+					}
+				} else {
+					cloneOpts = &git.CloneOptions{
+						URL:      repo.URL,
+						Progress: os.Stdout,
+					}
+				}
+
+				_, err := os.Stat(cacheDir)
+				if err != nil {
+					_, cloneErr := git.PlainClone(cacheDir, false, cloneOpts)
 					if cloneErr != nil {
 						log.Error(cloneErr)
 						continue
@@ -249,6 +272,7 @@ func head(repo *git.Repository) plumbing.Hash {
 	head, err := repo.Head()
 	if err != nil {
 		log.Errorf("head error: %s", err)
+		return plumbing.Hash{}
 	}
 
 	return head.Hash()
