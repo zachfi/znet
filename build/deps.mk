@@ -3,7 +3,6 @@
 #
 
 GO           ?= go
-VENDOR_CMD   ?= ${GO} mod tidy
 
 # These should be mirrored in /tools.go to keep versions consistent
 GOTOOLS      += github.com/client9/misspell/cmd/misspell
@@ -21,6 +20,7 @@ deps: tools deps-only
 
 deps-only:
 	@echo "=== $(PROJECT_NAME) === [ deps             ]: Installing package dependencies required by the project..."
-	@$(VENDOR_CMD)
+	${GO} mod tidy
+	${GO} mod vendor
 
 .PHONY: deps deps-only tools tools-update
