@@ -106,8 +106,8 @@ func httpListen(listenAddress string) *http.Server {
 	return srv
 }
 
-// initEventConsumers updates the EventConsumers map for each consumer, to
-// append a handler for the discovered topic keys.
+// initEventConsumers updates the z.EventConsumers map for each received
+// consumer in order to append a handler for the discovered topic keys.
 func (z *Znet) initEventConsumers(consumers []events.Consumer) {
 	for _, e := range consumers {
 		subs := e.Subscriptions()
@@ -117,14 +117,15 @@ func (z *Znet) initEventConsumers(consumers []events.Consumer) {
 	}
 }
 
-// initEventConsumer starts a routine that never ends to read from the
-// EventChannel and execute the loaded handlers with the event Payload.
+// initEventConsumer starts a routine that never ends to read from
+// z.EventChannel and execute the loaded handlers with the event Payload.
 func (z *Znet) initEventConsumer() {
 	go func(ch chan events.Event) {
 		log.Debugf("total %d z.EventConsumers", len(z.EventConsumers))
 
 		for e := range ch {
 			if handlers, ok := z.EventConsumers[e.Name]; ok {
+				log.Debugf("executing %d handlers for event %s", len(handlers), e.Name)
 				log.Tracef("listener heard event %s: %s", e.Name, string(e.Payload))
 				for _, h := range handlers {
 					err := h(e.Payload)
