@@ -85,7 +85,7 @@ func (e *EventProducer) Produce(ev interface{}) error {
 		return fmt.Errorf("unhandled event type: %T", ev)
 	}
 
-	log.Tracef("producing RPC event %+v", req)
+	log.Tracef("gitwatch producing RPC event %+v", req)
 	res, err := ec.NoticeEvent(context.Background(), req)
 	if err != nil {
 		return err
