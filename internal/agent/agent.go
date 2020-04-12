@@ -41,6 +41,8 @@ func (a *Agent) Subscriptions() map[string][]events.Handler {
 		}
 	}
 
+	log.Debugf("event subscriptions %+v", s.Table)
+
 	return s.Table
 }
 

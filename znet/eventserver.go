@@ -77,7 +77,6 @@ func (e *eventServer) SubscribeEvents(subs *pb.EventSub, stream pb.Events_Subscr
 		}()
 
 		if match {
-
 			log.Debugf("sending remote event: %s", ev.Name)
 			if err := stream.Send(ev); err != nil {
 				return err
