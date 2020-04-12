@@ -95,6 +95,13 @@ func runAgent(cmd *cobra.Command, args []string) {
 		}
 
 		log.Tracef("received event: %+v", ev)
+
+		evE := events.Event{
+			Name:    ev.Name,
+			Payload: ev.Payload,
+		}
+
+		z.EventChannel <- evE
 	}
 
 	sigs := make(chan os.Signal, 1)
