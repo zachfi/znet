@@ -25,7 +25,6 @@ func (z *Znet) Listen(listenAddr string, ch chan bool) {
 		log.Fatal(err)
 	}
 
-	// Each events.Consumer here is later used
 	consumers := []events.Consumer{
 		z.Lights,
 		z,
