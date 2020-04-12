@@ -13,10 +13,12 @@ import (
 	gitConfig "github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
-	"github.com/xaque208/znet/internal/events"
 	"google.golang.org/grpc"
 
+	"github.com/xaque208/znet/internal/events"
+
 	log "github.com/sirupsen/logrus"
+
 	pb "github.com/xaque208/znet/rpc"
 )
 
@@ -120,7 +122,7 @@ func (e *EventProducer) watcher(done chan bool) error {
 					var publicKey *ssh.PublicKeys
 					sshPath := e.config.SSHKeyPath
 					sshKey, _ := ioutil.ReadFile(sshPath)
-					publicKey, keyError := ssh.NewPublicKeys("git", []byte(sshKey), "")
+					publicKey, keyError := ssh.NewPublicKeys("git", sshKey, "")
 					if keyError != nil {
 						log.Error(keyError)
 						continue
