@@ -26,6 +26,8 @@ func (a *Agent) EventNames() []string {
 		}
 	}
 
+	log.Debugf("agent responding to %d event names: %+v", len(names), names)
+
 	return names
 }
 
@@ -33,8 +35,11 @@ func (a *Agent) EventNames() []string {
 func (a *Agent) Subscriptions() map[string][]events.Handler {
 	s := events.NewSubscriptions()
 
-	s.Subscribe("NewTag", a.eventHandler)
-	s.Subscribe("NewCommit", a.eventHandler)
+	for _, e := range a.config.Executions {
+		if e.Event != "" {
+			s.Subscribe(e.Event, a.eventHandler)
+		}
+	}
 
 	return s.Table
 }
