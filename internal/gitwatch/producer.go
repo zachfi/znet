@@ -120,8 +120,7 @@ func (e *EventProducer) watcher(done chan bool) error {
 
 				if e.config.SSHKeyPath != "" {
 					var publicKey *ssh.PublicKeys
-					sshPath := e.config.SSHKeyPath
-					sshKey, _ := ioutil.ReadFile(sshPath)
+					sshKey, _ := ioutil.ReadFile(e.config.SSHKeyPath)
 					publicKey, keyError := ssh.NewPublicKeys("git", sshKey, "")
 					if keyError != nil {
 						log.Error(keyError)
