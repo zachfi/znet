@@ -45,6 +45,7 @@ func runGitwatch(cmd *cobra.Command, args []string) {
 
 	var opts []grpc.DialOption
 	opts = append(opts, grpc.WithInsecure())
+	opts = append(opts, grpc.WithKeepaliveParams(kacp))
 
 	conn, err := grpc.Dial(z.Config.RPC.ServerAddress, opts...)
 	if err != nil {

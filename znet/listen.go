@@ -3,10 +3,12 @@ package znet
 import (
 	"net"
 	"net/http"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/keepalive"
 
 	"github.com/xaque208/znet/internal/astro"
 	"github.com/xaque208/znet/internal/events"
@@ -15,6 +17,19 @@ import (
 	"github.com/xaque208/znet/pkg/eventmachine"
 	pb "github.com/xaque208/znet/rpc"
 )
+
+var kaep = keepalive.EnforcementPolicy{
+	MinTime:             5 * time.Second, // If a client pings more than once every 5 seconds, terminate the connection
+	PermitWithoutStream: true,            // Allow pings even when there are no active streams
+}
+
+var kasp = keepalive.ServerParameters{
+	MaxConnectionIdle:     15 * time.Second, // If a client is idle for 15 seconds, send a GOAWAY
+	MaxConnectionAge:      30 * time.Second, // If any connection is alive for more than 30 seconds, send a GOAWAY
+	MaxConnectionAgeGrace: 5 * time.Second,  // Allow 5 seconds for pending RPCs to complete before forcibly closing connections
+	Time:                  5 * time.Second,  // Ping the client if it is idle for 5 seconds to ensure the connection is still active
+	Timeout:               1 * time.Second,  // Wait 1 second for the ping ack before assuming the connection is dead
+}
 
 // Listen starts the znet listener.  The Listener is responsible for starting
 // up all the event handling threads, and then blocking on the final HTTP
@@ -76,7 +91,7 @@ func (z *Znet) listenRPC() {
 				log.Fatalf("failed to listen: %s", err)
 			}
 
-			grpcServer := grpc.NewServer()
+			grpcServer := grpc.NewServer(grpc.KeepaliveEnforcementPolicy(kaep), grpc.KeepaliveParams(kasp))
 
 			pb.RegisterInventoryServer(grpcServer, inventoryServer)
 			pb.RegisterLightsServer(grpcServer, lightServer)
