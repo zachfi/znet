@@ -1,6 +1,9 @@
 package agent
 
 import (
+	"bytes"
+	"os/exec"
+
 	log "github.com/sirupsen/logrus"
 
 	"github.com/xaque208/znet/internal/events"
@@ -49,6 +52,20 @@ func (a *Agent) Subscriptions() map[string][]events.Handler {
 func (a *Agent) eventHandler(name string, payload events.Payload) error {
 	log.Debugf("Agent.eventHandler: %+v", string(payload))
 	log.Debugf("Agent.eventHandler config: %+v", a.config)
+
+	for _, e := range a.config.Executions {
+		if e.Event != "" {
+
+			cmd := exec.Command("kitty", "sleep", "10")
+			// cmd.Stdin = strings.NewReader("some input")
+			var out bytes.Buffer
+			cmd.Stdout = &out
+			err := cmd.Run()
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+	}
 
 	return nil
 }

@@ -65,7 +65,6 @@ func (e *eventServer) NoticeEvent(ctx context.Context, request *pb.Event) (*pb.E
 // SubscribeEvents is used to allow a caller to block while streaming events
 // from the event server that match the given event names.
 func (e *eventServer) SubscribeEvents(subs *pb.EventSub, stream pb.Events_SubscribeEventsServer) error {
-
 	for ev := range e.remoteChan {
 
 		match := func() bool {
