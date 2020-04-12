@@ -75,8 +75,12 @@ message EventResponse {
   string message = 2;
 }
 
-service Events {
-  rpc NoticeEvent(Event) returns (EventResponse) {}
+message EventSub {
+  repeated string name = 1;
 }
 
+service Events {
+  rpc NoticeEvent(Event) returns (EventResponse) {}
+  rpc SubscribeEvents(EventSub) returns (stream Event) {}
+}
 
