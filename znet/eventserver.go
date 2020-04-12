@@ -2,11 +2,13 @@ package znet
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	log "github.com/sirupsen/logrus"
 
 	"github.com/xaque208/znet/internal/events"
+	"github.com/xaque208/znet/internal/timer"
 	"github.com/xaque208/znet/rpc"
 	pb "github.com/xaque208/znet/rpc"
 )
@@ -63,24 +65,46 @@ func (e *eventServer) NoticeEvent(ctx context.Context, request *pb.Event) (*pb.E
 // SubscribeEvents is used to allow a caller to block while streaming events
 // from the event server that match the given event names.
 func (e *eventServer) SubscribeEvents(subs *pb.EventSub, stream pb.Events_SubscribeEventsServer) error {
+
 	for ev := range e.remoteChan {
 
-		log.Infof("received remote event %+v", ev)
 		match := func() bool {
+
+			// Check for direct match first.
 			for _, n := range subs.Name {
 				if n == ev.Name {
 					return true
 				}
 			}
 
+			// Check the name of the timer, rather than the event name.
+			if ev.Name == "NamedTimer" {
+				var x timer.NamedTimer
+
+				err := json.Unmarshal(ev.Payload, &x)
+				if err != nil {
+					log.Errorf("failed to unmarshal %T: %s", x, err)
+				}
+
+				for _, n := range subs.Name {
+					if n == x.Name {
+						return true
+					}
+				}
+			}
+
 			return false
 		}()
+
+		log.Tracef("received remote event %+v", ev)
 
 		if match {
 			log.Debugf("sending remote event: %s", ev.Name)
 			if err := stream.Send(ev); err != nil {
 				return err
 			}
+		} else {
+			log.Tracef("event name not matched: %s", ev.Name)
 		}
 	}
 
