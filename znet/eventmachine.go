@@ -2,6 +2,7 @@ package znet
 
 import (
 	log "github.com/sirupsen/logrus"
+
 	"github.com/xaque208/znet/internal/events"
 )
 

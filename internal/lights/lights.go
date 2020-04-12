@@ -36,8 +36,7 @@ func (l *Lights) Subscriptions() map[string][]events.Handler {
 	s := events.NewSubscriptions()
 
 	s.Subscribe("PreSunset", l.eventHandler)
-	s.Subscribe("Sunset", l.eventHandler)
-	s.Subscribe("Sunrise", l.eventHandler)
+	s.Subscribe("SolarEvent", l.eventHandler)
 	s.Subscribe("TimerExpired", l.eventHandler)
 	s.Subscribe("NamedTimer", l.eventHandler)
 
@@ -45,7 +44,7 @@ func (l *Lights) Subscriptions() map[string][]events.Handler {
 }
 
 func (l *Lights) eventHandler(payload events.Payload) error {
-	log.Debugf("Lights.eventHandler: %+v", string(payload))
+	log.Tracef("Lights.eventHandler: %+v", string(payload))
 
 	var e timer.NamedTimer
 
