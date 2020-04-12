@@ -4,13 +4,11 @@ import (
 	"context"
 	"io"
 	"os"
-	"time"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/keepalive"
 
 	"github.com/xaque208/znet/internal/agent"
 	"github.com/xaque208/znet/internal/events"
@@ -23,12 +21,6 @@ var agentCmd = &cobra.Command{
 	Use:   "agent",
 	Short: "Run a znet agent",
 	Run:   runAgent,
-}
-
-var kacp = keepalive.ClientParameters{
-	Time:                10 * time.Second, // send pings every 10 seconds if there is no activity
-	Timeout:             time.Second,      // wait 1 second for ping ack before considering the connection dead
-	PermitWithoutStream: true,             // send pings even without active streams
 }
 
 func init() {
@@ -62,14 +54,13 @@ func runAgent(cmd *cobra.Command, args []string) {
 		ag,
 	}
 
-	err = eventmachine.Start(consumers)
+	machine, err := eventmachine.Start(consumers)
 	if err != nil {
 		log.Error(err)
 	}
 
 	var opts []grpc.DialOption
 	opts = append(opts, grpc.WithInsecure())
-	opts = append(opts, grpc.WithKeepaliveParams(kacp))
 
 	conn, err := grpc.Dial(z.Config.RPC.ServerAddress, opts...)
 	if err != nil {
@@ -115,7 +106,7 @@ func runAgent(cmd *cobra.Command, args []string) {
 				Payload: ev.Payload,
 			}
 
-			z.EventChannel <- evE
+			machine.EventChannel <- evE
 		}
 	}()
 
