@@ -31,13 +31,11 @@ func (z *Znet) Listen(listenAddr string, ch chan bool) {
 		z,
 	}
 
-	log.Tracef("%d event consumers", len(consumers))
+	err = z.EventMachine(consumers)
+	if err != nil {
+		log.Error(err)
+	}
 
-	z.EventChannel = make(chan events.Event)
-	z.EventConsumers = make(map[string][]events.Handler)
-
-	z.initEventConsumers(consumers)
-	z.initEventConsumer()
 	z.listenRPC()
 
 	z.listener.Listen(listenAddr, ch)
@@ -104,38 +102,4 @@ func httpListen(listenAddress string) *http.Server {
 	}()
 
 	return srv
-}
-
-// initEventConsumers updates the z.EventConsumers map for each received
-// consumer in order to append a handler for the discovered topic keys.
-func (z *Znet) initEventConsumers(consumers []events.Consumer) {
-	for _, e := range consumers {
-		subs := e.Subscriptions()
-		for k, handlers := range subs {
-			z.EventConsumers[k] = append(z.EventConsumers[k], handlers...)
-		}
-	}
-}
-
-// initEventConsumer starts a routine that never ends to read from
-// z.EventChannel and execute the loaded handlers with the event Payload.
-func (z *Znet) initEventConsumer() {
-	go func(ch chan events.Event) {
-		log.Debugf("total %d z.EventConsumers", len(z.EventConsumers))
-
-		for e := range ch {
-			if handlers, ok := z.EventConsumers[e.Name]; ok {
-				log.Debugf("executing %d handlers for event %s", len(handlers), e.Name)
-				log.Tracef("listener heard event %s: %s", e.Name, string(e.Payload))
-				for _, h := range handlers {
-					err := h(e.Payload)
-					if err != nil {
-						log.Error(err)
-					}
-				}
-			} else {
-				log.Warnf("received event with no handlers: %+v", e.Name)
-			}
-		}
-	}(z.EventChannel)
 }
