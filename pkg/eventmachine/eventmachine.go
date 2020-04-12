@@ -19,23 +19,11 @@ func Start(consumers []events.Consumer) (*EventMachine, error) {
 	m := &EventMachine{}
 	m.EventChannel = make(chan events.Event)
 	m.EventConsumers = make(map[string][]events.Handler)
-	err := m.EventMachine(consumers)
-	if err != nil {
-		return nil, err
-	}
-
-	return m, nil
-}
-
-// EventMachine builds the channels for communicating about events  received
-// from the RPC.
-func (m *EventMachine) EventMachine(consumers []events.Consumer) error {
-	log.Tracef("%d event consumers", len(consumers))
 
 	m.initEventConsumers(consumers)
 	m.initEventConsumer()
 
-	return nil
+	return m, nil
 }
 
 // initEventConsumer starts a routine that never ends to read from
@@ -47,9 +35,9 @@ func (m *EventMachine) initEventConsumer() {
 		for e := range ch {
 			if handlers, ok := m.EventConsumers[e.Name]; ok {
 				log.Debugf("executing %d handlers for event %s", len(handlers), e.Name)
-				log.Tracef("listener heard event %s: %s", e.Name, string(e.Payload))
+				log.Tracef("EventMachine heard event %s: %s", e.Name, string(e.Payload))
 				for _, h := range handlers {
-					err := h(e.Payload)
+					err := h(e.Name, e.Payload)
 					if err != nil {
 						log.Error(err)
 					}

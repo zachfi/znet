@@ -46,7 +46,7 @@ func (a *Agent) Subscriptions() map[string][]events.Handler {
 	return s.Table
 }
 
-func (a *Agent) eventHandler(payload events.Payload) error {
+func (a *Agent) eventHandler(name string, payload events.Payload) error {
 	log.Debugf("Agent.eventHandler: %+v", string(payload))
 	log.Debugf("Agent.eventHandler config: %+v", a.config)
 

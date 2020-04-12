@@ -43,8 +43,8 @@ func (l *Lights) Subscriptions() map[string][]events.Handler {
 	return s.Table
 }
 
-func (l *Lights) eventHandler(payload events.Payload) error {
-	log.Tracef("Lights.eventHandler: %+v", string(payload))
+func (l *Lights) eventHandler(name string, payload events.Payload) error {
+	log.Tracef("Lights.eventHandler: %s : %+v", name, string(payload))
 
 	var e timer.NamedTimer
 
