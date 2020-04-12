@@ -213,8 +213,11 @@ func (e *EventProducer) Produce(ev interface{}) error {
 		return fmt.Errorf("unhandled event type: %T", ev)
 	}
 
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
 	log.Tracef("timer producing RPC event %+v", req)
-	res, err := ec.NoticeEvent(context.Background(), req)
+	res, err := ec.NoticeEvent(ctx, req)
 	if err != nil {
 		return err
 	}

@@ -14,8 +14,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/tcnksm/go-input"
 
-	"github.com/xaque208/znet/internal/events"
 	"github.com/xaque208/znet/internal/lights"
+	"github.com/xaque208/znet/pkg/eventmachine"
 )
 
 // Znet is the core object for this project.  It keeps track of the data,
@@ -30,12 +30,7 @@ type Znet struct {
 	Inventory *Inventory
 	Lights    *lights.Lights
 
-	// EventChannel is the channel to which the RPC eventServer writes events.
-	EventChannel chan events.Event
-
-	// EventConsumers is the map between event names and which event handlers to
-	// call with the event event payload.
-	EventConsumers map[string][]events.Handler
+	EventMachine *eventmachine.EventMachine
 }
 
 // NewZnet creates and returns a new Znet object.

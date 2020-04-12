@@ -15,11 +15,16 @@ type EventMachine struct {
 	EventConsumers map[string][]events.Handler
 }
 
-func Start(consumers []events.Consumer) error {
-	m := EventMachine{}
+func Start(consumers []events.Consumer) (*EventMachine, error) {
+	m := &EventMachine{}
 	m.EventChannel = make(chan events.Event)
 	m.EventConsumers = make(map[string][]events.Handler)
-	return m.EventMachine(consumers)
+	err := m.EventMachine(consumers)
+	if err != nil {
+		return nil, err
+	}
+
+	return m, nil
 }
 
 // EventMachine builds the channels for communicating about events  received
