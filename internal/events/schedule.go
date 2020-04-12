@@ -88,7 +88,7 @@ func (s *Scheduler) Step() {
 // Set appends the name given to the time slot given.
 func (s *Scheduler) Set(t time.Time, name string) {
 	if time.Until(t) < 0 {
-		log.Warnf("not scheduling past event %s for %s", name, t)
+		log.Warnf("not scheduling past event %s for %s, %s", name, t, time.Until(t))
 		return
 	}
 
