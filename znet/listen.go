@@ -64,8 +64,8 @@ func (z *Znet) listenRPC() {
 		}
 
 		eventServer := &eventServer{
-			eventNames: timer.EventNames,
 			ch:         z.EventChannel,
+			remoteChan: make(chan *pb.Event, 1000),
 		}
 
 		eventServer.RegisterEvents(timer.EventNames)
