@@ -12,6 +12,7 @@ import (
 	"github.com/xaque208/znet/internal/events"
 	"github.com/xaque208/znet/internal/gitwatch"
 	"github.com/xaque208/znet/internal/timer"
+	"github.com/xaque208/znet/pkg/eventmachine"
 	pb "github.com/xaque208/znet/rpc"
 )
 
@@ -30,7 +31,7 @@ func (z *Znet) Listen(listenAddr string, ch chan bool) {
 		z,
 	}
 
-	err = z.EventMachine(consumers)
+	err = eventmachine.Start(consumers)
 	if err != nil {
 		log.Error(err)
 	}

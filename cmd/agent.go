@@ -12,6 +12,7 @@ import (
 
 	"github.com/xaque208/znet/internal/agent"
 	"github.com/xaque208/znet/internal/events"
+	"github.com/xaque208/znet/pkg/eventmachine"
 	pb "github.com/xaque208/znet/rpc"
 	"github.com/xaque208/znet/znet"
 )
@@ -53,7 +54,7 @@ func runAgent(cmd *cobra.Command, args []string) {
 		ag,
 	}
 
-	err = z.EventMachine(consumers)
+	err = eventmachine.Start(consumers)
 	if err != nil {
 		log.Error(err)
 	}

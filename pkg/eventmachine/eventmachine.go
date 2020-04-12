@@ -1,4 +1,4 @@
-package znet
+package eventmachine
 
 import (
 	log "github.com/sirupsen/logrus"
@@ -6,28 +6,41 @@ import (
 	"github.com/xaque208/znet/internal/events"
 )
 
+type EventMachine struct {
+	// EventChannel is the channel to which the RPC eventServer writes events.
+	EventChannel chan events.Event
+
+	// EventConsumers is the map between event names and which event handlers to
+	// call with the event event payload.
+	EventConsumers map[string][]events.Handler
+}
+
+func Start(consumers []events.Consumer) error {
+	m := EventMachine{}
+	m.EventChannel = make(chan events.Event)
+	m.EventConsumers = make(map[string][]events.Handler)
+	return m.EventMachine(consumers)
+}
+
 // EventMachine builds the channels for communicating about events  received
 // from the RPC.
-func (z *Znet) EventMachine(consumers []events.Consumer) error {
+func (m *EventMachine) EventMachine(consumers []events.Consumer) error {
 	log.Tracef("%d event consumers", len(consumers))
 
-	z.EventChannel = make(chan events.Event)
-	z.EventConsumers = make(map[string][]events.Handler)
-
-	z.initEventConsumers(consumers)
-	z.initEventConsumer()
+	m.initEventConsumers(consumers)
+	m.initEventConsumer()
 
 	return nil
 }
 
 // initEventConsumer starts a routine that never ends to read from
 // z.EventChannel and execute the loaded handlers with the event Payload.
-func (z *Znet) initEventConsumer() {
+func (m *EventMachine) initEventConsumer() {
 	go func(ch chan events.Event) {
-		log.Debugf("total %d z.EventConsumers", len(z.EventConsumers))
+		log.Debugf("total %d m.EventConsumers", len(m.EventConsumers))
 
 		for e := range ch {
-			if handlers, ok := z.EventConsumers[e.Name]; ok {
+			if handlers, ok := m.EventConsumers[e.Name]; ok {
 				log.Debugf("executing %d handlers for event %s", len(handlers), e.Name)
 				log.Tracef("listener heard event %s: %s", e.Name, string(e.Payload))
 				for _, h := range handlers {
@@ -40,17 +53,17 @@ func (z *Znet) initEventConsumer() {
 				log.Warnf("received event with no handlers: %+v", e.Name)
 			}
 		}
-	}(z.EventChannel)
+	}(m.EventChannel)
 }
 
 // initEventConsumers updates the z.EventConsumers map.  For each received
 // consumer, the handler subscriptions are determined, and appended to the
 // z.EventConsumers map for execution when the named event is received.
-func (z *Znet) initEventConsumers(consumers []events.Consumer) {
+func (m *EventMachine) initEventConsumers(consumers []events.Consumer) {
 	for _, e := range consumers {
 		subs := e.Subscriptions()
 		for k, handlers := range subs {
-			z.EventConsumers[k] = append(z.EventConsumers[k], handlers...)
+			m.EventConsumers[k] = append(m.EventConsumers[k], handlers...)
 		}
 	}
 }
