@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 
+	"github.com/xaque208/znet/internal/agent"
 	"github.com/xaque208/znet/internal/events"
 	pb "github.com/xaque208/znet/rpc"
 	"github.com/xaque208/znet/znet"
@@ -46,7 +47,11 @@ func runAgent(cmd *cobra.Command, args []string) {
 
 	z.Config.RPC.ServerAddress = viper.GetString("rpc.server")
 
-	consumers := []events.Consumer{}
+	ag := agent.NewAgent(z.Config.Agent)
+
+	consumers := []events.Consumer{
+		ag,
+	}
 
 	err = z.EventMachine(consumers)
 	if err != nil {
@@ -71,10 +76,7 @@ func runAgent(cmd *cobra.Command, args []string) {
 	client := pb.NewEventsClient(conn)
 
 	eventSub := &pb.EventSub{
-		Name: []string{
-			"NewCommit",
-			"NewTag",
-		},
+		Name: ag.EventNames(),
 	}
 
 	stream, err := client.SubscribeEvents(context.Background(), eventSub)

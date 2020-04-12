@@ -10,6 +10,25 @@ type Agent struct {
 	config Config
 }
 
+func NewAgent(config Config) *Agent {
+	return &Agent{
+		config: config,
+	}
+
+}
+
+func (a *Agent) EventNames() []string {
+	var names []string
+
+	for _, e := range a.config.Executions {
+		if e.Event != "" {
+			names = append(names, e.Event)
+		}
+	}
+
+	return names
+}
+
 // Subscriptions implements the events.Consumer interface
 func (a *Agent) Subscriptions() map[string][]events.Handler {
 	s := events.NewSubscriptions()
