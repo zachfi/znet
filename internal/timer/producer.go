@@ -118,17 +118,22 @@ func (e *EventProducer) scheduleRepeatEvents(scheduledEvents *events.Scheduler) 
 
 			log.Tracef("Next is: %+v", next)
 			log.Tracef("End is: %+v", end)
-			log.Tracef("next.Before(end) is: %+v", next.Before(end))
+			log.Tracef("next.Before(end) is: %+v, %s", next.Before(end), time.Since(next))
 
 			// TODO make the map handling here simpler.  Perhaps use the Scheduler interface
 			// e.Schedule.Set(next, v.Produce)
 
 			if next.Before(end) {
-				scheduledEvents.Set(next, v.Produce)
+				err := scheduledEvents.Set(next, v.Produce)
+				if err != nil {
+					return err
+				}
 				continue
 			}
 
-			break
+			if next.After(end) {
+				break
+			}
 		}
 	}
 
@@ -185,7 +190,6 @@ func (e *EventProducer) scheduler() error {
 			return nil
 		}
 	}
-
 }
 
 // Produce implements the events.Producer interface.  Match the supported event
@@ -209,7 +213,7 @@ func (e *EventProducer) Produce(ev interface{}) error {
 		return fmt.Errorf("unhandled event type: %T", ev)
 	}
 
-	log.Tracef("producing RPC event %+v", req)
+	log.Tracef("timer producing RPC event %+v", req)
 	res, err := ec.NoticeEvent(context.Background(), req)
 	if err != nil {
 		return err

@@ -1,6 +1,7 @@
 package events
 
 import (
+	"fmt"
 	"sort"
 	"time"
 
@@ -46,6 +47,8 @@ func (s *Scheduler) Next() *time.Time {
 
 // NamesForTime returns all events names that are scheduled for a given timeSlice.
 func (s *Scheduler) NamesForTime(t time.Time) []string {
+
+	log.Tracef("*s.timeSlice", *s.timeSlice)
 	return (*s.timeSlice)[t]
 }
 
@@ -86,16 +89,20 @@ func (s *Scheduler) Step() {
 }
 
 // Set appends the name given to the time slot given.
-func (s *Scheduler) Set(t time.Time, name string) {
+func (s *Scheduler) Set(t time.Time, name string) error {
+
+	if name == "" {
+		return fmt.Errorf("unable to schedule empty name at time %s", t)
+	}
+
 	if time.Until(t) < 0 {
 		if time.Since(t) < 5*time.Second {
-			log.Warnf("not scheduling past event %s for %s, %s", name, t, time.Until(t))
-			return
+			return fmt.Errorf("not scheduling past event %s for %s, %s", name, t, time.Until(t))
 		}
 	}
 
 	if _, ok := (*s.timeSlice)[t]; !ok {
-		(*s.timeSlice)[t] = make([]string, 1)
+		(*s.timeSlice)[t] = make([]string, 0)
 	}
 
 	log.Debugf("scheduling future event %s for %s", name, t)
@@ -114,6 +121,7 @@ func (s *Scheduler) Set(t time.Time, name string) {
 		(*s.timeSlice)[t] = append((*s.timeSlice)[t], name)
 	}
 
+	return nil
 }
 
 // TimeSlice is an association between a specific time, and the names of the events that should fire at that time.
