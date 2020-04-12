@@ -1,6 +1,7 @@
 package znet
 
 import (
+	"github.com/xaque208/znet/internal/agent"
 	"github.com/xaque208/znet/internal/astro"
 	"github.com/xaque208/znet/internal/gitwatch"
 	"github.com/xaque208/znet/internal/lights"
@@ -9,6 +10,7 @@ import (
 
 // Config stores the items that are required to configure this project.
 type Config struct {
+	Agent        agent.Config        `yaml:"agent,omitempty"`
 	Astro        astro.Config        `yaml:"astro,omitempty"`
 	Environments []EnvironmentConfig `yaml:"environments,omitempty"`
 	GitWatch     gitwatch.Config     `yaml:"gitwatch,omitempty"`
