@@ -79,30 +79,35 @@ func runAgent(cmd *cobra.Command, args []string) {
 		Name: ag.EventNames(),
 	}
 
-	stream, err := client.SubscribeEvents(context.Background(), eventSub)
+	ctx := context.Background()
+
+	stream, err := client.SubscribeEvents(ctx, eventSub)
 	if err != nil {
 		log.Fatalf("calling %+v.SubscribeEvents(_) = _, %+v", client, err)
 	}
 
-	for {
-		ev, err := stream.Recv()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			log.Errorf("%v.SubscribeEvents(_) = _, %v", client, err)
-			break
-		}
+	// Run the receiver forever.
+	go func() {
+		for {
+			ev, err := stream.Recv()
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				log.Errorf("%v.SubscribeEvents(_) = _, %v", client, err)
+				break
+			}
 
-		log.Tracef("received event: %+v", ev)
+			log.Tracef("received event: %+v", ev)
 
-		evE := events.Event{
-			Name:    ev.Name,
-			Payload: ev.Payload,
+			evE := events.Event{
+				Name:    ev.Name,
+				Payload: ev.Payload,
+			}
+
+			z.EventChannel <- evE
 		}
-
-		z.EventChannel <- evE
-	}
+	}()
 
 	sigs := make(chan os.Signal, 1)
 	done := make(chan bool, 1)
@@ -110,8 +115,16 @@ func runAgent(cmd *cobra.Command, args []string) {
 	go func() {
 		sig := <-sigs
 		log.Warnf("caught signal: %s", sig.String())
+
 		done <- true
 	}()
 
 	<-done
+
+	err = stream.CloseSend()
+	if err != nil {
+		log.Error(err)
+	}
+
+	ctx.Done()
 }
