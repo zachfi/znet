@@ -116,7 +116,6 @@ func (e *EventProducer) scheduleRepeatEvents(scheduledEvents *events.Scheduler) 
 		for {
 			next = next.Add(time.Duration(v.Every.Seconds) * time.Second)
 
-			log.Tracef("Repeat evert is: %+v", v.Every.Seconds)
 			log.Tracef("Next is: %+v", next)
 			log.Tracef("End is: %+v", end)
 			log.Tracef("next.Before(end) is: %+v", next.Before(end))
