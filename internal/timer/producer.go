@@ -97,7 +97,10 @@ func (e *EventProducer) scheduleEvents(scheduledEvents *events.Scheduler) error 
 		}
 
 		if timeRemaining > 0 {
-			scheduledEvents.Set(d, v.Produce)
+			err = scheduledEvents.Set(d, v.Produce)
+			if err != nil {
+				log.Error(err)
+			}
 		}
 
 	}
@@ -109,7 +112,10 @@ func (e *EventProducer) scheduleRepeatEvents(scheduledEvents *events.Scheduler) 
 
 	// Stop calculating events beyond this time.
 	end := time.Now().Add(time.Duration(e.config.FutureLimit) * time.Second)
-	scheduledEvents.Set(end, "ReloadConfig")
+	err := scheduledEvents.Set(end, "ReloadConfig")
+	if err != nil {
+		log.Error(err)
+	}
 
 	for _, v := range e.config.RepeatEvents {
 		next := time.Now()

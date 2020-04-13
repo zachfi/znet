@@ -48,7 +48,7 @@ func (s *Scheduler) Next() *time.Time {
 // NamesForTime returns all events names that are scheduled for a given timeSlice.
 func (s *Scheduler) NamesForTime(t time.Time) []string {
 
-	log.Tracef("*s.timeSlice", *s.timeSlice)
+	log.Tracef("*s.timeSlice %+v", *s.timeSlice)
 	return (*s.timeSlice)[t]
 }
 

@@ -90,7 +90,9 @@ func runAgent(cmd *cobra.Command, args []string) {
 	// Run the receiver forever.
 	go func() {
 		for {
-			ev, err := stream.Recv()
+			var ev *pb.Event
+
+			ev, err = stream.Recv()
 			if err == io.EOF {
 				break
 			}

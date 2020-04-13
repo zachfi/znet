@@ -76,12 +76,22 @@ func (e *EventProducer) scheduleEvents(sch *events.Scheduler) error {
 		log.Tracef("astro found sunriseTime: %+v", sunriseTime)
 		log.Tracef("astro found sunsetTime: %+v", sunsetTime)
 
-		sch.Set(sunriseTime, "Sunrise")
-		sch.Set(sunsetTime, "Sunset")
+		err := sch.Set(sunriseTime, "Sunrise")
+		if err != nil {
+			log.Error(err)
+		}
+
+		err = sch.Set(sunsetTime, "Sunset")
+		if err != nil {
+			log.Error(err)
+		}
 
 		preSunset := sunsetTime.Add(-75 * time.Minute)
 
-		sch.Set(preSunset, "PreSunset")
+		err = sch.Set(preSunset, "PreSunset")
+		if err != nil {
+			log.Error(err)
+		}
 	}
 
 	return nil
