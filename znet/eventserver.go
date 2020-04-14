@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sync"
 
 	log "github.com/sirupsen/logrus"
 
@@ -14,9 +15,10 @@ import (
 )
 
 type eventServer struct {
-	eventNames []string
-	ch         chan events.Event
-	remoteChan chan *rpc.Event
+	ch          chan events.Event
+	eventNames  []string
+	mux         sync.Mutex
+	remoteChans []chan *rpc.Event
 }
 
 func (e *eventServer) ValidEventName(name string) bool {
@@ -43,7 +45,10 @@ func (e *eventServer) RegisterEvents(nameSet []string) {
 // NoticeEvent is the call when an event should be fired.
 func (e *eventServer) NoticeEvent(ctx context.Context, request *pb.Event) (*pb.EventResponse, error) {
 	response := &pb.EventResponse{}
-	e.remoteChan <- request
+
+	for _, x := range e.remoteChans {
+		x <- request
+	}
 
 	if e.ValidEventName(request.Name) {
 		ev := events.Event{
@@ -65,7 +70,11 @@ func (e *eventServer) NoticeEvent(ctx context.Context, request *pb.Event) (*pb.E
 // SubscribeEvents is used to allow a caller to block while streaming events
 // from the event server that match the given event names.
 func (e *eventServer) SubscribeEvents(subs *pb.EventSub, stream pb.Events_SubscribeEventsServer) error {
-	for ev := range e.remoteChan {
+
+	ch := e.subscriberChan()
+	defer close(ch)
+
+	for ev := range ch {
 
 		match := func() bool {
 
@@ -108,4 +117,14 @@ func (e *eventServer) SubscribeEvents(subs *pb.EventSub, stream pb.Events_Subscr
 	}
 
 	return nil
+}
+
+func (e *eventServer) subscriberChan() chan *rpc.Event {
+	ch := make(chan *rpc.Event)
+
+	e.mux.Lock()
+	e.remoteChans = append(e.remoteChans, ch)
+	e.mux.Unlock()
+
+	return ch
 }
