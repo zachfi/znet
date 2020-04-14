@@ -5,7 +5,9 @@ type Config struct {
 }
 
 type Execution struct {
-	Event       string
-	Shell       string
+	Args        []string
+	Command     string
+	Dir         string
 	Environment map[string]string
+	Event       string
 }

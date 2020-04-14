@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"reflect"
+	"strings"
 	"time"
 
 	git "github.com/go-git/go-git/v5"
@@ -116,26 +117,22 @@ func (e *EventProducer) watcher(done chan bool) error {
 
 				cacheDir := fmt.Sprintf("%s/%s", e.config.CacheDir, repo.Name)
 
-				var cloneOpts *git.CloneOptions
+				cloneOpts := &git.CloneOptions{
+					URL:      repo.URL,
+					Progress: os.Stdout,
+				}
 
 				if e.config.SSHKeyPath != "" {
-					var publicKey *ssh.PublicKeys
-					sshKey, _ := ioutil.ReadFile(e.config.SSHKeyPath)
-					publicKey, keyError := ssh.NewPublicKeys("git", sshKey, "")
-					if keyError != nil {
-						log.Error(keyError)
-						continue
-					}
+					if !strings.HasPrefix(repo.URL, "http") {
+						var publicKey *ssh.PublicKeys
+						sshKey, _ := ioutil.ReadFile(e.config.SSHKeyPath)
+						publicKey, keyError := ssh.NewPublicKeys("git", sshKey, "")
+						if keyError != nil {
+							log.Errorf("error while loading public key: %s", keyError)
+							continue
+						}
 
-					cloneOpts = &git.CloneOptions{
-						URL:      repo.URL,
-						Progress: os.Stdout,
-						Auth:     publicKey,
-					}
-				} else {
-					cloneOpts = &git.CloneOptions{
-						URL:      repo.URL,
-						Progress: os.Stdout,
+						cloneOpts.Auth = publicKey
 					}
 				}
 
@@ -143,7 +140,7 @@ func (e *EventProducer) watcher(done chan bool) error {
 				if err != nil {
 					_, cloneErr := git.PlainClone(cacheDir, false, cloneOpts)
 					if cloneErr != nil {
-						log.Error(cloneErr)
+						log.Errorf("error while cloning %s: %s", repo.URL, cloneErr)
 						continue
 					}
 				}

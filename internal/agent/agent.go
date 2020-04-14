@@ -2,6 +2,7 @@ package agent
 
 import (
 	"bytes"
+	"fmt"
 	"os/exec"
 
 	log "github.com/sirupsen/logrus"
@@ -55,8 +56,18 @@ func (a *Agent) eventHandler(name string, payload events.Payload) error {
 
 	for _, e := range a.config.Executions {
 		if e.Event != "" {
+			cmd := exec.Command(e.Command, e.Args...)
 
-			cmd := exec.Command("kitty", "sleep", "10")
+			if e.Dir != "" {
+				cmd.Dir = e.Dir
+			}
+
+			var env []string
+
+			for k, v := range e.Environment {
+				env = append(env, fmt.Sprintf("%s=%s", k, v))
+			}
+
 			// cmd.Stdin = strings.NewReader("some input")
 			var out bytes.Buffer
 			cmd.Stdout = &out
