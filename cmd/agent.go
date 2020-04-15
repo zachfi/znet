@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"os"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -80,25 +81,30 @@ func runAgent(cmd *cobra.Command, args []string) {
 		Name: ag.EventNames(),
 	}
 
-	ctx := context.Background()
-
-	stream, err := client.SubscribeEvents(ctx, eventSub)
-	if err != nil {
-		log.Fatalf("calling %+v.SubscribeEvents(_) = _, %+v", client, err)
-	}
-
 	// Run the receiver forever.
 	go func() {
 		for {
+			ctx := context.Background()
+
+			stream, err := client.SubscribeEvents(ctx, eventSub)
+			if err != nil {
+				log.Errorf("calling %+v.SubscribeEvents(_) = _, %+v", client, err)
+
+				ctx.Done()
+				time.Sleep(10 * time.Second)
+				continue
+			}
+
 			var ev *pb.Event
 
 			ev, err = stream.Recv()
 			if err == io.EOF {
-				break
+				continue
 			}
 			if err != nil {
 				log.Errorf("%v.SubscribeEvents(_) = _, %v", client, err)
-				break
+				time.Sleep(10 * time.Second)
+				continue
 			}
 
 			log.Tracef("received event: %+v", ev)
@@ -109,6 +115,7 @@ func runAgent(cmd *cobra.Command, args []string) {
 			}
 
 			machine.EventChannel <- evE
+
 		}
 	}()
 
@@ -123,11 +130,4 @@ func runAgent(cmd *cobra.Command, args []string) {
 	}()
 
 	<-done
-
-	err = stream.CloseSend()
-	if err != nil {
-		log.Error(err)
-	}
-
-	ctx.Done()
 }

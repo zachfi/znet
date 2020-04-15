@@ -24,18 +24,16 @@ func NewListener(config *Config) (*Listener, error) {
 
 // Listen starts the http listener and blocks listening for any message on the
 // given channel, shutting down the HTTP.
-func (l *Listener) Listen(listenAddr string, ch chan bool) {
+func (l *Listener) Listen(listenAddr string) {
 	log.Infof("starting znet listener %s", listenAddr)
 	l.httpServer = httpListen(listenAddr)
-
-	<-ch
-	l.Shutdown()
 }
 
 // Shutdown closes down the to the message bus and shuts down the HTTP server.
 func (l *Listener) Shutdown() {
 	log.Info("znet HTTP listener shutting down")
-	err := l.httpServer.Shutdown(context.TODO())
+
+	err := l.httpServer.Shutdown(context.Background())
 	if err != nil {
 		log.Error(err)
 	}

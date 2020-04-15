@@ -31,6 +31,8 @@ type Znet struct {
 	Lights    *lights.Lights
 
 	EventMachine *eventmachine.EventMachine
+
+	eventServer *eventServer
 }
 
 // NewZnet creates and returns a new Znet object.
@@ -335,4 +337,13 @@ func (z *Znet) Close() error {
 	z.Inventory.ldapClient.Close()
 
 	return nil
+}
+
+func (z *Znet) Shutdown() error {
+	var err error
+
+	z.listener.Shutdown()
+	z.eventServer.Shutdown()
+
+	return err
 }

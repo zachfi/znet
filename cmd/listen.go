@@ -91,5 +91,9 @@ func listen(cmd *cobra.Command, args []string) {
 		done <- true
 	}()
 
-	z.Listen(listenAddr, done)
+	z.Listen(listenAddr)
+
+	<-done
+
+	z.Shutdown()
 }

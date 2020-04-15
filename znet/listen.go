@@ -19,7 +19,7 @@ import (
 // Listen starts the znet listener.  The Listener is responsible for starting
 // up all the event handling threads, and then blocking on the final HTTP
 // listener.
-func (z *Znet) Listen(listenAddr string, ch chan bool) {
+func (z *Znet) Listen(listenAddr string) {
 	var err error
 	z.listener, err = NewListener(&z.Config)
 	if err != nil {
@@ -40,7 +40,7 @@ func (z *Znet) Listen(listenAddr string, ch chan bool) {
 
 	z.listenRPC()
 
-	z.listener.Listen(listenAddr, ch)
+	z.listener.Listen(listenAddr)
 }
 
 // Subscriptions is yet to be used, but conforms to the interface for
@@ -67,9 +67,13 @@ func (z *Znet) listenRPC() {
 			ch: z.EventMachine.EventChannel,
 		}
 
+		eventServer.Shutdown()
+
 		eventServer.RegisterEvents(timer.EventNames)
 		eventServer.RegisterEvents(astro.EventNames)
 		eventServer.RegisterEvents(gitwatch.EventNames)
+
+		z.eventServer = eventServer
 
 		go func() {
 			lis, err := net.Listen("tcp", z.Config.RPC.ListenAddress)
@@ -89,6 +93,7 @@ func (z *Znet) listenRPC() {
 			}
 		}()
 	}
+
 }
 
 func httpListen(listenAddress string) *http.Server {

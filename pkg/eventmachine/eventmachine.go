@@ -6,6 +6,7 @@ import (
 	"github.com/xaque208/znet/internal/events"
 )
 
+// EventMachine
 type EventMachine struct {
 	// EventChannel is the channel to which the RPC eventServer writes events.
 	EventChannel chan events.Event
