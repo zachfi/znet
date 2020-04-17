@@ -213,7 +213,7 @@ func updateRepo(repo *git.Repository) (string, []string, error) {
 	err = remote.Fetch(opts)
 	if err != nil {
 		if err != git.NoErrAlreadyUpToDate {
-			log.Errorf("fetch error: %s", err)
+			log.Errorf("failed to fetch %s: %s", remote.String(), err)
 		}
 	}
 
