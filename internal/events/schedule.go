@@ -27,7 +27,6 @@ func (s *Scheduler) All() TimeSlice {
 
 // Next determines the next occurring event in the series.
 func (s *Scheduler) Next() *time.Time {
-
 	keys := []time.Time{}
 
 	for k := range *s.timeSlice {
@@ -61,24 +60,21 @@ func (s *Scheduler) WaitForNext() []string {
 		return []string{}
 	}
 
-	if time.Now().After(*next) {
-
-		// Send past events under 30 seconds old.
-		if time.Since(*next) < time.Duration(30)*time.Second {
-			log.Infof("sending recent event: %s", next)
-			return s.NamesForTime(*next)
-		}
+	// Send past events under 30 seconds old.
+	if time.Since(*next) > time.Duration(30)*time.Second {
+		log.Warnf("sending past event: %s : %s", next, time.Since(*next))
+		return s.NamesForTime(*next)
 	}
 
-	log.Infof("waiting until: %s", next)
+	log.Infof("scheduler waiting for next event: %s", next)
 	ti := time.NewTimer(time.Until(*next))
 	<-ti.C
 
 	return s.NamesForTime(*next)
 }
 
-// Step deletes the next timeslice.  This is determined to be the timeslice
-// that has just run.  The expectataion is that Step() is called once the
+// Step deletes the next timeSlice.  This is determined to be the timeSlice
+// that has just run.  The expectation is that Step() is called once the
 // events have completed firing to advance to the next position in time.
 func (s *Scheduler) Step() {
 	next := s.Next()
@@ -96,7 +92,7 @@ func (s *Scheduler) Set(t time.Time, name string) error {
 	}
 
 	if time.Until(t) < 0 {
-		if time.Since(t) < 5*time.Second {
+		if time.Since(t) > 5*time.Second {
 			return fmt.Errorf("not scheduling past event %s for %s, %s", name, t, time.Until(t))
 		}
 	}

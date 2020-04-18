@@ -76,9 +76,19 @@ func (e *EventProducer) scheduleEvents(sch *events.Scheduler) error {
 		log.Tracef("astro found sunriseTime: %+v", sunriseTime)
 		log.Tracef("astro found sunsetTime: %+v", sunsetTime)
 
+		// Schedule tomorrow's sunrise based on today
+		if time.Since(sunriseTime) > 0 {
+			sunriseTime = sunriseTime.Add(24 * time.Hour)
+		}
+
 		err := sch.Set(sunriseTime, "Sunrise")
 		if err != nil {
 			log.Error(err)
+		}
+
+		// Schedule tomorrow's sunset based on today
+		if time.Since(sunsetTime) > 0 {
+			sunsetTime = sunsetTime.Add(24 * time.Hour)
 		}
 
 		err = sch.Set(sunsetTime, "Sunset")
@@ -116,8 +126,10 @@ func (e *EventProducer) scheduler() error {
 			names := sch.WaitForNext()
 
 			if len(names) == 0 {
-				log.Debugf("no astro names found, sleeping")
-				time.Sleep(1 * time.Hour)
+				dur := 1 * time.Hour
+				log.Debugf("no astro names, retry in %s", dur)
+				time.Sleep(dur)
+				continue
 			}
 
 			for _, n := range names {

@@ -161,13 +161,20 @@ func (e *EventProducer) scheduler() error {
 		log.Error(err)
 	}
 
-	log.Infof("%d timer events scheduled", len(sch.All()))
+	log.Debugf("%d timer events scheduled", len(sch.All()))
 
 	otherchan := make(chan bool, 1)
 
 	go func() {
 		for {
 			names := sch.WaitForNext()
+
+			if len(names) == 0 {
+				dur := 10 * time.Minute
+				log.Debugf("no timer names, retry in %s", dur)
+				time.Sleep(dur)
+				continue
+			}
 
 			for _, n := range names {
 				now := time.Now()
@@ -192,7 +199,7 @@ func (e *EventProducer) scheduler() error {
 		case <-otherchan:
 
 		case <-e.diechan:
-			log.Debugf("scheduler dying")
+			log.Debugf("timer scheduler dying")
 			return nil
 		}
 	}
