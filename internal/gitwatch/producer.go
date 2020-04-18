@@ -123,18 +123,18 @@ func (e *EventProducer) watcher(done chan bool) error {
 					// Progress: os.Stdout,
 				}
 
-				if e.config.SSHKeyPath != "" {
-					if !strings.HasPrefix(repo.URL, "http") {
-						var publicKey *ssh.PublicKeys
-						sshKey, _ := ioutil.ReadFile(e.config.SSHKeyPath)
-						publicKey, keyError := ssh.NewPublicKeys("git", sshKey, "")
-						if keyError != nil {
-							log.Errorf("error while loading public key: %s", keyError)
-							continue
-						}
-
-						cloneOpts.Auth = publicKey
+				// For URLs that don't start with http and when a SSHKeyPath is set, we
+				// shold load the ssh key to proceeed.
+				if !strings.HasPrefix(repo.URL, "http") && e.config.SSHKeyPath != "" {
+					var publicKey *ssh.PublicKeys
+					sshKey, _ := ioutil.ReadFile(e.config.SSHKeyPath)
+					publicKey, keyError := ssh.NewPublicKeys("git", sshKey, "")
+					if keyError != nil {
+						log.Errorf("error while loading public key: %s", keyError)
+						continue
 					}
+
+					cloneOpts.Auth = publicKey
 				}
 
 				_, err := os.Stat(cacheDir)
