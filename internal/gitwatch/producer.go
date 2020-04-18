@@ -119,7 +119,8 @@ func (e *EventProducer) watcher(done chan bool) error {
 
 				cloneOpts := &git.CloneOptions{
 					URL:      repo.URL,
-					Progress: os.Stdout,
+					Progress: nil,
+					// Progress: os.Stdout,
 				}
 
 				if e.config.SSHKeyPath != "" {
@@ -138,6 +139,7 @@ func (e *EventProducer) watcher(done chan bool) error {
 
 				_, err := os.Stat(cacheDir)
 				if err != nil {
+					log.Infof("cloning repo %s from origin %s", repo.Name, repo.URL)
 					_, cloneErr := git.PlainClone(cacheDir, false, cloneOpts)
 					if cloneErr != nil {
 						log.Errorf("error while cloning %s: %s", repo.URL, cloneErr)
