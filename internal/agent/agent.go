@@ -2,12 +2,14 @@ package agent
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"os/exec"
 
 	log "github.com/sirupsen/logrus"
 
 	"github.com/xaque208/znet/internal/events"
+	"github.com/xaque208/znet/internal/gitwatch"
 )
 
 type Agent struct {
@@ -40,9 +42,13 @@ func (a *Agent) Subscriptions() map[string][]events.Handler {
 	s := events.NewSubscriptions()
 
 	for _, e := range a.config.Executions {
-		if e.Event != "" {
-			s.Subscribe(e.Event, a.eventHandler)
+		switch e.Event {
+		case "NewCommit":
+			s.Subscribe(e.Event, a.newCommitHandler)
+		default:
+			log.Errorf("unhandled execution event %s", e.Event)
 		}
+
 	}
 
 	log.Debugf("event subscriptions %+v", s.Table)
@@ -50,11 +56,29 @@ func (a *Agent) Subscriptions() map[string][]events.Handler {
 	return s.Table
 }
 
-func (a *Agent) eventHandler(name string, payload events.Payload) error {
-	log.Debugf("Agent.eventHandler: %+v", string(payload))
-	log.Debugf("Agent.eventHandler config: %+v", a.config)
+func (a *Agent) newCommitHandler(name string, payload events.Payload) error {
+	log.Debugf("Agent.newCommitHandler: %+v", string(payload))
+	log.Debugf("Agent.newCommitHandler config: %+v", a.config)
+
+	var x gitwatch.NewCommit
+
+	err := json.Unmarshal(payload, &x)
+	if err != nil {
+		log.Errorf("failed to unmarshal %T: %s", x, err)
+	}
 
 	for _, e := range a.config.Executions {
+
+		if len(e.Filter) > 0 {
+
+			if val, ok := e.Filter["name"]; ok {
+				if val != x.Name {
+					continue
+				}
+			}
+
+		}
+
 		if e.Event != "" {
 			cmd := exec.Command(e.Command, e.Args...)
 
