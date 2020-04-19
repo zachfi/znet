@@ -221,6 +221,7 @@ func (e *EventProducer) updateRepo(repo *git.Repository, sshPublicKey *ssh.Publi
 		// RefSpecs: []gitConfig.RefSpec{"+refs/heads/*:refs/remotes/origin/*"},
 		RefSpecs: []gitConfig.RefSpec{"refs/*:refs/*", "HEAD:refs/heads/HEAD"},
 		Tags:     git.AllTags,
+		Auth:     sshPublicKey,
 	}
 
 	beforeHead := head(repo)
@@ -254,9 +255,12 @@ func (e *EventProducer) updateRepo(repo *git.Repository, sshPublicKey *ssh.Publi
 			log.Error(err)
 		}
 
-		err = w.Pull(&git.PullOptions{
+		pullOpts := &git.PullOptions{
 			RemoteName: "origin",
-		})
+			Auth:       sshPublicKey,
+		}
+
+		err = w.Pull(pullOpts)
 		if err != nil {
 			log.Error(err)
 		}
