@@ -57,9 +57,7 @@ func (e *EventProducer) Stop() error {
 }
 
 func (e *EventProducer) scheduleEvents(scheduledEvents *events.Scheduler) error {
-
 	for _, v := range e.config.Events {
-
 		loc, err := time.LoadLocation(e.config.TimeZone)
 		if err != nil {
 			log.Error(err)
@@ -74,7 +72,6 @@ func (e *EventProducer) scheduleEvents(scheduledEvents *events.Scheduler) error 
 
 		now := time.Now()
 		d := time.Date(now.Year(), now.Month(), now.Day(), t.Hour(), t.Minute(), t.Second(), 0, loc)
-		timeRemaining := time.Until(d)
 
 		weekDayMatch := func(days []string) bool {
 			for _, d := range days {
@@ -91,7 +88,9 @@ func (e *EventProducer) scheduleEvents(scheduledEvents *events.Scheduler) error 
 			continue
 		}
 
-		if timeRemaining <= 0 {
+		timeRemaining := time.Until(d)
+
+		if time.Since(d) > 0 {
 			log.Tracef("skipping past event %s", v.Produce)
 			continue
 		}
@@ -102,7 +101,6 @@ func (e *EventProducer) scheduleEvents(scheduledEvents *events.Scheduler) error 
 				log.Error(err)
 			}
 		}
-
 	}
 
 	return nil
@@ -151,16 +149,6 @@ func (e *EventProducer) scheduler() error {
 
 	sch := events.NewScheduler()
 
-	err := e.scheduleEvents(sch)
-	if err != nil {
-		log.Error(err)
-	}
-
-	err = e.scheduleRepeatEvents(sch)
-	if err != nil {
-		log.Error(err)
-	}
-
 	log.Debugf("%d timer events scheduled", len(sch.All()))
 
 	otherchan := make(chan bool, 1)
@@ -170,9 +158,22 @@ func (e *EventProducer) scheduler() error {
 			names := sch.WaitForNext()
 
 			if len(names) == 0 {
-				dur := 10 * time.Minute
-				log.Debugf("no timer names, retry in %s", dur)
-				time.Sleep(dur)
+				err := e.scheduleEvents(sch)
+				if err != nil {
+					log.Error(err)
+				}
+
+				err = e.scheduleRepeatEvents(sch)
+				if err != nil {
+					log.Error(err)
+				}
+
+				if len(sch.All()) == 0 {
+					dur := 10 * time.Minute
+					log.Debugf("no timer names found after reschedule, retry in %s", dur)
+					time.Sleep(dur)
+				}
+
 				continue
 			}
 
