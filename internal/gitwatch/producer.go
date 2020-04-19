@@ -166,18 +166,19 @@ func (e *EventProducer) watcher(done chan bool) error {
 					log.Error(err)
 				}
 
-				newHead, newTags, err := e.updateRepo(r, publicKey)
+				newHeads, newTags, err := e.fetchRemote(r, publicKey)
 				if err != nil {
 					log.Error(err)
 					continue
 				}
 
-				if newHead != "" {
+				for shortName, newHead := range newHeads {
 					ev := NewCommit{
-						Name: repo.Name,
-						URL:  repo.URL,
-						Time: &t,
-						Hash: newHead,
+						Name:   repo.Name,
+						URL:    repo.URL,
+						Time:   &t,
+						Hash:   newHead,
+						Branch: shortName,
 					}
 
 					err = e.Produce(ev)
@@ -198,7 +199,6 @@ func (e *EventProducer) watcher(done chan bool) error {
 					if err != nil {
 						log.Error(err)
 					}
-
 				}
 
 			}
@@ -207,89 +207,135 @@ func (e *EventProducer) watcher(done chan bool) error {
 	}
 }
 
-func (e *EventProducer) updateRepo(repo *git.Repository, sshPublicKey *ssh.PublicKeys) (string, []string, error) {
-	var newHead string
-	var newTags []string
+func (e *EventProducer) fetchRemote(repo *git.Repository, sshPublicKey *ssh.PublicKeys) (map[string]string, []string, error) {
+	newHeads := make(map[string]string)
+	newTags := make([]string, 0)
 	var err error
+
+	beforeHeads := make(map[string]string)
+	beforeTags := make(map[string]string)
+
+	beforeRefs, err := repo.References()
+	if err != nil {
+		log.Error(err)
+	}
+
+	err = beforeRefs.ForEach(func(ref *plumbing.Reference) error {
+		// The HEAD is omitted in a `git show-ref` so we ignore the symbolic
+		// references, the HEAD
+		if ref.Type() == plumbing.SymbolicReference {
+			return nil
+		}
+
+		// Only inspect the remote references
+		if ref.Name().IsRemote() {
+			beforeHeads[ref.Name().Short()] = ref.Hash().String()
+		}
+
+		if ref.Name().IsTag() {
+			beforeTags[ref.Name().Short()] = ref.Hash().String()
+		}
+
+		return nil
+	})
+
+	fetchOpts := &git.FetchOptions{
+		RemoteName: "origin",
+		RefSpecs: []gitConfig.RefSpec{
+			"+refs/heads/*:refs/remotes/origin/*",
+			"+refs/remotes/*:refs/remotes/origin/*",
+		},
+		Tags:  git.AllTags,
+		Force: true,
+	}
+
+	if sshPublicKey != nil {
+		fetchOpts.Auth = sshPublicKey
+	}
 
 	remote, err := repo.Remote("origin")
 	if err != nil {
 		log.Error(err)
 	}
 
-	opts := &git.FetchOptions{
-		// RefSpecs: []gitConfig.RefSpec{"+refs/heads/*:refs/remotes/origin/*"},
-		RefSpecs: []gitConfig.RefSpec{"refs/*:refs/*", "HEAD:refs/heads/HEAD"},
-		Tags:     git.AllTags,
-	}
-
-	if sshPublicKey != nil {
-		opts.Auth = sshPublicKey
-	}
-
-	beforeHead := head(repo)
-	beforeTags := tags(repo)
-
-	err = remote.Fetch(opts)
+	err = remote.Fetch(fetchOpts)
 	if err != nil {
 		if err != git.NoErrAlreadyUpToDate {
 			log.Errorf("failed to fetch %s: %s", remote.Config().Name, err)
 		}
 	}
 
-	w, err := repo.Worktree()
+	afterHeads := make(map[string]string)
+	afterTags := make(map[string]string)
+
+	afterRefs, err := repo.References()
 	if err != nil {
 		log.Error(err)
 	}
 
-	afterHead := head(repo)
-	afterTags := tags(repo)
-
-	if beforeHead != afterHead {
-		newHead = afterHead.String()
-
-		log.Infof("resetting HEAD: %s", newHead)
-
-		err = w.Reset(&git.ResetOptions{
-			Commit: afterHead,
-			Mode:   git.HardReset,
-		})
-		if err != nil {
-			log.Error(err)
+	err = afterRefs.ForEach(func(ref *plumbing.Reference) error {
+		// The HEAD is omitted in a `git show-ref` so we ignore the symbolic
+		// references, the HEAD
+		if ref.Type() == plumbing.SymbolicReference {
+			return nil
 		}
 
-		pullOpts := &git.PullOptions{
-			RemoteName: "origin",
+		// Only inspect the remote references
+		if ref.Name().IsRemote() {
+			afterHeads[ref.Name().Short()] = ref.Hash().String()
 		}
 
-		if sshPublicKey != nil {
-			pullOpts.Auth = sshPublicKey
+		if ref.Name().IsTag() {
+			afterTags[ref.Name().Short()] = ref.Hash().String()
 		}
 
-		err = w.Pull(pullOpts)
-		if err != nil {
-			log.Error(err)
+		return nil
+	})
+
+	nameMatch := func(refs map[string]string, shortName string) bool {
+		for k := range refs {
+			if k == shortName {
+				return true
+			}
 		}
 
+		return false
 	}
 
-	for _, r := range afterTags {
-		seen := func(n string) bool {
-			for _, s := range beforeTags {
-				if s == n {
+	refMatch := func(refs map[string]string, shortName string, hash string) bool {
+		for k, v := range refs {
+			if k == shortName {
+				if v == hash {
 					return true
 				}
 			}
+		}
 
-			return false
-		}(r)
+		return false
+	}
 
-		if !seen {
-			newTags = append(newTags, r)
+	// detect new commits on all branches
+	for shortName, hash := range afterHeads {
+		//detect new branches
+		if !nameMatch(beforeHeads, shortName) {
+			newHeads[shortName] = hash
+			continue
+		}
+
+		// when before did not have this branch
+		if !refMatch(beforeHeads, shortName, hash) {
+			newHeads[shortName] = hash
 		}
 	}
 
-	return newHead, newTags, err
+	// detect new tags
+	for shortName := range afterTags {
+		if !nameMatch(beforeTags, shortName) {
+			newTags = append(newTags, shortName)
+		}
+	}
+
+	return newHeads, newTags, err
 }
 
 func head(repo *git.Repository) plumbing.Hash {

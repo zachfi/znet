@@ -22,10 +22,11 @@ func init() {
 
 // NewCommit is an event
 type NewCommit struct {
-	Time *time.Time
-	Name string
-	URL  string
-	Hash string
+	Time   *time.Time
+	Name   string
+	URL    string
+	Hash   string
+	Branch string
 }
 
 type NewTag struct {
