@@ -155,6 +155,8 @@ func (e *EventProducer) scheduler() error {
 
 	go func() {
 		for {
+			sch.Report()
+
 			names := sch.WaitForNext()
 
 			if len(names) == 0 {

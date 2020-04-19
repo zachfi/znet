@@ -5,6 +5,7 @@ import (
 	"sort"
 	"time"
 
+	"github.com/jedib0t/go-pretty/table"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -25,8 +26,34 @@ func (s *Scheduler) All() TimeSlice {
 	return *s.timeSlice
 }
 
+func (s *Scheduler) Report() {
+	t := table.NewWriter()
+	// t.SetOutputMirror(os.Stdout)
+	t.AppendHeader(table.Row{"Time", "Names"})
+
+	for k, v := range *s.timeSlice {
+		t.AppendRows([]table.Row{
+			{k, v},
+		})
+	}
+
+	t.AppendFooter(table.Row{"total", len(*s.timeSlice)})
+	result := t.Render()
+	log.Debugf("Report: \n%s", result)
+}
+
 // Next determines the next occurring event in the series.
 func (s *Scheduler) Next() *time.Time {
+	times := s.ordered()
+
+	if len(times) > 0 {
+		return &times[0]
+	}
+
+	return nil
+}
+
+func (s *Scheduler) ordered() []time.Time {
 	keys := []time.Time{}
 
 	for k := range *s.timeSlice {
@@ -41,7 +68,7 @@ func (s *Scheduler) Next() *time.Time {
 		return keys[i].Before(keys[j])
 	})
 
-	return &keys[0]
+	return keys
 }
 
 // NamesForTime returns all events names that are scheduled for a given timeSlice.
