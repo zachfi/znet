@@ -37,12 +37,15 @@ func runTimer(cmd *cobra.Command, args []string) {
 		log.SetLevel(log.InfoLevel)
 	}
 
+	viper.SetDefault("timer.future_limit", 1000)
+
 	z, err := znet.NewZnet(cfgFile)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	z.Config.RPC.ServerAddress = viper.GetString("rpc.server")
+	z.Config.Timer.FutureLimit = viper.GetInt("timer.future_limit")
 
 	var opts []grpc.DialOption
 	opts = append(opts, grpc.WithInsecure())

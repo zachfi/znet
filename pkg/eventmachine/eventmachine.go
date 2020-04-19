@@ -35,8 +35,8 @@ func (m *EventMachine) initEventConsumer() {
 
 		for e := range ch {
 			if handlers, ok := m.EventConsumers[e.Name]; ok {
-				log.Debugf("executing %d handlers for event %s", len(handlers), e.Name)
 				log.Tracef("EventMachine heard event %s: %s", e.Name, string(e.Payload))
+				log.Debugf("executing %d handlers for event %s", len(handlers), e.Name)
 				for _, h := range handlers {
 					err := h(e.Name, e.Payload)
 					if err != nil {
