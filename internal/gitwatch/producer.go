@@ -99,6 +99,24 @@ func (e *EventProducer) Produce(ev interface{}) error {
 	return nil
 }
 
+func (e *EventProducer) sshPublicKey(repo Repo) (*ssh.PublicKeys, error) {
+
+	// For URLs that don't start with http and when a SSHKeyPath is set, we
+	// shold load the ssh key to proceeed.
+	if !strings.HasPrefix(repo.URL, "https") && e.config.SSHKeyPath != "" {
+		var publicKey *ssh.PublicKeys
+		sshKey, _ := ioutil.ReadFile(e.config.SSHKeyPath)
+		publicKey, keyError := ssh.NewPublicKeys("git", sshKey, "")
+		if keyError != nil {
+			return nil, fmt.Errorf("error while loading public key: %s", keyError)
+		}
+
+		return publicKey, nil
+	}
+
+	return nil, nil
+}
+
 func (e *EventProducer) watcher(done chan bool) error {
 
 	ticker := time.NewTicker(time.Duration(e.config.Interval) * time.Second)
@@ -123,21 +141,17 @@ func (e *EventProducer) watcher(done chan bool) error {
 					// Progress: os.Stdout,
 				}
 
-				// For URLs that don't start with http and when a SSHKeyPath is set, we
-				// shold load the ssh key to proceeed.
-				if !strings.HasPrefix(repo.URL, "http") && e.config.SSHKeyPath != "" {
-					var publicKey *ssh.PublicKeys
-					sshKey, _ := ioutil.ReadFile(e.config.SSHKeyPath)
-					publicKey, keyError := ssh.NewPublicKeys("git", sshKey, "")
-					if keyError != nil {
-						log.Errorf("error while loading public key: %s", keyError)
-						continue
-					}
+				publicKey, err := e.sshPublicKey(repo)
+				if err != nil {
+					log.Error(err)
+					continue
+				}
 
+				if publicKey != nil {
 					cloneOpts.Auth = publicKey
 				}
 
-				_, err := os.Stat(cacheDir)
+				_, err = os.Stat(cacheDir)
 				if err != nil {
 					log.Infof("cloning repo %s from origin %s", repo.Name, repo.URL)
 					_, cloneErr := git.PlainClone(cacheDir, false, cloneOpts)
@@ -152,7 +166,7 @@ func (e *EventProducer) watcher(done chan bool) error {
 					log.Error(err)
 				}
 
-				newHead, newTags, err := updateRepo(r)
+				newHead, newTags, err := e.updateRepo(r, publicKey)
 				if err != nil {
 					log.Error(err)
 					continue
@@ -193,7 +207,7 @@ func (e *EventProducer) watcher(done chan bool) error {
 	}
 }
 
-func updateRepo(repo *git.Repository) (string, []string, error) {
+func (e *EventProducer) updateRepo(repo *git.Repository, sshPublicKey *ssh.PublicKeys) (string, []string, error) {
 	var newHead string
 	var newTags []string
 	var err error
@@ -215,7 +229,7 @@ func updateRepo(repo *git.Repository) (string, []string, error) {
 	err = remote.Fetch(opts)
 	if err != nil {
 		if err != git.NoErrAlreadyUpToDate {
-			log.Errorf("failed to fetch %s: %s", remote.String(), err)
+			log.Errorf("failed to fetch %s: %s", remote.Config().Name, err)
 		}
 	}
 
