@@ -118,7 +118,7 @@ func (a *Agent) newCommitHandler(name string, payload events.Payload) error {
 				cmd.Stdout = &out
 				err := cmd.Run()
 				if err != nil {
-					log.Fatal(err)
+					log.Errorf("command execution failed: %s", err)
 				}
 			}
 		}
