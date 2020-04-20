@@ -27,8 +27,10 @@ func (a *Agent) EventNames() []string {
 	var names []string
 
 	for _, e := range a.config.Executions {
-		if e.Event != "" {
-			names = append(names, e.Event)
+		for _, x := range e.Events {
+			if x != "" {
+				names = append(names, x)
+			}
 		}
 	}
 
@@ -42,13 +44,14 @@ func (a *Agent) Subscriptions() map[string][]events.Handler {
 	s := events.NewSubscriptions()
 
 	for _, e := range a.config.Executions {
-		switch e.Event {
-		case "NewCommit":
-			s.Subscribe(e.Event, a.newCommitHandler)
-		default:
-			log.Errorf("unhandled execution event %s", e.Event)
+		for _, x := range e.Events {
+			switch x {
+			case "NewCommit":
+				s.Subscribe(x, a.newCommitHandler)
+			default:
+				log.Errorf("unhandled execution event %s", x)
+			}
 		}
-
 	}
 
 	log.Debugf("event subscriptions %+v", s.Table)
@@ -70,34 +73,49 @@ func (a *Agent) newCommitHandler(name string, payload events.Payload) error {
 	for _, e := range a.config.Executions {
 
 		if len(e.Filter) > 0 {
+			var key string
+			var value interface{}
 
-			if val, ok := e.Filter["name"]; ok {
-				if val != x.Name {
-					continue
-				}
+			if val, ok := e.Filter["key"]; ok {
+				key = val.(string)
 			}
+
+			if val, ok := e.Filter["value"]; ok {
+				value = val
+			}
+
+			log.Debugf("filter key %s", key)
+			log.Debugf("filter value %+v", value)
+
+			// if val, ok := e.Filter["name"]; ok {
+			// 	if val != x.Name {
+			// 		continue
+			// 	}
+			// }
 
 		}
 
-		if e.Event != "" {
-			cmd := exec.Command(e.Command, e.Args...)
+		for _, x := range e.Events {
+			if x != "" {
+				cmd := exec.Command(e.Command, e.Args...)
 
-			if e.Dir != "" {
-				cmd.Dir = e.Dir
-			}
+				if e.Dir != "" {
+					cmd.Dir = e.Dir
+				}
 
-			var env []string
+				var env []string
 
-			for k, v := range e.Environment {
-				env = append(env, fmt.Sprintf("%s=%s", k, v))
-			}
+				for k, v := range e.Environment {
+					env = append(env, fmt.Sprintf("%s=%s", k, v))
+				}
 
-			// cmd.Stdin = strings.NewReader("some input")
-			var out bytes.Buffer
-			cmd.Stdout = &out
-			err := cmd.Run()
-			if err != nil {
-				log.Fatal(err)
+				// cmd.Stdin = strings.NewReader("some input")
+				var out bytes.Buffer
+				cmd.Stdout = &out
+				err := cmd.Run()
+				if err != nil {
+					log.Fatal(err)
+				}
 			}
 		}
 	}
