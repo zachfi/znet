@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"os"
 	"os/exec"
 
 	log "github.com/sirupsen/logrus"
@@ -105,12 +106,12 @@ func (a *Agent) newCommitHandler(name string, payload events.Payload) error {
 
 				var env []string
 
-				for k, _ := range e.Environment {
-					env = append(env, fmt.Sprintf("%s", k))
+				for k, v := range e.Environment {
+					env = append(env, fmt.Sprintf("%s=%s", k, v))
 				}
 
 				if len(env) > 0 {
-					cmd.Env = env
+					cmd.Env = append(os.Environ(), env...)
 				}
 
 				// cmd.Stdin = strings.NewReader("some input")
