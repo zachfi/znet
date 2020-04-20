@@ -105,8 +105,8 @@ func (a *Agent) newCommitHandler(name string, payload events.Payload) error {
 
 				var env []string
 
-				for k, v := range e.Environment {
-					env = append(env, fmt.Sprintf("%s=%s", k, v))
+				for k, _ := range e.Environment {
+					env = append(env, fmt.Sprintf("%s", k))
 				}
 
 				if len(env) > 0 {
