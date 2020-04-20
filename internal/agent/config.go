@@ -7,10 +7,18 @@ type Config struct {
 
 // Execution is a single execution.
 type Execution struct {
-	Args        []string
-	Command     string
+	// Args is the command arguments to pass for execution.
+	Args []string
+
+	// Command is the name of the command to execute.
+	Command string
+
 	Dir         string
 	Environment map[string]string
-	Event       string
-	Filter      map[string]interface{}
+
+	// Events is the slice of names upon which to execute the given executions.
+	Events []string
+
+	// TODO
+	Filter map[string]interface{}
 }
