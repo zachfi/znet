@@ -93,7 +93,6 @@ func (a *Agent) newCommitHandler(name string, payload events.Payload) error {
 			// 		continue
 			// 	}
 			// }
-
 		}
 
 		for _, x := range e.Events {
