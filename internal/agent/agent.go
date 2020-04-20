@@ -109,6 +109,10 @@ func (a *Agent) newCommitHandler(name string, payload events.Payload) error {
 					env = append(env, fmt.Sprintf("%s=%s", k, v))
 				}
 
+				if len(env) > 0 {
+					cmd.Env = env
+				}
+
 				// cmd.Stdin = strings.NewReader("some input")
 				var out bytes.Buffer
 				cmd.Stdout = &out
