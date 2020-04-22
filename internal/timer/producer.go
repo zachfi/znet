@@ -221,10 +221,10 @@ func (e *EventProducer) Produce(ev interface{}) error {
 	switch t {
 	case "timer.ExpiredTimer":
 		x := ev.(ExpiredTimer)
-		req = x.Make()
+		req = events.MakeEvent(x)
 	case "timer.NamedTimer":
 		x := ev.(NamedTimer)
-		req = x.Make(x.Name)
+		req = events.MakeEvent(x)
 	default:
 		return fmt.Errorf("unhandled event type: %T", ev)
 	}

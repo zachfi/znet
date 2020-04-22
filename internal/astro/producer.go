@@ -175,7 +175,7 @@ func (e *EventProducer) Produce(ev interface{}) error {
 	switch t {
 	case "astro.SolarEvent":
 		x := ev.(SolarEvent)
-		req = x.Make()
+		req = events.MakeEvent(x)
 	default:
 		return fmt.Errorf("unhandled event type: %T", ev)
 	}

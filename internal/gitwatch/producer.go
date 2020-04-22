@@ -78,10 +78,10 @@ func (e *EventProducer) Produce(ev interface{}) error {
 	switch t {
 	case "gitwatch.NewCommit":
 		x := ev.(NewCommit)
-		req = x.Make()
+		req = events.MakeEvent(x)
 	case "gitwatch.NewTag":
 		x := ev.(NewTag)
-		req = x.Make()
+		req = events.MakeEvent(x)
 	default:
 		return fmt.Errorf("unhandled event type: %T", ev)
 	}
