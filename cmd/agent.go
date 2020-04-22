@@ -63,13 +63,18 @@ func runAgent(cmd *cobra.Command, args []string) {
 		ag,
 	}
 
-	machine, err := eventmachine.Start(consumers)
+	machine, err := eventmachine.New(consumers)
 	if err != nil {
 		log.Error(err)
 	}
 
 	defer func() {
 		err = conn.Close()
+		if err != nil {
+			log.Error(err)
+		}
+
+		err := machine.Shutdown()
 		if err != nil {
 			log.Error(err)
 		}

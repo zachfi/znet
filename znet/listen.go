@@ -31,12 +31,12 @@ func (z *Znet) Listen(listenAddr string) {
 		z,
 	}
 
-	machine, err := eventmachine.Start(consumers)
+	machine, err := eventmachine.New(consumers)
 	if err != nil {
 		log.Error(err)
 	}
 
-	z.EventMachine = machine
+	z.eventMachine = machine
 
 	z.listenRPC()
 
@@ -64,7 +64,7 @@ func (z *Znet) listenRPC() {
 		}
 
 		eventServer := &eventServer{
-			ch: z.EventMachine.EventChannel,
+			ch: z.eventMachine.EventChannel,
 		}
 
 		eventServer.Shutdown()

@@ -21,4 +21,10 @@ type Execution struct {
 
 	// TODO
 	Filter map[string]interface{}
+
+	// TODO
+	OnSuccess []string
+
+	// TODO
+	OnFailure []string
 }

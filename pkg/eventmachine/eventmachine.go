@@ -14,23 +14,36 @@ type EventMachine struct {
 	// EventConsumers is the map between event names and which event handlers to
 	// call with the event event payload.
 	EventConsumers map[string][]events.Handler
+	dieChans       []chan bool
 }
 
-func Start(consumers []events.Consumer) (*EventMachine, error) {
+func New(consumers []events.Consumer) (*EventMachine, error) {
 	m := &EventMachine{}
 	m.EventChannel = make(chan events.Event)
 	m.EventConsumers = make(map[string][]events.Handler)
 
 	m.initEventConsumers(consumers)
-	m.initEventConsumer()
+
+	m.dieChans = []chan bool{
+		m.initEventConsumer(),
+	}
 
 	return m, nil
 }
 
+func (m *EventMachine) Shutdown() error {
+
+	close(m.EventChannel)
+
+	return nil
+}
+
 // initEventConsumer starts a routine that never ends to read from
 // z.EventChannel and execute the loaded handlers with the event Payload.
-func (m *EventMachine) initEventConsumer() {
-	go func(ch chan events.Event) {
+func (m *EventMachine) initEventConsumer() chan bool {
+	dieChan := make(chan bool, 0)
+
+	go func(ch chan events.Event, dieChan chan bool) {
 		log.Debugf("total %d m.EventConsumers", len(m.EventConsumers))
 
 		for e := range ch {
@@ -47,7 +60,9 @@ func (m *EventMachine) initEventConsumer() {
 				log.Warnf("received event with no handlers: %+v", e.Name)
 			}
 		}
-	}(m.EventChannel)
+	}(m.EventChannel, dieChan)
+
+	return dieChan
 }
 
 // initEventConsumers updates the z.EventConsumers map.  For each received

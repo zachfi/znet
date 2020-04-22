@@ -30,7 +30,7 @@ type Znet struct {
 	Inventory *Inventory
 	Lights    *lights.Lights
 
-	EventMachine *eventmachine.EventMachine
+	eventMachine *eventmachine.EventMachine
 
 	eventServer *eventServer
 }
@@ -330,20 +330,14 @@ func (z *Znet) RenderHostTemplateFile(host NetworkHost, path string) string {
 
 	return buf.String()
 }
-
-// Close calls
-func (z *Znet) Close() error {
-
-	z.Inventory.ldapClient.Close()
-
-	return nil
-}
-
 func (z *Znet) Shutdown() error {
 	var err error
+	z.Inventory.ldapClient.Close()
 
 	z.listener.Shutdown()
 	z.eventServer.Shutdown()
+
+	z.eventMachine.Shutdown()
 
 	return err
 }
