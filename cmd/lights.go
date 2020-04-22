@@ -31,9 +31,11 @@ import (
 // lightsCmd represents the lights command
 var lightsCmd = &cobra.Command{
 	Use:   "lights",
-	Short: "Send an on/off command to the bus for a given room's lights.",
-	Long:  "",
-	Run:   runLights,
+	Short: "Collect status of the HUE lights for reporting",
+	Long: `The lights collects the current state of the lights and light groups from the HUE bridge.
+For on/off/dim commands, use the subcommands.`,
+	Example: "znet lights -v --config ~/.timer.yaml",
+	Run:     runLights,
 }
 
 var roomName string

@@ -31,11 +31,12 @@ import (
 // listenCmd represents the listen command
 var listenCmd = &cobra.Command{
 	Use:   "listen",
-	Short: "Listen for commands/events/messages on the bus",
-	Long: `Messages issued sent to the bus might be events, messages, or command requests.  The listen command here subscribes to a topic and handles what actions need to be taken.
+	Short: "Listen for commands/events/messages sent to the RPC server",
+	Long: `
 
 `,
-	Run: listen,
+	Example: "znet listen -v --trace",
+	Run:     listen,
 }
 
 var listenAddr string

@@ -16,7 +16,16 @@ import (
 var timerCmd = &cobra.Command{
 	Use:   "timer",
 	Short: "Run a timer",
-	Run:   runTimer,
+	Long: `Run a timer daemon to send events to the znet RPC server when the timers expire.
+
+Several flavors of timers exist.
+
+* astro timers send an AstroEvent based on data read from openweathermap_exporter
+* repeating timers send a NamedTimer event every interval
+* static timers send a NamedTimer event at a specific time of day, on specific days
+	`,
+	Example: "znet timer -v --config ~/.timer.yaml",
+	Run:     runTimer,
 }
 
 func init() {

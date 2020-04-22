@@ -35,6 +35,7 @@ var rootCmd = &cobra.Command{
 	Short: "znet",
 	Long: `ZNet 
 
+Run commands on a ZNet RPC.
 `,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
