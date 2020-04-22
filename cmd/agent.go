@@ -49,21 +49,21 @@ func runAgent(cmd *cobra.Command, args []string) {
 
 	z.Config.RPC.ServerAddress = viper.GetString("rpc.server")
 
-	ag := agent.NewAgent(z.Config.Agent)
+	var opts []grpc.DialOption
+	opts = append(opts, grpc.WithInsecure())
+
+	conn, err := grpc.Dial(z.Config.RPC.ServerAddress, opts...)
+	if err != nil {
+		log.Error(err)
+	}
+
+	ag := agent.NewAgent(z.Config.Agent, conn)
 
 	consumers := []events.Consumer{
 		ag,
 	}
 
 	machine, err := eventmachine.Start(consumers)
-	if err != nil {
-		log.Error(err)
-	}
-
-	var opts []grpc.DialOption
-	opts = append(opts, grpc.WithInsecure())
-
-	conn, err := grpc.Dial(z.Config.RPC.ServerAddress, opts...)
 	if err != nil {
 		log.Error(err)
 	}

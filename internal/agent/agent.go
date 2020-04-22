@@ -2,12 +2,19 @@ package agent
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
+	"reflect"
+	"text/template"
+	"time"
 
 	log "github.com/sirupsen/logrus"
+	pb "github.com/xaque208/znet/rpc"
+	"google.golang.org/grpc"
 
 	"github.com/xaque208/znet/internal/events"
 	"github.com/xaque208/znet/internal/gitwatch"
@@ -15,13 +22,14 @@ import (
 
 type Agent struct {
 	config Config
+	conn   *grpc.ClientConn
 }
 
-func NewAgent(config Config) *Agent {
+func NewAgent(config Config, conn *grpc.ClientConn) *Agent {
 	return &Agent{
 		config: config,
+		conn:   conn,
 	}
-
 }
 
 func (a *Agent) EventNames() []string {
@@ -49,6 +57,8 @@ func (a *Agent) Subscriptions() map[string][]events.Handler {
 			switch x {
 			case "NewCommit":
 				s.Subscribe(x, a.newCommitHandler)
+			case "NewTag":
+				s.Subscribe(x, a.newTagHandler)
 			default:
 				log.Errorf("unhandled execution event %s", x)
 			}
@@ -58,6 +68,23 @@ func (a *Agent) Subscriptions() map[string][]events.Handler {
 	log.Debugf("event subscriptions %+v", s.Table)
 
 	return s.Table
+}
+
+func (a *Agent) newTagHandler(name string, payload events.Payload) error {
+
+	var x gitwatch.NewTag
+
+	err := json.Unmarshal(payload, &x)
+	if err != nil {
+		log.Errorf("failed to unmarshal %T: %s", x, err)
+	}
+
+	err = a.executeForEvent(x)
+	if err != nil {
+		log.Error(err)
+	}
+
+	return nil
 }
 
 func (a *Agent) newCommitHandler(name string, payload events.Payload) error {
@@ -71,17 +98,28 @@ func (a *Agent) newCommitHandler(name string, payload events.Payload) error {
 		log.Errorf("failed to unmarshal %T: %s", x, err)
 	}
 
-	for _, e := range a.config.Executions {
+	err = a.executeForEvent(x)
+	if err != nil {
+		log.Error(err)
+	}
 
-		if len(e.Filter) > 0 {
+	return nil
+}
+
+func (a *Agent) executeForEvent(x interface{}) error {
+	log.Tracef("executeForEvent %+v", x)
+
+	for _, execution := range a.config.Executions {
+
+		if len(execution.Filter) > 0 {
 			var key string
 			var value interface{}
 
-			if val, ok := e.Filter["key"]; ok {
+			if val, ok := execution.Filter["key"]; ok {
 				key = val.(string)
 			}
 
-			if val, ok := e.Filter["value"]; ok {
+			if val, ok := execution.Filter["value"]; ok {
 				value = val
 			}
 
@@ -95,33 +133,117 @@ func (a *Agent) newCommitHandler(name string, payload events.Payload) error {
 			// }
 		}
 
-		for _, x := range e.Events {
-			if x != "" {
-				cmd := exec.Command(e.Command, e.Args...)
+		for _, xx := range execution.Events {
+			if xx != "" {
+				var args []string
 
-				if e.Dir != "" {
-					cmd.Dir = e.Dir
+				// Render the args as template strings
+				for _, v := range execution.Args {
+					tmpl, err := template.New("env").Parse(v)
+					if err != nil {
+						log.Errorf("failed to parse template %s: %s", v, err)
+					}
+
+					var buf bytes.Buffer
+
+					err = tmpl.Execute(&buf, x)
+					if err != nil {
+						log.Error(err)
+					}
+
+					args = append(args, buf.String())
+				}
+
+				cmd := exec.Command(execution.Command, args...)
+
+				if execution.Dir != "" {
+					cmd.Dir = execution.Dir
 				}
 
 				var env []string
 
-				for k, v := range e.Environment {
-					env = append(env, fmt.Sprintf("%s=%s", k, v))
+				// Render the values of the environment variables as templates using the received event.
+				for k, v := range execution.Environment {
+
+					tmpl, err := template.New("env").Parse(v)
+					if err != nil {
+						log.Errorf("failed to parse template %s: %s", v, err)
+					}
+
+					var buf bytes.Buffer
+
+					err = tmpl.Execute(&buf, x)
+					if err != nil {
+						log.Error(err)
+					}
+
+					env = append(env, fmt.Sprintf("%s=%s", k, buf.String()))
 				}
 
 				if len(env) > 0 {
 					cmd.Env = append(os.Environ(), env...)
 				}
 
-				// cmd.Stdin = strings.NewReader("some input")
-				var out bytes.Buffer
-				cmd.Stdout = &out
+				// var out bytes.Buffer
+				// cmd.Stdout = &out
 				err := cmd.Run()
 				if err != nil {
 					log.Errorf("command execution failed: %s", err)
 				}
+
+				now := time.Now()
+
+				output, err := cmd.CombinedOutput()
+				if err != nil {
+					log.Error(err)
+				}
+
+				ev := ExecutionResult{
+					Time:    &now,
+					Command: execution.Command,
+					Args:    args,
+					Dir:     execution.Dir,
+					Output:  output,
+				}
+
+				err = a.Produce(ev)
+				if err != nil {
+					log.Error(err)
+				}
+
 			}
 		}
+	}
+
+	return nil
+}
+
+// Produce implements the events.Producer interface.  Match the supported event
+// types to know which event to notice, and then send notice of the event to
+// the RPC server.
+func (a *Agent) Produce(ev interface{}) error {
+	// Create the RPC client
+	ec := pb.NewEventsClient(a.conn)
+	t := reflect.TypeOf(ev).String()
+
+	var req *pb.Event
+
+	switch t {
+	case "agent.ExecutionResult":
+		x := ev.(ExecutionResult)
+		req = events.MakeEvent(x)
+	default:
+		return fmt.Errorf("unhandled event type: %T", ev)
+	}
+
+	log.Tracef("astro producing RPC event %+v", req)
+	res, err := ec.NoticeEvent(context.Background(), req)
+	if err != nil {
+		return err
+	}
+
+	if res.Errors {
+		return errors.New(res.Message)
 	}
 
 	return nil
