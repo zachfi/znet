@@ -4,6 +4,8 @@ import (
 	"context"
 	"io"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -74,7 +76,12 @@ func runAgent(cmd *cobra.Command, args []string) {
 			log.Error(err)
 		}
 
-		err := machine.Shutdown()
+		err := machine.Stop()
+		if err != nil {
+			log.Error(err)
+		}
+
+		err = z.Stop()
 		if err != nil {
 			log.Error(err)
 		}
@@ -106,6 +113,7 @@ func runAgent(cmd *cobra.Command, args []string) {
 			if err == io.EOF {
 				continue
 			}
+
 			if err != nil {
 				log.Errorf("%v.SubscribeEvents(_) = _, %v", client, err)
 				time.Sleep(10 * time.Second)
@@ -120,12 +128,13 @@ func runAgent(cmd *cobra.Command, args []string) {
 			}
 
 			machine.EventChannel <- evE
-
 		}
 	}()
 
 	sigs := make(chan os.Signal, 1)
 	done := make(chan bool, 1)
+
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
 	go func() {
 		sig := <-sigs
