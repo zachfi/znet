@@ -31,7 +31,7 @@ func New(consumers []events.Consumer) (*EventMachine, error) {
 	return m, nil
 }
 
-func (m *EventMachine) Shutdown() error {
+func (m *EventMachine) Stop() error {
 
 	close(m.EventChannel)
 

@@ -102,15 +102,13 @@ func listen(cmd *cobra.Command, args []string) {
 		done <- true
 	}()
 
-	// z.Listen(listenAddr)
-
 	consumers := []events.Consumer{
 		z.Lights,
 		z,
 	}
 
 	znetServer := znet.NewServer(z.Config.HTTP, z.Config.RPC, consumers)
-	znetServer.Start()
+	znetServer.Start(z)
 
 	<-done
 

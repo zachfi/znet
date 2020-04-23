@@ -14,8 +14,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/tcnksm/go-input"
 
+	"github.com/xaque208/znet/internal/events"
 	"github.com/xaque208/znet/internal/lights"
-	"github.com/xaque208/znet/pkg/eventmachine"
 )
 
 // Znet is the core object for this project.  It keeps track of the data,
@@ -26,13 +26,10 @@ type Znet struct {
 	Data        Data
 	Environment map[string]string
 	// listener is the HTTP listener.
-	listener  *Listener
 	Inventory *Inventory
 	Lights    *lights.Lights
 
-	eventMachine *eventmachine.EventMachine
-
-	eventServer *eventServer
+	server *Server
 }
 
 // NewZnet creates and returns a new Znet object.
@@ -330,14 +327,18 @@ func (z *Znet) RenderHostTemplateFile(host NetworkHost, path string) string {
 
 	return buf.String()
 }
-func (z *Znet) Shutdown() error {
+
+// Shutdown the znet connections
+func (z *Znet) Stop() error {
 	var err error
 	z.Inventory.ldapClient.Close()
 
-	z.listener.Shutdown()
-	z.eventServer.Shutdown()
-
-	z.eventMachine.Shutdown()
-
 	return err
+}
+
+// Subscriptions is yet to be used, but conforms to the interface for
+// generating consumers of named events.
+func (z *Znet) Subscriptions() map[string][]events.Handler {
+	s := events.NewSubscriptions()
+	return s.Table
 }

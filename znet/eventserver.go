@@ -62,6 +62,8 @@ func (e *eventServer) NoticeEvent(ctx context.Context, request *pb.Event) (*pb.E
 	response := &pb.EventResponse{}
 
 	for _, x := range e.remoteChans {
+
+		// BUG!
 		x <- request
 	}
 
@@ -168,6 +170,7 @@ func (e *eventServer) quitChanRemove(ch chan bool) {
 
 	for i, q := range e.quitChans {
 		if q == ch {
+			log.Tracef("removing channel %+v", ch)
 			e.quitChans = append(e.quitChans[:i], e.quitChans[i+1:]...)
 		}
 
