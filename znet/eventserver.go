@@ -23,7 +23,7 @@ type eventServer struct {
 }
 
 // Shutdown sents t
-func (e *eventServer) Shutdown() error {
+func (e *eventServer) Stop() error {
 	var err error
 
 	log.Info("eventServer shutting down")
@@ -62,8 +62,8 @@ func (e *eventServer) NoticeEvent(ctx context.Context, request *pb.Event) (*pb.E
 	response := &pb.EventResponse{}
 
 	for _, x := range e.remoteChans {
-
 		// BUG!
+		// TODO on a closed channel, this is a problem
 		x <- request
 	}
 
@@ -89,18 +89,15 @@ func (e *eventServer) NoticeEvent(ctx context.Context, request *pb.Event) (*pb.E
 func (e *eventServer) SubscribeEvents(subs *pb.EventSub, stream pb.Events_SubscribeEventsServer) error {
 
 	ch := e.subscriberChan()
-	defer close(ch)
+	defer e.subscriberChanRemove(ch)
 
-	quit := e.quitChan()
-	defer close(quit)
+	ctx := stream.Context()
 
 	for {
 		select {
-		case <-quit:
-			return fmt.Errorf("quitting")
-
+		case <-ctx.Done():
+			return fmt.Errorf("done, bitch")
 		case ev := <-ch:
-
 			match := func() bool {
 
 				// Check for direct match first.
@@ -151,29 +148,24 @@ func (e *eventServer) subscriberChan() chan *rpc.Event {
 	e.remoteChans = append(e.remoteChans, ch)
 	e.mux.Unlock()
 
-	return ch
-}
-
-// quitChan creates a new channel to register with the eventServer before returning the channel.
-func (e *eventServer) quitChan() chan bool {
-	ch := make(chan bool)
-
-	e.mux.Lock()
-	e.quitChans = append(e.quitChans, ch)
-	e.mux.Unlock()
+	log.Tracef("subscriberChan() e.remoteChans: %+v", e.remoteChans)
 
 	return ch
 }
 
-func (e *eventServer) quitChanRemove(ch chan bool) {
+func (e *eventServer) subscriberChanRemove(ch chan *rpc.Event) {
 	e.mux.Lock()
 
-	for i, q := range e.quitChans {
+	log.Tracef("subscriberChanRemove() %+v from %v", ch, e.remoteChans)
+
+	for i, q := range e.remoteChans {
+		log.Warnf("subscriber looking for chan %+v to match %+v", q, ch)
 		if q == ch {
-			log.Tracef("removing channel %+v", ch)
-			e.quitChans = append(e.quitChans[:i], e.quitChans[i+1:]...)
-		}
+			close(ch)
+			log.Tracef("subscriberChanRemove channel %+v", ch)
 
+			e.remoteChans = append(e.remoteChans[:i], e.remoteChans[i+1:]...)
+		}
 	}
 
 	e.mux.Unlock()

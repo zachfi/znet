@@ -83,13 +83,6 @@ func listen(cmd *cobra.Command, args []string) {
 	z.Config.RPC.ListenAddress = viper.GetString("rpc.listen")
 	z.Config.HTTP.ListenAddress = viper.GetString("http.listen")
 
-	defer func() {
-		err = z.Stop()
-		if err != nil {
-			log.Error(err)
-		}
-	}()
-
 	sigs := make(chan os.Signal, 1)
 	done := make(chan bool, 1)
 
@@ -113,6 +106,11 @@ func listen(cmd *cobra.Command, args []string) {
 	<-done
 
 	err = znetServer.Stop()
+	if err != nil {
+		log.Error(err)
+	}
+
+	err = z.Stop()
 	if err != nil {
 		log.Error(err)
 	}

@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"io"
 	"os"
 	"os/signal"
 	"syscall"
@@ -12,6 +11,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/xaque208/znet/internal/agent"
 	"github.com/xaque208/znet/internal/events"
@@ -71,23 +72,11 @@ func runAgent(cmd *cobra.Command, args []string) {
 	}
 
 	defer func() {
-		err = conn.Close()
-		if err != nil {
-			log.Error(err)
-		}
-
-		err := machine.Stop()
-		if err != nil {
-			log.Error(err)
-		}
-
-		err = z.Stop()
-		if err != nil {
-			log.Error(err)
-		}
 	}()
 
 	client := pb.NewEventsClient(conn)
+
+	ctx, cancel := context.WithCancel(context.Background())
 
 	eventSub := &pb.EventSub{
 		Name: ag.EventNames(),
@@ -96,8 +85,6 @@ func runAgent(cmd *cobra.Command, args []string) {
 	// Run the receiver forever.
 	go func() {
 		for {
-			ctx := context.Background()
-
 			stream, err := client.SubscribeEvents(ctx, eventSub)
 			if err != nil {
 				log.Errorf("calling %+v.SubscribeEvents(_) = _, %+v", client, err)
@@ -110,7 +97,8 @@ func runAgent(cmd *cobra.Command, args []string) {
 			var ev *pb.Event
 
 			ev, err = stream.Recv()
-			if err == io.EOF {
+			if status.Code(err) != codes.OK {
+				log.Errorf("stream.Recv() = %v, %v; want _, status.Code(err)=%v", ev, err, codes.OK)
 				continue
 			}
 
@@ -144,4 +132,21 @@ func runAgent(cmd *cobra.Command, args []string) {
 	}()
 
 	<-done
+
+	err = conn.Close()
+	if err != nil {
+		log.Error(err)
+	}
+
+	err = machine.Stop()
+	if err != nil {
+		log.Error(err)
+	}
+
+	err = z.Stop()
+	if err != nil {
+		log.Error(err)
+	}
+
+	cancel()
 }
