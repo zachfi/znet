@@ -159,7 +159,6 @@ func (e *eventServer) subscriberChanRemove(ch chan *rpc.Event) {
 	log.Tracef("subscriberChanRemove() %+v from %v", ch, e.remoteChans)
 
 	for i, q := range e.remoteChans {
-		log.Warnf("subscriber looking for chan %+v to match %+v", q, ch)
 		if q == ch {
 			close(ch)
 			log.Tracef("subscriberChanRemove channel %+v", ch)
