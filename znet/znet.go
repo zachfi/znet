@@ -28,8 +28,6 @@ type Znet struct {
 	// listener is the HTTP listener.
 	Inventory *Inventory
 	Lights    *lights.Lights
-
-	server *Server
 }
 
 // NewZnet creates and returns a new Znet object.

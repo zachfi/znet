@@ -20,6 +20,7 @@ To configure your zsh shell to load completions for each session add to your zsh
 # ~/.zshrc or ~/.profile
 . <(znet completion)
 `,
+	Example: ". <(znet completion)",
 	Run: func(cmd *cobra.Command, args []string) {
 		err := rootCmd.GenZshCompletion(os.Stdout)
 		if err != nil {

@@ -22,9 +22,11 @@ import (
 )
 
 var agentCmd = &cobra.Command{
-	Use:   "agent",
-	Short: "Run a znet agent",
-	Run:   runAgent,
+	Use:     "agent",
+	Short:   "Run a znet agent",
+	Long:    "Subscribe to RPC events to perform actions",
+	Example: "znet agent",
+	Run:     runAgent,
 }
 
 func init() {
@@ -85,9 +87,9 @@ func runAgent(cmd *cobra.Command, args []string) {
 	// Run the receiver forever.
 	go func() {
 		for {
-			stream, err := client.SubscribeEvents(ctx, eventSub)
+			stream, receiverErr := client.SubscribeEvents(ctx, eventSub)
 			if err != nil {
-				log.Errorf("calling %+v.SubscribeEvents(_) = _, %+v", client, err)
+				log.Errorf("calling %+v.SubscribeEvents(_) = _, %+v", client, receiverErr)
 
 				ctx.Done()
 				time.Sleep(10 * time.Second)

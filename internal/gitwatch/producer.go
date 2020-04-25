@@ -102,7 +102,7 @@ func (e *EventProducer) Produce(ev interface{}) error {
 func (e *EventProducer) sshPublicKey(repo Repo) (*ssh.PublicKeys, error) {
 
 	// For URLs that don't start with http and when a SSHKeyPath is set, we
-	// shold load the ssh key to proceeed.
+	// shold load the ssh key to proceed.
 	if !strings.HasPrefix(repo.URL, "https") && e.config.SSHKeyPath != "" {
 		var publicKey *ssh.PublicKeys
 		sshKey, _ := ioutil.ReadFile(e.config.SSHKeyPath)
@@ -207,20 +207,16 @@ func (e *EventProducer) watcher(done chan bool) error {
 	}
 }
 
-func (e *EventProducer) fetchRemote(repo *git.Repository, sshPublicKey *ssh.PublicKeys) (map[string]string, []string, error) {
-	newHeads := make(map[string]string)
-	newTags := make([]string, 0)
-	var err error
+func (e *EventProducer) repoRefs(repo *git.Repository) (map[string]string, map[string]string) {
+	heads := make(map[string]string)
+	tags := make(map[string]string)
 
-	beforeHeads := make(map[string]string)
-	beforeTags := make(map[string]string)
-
-	beforeRefs, err := repo.References()
+	refs, err := repo.References()
 	if err != nil {
 		log.Error(err)
 	}
 
-	err = beforeRefs.ForEach(func(ref *plumbing.Reference) error {
+	err = refs.ForEach(func(ref *plumbing.Reference) error {
 		// The HEAD is omitted in a `git show-ref` so we ignore the symbolic
 		// references, the HEAD
 		if ref.Type() == plumbing.SymbolicReference {
@@ -229,15 +225,29 @@ func (e *EventProducer) fetchRemote(repo *git.Repository, sshPublicKey *ssh.Publ
 
 		// Only inspect the remote references
 		if ref.Name().IsRemote() {
-			beforeHeads[ref.Name().Short()] = ref.Hash().String()
+			heads[ref.Name().Short()] = ref.Hash().String()
 		}
 
 		if ref.Name().IsTag() {
-			beforeTags[ref.Name().Short()] = ref.Hash().String()
+			tags[ref.Name().Short()] = ref.Hash().String()
 		}
 
 		return nil
 	})
+
+	if err != nil {
+		log.Error(err)
+	}
+
+	return heads, tags
+}
+
+func (e *EventProducer) fetchRemote(repo *git.Repository, sshPublicKey *ssh.PublicKeys) (map[string]string, []string, error) {
+	newHeads := make(map[string]string)
+	newTags := make([]string, 0)
+	var err error
+
+	beforeHeads, beforeTags := e.repoRefs(repo)
 
 	fetchOpts := &git.FetchOptions{
 		RemoteName: "origin",
@@ -265,32 +275,7 @@ func (e *EventProducer) fetchRemote(repo *git.Repository, sshPublicKey *ssh.Publ
 		}
 	}
 
-	afterHeads := make(map[string]string)
-	afterTags := make(map[string]string)
-
-	afterRefs, err := repo.References()
-	if err != nil {
-		log.Error(err)
-	}
-
-	err = afterRefs.ForEach(func(ref *plumbing.Reference) error {
-		// The HEAD is omitted in a `git show-ref` so we ignore the symbolic
-		// references, the HEAD
-		if ref.Type() == plumbing.SymbolicReference {
-			return nil
-		}
-
-		// Only inspect the remote references
-		if ref.Name().IsRemote() {
-			afterHeads[ref.Name().Short()] = ref.Hash().String()
-		}
-
-		if ref.Name().IsTag() {
-			afterTags[ref.Name().Short()] = ref.Hash().String()
-		}
-
-		return nil
-	})
+	afterHeads, afterTags := e.repoRefs(repo)
 
 	nameMatch := func(refs map[string]string, shortName string) bool {
 		for k := range refs {
@@ -336,40 +321,4 @@ func (e *EventProducer) fetchRemote(repo *git.Repository, sshPublicKey *ssh.Publ
 	}
 
 	return newHeads, newTags, err
-}
-
-func head(repo *git.Repository) plumbing.Hash {
-	head, err := repo.Head()
-	if err != nil {
-		log.Errorf("head error: %s", err)
-		return plumbing.Hash{}
-	}
-
-	return head.Hash()
-}
-
-func tags(repo *git.Repository) []string {
-	result, err := repo.Tags()
-	if err != nil {
-		log.Errorf("tags error: %s", err)
-		return []string{}
-	}
-
-	var tags []string
-
-	err = result.ForEach(func(repo *plumbing.Reference) error {
-		x := *repo
-
-		// log.Tracef("r.Name().Short(): %+v", x.Name().Short())
-
-		tags = append(tags, x.Name().Short())
-
-		return nil
-	})
-	if err != nil {
-		log.Errorf("tags.ForEach() error: %s", err)
-		return []string{}
-	}
-
-	return tags
 }

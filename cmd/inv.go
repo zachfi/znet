@@ -31,10 +31,11 @@ import (
 
 // invCmd represents the inv command
 var invCmd = &cobra.Command{
-	Use:   "inv",
-	Short: "Report on inventory",
-	Long:  "",
-	Run:   runInv,
+	Use:     "inv",
+	Short:   "Report on inventory",
+	Long:    "Run an inventory report",
+	Example: "znet inv",
+	Run:     runInv,
 }
 
 var adopt string

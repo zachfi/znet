@@ -41,7 +41,7 @@ func (m *EventMachine) Stop() error {
 // initEventConsumer starts a routine that never ends to read from
 // z.EventChannel and execute the loaded handlers with the event Payload.
 func (m *EventMachine) initEventConsumer() chan bool {
-	dieChan := make(chan bool, 0)
+	dieChan := make(chan bool)
 
 	go func(ch chan events.Event, dieChan chan bool) {
 		log.Debugf("total %d m.EventConsumers", len(m.EventConsumers))

@@ -15,9 +15,11 @@ import (
 )
 
 var gitwatchCmd = &cobra.Command{
-	Use:   "gitwatch",
-	Short: "Run a git watcher",
-	Run:   runGitwatch,
+	Use:     "gitwatch",
+	Short:   "Run a git watcher",
+	Long:    "Watch git repos and emit events when changes are noticed.",
+	Example: "znet gitwatch",
+	Run:     runGitwatch,
 }
 
 func init() {

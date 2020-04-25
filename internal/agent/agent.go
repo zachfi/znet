@@ -13,8 +13,9 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
-	pb "github.com/xaque208/znet/rpc"
 	"google.golang.org/grpc"
+
+	pb "github.com/xaque208/znet/rpc"
 
 	"github.com/xaque208/znet/internal/events"
 	"github.com/xaque208/znet/internal/gitwatch"

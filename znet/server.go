@@ -8,13 +8,14 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
+
 	"github.com/xaque208/znet/internal/astro"
 	"github.com/xaque208/znet/internal/events"
 	"github.com/xaque208/znet/internal/gitwatch"
 	"github.com/xaque208/znet/internal/timer"
 	"github.com/xaque208/znet/pkg/eventmachine"
 	pb "github.com/xaque208/znet/rpc"
-	"google.golang.org/grpc"
 )
 
 // Server is a znet Server.
