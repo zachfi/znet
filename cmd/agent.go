@@ -92,7 +92,7 @@ func runAgent(cmd *cobra.Command, args []string) {
 	go func() {
 		for {
 			stream, receiverErr := client.SubscribeEvents(ctx, eventSub)
-			if err != nil {
+			if receiverErr != nil {
 				log.Errorf("calling %+v.SubscribeEvents(_) = _, %+v", client, receiverErr)
 
 				ctx.Done()
