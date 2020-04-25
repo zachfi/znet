@@ -2,29 +2,29 @@ package agent
 
 // Config is the agent configuration.
 type Config struct {
-	Executions []Execution
+	Executions []Execution `yaml:"executions"`
 }
 
 // Execution is a single execution.
 type Execution struct {
 	// Args is the command arguments to pass for execution.
-	Args []string
+	Args []string `yaml:"args"`
 
 	// Command is the name of the command to execute.
-	Command string
+	Command string `yaml:"command"`
 
-	Dir         string
-	Environment map[string]string
+	Dir         string            `yaml:"dir"`
+	Environment map[string]string `yaml:"environment"`
 
 	// Events is the slice of names upon which to execute the given executions.
-	Events []string
+	Events []string `yaml:"events"`
 
 	// TODO
-	Filter map[string]interface{}
+	Filter map[string]interface{} `yaml:"filter"`
 
 	// TODO
-	OnSuccess []string
+	OnSuccess []string `yaml:"on_success"`
 
 	// TODO
-	OnFailure []string
+	OnFailure []string `yaml:"on_failure"`
 }
