@@ -20,7 +20,6 @@ import (
 	"strings"
 	"syscall"
 
-	nats "github.com/nats-io/go-nats"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -68,9 +67,6 @@ func listen(cmd *cobra.Command, args []string) {
 	replacer := strings.NewReplacer(".", "_")
 	viper.SetEnvKeyReplacer(replacer)
 
-	viper.SetDefault("nats.url", nats.DefaultURL)
-	viper.SetDefault("nats.topic", "things")
-
 	viper.AutomaticEnv()
 
 	z, err := znet.NewZnet(cfgFile)
@@ -78,8 +74,6 @@ func listen(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 
-	z.Config.Nats.URL = viper.GetString("nats.url")
-	z.Config.Nats.Topic = viper.GetString("nats.topic")
 	z.Config.RPC.ListenAddress = viper.GetString("rpc.listen")
 	z.Config.HTTP.ListenAddress = viper.GetString("http.listen")
 

@@ -3,6 +3,7 @@ package znet
 import (
 	"github.com/xaque208/znet/internal/agent"
 	"github.com/xaque208/znet/internal/astro"
+	"github.com/xaque208/znet/internal/builder"
 	"github.com/xaque208/znet/internal/gitwatch"
 	"github.com/xaque208/znet/internal/lights"
 	"github.com/xaque208/znet/internal/timer"
@@ -18,7 +19,6 @@ type Config struct {
 	Junos        JunosConfig         `yaml:"junos,omitempty"`
 	LDAP         LDAPConfig          `yaml:"ldap,omitempty"`
 	Lights       lights.Config       `yaml:"lights,omitempty"`
-	Nats         NatsConfig          `yaml:"nats,omitempty"`
 	Rooms        []lights.Room       `yaml:"rooms,omitempty"`
 	RPC          RPCConfig           `yaml:"rpc,omitempty"`
 	Timer        timer.Config        `yaml:"timer,omitempty"`
@@ -29,12 +29,6 @@ type Config struct {
 type EnvironmentConfig struct {
 	Name         string   `yaml:"name,omitempty"`
 	SecretValues []string `yaml:"secret_values,omitempty"`
-}
-
-// NatsConfig is the NATs configuration.
-type NatsConfig struct {
-	URL   string
-	Topic string
 }
 
 // JunosConfig is the configuration for Junos devices.
