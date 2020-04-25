@@ -4,10 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
-	"os"
 	"reflect"
-	"strings"
 	"time"
 
 	git "github.com/go-git/go-git/v5"
@@ -50,7 +47,7 @@ func (e *EventProducer) Start() error {
 	go func(done chan bool) {
 		err := e.watcher(done)
 		if err != nil {
-			log.Error(err)
+			log.Errorf("error e.Watcher(done): %s", err)
 		}
 	}(e.diechan)
 
@@ -99,24 +96,6 @@ func (e *EventProducer) Produce(ev interface{}) error {
 	return nil
 }
 
-func (e *EventProducer) sshPublicKey(repo Repo) (*ssh.PublicKeys, error) {
-
-	// For URLs that don't start with http and when a SSHKeyPath is set, we
-	// shold load the ssh key to proceed.
-	if !strings.HasPrefix(repo.URL, "https") && e.config.SSHKeyPath != "" {
-		var publicKey *ssh.PublicKeys
-		sshKey, _ := ioutil.ReadFile(e.config.SSHKeyPath)
-		publicKey, keyError := ssh.NewPublicKeys("git", sshKey, "")
-		if keyError != nil {
-			return nil, fmt.Errorf("error while loading public key: %s", keyError)
-		}
-
-		return publicKey, nil
-	}
-
-	return nil, nil
-}
-
 func (e *EventProducer) watcher(done chan bool) error {
 
 	ticker := time.NewTicker(time.Duration(e.config.Interval) * time.Second)
@@ -135,35 +114,21 @@ func (e *EventProducer) watcher(done chan bool) error {
 
 				cacheDir := fmt.Sprintf("%s/%s", e.config.CacheDir, repo.Name)
 
-				cloneOpts := &git.CloneOptions{
-					URL:      repo.URL,
-					Progress: nil,
-					// Progress: os.Stdout,
-				}
-
-				publicKey, err := e.sshPublicKey(repo)
+				err := CacheRepo(repo.URL, cacheDir, e.config.SSHKeyPath)
 				if err != nil {
 					log.Error(err)
 					continue
 				}
 
-				if publicKey != nil {
-					cloneOpts.Auth = publicKey
-				}
-
-				_, err = os.Stat(cacheDir)
-				if err != nil {
-					log.Infof("cloning repo %s from origin %s", repo.Name, repo.URL)
-					_, cloneErr := git.PlainClone(cacheDir, false, cloneOpts)
-					if cloneErr != nil {
-						log.Errorf("error while cloning %s: %s", repo.URL, cloneErr)
-						continue
-					}
-				}
-
 				r, err := git.PlainOpen(cacheDir)
 				if err != nil {
 					log.Error(err)
+				}
+
+				publicKey, err := SSHPublicKey(repo.URL, e.config.SSHKeyPath)
+				if err != nil {
+					log.Error(err)
+					continue
 				}
 
 				newHeads, newTags, err := e.fetchRemote(r, publicKey)
@@ -265,13 +230,15 @@ func (e *EventProducer) fetchRemote(repo *git.Repository, sshPublicKey *ssh.Publ
 
 	remote, err := repo.Remote("origin")
 	if err != nil {
-		log.Error(err)
+		log.Errorf("error repo.Remote() %s", err)
 	}
 
 	err = remote.Fetch(fetchOpts)
 	if err != nil {
-		if err != git.NoErrAlreadyUpToDate {
+		if err.Error() != git.NoErrAlreadyUpToDate.Error() {
 			log.Errorf("failed to fetch %s: %s", remote.Config().Name, err)
+		} else {
+			err = nil
 		}
 	}
 
