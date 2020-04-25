@@ -9,9 +9,10 @@ var EventNames = []string{
 }
 
 type ExecutionResult struct {
-	Command string
-	Args    []string
-	Dir     string
-	Output  []byte
-	Time    *time.Time
+	Command  string
+	Args     []string
+	Dir      string
+	Output   []byte
+	Time     *time.Time
+	ExitCode int
 }

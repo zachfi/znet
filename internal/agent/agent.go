@@ -187,24 +187,20 @@ func (a *Agent) executeForEvent(x interface{}) error {
 
 				// var out bytes.Buffer
 				// cmd.Stdout = &out
-				err := cmd.Run()
+				output, err := cmd.CombinedOutput()
 				if err != nil {
 					log.Errorf("command execution failed: %s", err)
 				}
 
 				now := time.Now()
 
-				output, err := cmd.CombinedOutput()
-				if err != nil {
-					log.Error(err)
-				}
-
 				ev := ExecutionResult{
-					Time:    &now,
-					Command: execution.Command,
-					Args:    args,
-					Dir:     execution.Dir,
-					Output:  output,
+					Time:     &now,
+					Command:  execution.Command,
+					Args:     args,
+					Dir:      execution.Dir,
+					Output:   output,
+					ExitCode: cmd.ProcessState.ExitCode(),
 				}
 
 				err = a.Produce(ev)
