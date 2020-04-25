@@ -237,7 +237,7 @@ func (a *Agent) Produce(ev interface{}) error {
 		return fmt.Errorf("unhandled event type: %T", ev)
 	}
 
-	log.Tracef("astro producing RPC event %+v", req)
+	log.Tracef("agent producing RPC event %+v", req)
 	res, err := ec.NoticeEvent(context.Background(), req)
 	if err != nil {
 		return err

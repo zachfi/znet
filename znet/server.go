@@ -10,6 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
+	"github.com/xaque208/znet/internal/agent"
 	"github.com/xaque208/znet/internal/astro"
 	"github.com/xaque208/znet/internal/events"
 	"github.com/xaque208/znet/internal/gitwatch"
@@ -90,6 +91,7 @@ func (s *Server) Start(z *Znet) error {
 		s.rpcEventServer.RegisterEvents(timer.EventNames)
 		s.rpcEventServer.RegisterEvents(astro.EventNames)
 		s.rpcEventServer.RegisterEvents(gitwatch.EventNames)
+		s.rpcEventServer.RegisterEvents(agent.EventNames)
 
 		go func() {
 			lis, err := net.Listen("tcp", s.rpcConfig.ListenAddress)
