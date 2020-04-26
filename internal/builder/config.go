@@ -6,5 +6,5 @@ type Config struct {
 }
 
 type RepoConfig struct {
-	OnTag []string
+	OnTag []string `yaml:"on_tag"`
 }
