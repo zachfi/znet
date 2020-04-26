@@ -2,6 +2,7 @@ package continuous
 
 import (
 	git "github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -58,6 +59,27 @@ func (c *CI) CheckoutTag(tag string) error {
 	}
 
 	err = w.Checkout(&git.CheckoutOptions{Hash: ref.Hash()})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *CI) CheckoutHash(commit string) error {
+	r, err := git.PlainOpen(c.CacheDir)
+	if err != nil {
+		return err
+	}
+
+	w, err := r.Worktree()
+	if err != nil {
+		return err
+	}
+
+	hash := plumbing.NewHash(commit)
+
+	err = w.Checkout(&git.CheckoutOptions{Hash: hash})
 	if err != nil {
 		return err
 	}
