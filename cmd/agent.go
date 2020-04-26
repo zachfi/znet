@@ -90,7 +90,7 @@ func runAgent(cmd *cobra.Command, args []string) {
 		for {
 			stream, receiverErr := client.SubscribeEvents(ctx, eventSub)
 			if receiverErr == grpc.ErrClientConnClosing {
-				break
+				return
 			}
 
 			if receiverErr != nil {
