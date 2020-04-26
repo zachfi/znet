@@ -196,7 +196,7 @@ func (b *Builder) buildForEvent(x interface{}, cacheDir string) error {
 				log.Errorf("command execution failed: %s", err)
 			}
 
-			log.Infof("output: %+v", output)
+			log.Infof("output: %+v", string(output))
 
 			// now := time.Now()
 
