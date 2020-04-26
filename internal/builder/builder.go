@@ -8,11 +8,13 @@ import (
 	"reflect"
 	"strings"
 	"sync"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"gopkg.in/yaml.v2"
 
+	"github.com/xaque208/znet/internal/agent"
 	"github.com/xaque208/znet/internal/events"
 	"github.com/xaque208/znet/internal/gitwatch"
 	"github.com/xaque208/znet/pkg/continuous"
@@ -198,29 +200,33 @@ func (b *Builder) buildForEvent(x interface{}, cacheDir string) error {
 			cmd := exec.Command(commandName, args...)
 			cmd.Dir = cacheDir
 
+			startTime := time.Now()
 			output, err := cmd.CombinedOutput()
 			if err != nil {
 				log.Errorf("command execution failed: %s", err)
 			}
 
+			duration := time.Since(startTime)
+
 			log.Infof("output: %+v", string(output))
 
-			// now := time.Now()
+			now := time.Now()
 
-			// ev := ExecutionResult{
-			// 	Time:     &now,
-			// 	Command:  commandName,
-			// 	Args:     args,
-			// 	Dir:      cacheDir,
-			// 	Output:   output,
-			// 	ExitCode: cmd.ProcessState.ExitCode(),
-			// }
-			//
-			// err = a.Produce(ev)
-			// if err != nil {
-			// 	log.Error(err)
-			// }
-			//
+			ev := agent.ExecutionResult{
+				Time:     &now,
+				Command:  commandName,
+				Args:     args,
+				Dir:      cacheDir,
+				Output:   output,
+				ExitCode: cmd.ProcessState.ExitCode(),
+				Duration: duration,
+			}
+
+			err = events.ProduceEvent(b.conn, ev)
+			if err != nil {
+				log.Error(err)
+			}
+
 		}
 
 	default:
