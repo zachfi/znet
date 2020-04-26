@@ -15,4 +15,5 @@ type ExecutionResult struct {
 	Output   []byte
 	Time     *time.Time
 	ExitCode int
+	Duration time.Duration
 }
