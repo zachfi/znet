@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -29,6 +30,25 @@ type Server struct {
 	grpcServer *grpc.Server
 
 	rpcEventServer *eventServer
+}
+
+var (
+	executionExitStatus = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "znet_execution_result",
+		Help: "Stats on the received ExecutionResult RPC events",
+	}, []string{"command"})
+
+	executionDuration = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "znet_execution_duration",
+		Help: "Stats on the received ExecutionResult RPC events",
+	}, []string{"command"})
+)
+
+func init() {
+	prometheus.MustRegister(
+		executionExitStatus,
+		executionDuration,
+	)
 }
 
 // NewServer creates a new Server composed of the received information.

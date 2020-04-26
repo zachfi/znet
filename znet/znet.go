@@ -2,6 +2,7 @@ package znet
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -10,10 +11,12 @@ import (
 	"github.com/alecthomas/template"
 	ldap "github.com/go-ldap/ldap"
 	"github.com/imdario/mergo"
+	"github.com/prometheus/client_golang/prometheus"
 	junos "github.com/scottdware/go-junos"
 	log "github.com/sirupsen/logrus"
 	"github.com/tcnksm/go-input"
 
+	"github.com/xaque208/znet/internal/agent"
 	"github.com/xaque208/znet/internal/events"
 	"github.com/xaque208/znet/internal/lights"
 )
@@ -338,5 +341,28 @@ func (z *Znet) Stop() error {
 // generating consumers of named events.
 func (z *Znet) Subscriptions() map[string][]events.Handler {
 	s := events.NewSubscriptions()
+
+	s.Subscribe("ExecutionResult", z.executionResultHandler)
+
 	return s.Table
+}
+
+func (z *Znet) executionResultHandler(name string, payload events.Payload) error {
+
+	var x agent.ExecutionResult
+
+	err := json.Unmarshal(payload, &x)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal %T: %s", x, err)
+	}
+
+	executionExitStatus.With(prometheus.Labels{
+		"command": x.Command,
+	}).Set(float64(x.ExitCode))
+
+	executionDuration.With(prometheus.Labels{
+		"command": x.Command,
+	}).Set(float64(x.Duration))
+
+	return nil
 }
