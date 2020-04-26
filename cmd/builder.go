@@ -14,26 +14,26 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/xaque208/znet/internal/agent"
+	"github.com/xaque208/znet/internal/builder"
 	"github.com/xaque208/znet/internal/events"
 	"github.com/xaque208/znet/pkg/eventmachine"
 	pb "github.com/xaque208/znet/rpc"
 	"github.com/xaque208/znet/znet"
 )
 
-var agentCmd = &cobra.Command{
-	Use:     "agent",
-	Short:   "Run a znet agent",
-	Long:    "Subscribe to RPC events to perform actions",
-	Example: "znet agent",
-	Run:     runAgent,
+var builderCmd = &cobra.Command{
+	Use:     "builder",
+	Short:   "Run a git repo builder",
+	Long:    "Listen for NewCommit and NewTag events, and bulid repos using that event information",
+	Example: "znet builder",
+	Run:     runBuilder,
 }
 
 func init() {
-	rootCmd.AddCommand(agentCmd)
+	rootCmd.AddCommand(builderCmd)
 }
 
-func runAgent(cmd *cobra.Command, args []string) {
+func runBuilder(cmd *cobra.Command, args []string) {
 	formatter := log.TextFormatter{
 		FullTimestamp: true,
 	}
@@ -54,10 +54,6 @@ func runAgent(cmd *cobra.Command, args []string) {
 
 	z.Config.RPC.ServerAddress = viper.GetString("rpc.server")
 
-	if z.Config.RPC.ServerAddress == "" {
-		log.Fatal("no rpc.server configuration specified")
-	}
-
 	var opts []grpc.DialOption
 	opts = append(opts, grpc.WithInsecure())
 
@@ -66,10 +62,10 @@ func runAgent(cmd *cobra.Command, args []string) {
 		log.Error(err)
 	}
 
-	ag := agent.NewAgent(z.Config.Agent, conn)
+	x := builder.NewBuilder(conn, z.Config.Builder)
 
 	consumers := []events.Consumer{
-		ag,
+		x,
 	}
 
 	machine, err := eventmachine.New(consumers)
@@ -82,7 +78,7 @@ func runAgent(cmd *cobra.Command, args []string) {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	eventSub := &pb.EventSub{
-		Name: ag.EventNames(),
+		Name: x.EventNames(),
 	}
 
 	// Run the receiver forever.
@@ -154,4 +150,5 @@ func runAgent(cmd *cobra.Command, args []string) {
 	}
 
 	cancel()
+
 }

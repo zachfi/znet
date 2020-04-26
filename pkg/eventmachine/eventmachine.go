@@ -6,7 +6,7 @@ import (
 	"github.com/xaque208/znet/internal/events"
 )
 
-// EventMachine
+// EventMachine is a system to facilitate receiving events and passing them along to a number of subscribers.
 type EventMachine struct {
 	// EventChannel is the channel to which the RPC eventServer writes events.
 	EventChannel chan events.Event
@@ -17,6 +17,7 @@ type EventMachine struct {
 	dieChans       []chan bool
 }
 
+// New creates a new EventMachine using the received consumers, complete with channels and exit.
 func New(consumers []events.Consumer) (*EventMachine, error) {
 	m := &EventMachine{}
 	m.EventChannel = make(chan events.Event)
@@ -31,10 +32,10 @@ func New(consumers []events.Consumer) (*EventMachine, error) {
 	return m, nil
 }
 
+// Stop closes the evnet channel.
 func (m *EventMachine) Stop() error {
-
+	log.Debugf("closing m.EventChannel %+v", m.EventChannel)
 	close(m.EventChannel)
-
 	return nil
 }
 
@@ -65,7 +66,7 @@ func (m *EventMachine) initEventConsumer() chan bool {
 	return dieChan
 }
 
-// initEventConsumers updates the z.EventConsumers map.  For each received
+// initEventConsumers updates the m.EventConsumers map.  For each received
 // consumer, the handler subscriptions are determined, and appended to the
 // z.EventConsumers map for execution when the named event is received.
 func (m *EventMachine) initEventConsumers(consumers []events.Consumer) {

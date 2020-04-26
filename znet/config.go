@@ -15,6 +15,7 @@ type Config struct {
 	Astro        astro.Config        `yaml:"astro,omitempty"`
 	Environments []EnvironmentConfig `yaml:"environments,omitempty"`
 	GitWatch     gitwatch.Config     `yaml:"gitwatch,omitempty"`
+	Builder      builder.Config      `yaml:"builder,omitempty"`
 	HTTP         HTTPConfig          `yaml:"http,omitempty"`
 	Junos        JunosConfig         `yaml:"junos,omitempty"`
 	LDAP         LDAPConfig          `yaml:"ldap,omitempty"`
