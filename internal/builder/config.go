@@ -6,5 +6,7 @@ type Config struct {
 }
 
 type RepoConfig struct {
-	OnTag []string `yaml:"on_tag"`
+	OnTag    []string `yaml:"on_tag"`
+	OnCommit []string `yaml:"on_commit"`
+	Branches []string `yaml:"branches"`
 }

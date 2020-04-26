@@ -187,6 +187,7 @@ func (b *Builder) buildForEvent(x interface{}, cacheDir string) error {
 
 	switch t {
 	case "gitwatch.NewTag":
+
 		for _, cmds := range v.OnTag {
 			parts := strings.SplitN(cmds, " ", 2)
 
@@ -227,6 +228,61 @@ func (b *Builder) buildForEvent(x interface{}, cacheDir string) error {
 				log.Error(err)
 			}
 
+		}
+
+	case "gitwatch.NewCommit":
+		branchInBranches := func() bool {
+			for _, branch := range v.Branches {
+				if branch == x.(gitwatch.NewCommit).Branch {
+					return true
+				}
+			}
+
+			return false
+		}
+
+		if branchInBranches() {
+			for _, cmds := range v.OnCommit {
+				parts := strings.SplitN(cmds, " ", 2)
+
+				commandName := parts[0]
+				var args []string
+
+				if len(parts) > 0 {
+					args = strings.Split(parts[1], " ")
+				}
+
+				cmd := exec.Command(commandName, args...)
+				cmd.Dir = cacheDir
+
+				startTime := time.Now()
+				output, err := cmd.CombinedOutput()
+				if err != nil {
+					log.Errorf("command execution failed: %s", err)
+				}
+
+				duration := time.Since(startTime)
+
+				log.Infof("output: %+v", string(output))
+
+				now := time.Now()
+
+				ev := agent.ExecutionResult{
+					Time:     &now,
+					Command:  commandName,
+					Args:     args,
+					Dir:      cacheDir,
+					Output:   output,
+					ExitCode: cmd.ProcessState.ExitCode(),
+					Duration: duration,
+				}
+
+				err = events.ProduceEvent(b.conn, ev)
+				if err != nil {
+					log.Error(err)
+				}
+
+			}
 		}
 
 	default:
