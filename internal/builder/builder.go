@@ -3,12 +3,14 @@ package builder
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/xaque208/znet/internal/events"
 	"github.com/xaque208/znet/internal/gitwatch"
 	"github.com/xaque208/znet/pkg/continuous"
 	"google.golang.org/grpc"
+	"gopkg.in/yaml.v2"
 )
 
 type Builder struct {
@@ -84,12 +86,12 @@ func (b *Builder) checkoutCommitHandler(name string, payload events.Payload) err
 		log.Error(err)
 	}
 
-	err = b.buildForEvent(x)
+	err = ci.CheckoutHash(x.Hash)
 	if err != nil {
 		log.Error(err)
 	}
 
-	err = ci.CheckoutHash(x.Hash)
+	err = b.buildForEvent(x, cacheDir)
 	if err != nil {
 		log.Error(err)
 	}
@@ -127,15 +129,39 @@ func (b *Builder) checkoutTagHandler(name string, payload events.Payload) error 
 		return err
 	}
 
-	err = b.buildForEvent(x)
+	err = b.buildForEvent(x, cacheDir)
 	if err != nil {
-		return err
+		log.Error(err)
 	}
 
 	return nil
 }
 
-func (b *Builder) buildForEvent(x interface{}) error {
+func (b *Builder) loadRepoConfig(cacheDir string) (*RepoConfig, error) {
+	var repoConfig *RepoConfig
+
+	configPath := fmt.Sprintf("%s/.build.yaml", cacheDir)
+
+	yamlFile, err := ioutil.ReadFile(configPath)
+	if err != nil {
+		return nil, err
+	}
+
+	err = yaml.Unmarshal(yamlFile, repoConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	return repoConfig, nil
+}
+
+func (b *Builder) buildForEvent(x interface{}, cacheDir string) error {
+	v, err := b.loadRepoConfig(cacheDir)
+	if err != nil {
+		return err
+	}
+
+	log.Warnf("repoConfig :%+v", v)
 
 	return nil
 }
