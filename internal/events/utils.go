@@ -38,9 +38,7 @@ func ProduceEvent(conn *grpc.ClientConn, ev interface{}) error {
 	ec := pb.NewEventsClient(conn)
 	// t := reflect.TypeOf(ev).String()
 
-	var req *pb.Event
-
-	req = MakeEvent(ev)
+	req := MakeEvent(ev)
 
 	if req == nil {
 		return fmt.Errorf("failed to make event")
