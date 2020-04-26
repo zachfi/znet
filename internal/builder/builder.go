@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os/exec"
+	"reflect"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/xaque208/znet/internal/events"
@@ -162,6 +165,52 @@ func (b *Builder) buildForEvent(x interface{}, cacheDir string) error {
 	}
 
 	log.Warnf("repoConfig :%+v", v)
+
+	t := reflect.TypeOf(x).String()
+
+	switch t {
+	case "gitwatch.NewTag":
+		for _, cmds := range v.OnTag {
+			parts := strings.SplitN(cmds, " ", 1)
+
+			commandName := parts[0]
+			var args []string
+
+			if len(parts) > 0 {
+				args = strings.Split(parts[1], " ")
+			}
+
+			cmd := exec.Command(commandName, args...)
+			cmd.Dir = cacheDir
+
+			output, err := cmd.CombinedOutput()
+			if err != nil {
+				log.Errorf("command execution failed: %s", err)
+			}
+
+			log.Infof("output: %+v", output)
+
+			// now := time.Now()
+
+			// ev := ExecutionResult{
+			// 	Time:     &now,
+			// 	Command:  commandName,
+			// 	Args:     args,
+			// 	Dir:      cacheDir,
+			// 	Output:   output,
+			// 	ExitCode: cmd.ProcessState.ExitCode(),
+			// }
+			//
+			// err = a.Produce(ev)
+			// if err != nil {
+			// 	log.Error(err)
+			// }
+			//
+		}
+
+	default:
+		return fmt.Errorf("nothing to build for event: %T", x)
+	}
 
 	return nil
 }
