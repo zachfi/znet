@@ -10,11 +10,12 @@ import (
 	"sync"
 
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
+	"gopkg.in/yaml.v2"
+
 	"github.com/xaque208/znet/internal/events"
 	"github.com/xaque208/znet/internal/gitwatch"
 	"github.com/xaque208/znet/pkg/continuous"
-	"google.golang.org/grpc"
-	"gopkg.in/yaml.v2"
 )
 
 type Builder struct {
@@ -48,8 +49,8 @@ func (b *Builder) Subscriptions() map[string][]events.Handler {
 
 	for _, e := range b.EventNames() {
 		switch e {
-		// case "NewCommit":
-		// 	s.Subscribe(e, b.checkoutCommitHandler)
+		case "NewCommit":
+			s.Subscribe(e, b.checkoutCommitHandler)
 		case "NewTag":
 			s.Subscribe(e, b.checkoutTagHandler)
 		case "BuildTag":
