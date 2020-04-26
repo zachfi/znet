@@ -171,7 +171,7 @@ func (b *Builder) buildForEvent(x interface{}, cacheDir string) error {
 	switch t {
 	case "gitwatch.NewTag":
 		for _, cmds := range v.OnTag {
-			parts := strings.SplitN(cmds, " ", 1)
+			parts := strings.SplitN(cmds, " ", 2)
 
 			commandName := parts[0]
 			var args []string
