@@ -138,7 +138,7 @@ func (b *Builder) checkoutTagHandler(name string, payload events.Payload) error 
 }
 
 func (b *Builder) loadRepoConfig(cacheDir string) (*RepoConfig, error) {
-	var repoConfig *RepoConfig
+	var repoConfig RepoConfig
 
 	configPath := fmt.Sprintf("%s/.build.yaml", cacheDir)
 
@@ -147,12 +147,12 @@ func (b *Builder) loadRepoConfig(cacheDir string) (*RepoConfig, error) {
 		return nil, err
 	}
 
-	err = yaml.Unmarshal(yamlFile, repoConfig)
+	err = yaml.Unmarshal(yamlFile, &repoConfig)
 	if err != nil {
 		return nil, err
 	}
 
-	return repoConfig, nil
+	return &repoConfig, nil
 }
 
 func (b *Builder) buildForEvent(x interface{}, cacheDir string) error {
