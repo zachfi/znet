@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"reflect"
 	"strings"
+	"sync"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/xaque208/znet/internal/events"
@@ -19,6 +20,7 @@ import (
 type Builder struct {
 	config Config
 	conn   *grpc.ClientConn
+	mux    sync.Mutex
 }
 
 func NewBuilder(conn *grpc.ClientConn, config Config) *Builder {
@@ -46,8 +48,8 @@ func (b *Builder) Subscriptions() map[string][]events.Handler {
 
 	for _, e := range b.EventNames() {
 		switch e {
-		case "NewCommit":
-			s.Subscribe(e, b.checkoutCommitHandler)
+		// case "NewCommit":
+		// 	s.Subscribe(e, b.checkoutCommitHandler)
 		case "NewTag":
 			s.Subscribe(e, b.checkoutTagHandler)
 		case "BuildTag":
@@ -65,6 +67,9 @@ func (b *Builder) Subscriptions() map[string][]events.Handler {
 }
 
 func (b *Builder) checkoutCommitHandler(name string, payload events.Payload) error {
+	b.mux.Lock()
+	defer b.mux.Unlock()
+
 	var x gitwatch.NewCommit
 
 	err := json.Unmarshal(payload, &x)
@@ -103,6 +108,9 @@ func (b *Builder) checkoutCommitHandler(name string, payload events.Payload) err
 }
 
 func (b *Builder) checkoutTagHandler(name string, payload events.Payload) error {
+	b.mux.Lock()
+	defer b.mux.Unlock()
+
 	var x gitwatch.NewTag
 
 	err := json.Unmarshal(payload, &x)
