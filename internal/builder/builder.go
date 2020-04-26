@@ -67,6 +67,8 @@ func (b *Builder) Subscriptions() map[string][]events.Handler {
 }
 
 func (b *Builder) checkoutCommitHandler(name string, payload events.Payload) error {
+	log.Debugf("locking for event: %s", name)
+
 	b.mux.Lock()
 	defer b.mux.Unlock()
 
@@ -108,6 +110,8 @@ func (b *Builder) checkoutCommitHandler(name string, payload events.Payload) err
 }
 
 func (b *Builder) checkoutTagHandler(name string, payload events.Payload) error {
+	log.Debugf("locking for event: %s", name)
+
 	b.mux.Lock()
 	defer b.mux.Unlock()
 
