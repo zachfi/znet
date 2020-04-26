@@ -152,5 +152,4 @@ func runAgent(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Error(err)
 	}
-
 }

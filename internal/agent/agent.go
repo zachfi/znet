@@ -107,31 +107,66 @@ func (a *Agent) newCommitHandler(name string, payload events.Payload) error {
 	return nil
 }
 
+func (a *Agent) passFilter(filter Filter, x interface{}) bool {
+	var xName string
+	var xURL string
+	var xBranch string
+
+	filterHasName := func() bool {
+		for _, name := range filter.Names {
+			if name == xName {
+				return true
+			}
+		}
+		return false
+	}
+
+	filterHasURL := func() bool {
+		for _, url := range filter.URLs {
+			if url == xURL {
+				return true
+			}
+		}
+		return false
+	}
+
+	filterHasBranch := func() bool {
+		for _, branch := range filter.Branches {
+			if branch == xBranch {
+				return true
+			}
+		}
+		return false
+	}
+
+	if len(filter.Names) > 0 {
+		if !filterHasName() {
+			return false
+		}
+	}
+
+	if len(filter.URLs) > 0 {
+		if !filterHasURL() {
+			return false
+		}
+	}
+
+	if len(filter.Branches) > 0 {
+		if !filterHasBranch() {
+			return false
+		}
+	}
+
+	return true
+}
+
 func (a *Agent) executeForEvent(x interface{}) error {
 	log.Tracef("executeForEvent %+v", x)
 
 	for _, execution := range a.config.Executions {
 
-		if len(execution.Filter) > 0 {
-			var key string
-			var value interface{}
-
-			if val, ok := execution.Filter["key"]; ok {
-				key = val.(string)
-			}
-
-			if val, ok := execution.Filter["value"]; ok {
-				value = val
-			}
-
-			log.Debugf("filter key %s", key)
-			log.Debugf("filter value %+v", value)
-
-			// if val, ok := e.Filter["name"]; ok {
-			// 	if val != x.Name {
-			// 		continue
-			// 	}
-			// }
+		if !a.passFilter(execution.Filter, x) {
+			return fmt.Errorf("event did not pass filter: %+v, %+v", x, execution.Filter)
 		}
 
 		for _, xx := range execution.Events {
