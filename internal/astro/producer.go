@@ -2,9 +2,7 @@ package astro
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"reflect"
 	"strconv"
 	"time"
 
@@ -15,7 +13,6 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/xaque208/znet/internal/events"
-	pb "github.com/xaque208/znet/rpc"
 )
 
 // EventProducer implements events.Producer with an attached GRPC connection.
@@ -140,7 +137,7 @@ func (e *EventProducer) scheduler() error {
 					Time: &now,
 				}
 
-				err := e.Produce(ev)
+				err := events.ProduceEvent(e.conn, ev)
 				if err != nil {
 					log.Error(err)
 				}
@@ -160,37 +157,6 @@ func (e *EventProducer) scheduler() error {
 			return nil
 		}
 	}
-}
-
-// Produce implements the events.Producer interface.  Match the supported event
-// types to know which event to notice, and then send notice of the event to
-// the RPC server.
-func (e *EventProducer) Produce(ev interface{}) error {
-	// Create the RPC client
-	ec := pb.NewEventsClient(e.conn)
-	t := reflect.TypeOf(ev).String()
-
-	var req *pb.Event
-
-	switch t {
-	case "astro.SolarEvent":
-		x := ev.(SolarEvent)
-		req = events.MakeEvent(x)
-	default:
-		return fmt.Errorf("unhandled event type: %T", ev)
-	}
-
-	log.Tracef("astro producing RPC event %+v", req)
-	res, err := ec.NoticeEvent(context.Background(), req)
-	if err != nil {
-		return err
-	}
-
-	if res.Errors {
-		return errors.New(res.Message)
-	}
-
-	return nil
 }
 
 func queryForTime(client api.Client, query string) time.Time {

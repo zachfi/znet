@@ -1,10 +1,7 @@
 package gitwatch
 
 import (
-	"context"
-	"errors"
 	"fmt"
-	"reflect"
 	"time"
 
 	"google.golang.org/grpc"
@@ -13,8 +10,6 @@ import (
 	"github.com/xaque208/znet/pkg/continuous"
 
 	log "github.com/sirupsen/logrus"
-
-	pb "github.com/xaque208/znet/rpc"
 )
 
 // EventProducer implements events.Producer with an attached GRPC connection
@@ -59,40 +54,6 @@ func (e *EventProducer) Stop() error {
 	return nil
 }
 
-// Produce implements the events.Producer interface.  Match the supported event
-// types to know which event to notice, and then send notice of the event to
-// the RPC server.
-func (e *EventProducer) Produce(ev interface{}) error {
-	// Create the RPC client
-	ec := pb.NewEventsClient(e.conn)
-	t := reflect.TypeOf(ev).String()
-
-	var req *pb.Event
-
-	switch t {
-	case "gitwatch.NewCommit":
-		x := ev.(NewCommit)
-		req = events.MakeEvent(x)
-	case "gitwatch.NewTag":
-		x := ev.(NewTag)
-		req = events.MakeEvent(x)
-	default:
-		return fmt.Errorf("unhandled event type: %T", ev)
-	}
-
-	log.Tracef("gitwatch producing RPC event %+v", req)
-	res, err := ec.NoticeEvent(context.Background(), req)
-	if err != nil {
-		return err
-	}
-
-	if res.Errors {
-		return errors.New(res.Message)
-	}
-
-	return nil
-}
-
 func (e *EventProducer) watcher(done chan bool) error {
 
 	ticker := time.NewTicker(time.Duration(e.config.Interval) * time.Second)
@@ -132,7 +93,7 @@ func (e *EventProducer) watcher(done chan bool) error {
 						Branch: shortName,
 					}
 
-					err = e.Produce(ev)
+					err = events.ProduceEvent(e.conn, ev)
 					if err != nil {
 						log.Error(err)
 					}
@@ -146,7 +107,7 @@ func (e *EventProducer) watcher(done chan bool) error {
 						Tag:  r,
 					}
 
-					err = e.Produce(ev)
+					err = events.ProduceEvent(e.conn, ev)
 					if err != nil {
 						log.Error(err)
 					}
