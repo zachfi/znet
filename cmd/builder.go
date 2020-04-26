@@ -85,7 +85,7 @@ func runBuilder(cmd *cobra.Command, args []string) {
 	go func() {
 		for {
 			stream, receiverErr := client.SubscribeEvents(ctx, eventSub)
-			if receiverErr == grpc.ErrClientConnClosing {
+			if receiverErr.Error() == codes.Canceled.String() {
 				return
 			}
 
