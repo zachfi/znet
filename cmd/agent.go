@@ -139,14 +139,10 @@ func runAgent(cmd *cobra.Command, args []string) {
 
 	<-done
 
+	cancel()
+
 	log.Debug("closing RPC connection")
 	err = conn.Close()
-	if err != nil {
-		log.Error(err)
-	}
-
-	log.Debug("closing znet connections")
-	err = z.Stop()
 	if err != nil {
 		log.Error(err)
 	}
@@ -157,5 +153,4 @@ func runAgent(cmd *cobra.Command, args []string) {
 		log.Error(err)
 	}
 
-	cancel()
 }

@@ -134,15 +134,10 @@ func runBuilder(cmd *cobra.Command, args []string) {
 	}()
 
 	<-done
+	cancel()
 
 	log.Debug("closing RPC connection")
 	err = conn.Close()
-	if err != nil {
-		log.Error(err)
-	}
-
-	log.Debug("closing znet connections")
-	err = z.Stop()
 	if err != nil {
 		log.Error(err)
 	}
@@ -152,7 +147,4 @@ func runBuilder(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Error(err)
 	}
-
-	cancel()
-
 }
