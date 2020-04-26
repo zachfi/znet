@@ -2,3 +2,6 @@
 on_tag:
   - 'make release'
 
+on_commit:
+  - 'make build'
+
