@@ -5,3 +5,5 @@ on_tag:
 on_commit:
   - 'make build'
 
+branches: [ 'master' ]
+
