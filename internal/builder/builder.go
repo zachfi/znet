@@ -107,17 +107,27 @@ func (b *Builder) checkoutTagHandler(name string, payload events.Payload) error 
 
 	r, err := git.PlainOpen(cacheDir)
 	if err != nil {
-		log.Error(err)
+		return err
+	}
+
+	publicKey, err := gitwatch.SSHPublicKey(x.URL, b.config.SSHKeyPath)
+	if err != nil {
+		return err
+	}
+
+	_, _, err = gitwatch.FetchRemote(r, publicKey)
+	if err != nil {
+		return err
 	}
 
 	w, err := r.Worktree()
 	if err != nil {
-		log.Error(err)
+		return err
 	}
 
 	ref, err := r.Tag(x.Tag)
 	if err != nil {
-		log.Error(err)
+		return err
 	}
 
 	err = w.Checkout(&git.CheckoutOptions{
@@ -126,7 +136,7 @@ func (b *Builder) checkoutTagHandler(name string, payload events.Payload) error 
 
 	err = b.buildForEvent(x)
 	if err != nil {
-		log.Error(err)
+		return err
 	}
 
 	return nil
