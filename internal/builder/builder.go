@@ -4,12 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 
-	git "github.com/go-git/go-git/v5"
 	log "github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
-
 	"github.com/xaque208/znet/internal/events"
 	"github.com/xaque208/znet/internal/gitwatch"
+	"github.com/xaque208/znet/pkg/continuous"
+	"google.golang.org/grpc"
 )
 
 type Builder struct {
@@ -74,12 +73,23 @@ func (b *Builder) checkoutCommitHandler(name string, payload events.Payload) err
 
 	cacheDir := fmt.Sprintf("%s/%s", b.config.CacheDir, x.Name)
 
-	err = gitwatch.CacheRepo(x.URL, cacheDir, b.config.SSHKeyPath)
+	ci := continuous.NewCI(
+		x.URL,
+		cacheDir,
+		b.config.SSHKeyPath,
+	)
+
+	_, _, err = ci.Fetch()
 	if err != nil {
-		return fmt.Errorf("error while caching repo %s: %s", x.URL, err)
+		log.Error(err)
 	}
 
 	err = b.buildForEvent(x)
+	if err != nil {
+		log.Error(err)
+	}
+
+	err = ci.CheckoutHash(x.Hash)
 	if err != nil {
 		log.Error(err)
 	}
@@ -101,39 +111,18 @@ func (b *Builder) checkoutTagHandler(name string, payload events.Payload) error 
 
 	cacheDir := fmt.Sprintf("%s/%s", b.config.CacheDir, x.Name)
 
-	err = gitwatch.CacheRepo(x.URL, cacheDir, b.config.SSHKeyPath)
-	if err != nil {
-		return fmt.Errorf("error while caching repo %s: %s", x.URL, err)
-	}
+	ci := continuous.NewCI(
+		x.URL,
+		cacheDir,
+		b.config.SSHKeyPath,
+	)
 
-	r, err := git.PlainOpen(cacheDir)
-	if err != nil {
-		return err
-	}
-
-	publicKey, err := gitwatch.SSHPublicKey(x.URL, b.config.SSHKeyPath)
+	_, _, err = ci.Fetch()
 	if err != nil {
 		return err
 	}
 
-	_, _, err = gitwatch.FetchRemote(r, publicKey)
-	if err != nil {
-		return err
-	}
-
-	w, err := r.Worktree()
-	if err != nil {
-		return err
-	}
-
-	ref, err := r.Tag(x.Tag)
-	if err != nil {
-		return err
-	}
-
-	err = w.Checkout(&git.CheckoutOptions{
-		Hash: ref.Hash(),
-	})
+	err = ci.CheckoutTag(x.Tag)
 	if err != nil {
 		return err
 	}

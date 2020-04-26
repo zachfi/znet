@@ -7,10 +7,10 @@ import (
 	"reflect"
 	"time"
 
-	git "github.com/go-git/go-git/v5"
 	"google.golang.org/grpc"
 
 	"github.com/xaque208/znet/internal/events"
+	"github.com/xaque208/znet/pkg/continuous"
 
 	log "github.com/sirupsen/logrus"
 
@@ -111,24 +111,13 @@ func (e *EventProducer) watcher(done chan bool) error {
 
 				cacheDir := fmt.Sprintf("%s/%s", e.config.CacheDir, repo.Name)
 
-				err := CacheRepo(repo.URL, cacheDir, e.config.SSHKeyPath)
-				if err != nil {
-					log.Error(err)
-					continue
-				}
+				ci := continuous.NewCI(
+					repo.URL,
+					cacheDir,
+					e.config.SSHKeyPath,
+				)
 
-				r, err := git.PlainOpen(cacheDir)
-				if err != nil {
-					log.Error(err)
-				}
-
-				publicKey, err := SSHPublicKey(repo.URL, e.config.SSHKeyPath)
-				if err != nil {
-					log.Error(err)
-					continue
-				}
-
-				newHeads, newTags, err := FetchRemote(r, publicKey)
+				newHeads, newTags, err := ci.Fetch()
 				if err != nil {
 					log.Error(err)
 					continue
