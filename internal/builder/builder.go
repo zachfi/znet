@@ -6,9 +6,10 @@ import (
 
 	git "github.com/go-git/go-git/v5"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
+
 	"github.com/xaque208/znet/internal/events"
 	"github.com/xaque208/znet/internal/gitwatch"
-	"google.golang.org/grpc"
 )
 
 type Builder struct {
@@ -133,6 +134,9 @@ func (b *Builder) checkoutTagHandler(name string, payload events.Payload) error 
 	err = w.Checkout(&git.CheckoutOptions{
 		Hash: ref.Hash(),
 	})
+	if err != nil {
+		return err
+	}
 
 	err = b.buildForEvent(x)
 	if err != nil {
