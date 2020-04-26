@@ -167,6 +167,8 @@ func (b *Builder) loadRepoConfig(cacheDir string) (*RepoConfig, error) {
 }
 
 func (b *Builder) buildForEvent(x interface{}, cacheDir string) error {
+	log.Infof("building %s for %+v", cacheDir, x)
+
 	v, err := b.loadRepoConfig(cacheDir)
 	if err != nil {
 		return err
