@@ -2,20 +2,15 @@ package agent
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 	"os/exec"
-	"reflect"
 	"text/template"
 	"time"
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
-
-	pb "github.com/xaque208/znet/rpc"
 
 	"github.com/xaque208/znet/internal/events"
 	"github.com/xaque208/znet/internal/gitwatch"
@@ -238,44 +233,13 @@ func (a *Agent) executeForEvent(x interface{}) error {
 					ExitCode: cmd.ProcessState.ExitCode(),
 				}
 
-				err = a.Produce(ev)
+				err = events.ProduceEvent(a.conn, ev)
 				if err != nil {
 					log.Error(err)
 				}
 
 			}
 		}
-	}
-
-	return nil
-}
-
-// Produce implements the events.Producer interface.  Match the supported event
-// types to know which event to notice, and then send notice of the event to
-// the RPC server.
-func (a *Agent) Produce(ev interface{}) error {
-	// Create the RPC client
-	ec := pb.NewEventsClient(a.conn)
-	t := reflect.TypeOf(ev).String()
-
-	var req *pb.Event
-
-	switch t {
-	case "agent.ExecutionResult":
-		x := ev.(ExecutionResult)
-		req = events.MakeEvent(x)
-	default:
-		return fmt.Errorf("unhandled event type: %T", ev)
-	}
-
-	log.Tracef("agent producing RPC event %+v", req)
-	res, err := ec.NoticeEvent(context.Background(), req)
-	if err != nil {
-		return err
-	}
-
-	if res.Errors {
-		return errors.New(res.Message)
 	}
 
 	return nil
