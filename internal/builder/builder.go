@@ -4,17 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"os/exec"
 	"reflect"
-	"strings"
 	"sync"
-	"time"
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"gopkg.in/yaml.v2"
 
-	"github.com/xaque208/znet/internal/agent"
 	"github.com/xaque208/znet/internal/events"
 	"github.com/xaque208/znet/internal/gitwatch"
 	"github.com/xaque208/znet/pkg/continuous"
@@ -174,65 +170,34 @@ func (b *Builder) loadRepoConfig(cacheDir string) (*RepoConfig, error) {
 }
 
 func (b *Builder) buildForEvent(x interface{}, cacheDir string) error {
-	log.Infof("building %s for %+v", cacheDir, x)
 
-	v, err := b.loadRepoConfig(cacheDir)
+	repoConfig, err := b.loadRepoConfig(cacheDir)
 	if err != nil {
-		return err
+		return fmt.Errorf("error loading repo config: %s", err)
 	}
 
-	log.Warnf("repoConfig :%+v", v)
+	log.Debugf("building %s for %+v with config %+v", cacheDir, x, repoConfig)
 
 	t := reflect.TypeOf(x).String()
 
 	switch t {
 	case "gitwatch.NewTag":
-
-		for _, cmds := range v.OnTag {
-			parts := strings.SplitN(cmds, " ", 2)
-
-			commandName := parts[0]
-			var args []string
-
-			if len(parts) > 0 {
-				args = strings.Split(parts[1], " ")
-			}
-
-			cmd := exec.Command(commandName, args...)
-			cmd.Dir = cacheDir
-
-			startTime := time.Now()
-			output, err := cmd.CombinedOutput()
+		for _, cmdLine := range repoConfig.OnTag {
+			ev, err := continuous.Build(cmdLine, cacheDir)
 			if err != nil {
-				log.Errorf("command execution failed: %s", err)
-			}
-
-			duration := time.Since(startTime)
-
-			log.Infof("output: %+v", string(output))
-
-			now := time.Now()
-
-			ev := agent.ExecutionResult{
-				Time:     &now,
-				Command:  commandName,
-				Args:     args,
-				Dir:      cacheDir,
-				Output:   output,
-				ExitCode: cmd.ProcessState.ExitCode(),
-				Duration: duration,
+				log.Error(err)
+				continue
 			}
 
 			err = events.ProduceEvent(b.conn, ev)
 			if err != nil {
 				log.Error(err)
 			}
-
 		}
 
 	case "gitwatch.NewCommit":
 		branchInBranches := func() bool {
-			for _, branch := range v.Branches {
+			for _, branch := range repoConfig.Branches {
 				if branch == x.(gitwatch.NewCommit).Branch {
 					return true
 				}
@@ -242,46 +207,17 @@ func (b *Builder) buildForEvent(x interface{}, cacheDir string) error {
 		}
 
 		if branchInBranches() {
-			for _, cmds := range v.OnCommit {
-				parts := strings.SplitN(cmds, " ", 2)
-
-				commandName := parts[0]
-				var args []string
-
-				if len(parts) > 0 {
-					args = strings.Split(parts[1], " ")
-				}
-
-				cmd := exec.Command(commandName, args...)
-				cmd.Dir = cacheDir
-
-				startTime := time.Now()
-				output, err := cmd.CombinedOutput()
+			for _, cmdLine := range repoConfig.OnCommit {
+				ev, err := continuous.Build(cmdLine, cacheDir)
 				if err != nil {
-					log.Errorf("command execution failed: %s", err)
-				}
-
-				duration := time.Since(startTime)
-
-				log.Infof("output: %+v", string(output))
-
-				now := time.Now()
-
-				ev := agent.ExecutionResult{
-					Time:     &now,
-					Command:  commandName,
-					Args:     args,
-					Dir:      cacheDir,
-					Output:   output,
-					ExitCode: cmd.ProcessState.ExitCode(),
-					Duration: duration,
+					log.Error(err)
+					continue
 				}
 
 				err = events.ProduceEvent(b.conn, ev)
 				if err != nil {
 					log.Error(err)
 				}
-
 			}
 		}
 
