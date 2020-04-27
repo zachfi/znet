@@ -3,7 +3,7 @@ on_tag:
   - 'kitty make release'
 
 on_commit:
-  - 'kitty make build'
+  - 'kitty make build; sleep 15'
 
 branches: [ 'origin/master' ]
 
