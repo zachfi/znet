@@ -1,9 +1,9 @@
 ---
 on_tag:
-  - 'make release'
+  - 'kitty make release'
 
 on_commit:
-  - 'make build'
+  - 'kitty make build'
 
 branches: [ 'master' ]
 
