@@ -13,6 +13,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// CacheRepo is used to clone a repo using SSH publich key authentication.
 func CacheRepo(url string, cacheDir string, sshPublicKey string) error {
 	_, err := os.Stat(cacheDir)
 	if err != nil {
@@ -41,6 +42,7 @@ func CacheRepo(url string, cacheDir string, sshPublicKey string) error {
 	return nil
 }
 
+// SSHPublicKey is used to load an SSH public key for use in authenticating to a git server.
 func SSHPublicKey(url string, SSHKeyPath string) (*ssh.PublicKeys, error) {
 
 	// For URLs that don't start with http and when a SSHKeyPath is set, we
@@ -59,12 +61,16 @@ func SSHPublicKey(url string, SSHKeyPath string) (*ssh.PublicKeys, error) {
 	return nil, nil
 }
 
+// FetchRemote performs a fetch of a given repository, returning a the new branch heads and new tags.
 func FetchRemote(repo *git.Repository, sshPublicKey *ssh.PublicKeys) (map[string]string, []string, error) {
 	newHeads := make(map[string]string)
 	newTags := make([]string, 0)
 	var err error
 
-	beforeHeads, beforeTags := RepoRefs(repo)
+	beforeHeads, beforeTags, err := RepoRefs(repo)
+	if err != nil {
+		return newHeads, newTags, err
+	}
 
 	fetchOpts := &git.FetchOptions{
 		RemoteName: "origin",
@@ -94,7 +100,10 @@ func FetchRemote(repo *git.Repository, sshPublicKey *ssh.PublicKeys) (map[string
 		}
 	}
 
-	afterHeads, afterTags := RepoRefs(repo)
+	afterHeads, afterTags, err := RepoRefs(repo)
+	if err != nil {
+		return newHeads, newTags, err
+	}
 
 	nameMatch := func(refs map[string]string, shortName string) bool {
 		for k := range refs {
@@ -142,13 +151,20 @@ func FetchRemote(repo *git.Repository, sshPublicKey *ssh.PublicKeys) (map[string
 	return newHeads, newTags, err
 }
 
-func RepoRefs(repo *git.Repository) (map[string]string, map[string]string) {
+// RepoRefs is used to retrieve the references of a working repo.  This is
+// useful to check the state before and after a fetch, to determine the
+// difference.
+func RepoRefs(repo *git.Repository) (map[string]string, map[string]string, error) {
 	heads := make(map[string]string)
 	tags := make(map[string]string)
 
+	if repo == nil {
+		return heads, tags, fmt.Errorf("unable to operate on nil repository")
+	}
+
 	refs, err := repo.References()
 	if err != nil {
-		log.Error(err)
+		return heads, tags, err
 	}
 
 	err = refs.ForEach(func(ref *plumbing.Reference) error {
@@ -171,8 +187,8 @@ func RepoRefs(repo *git.Repository) (map[string]string, map[string]string) {
 	})
 
 	if err != nil {
-		log.Error(err)
+		return heads, tags, err
 	}
 
-	return heads, tags
+	return heads, tags, nil
 }
