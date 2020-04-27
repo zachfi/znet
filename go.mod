@@ -16,6 +16,7 @@ require (
 	github.com/imdario/mergo v0.3.9
 	github.com/jarcoal/httpmock v1.0.5 // indirect
 	github.com/jedib0t/go-pretty v4.3.0+incompatible
+	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
