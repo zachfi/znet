@@ -9,8 +9,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/xaque208/rftoy/rftoy"
 
-	"github.com/xaque208/znet/pkg/events"
 	"github.com/xaque208/znet/internal/timer"
+	"github.com/xaque208/znet/pkg/events"
 )
 
 // Lights holds the information necessary to communicate with lighting

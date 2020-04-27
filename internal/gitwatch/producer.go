@@ -6,8 +6,8 @@ import (
 
 	"google.golang.org/grpc"
 
-	"github.com/xaque208/znet/pkg/events"
 	"github.com/xaque208/znet/pkg/continuous"
+	"github.com/xaque208/znet/pkg/events"
 
 	log "github.com/sirupsen/logrus"
 )

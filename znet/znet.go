@@ -17,7 +17,7 @@ import (
 	"github.com/tcnksm/go-input"
 
 	"github.com/xaque208/znet/internal/agent"
-	"github.com/xaque208/znet/internal/events"
+	"github.com/xaque208/znet/pkg/events"
 	"github.com/xaque208/znet/internal/lights"
 )
 

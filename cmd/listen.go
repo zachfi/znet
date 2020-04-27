@@ -24,7 +24,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/xaque208/znet/internal/events"
+	"github.com/xaque208/znet/pkg/events"
 	"github.com/xaque208/znet/znet"
 )
 

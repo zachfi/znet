@@ -15,8 +15,8 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/xaque208/znet/internal/builder"
-	"github.com/xaque208/znet/internal/events"
 	"github.com/xaque208/znet/pkg/eventmachine"
+	"github.com/xaque208/znet/pkg/events"
 	pb "github.com/xaque208/znet/rpc"
 	"github.com/xaque208/znet/znet"
 )

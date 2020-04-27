@@ -13,11 +13,11 @@ import (
 
 	"github.com/xaque208/znet/internal/agent"
 	"github.com/xaque208/znet/internal/astro"
-	"github.com/xaque208/znet/internal/events"
 	"github.com/xaque208/znet/internal/gitwatch"
 	"github.com/xaque208/znet/internal/timer"
 	"github.com/xaque208/znet/pkg/continuous"
 	"github.com/xaque208/znet/pkg/eventmachine"
+	"github.com/xaque208/znet/pkg/events"
 	pb "github.com/xaque208/znet/rpc"
 )
 
