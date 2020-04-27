@@ -12,7 +12,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
-	"github.com/xaque208/znet/internal/events"
+	"github.com/xaque208/znet/pkg/events"
 	"github.com/xaque208/znet/internal/gitwatch"
 )
 

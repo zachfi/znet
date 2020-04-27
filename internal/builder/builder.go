@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc"
 	"gopkg.in/yaml.v2"
 
-	"github.com/xaque208/znet/internal/events"
+	"github.com/xaque208/znet/pkg/events"
 	"github.com/xaque208/znet/internal/gitwatch"
 	"github.com/xaque208/znet/pkg/continuous"
 )

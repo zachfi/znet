@@ -3,7 +3,7 @@ package eventmachine
 import (
 	log "github.com/sirupsen/logrus"
 
-	"github.com/xaque208/znet/internal/events"
+	"github.com/xaque208/znet/pkg/events"
 )
 
 // EventMachine is a system to facilitate receiving events and passing them along to a number of subscribers.
