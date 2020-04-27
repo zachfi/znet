@@ -16,6 +16,7 @@ import (
 	"github.com/xaque208/znet/internal/events"
 	"github.com/xaque208/znet/internal/gitwatch"
 	"github.com/xaque208/znet/internal/timer"
+	"github.com/xaque208/znet/pkg/continuous"
 	"github.com/xaque208/znet/pkg/eventmachine"
 	pb "github.com/xaque208/znet/rpc"
 )
@@ -42,12 +43,18 @@ var (
 		Name: "znet_execution_duration",
 		Help: "Stats on the received ExecutionResult RPC events",
 	}, []string{"command"})
+
+	eventTotal = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "znet_event_total",
+		Help: "The total number of events that have been seen since start",
+	}, []string{})
 )
 
 func init() {
 	prometheus.MustRegister(
 		executionExitStatus,
 		executionDuration,
+		eventTotal,
 	)
 }
 
@@ -108,10 +115,11 @@ func (s *Server) Start(z *Znet) error {
 		pb.RegisterLightsServer(s.grpcServer, rpcLightServer)
 		pb.RegisterEventsServer(s.grpcServer, s.rpcEventServer)
 
-		s.rpcEventServer.RegisterEvents(timer.EventNames)
-		s.rpcEventServer.RegisterEvents(astro.EventNames)
-		s.rpcEventServer.RegisterEvents(gitwatch.EventNames)
 		s.rpcEventServer.RegisterEvents(agent.EventNames)
+		s.rpcEventServer.RegisterEvents(astro.EventNames)
+		s.rpcEventServer.RegisterEvents(continuous.EventNames)
+		s.rpcEventServer.RegisterEvents(gitwatch.EventNames)
+		s.rpcEventServer.RegisterEvents(timer.EventNames)
 
 		go func() {
 			lis, err := net.Listen("tcp", s.rpcConfig.ListenAddress)
