@@ -4,12 +4,15 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"strings"
+	"time"
 
 	git "github.com/go-git/go-git/v5"
 	gitConfig "github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
+	"github.com/kballard/go-shellquote"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -191,4 +194,49 @@ func RepoRefs(repo *git.Repository) (map[string]string, map[string]string, error
 	}
 
 	return heads, tags, nil
+}
+
+func Build(commandLine string, cacheDir string) (BuildResult, error) {
+	var ev BuildResult
+	var args []string
+	var err error
+
+	parts := strings.SplitN(commandLine, " ", 2)
+
+	commandName := parts[0]
+
+	if len(parts) > 0 {
+		args, err = shellquote.Split(parts[1])
+		if err != nil {
+			return ev, err
+		}
+	}
+
+	cmd := exec.Command(commandName, args...)
+	cmd.Dir = cacheDir
+
+	log.Debugf("executing command: %+v", *cmd)
+	startTime := time.Now()
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Errorf("command execution failed: %s", err)
+	}
+
+	duration := time.Since(startTime)
+
+	log.Debugf("command output: %+v", string(output))
+
+	now := time.Now()
+
+	ev = BuildResult{
+		Time:     &now,
+		Command:  commandName,
+		Args:     args,
+		Dir:      cacheDir,
+		Output:   output,
+		ExitCode: cmd.ProcessState.ExitCode(),
+		Duration: duration,
+	}
+
+	return ev, nil
 }
