@@ -9,9 +9,10 @@ import (
 
 	ldap "github.com/go-ldap/ldap"
 	log "github.com/sirupsen/logrus"
-	"github.com/xaque208/znet/pkg/netconfig"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
+
+	"github.com/xaque208/znet/pkg/netconfig"
 )
 
 // NetworkHost is a device that connects to the network.

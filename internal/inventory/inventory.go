@@ -31,6 +31,10 @@ func NewInventory(config LDAPConfig) *Inventory {
 	return inv
 }
 
+func (i *Inventory) Close() {
+	i.ldapClient.Close()
+}
+
 // NetworkHosts retrieves the NetworkHost objects from LDAP given an LDPA connection and baseDN.
 func (i *Inventory) NetworkHosts() ([]NetworkHost, error) {
 

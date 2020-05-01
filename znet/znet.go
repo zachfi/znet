@@ -273,11 +273,8 @@ func (z *Znet) RenderHostTemplateFile(host inventory.NetworkHost, path string) s
 }
 
 // Shutdown the znet connections
-func (z *Znet) Stop() error {
-	var err error
-	// z.Inventory.ldapClient.Close()
-
-	return err
+func (z *Znet) Stop() {
+	z.Inventory.Close()
 }
 
 // Subscriptions is yet to be used, but conforms to the interface for

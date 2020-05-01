@@ -107,8 +107,5 @@ func listen(cmd *cobra.Command, args []string) {
 		log.Error(err)
 	}
 
-	err = z.Stop()
-	if err != nil {
-		log.Error(err)
-	}
+	z.Stop()
 }
