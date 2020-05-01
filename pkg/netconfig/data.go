@@ -1,4 +1,4 @@
-package znet
+package netconfig
 
 // Data is the structure of the data directory.
 type Data struct {

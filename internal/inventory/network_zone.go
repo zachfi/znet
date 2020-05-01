@@ -1,4 +1,4 @@
-package znet
+package inventory
 
 import (
 	ldap "github.com/go-ldap/ldap"
@@ -19,7 +19,7 @@ var defaultZoneAttributes = []string{
 }
 
 // GetNetworkZones retrieves the NetworkHost objects from LDAP.
-func (z *Znet) GetNetworkZones(l *ldap.Conn, baseDN string) []NetworkZone {
+func (i *Inventory) GetNetworkZones(l *ldap.Conn, baseDN string) []NetworkZone {
 	zones := []NetworkZone{}
 
 	searchRequest := ldap.NewSearchRequest(

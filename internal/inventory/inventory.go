@@ -1,4 +1,4 @@
-package znet
+package inventory
 
 import (
 	"fmt"
@@ -11,6 +11,24 @@ import (
 type Inventory struct {
 	config     LDAPConfig
 	ldapClient *ldap.Conn
+}
+
+func NewInventory(config LDAPConfig) *Inventory {
+	var inv *Inventory
+	var ldapClient *ldap.Conn
+	var err error
+
+	ldapClient, err = NewLDAPClient(config)
+	if err != nil {
+		log.Errorf("failed LDAP connection: %s", err)
+	}
+
+	inv = &Inventory{
+		config:     config,
+		ldapClient: ldapClient,
+	}
+
+	return inv
 }
 
 // NetworkHosts retrieves the NetworkHost objects from LDAP given an LDPA connection and baseDN.

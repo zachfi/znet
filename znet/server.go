@@ -24,8 +24,9 @@ import (
 // Server is a znet Server.
 type Server struct {
 	eventMachine *eventmachine.EventMachine
-	httpConfig   HTTPConfig
-	rpcConfig    RPCConfig
+
+	httpConfig HTTPConfig
+	rpcConfig  RPCConfig
 
 	httpServer *http.Server
 	grpcServer *grpc.Server

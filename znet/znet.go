@@ -9,16 +9,16 @@ import (
 	"path/filepath"
 
 	"github.com/alecthomas/template"
-	ldap "github.com/go-ldap/ldap"
 	"github.com/imdario/mergo"
 	"github.com/prometheus/client_golang/prometheus"
 	junos "github.com/scottdware/go-junos"
 	log "github.com/sirupsen/logrus"
-	"github.com/tcnksm/go-input"
 
 	"github.com/xaque208/znet/internal/agent"
+	"github.com/xaque208/znet/internal/inventory"
 	"github.com/xaque208/znet/internal/lights"
 	"github.com/xaque208/znet/pkg/events"
+	"github.com/xaque208/znet/pkg/netconfig"
 )
 
 // Znet is the core object for this project.  It keeps track of the data,
@@ -26,25 +26,17 @@ import (
 type Znet struct {
 	ConfigDir   string
 	Config      Config
-	Data        Data
+	Data        netconfig.Data
 	Environment map[string]string
-	// listener is the HTTP listener.
-	Inventory *Inventory
-	Lights    *lights.Lights
+	Inventory   *inventory.Inventory
+	Lights      *lights.Lights
 }
 
 // NewZnet creates and returns a new Znet object.
 func NewZnet(file string) (*Znet, error) {
-
 	config, err := loadConfig(file)
 	if err != nil {
 		return &Znet{}, fmt.Errorf("failed to load config file %s: %s", file, err)
-	}
-
-	var ldapClient *ldap.Conn
-	ldapClient, err = NewLDAPClient(config.LDAP)
-	if err != nil {
-		log.Errorf("failed LDAP connection: %s", err)
 	}
 
 	e, err := GetEnvironmentConfig(config.Environments, "common")
@@ -57,17 +49,14 @@ func NewZnet(file string) (*Znet, error) {
 		log.Errorf("Failed to load environment: %s", err)
 	}
 
-	inventory := &Inventory{
-		config:     config.LDAP,
-		ldapClient: ldapClient,
-	}
+	inv := inventory.NewInventory(config.LDAP)
 
 	lights := lights.NewLights(config.Lights)
 
 	z := &Znet{
 		Config:      config,
 		Environment: environment,
-		Inventory:   inventory,
+		Inventory:   inv,
 		Lights:      lights,
 	}
 
@@ -90,7 +79,7 @@ func loadConfig(file string) (Config, error) {
 // LoadData receives a configuration directory from which to load the data for Znet.
 func (z *Znet) LoadData(configDir string) {
 	log.Debugf("loading data from: %s", configDir)
-	dataConfig := Data{}
+	dataConfig := netconfig.Data{}
 	err := loadYamlFile(fmt.Sprintf("%s/%s", configDir, "data.yaml"), &dataConfig)
 	if err != nil {
 		log.Errorf("failed to load yaml file %s: %s", configDir, err)
@@ -100,7 +89,7 @@ func (z *Znet) LoadData(configDir string) {
 }
 
 // ConfigureNetworkHost renders the templates using associated data for a network host.  The hosts about which to load the templates, are retrieved from LDAP.
-func (z *Znet) ConfigureNetworkHost(host *NetworkHost, commit bool, auth *junos.AuthMethod, show bool) error {
+func (z *Znet) ConfigureNetworkHost(host *inventory.NetworkHost, commit bool, auth *junos.AuthMethod, show bool) error {
 
 	// log.Debugf("Using auth: %+v", auth)
 	session, err := junos.NewSession(host.HostName, auth)
@@ -162,58 +151,14 @@ func (z *Znet) ConfigureNetworkHost(host *NetworkHost, commit bool, auth *junos.
 			if err != nil {
 				return err
 			}
-
 		}
 	}
 
 	return nil
 }
 
-// AdoptUnknownHost converts an UnknownHost into a known host in LDAP.
-func (z *Znet) AdoptUnknownHost(u UnknownHost, baseDN string) {
-	log.Infof("Adopting host: %+v", u)
-
-	ui := &input.UI{
-		Writer: os.Stdout,
-		Reader: os.Stdin,
-	}
-
-	query := "Which CN to assign?"
-	cn, err := ui.Ask(query, &input.Options{
-		Default:  "newhost",
-		Required: true,
-		Loop:     true,
-	})
-	if err != nil {
-		log.Error(err)
-	}
-
-	dn := fmt.Sprintf("cn=%s,%s", cn, baseDN)
-
-	a := ldap.NewAddRequest(dn, []ldap.Control{})
-	a.Attribute("objectClass", []string{"netHost", "top"})
-	a.Attribute("cn", []string{cn})
-	// a.Attribute("v4Address", []string{u.IP})
-	a.Attribute("macAddress", []string{u.MACAddress})
-
-	err = z.Inventory.ldapClient.Add(a)
-	if err != nil {
-		log.Error(err)
-	}
-
-	delDN := fmt.Sprintf("cn=%s,cn=unknown,ou=network,dc=znet", u.Name)
-
-	d := ldap.NewDelRequest(delDN, []ldap.Control{})
-
-	log.Infof("deleting object: %s", d)
-	err = z.Inventory.ldapClient.Del(d)
-	if err != nil {
-		log.Error(err)
-	}
-}
-
 // TemplateStringsForDevice renders a list of template strings given a host.
-func (z *Znet) TemplateStringsForDevice(host NetworkHost, templates []string) []string {
+func (z *Znet) TemplateStringsForDevice(host inventory.NetworkHost, templates []string) []string {
 	var strings []string
 
 	for _, t := range templates {
@@ -236,12 +181,12 @@ func (z *Znet) TemplateStringsForDevice(host NetworkHost, templates []string) []
 }
 
 // DataForDevice returns HostData for a given NetworkHost.
-func (z *Znet) DataForDevice(host NetworkHost) HostData {
-	hostData := HostData{}
+func (z *Znet) DataForDevice(host inventory.NetworkHost) netconfig.HostData {
+	hostData := netconfig.HostData{}
 
 	for _, f := range z.HierarchyForDevice(host) {
 
-		fileHostData := HostData{}
+		fileHostData := netconfig.HostData{}
 		err := loadYamlFile(f, &fileHostData)
 		if err != nil {
 			log.Error(err)
@@ -250,14 +195,13 @@ func (z *Znet) DataForDevice(host NetworkHost) HostData {
 		if err := mergo.Merge(&hostData, fileHostData, mergo.WithOverride); err != nil {
 			log.Error(err)
 		}
-
 	}
 
 	return hostData
 }
 
 // HierarchyForDevice returns a list of file paths to consult for the data hierarchy.
-func (z *Znet) HierarchyForDevice(host NetworkHost) []string {
+func (z *Znet) HierarchyForDevice(host inventory.NetworkHost) []string {
 	var files []string
 
 	paths := z.TemplateStringsForDevice(host, z.Data.Hierarchy)
@@ -270,14 +214,13 @@ func (z *Znet) HierarchyForDevice(host NetworkHost) []string {
 		} else if os.IsNotExist(err) {
 			log.Warnf("Data file %s does not exist", templateAbs)
 		}
-
 	}
 
 	return files
 }
 
 // TemplatesForDevice returns a list of template paths for a given host.
-func (z *Znet) TemplatesForDevice(host NetworkHost) []string {
+func (z *Znet) TemplatesForDevice(host inventory.NetworkHost) []string {
 	var files []string
 
 	paths := z.TemplateStringsForDevice(host, z.Data.TemplatePaths)
@@ -302,7 +245,7 @@ func (z *Znet) TemplatesForDevice(host NetworkHost) []string {
 }
 
 // RenderHostTemplateFile renders a template file using a Host object.
-func (z *Znet) RenderHostTemplateFile(host NetworkHost, path string) string {
+func (z *Znet) RenderHostTemplateFile(host inventory.NetworkHost, path string) string {
 	// log.Debugf("Rendering host template file %s for host %s", path, host.Name)
 
 	b, err := ioutil.ReadFile(path)
@@ -332,7 +275,7 @@ func (z *Znet) RenderHostTemplateFile(host NetworkHost, path string) string {
 // Shutdown the znet connections
 func (z *Znet) Stop() error {
 	var err error
-	z.Inventory.ldapClient.Close()
+	// z.Inventory.ldapClient.Close()
 
 	return err
 }

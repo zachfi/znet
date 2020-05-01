@@ -1,4 +1,4 @@
-package znet
+package inventory
 
 import (
 	"fmt"
@@ -9,6 +9,7 @@ import (
 
 	ldap "github.com/go-ldap/ldap"
 	log "github.com/sirupsen/logrus"
+	"github.com/xaque208/znet/pkg/netconfig"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
 )
@@ -22,7 +23,7 @@ type NetworkHost struct {
 	Group       string
 	Role        string
 	DeviceType  string
-	Data        HostData
+	Data        netconfig.HostData
 	Watch       bool
 	Description string
 	MACAddress  []string
@@ -44,7 +45,7 @@ var defaultHostAttributes = []string{
 }
 
 // RecordUnknownHost stores an IP and MAC with a name to LDAP.
-func (z *Znet) RecordUnknownHost(baseDN string, address string, mac string) error {
+func (i *Inventory) RecordUnknownHost(baseDN string, address string, mac string) error {
 
 	cn := strings.Replace(mac, ":", "", -1)
 
@@ -58,7 +59,7 @@ func (z *Znet) RecordUnknownHost(baseDN string, address string, mac string) erro
 
 	log.Debugf("Searching LDAP with query: %s", searchRequest.Filter)
 
-	sr, err := z.Inventory.ldapClient.Search(searchRequest)
+	sr, err := i.ldapClient.Search(searchRequest)
 	if err != nil {
 		return err
 	}
@@ -77,7 +78,7 @@ func (z *Znet) RecordUnknownHost(baseDN string, address string, mac string) erro
 	a.Attribute("cn", []string{cn})
 	a.Attribute("v4Address", []string{address})
 	a.Attribute("macAddress", []string{mac})
-	err = z.Inventory.ldapClient.Add(a)
+	err = i.ldapClient.Add(a)
 	if err != nil {
 		log.Errorf("%+v", a)
 		return err

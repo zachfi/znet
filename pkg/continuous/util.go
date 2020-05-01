@@ -205,7 +205,7 @@ func Build(commandLine string, cacheDir string) (BuildResult, error) {
 
 	commandName := parts[0]
 
-	if len(parts) > 0 {
+	if len(parts) > 1 {
 		args, err = shellquote.Split(parts[1])
 		if err != nil {
 			return ev, err

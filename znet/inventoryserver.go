@@ -3,12 +3,13 @@ package znet
 import (
 	"context"
 
+	"github.com/xaque208/znet/internal/inventory"
 	pb "github.com/xaque208/znet/rpc"
 )
 
 // RPC Listener
 type inventoryServer struct {
-	inventory *Inventory
+	inventory *inventory.Inventory
 }
 
 func (r *inventoryServer) Search(ctx context.Context, request *pb.SearchRequest) (*pb.SearchResponse, error) {

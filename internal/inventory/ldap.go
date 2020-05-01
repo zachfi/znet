@@ -1,4 +1,4 @@
-package znet
+package inventory
 
 import (
 	"crypto/tls"

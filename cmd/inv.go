@@ -25,6 +25,7 @@ import (
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 
+	"github.com/xaque208/znet/internal/inventory"
 	pb "github.com/xaque208/znet/rpc"
 	"github.com/xaque208/znet/znet"
 )
@@ -121,12 +122,12 @@ func runInv(cmd *cobra.Command, args []string) {
 	if adopt != "" {
 		for _, h := range res.UnknownHosts {
 			if strings.EqualFold(h.Mac, adopt) {
-				x := znet.UnknownHost{
+				x := inventory.UnknownHost{
 					Name:       h.Name,
 					MACAddress: h.Mac,
 					IP:         h.Ip,
 				}
-				z.AdoptUnknownHost(x, "cn=new,ou=network,dc=znet")
+				z.Inventory.AdoptUnknownHost(x, "cn=new,ou=network,dc=znet")
 			}
 		}
 	}
