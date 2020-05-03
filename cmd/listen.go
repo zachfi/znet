@@ -74,6 +74,9 @@ func listen(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 
+	viper.SetDefault("http.listen", listenAddr)
+	viper.SetDefault("rpc.listen", rpcListenAddr)
+
 	z.Config.RPC.ListenAddress = viper.GetString("rpc.listen")
 	z.Config.HTTP.ListenAddress = viper.GetString("http.listen")
 
