@@ -122,6 +122,7 @@ func runAgent(cmd *cobra.Command, args []string) {
 			}
 
 			machine.EventChannel <- evE
+			stream.Context().Done()
 		}
 	}()
 
