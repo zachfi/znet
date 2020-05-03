@@ -176,7 +176,7 @@ func (a *Agent) executeForEvent(x interface{}) error {
 			if xx != "" {
 				var args []string
 
-				// Render the args as template strings
+				// Render the args as template strings, passing the current x interface.
 				for _, v := range execution.Args {
 					tmpl, err := template.New("env").Parse(v)
 					if err != nil {
