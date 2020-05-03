@@ -35,6 +35,11 @@ func New(consumers []events.Consumer) (*EventMachine, error) {
 // Stop closes the evnet channel.
 func (m *EventMachine) Stop() error {
 	log.Debugf("closing m.EventChannel %+v", m.EventChannel)
+
+	for _, ch := range m.dieChans {
+		ch <- true
+	}
+
 	close(m.EventChannel)
 	return nil
 }
@@ -47,18 +52,23 @@ func (m *EventMachine) initEventConsumer() chan bool {
 	go func(ch chan events.Event, dieChan chan bool) {
 		log.Debugf("total %d m.EventConsumers", len(m.EventConsumers))
 
-		for e := range ch {
-			if handlers, ok := m.EventConsumers[e.Name]; ok {
-				log.Tracef("EventMachine heard event %s: %s", e.Name, string(e.Payload))
-				log.Debugf("executing %d handlers for event %s", len(handlers), e.Name)
-				for _, h := range handlers {
-					err := h(e.Name, e.Payload)
-					if err != nil {
-						log.Error(err)
+		for {
+			select {
+			case <-dieChan:
+				return
+			case e := <-ch:
+				if handlers, ok := m.EventConsumers[e.Name]; ok {
+					log.Tracef("EventMachine heard event %s: %s", e.Name, string(e.Payload))
+					log.Debugf("executing %d handlers for event %s", len(handlers), e.Name)
+					for _, h := range handlers {
+						err := h(e.Name, e.Payload)
+						if err != nil {
+							log.Error(err)
+						}
 					}
+				} else {
+					log.Warnf("received event with no handlers: %+v", e.Name)
 				}
-			} else {
-				log.Warnf("received event with no handlers: %+v", e.Name)
 			}
 		}
 	}(m.EventChannel, dieChan)
