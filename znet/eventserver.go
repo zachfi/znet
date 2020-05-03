@@ -22,11 +22,23 @@ type eventServer struct {
 	quitChans   []chan bool
 }
 
+func (e *eventServer) Start() error {
+	var err error
+	log.Debug("eventServer starting")
+
+	ch := make(chan bool)
+
+	e.mux.Lock()
+	e.quitChans = append(e.quitChans, ch)
+	e.mux.Unlock()
+
+	return err
+}
+
 // Shutdown sents t
 func (e *eventServer) Stop() error {
 	var err error
-
-	log.Info("eventServer shutting down")
+	log.Debug("eventServer shutting down")
 
 	for _, x := range e.quitChans {
 		x <- true
@@ -34,6 +46,10 @@ func (e *eventServer) Stop() error {
 	}
 
 	return err
+}
+
+func (e *eventServer) Report() (int, int) {
+	return len(e.remoteChans), len(e.eventNames)
 }
 
 func (e *eventServer) ValidEventName(name string) bool {
@@ -51,7 +67,7 @@ func (e *eventServer) RegisterEvents(nameSet []string) {
 	log.Debugf("eventServer registering %d events: %+v", len(nameSet), nameSet)
 
 	if len(e.eventNames) == 0 {
-		e.eventNames = make([]string, 1)
+		e.eventNames = make([]string, 0)
 	}
 
 	e.eventNames = append(e.eventNames, nameSet...)
@@ -96,10 +112,12 @@ func (e *eventServer) SubscribeEvents(subs *pb.EventSub, stream pb.Events_Subscr
 	for {
 		select {
 		case <-ctx.Done():
-			return fmt.Errorf("done, bitch")
+			return fmt.Errorf("done")
 		case ev := <-ch:
-			match := func() bool {
 
+			eventTotal.WithLabelValues(ev.Name).Inc()
+
+			match := func() bool {
 				// Check for direct match first.
 				for _, n := range subs.Name {
 					if n == ev.Name {

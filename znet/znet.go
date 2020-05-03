@@ -272,7 +272,7 @@ func (z *Znet) RenderHostTemplateFile(host inventory.NetworkHost, path string) s
 	return buf.String()
 }
 
-// Shutdown the znet connections
+// Stop the znet connections
 func (z *Znet) Stop() {
 	z.Inventory.Close()
 }
@@ -288,7 +288,6 @@ func (z *Znet) Subscriptions() map[string][]events.Handler {
 }
 
 func (z *Znet) executionResultHandler(name string, payload events.Payload) error {
-
 	var x agent.ExecutionResult
 
 	err := json.Unmarshal(payload, &x)

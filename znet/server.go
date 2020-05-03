@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -48,14 +49,43 @@ var (
 	eventTotal = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "znet_event_total",
 		Help: "The total number of events that have been seen since start",
+	}, []string{"event_name"})
+
+	eventMachineConsumers = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "znet_event_machine_consumers",
+		Help: "The current number of event consumers",
 	}, []string{})
+
+	eventMachineHandlers = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "znet_event_machine_handlers",
+		Help: "The current number of event handlers per consumer",
+	}, []string{"event_name"})
+
+	rpcEventServerSubscribers = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "znet_rpc_eventserver_subscriber_count",
+		Help: "The current number of rpc subscribers",
+	}, []string{})
+
+	rpcEventServerEventCount = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "znet_rpc_eventserver_event_name_count",
+		Help: "The current number of rpc events that are subscribed",
+	}, []string{})
+
+	// ciJobsRunning = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+	// 	Name: "znet_ci_jobs_running",
+	// 	Help: "Stats on running CI jobs",
+	// }, []string{})
 )
 
 func init() {
 	prometheus.MustRegister(
-		executionExitStatus,
-		executionDuration,
+		eventMachineConsumers,
+		eventMachineHandlers,
 		eventTotal,
+		executionDuration,
+		executionExitStatus,
+		rpcEventServerEventCount,
+		rpcEventServerSubscribers,
 	)
 }
 
@@ -134,6 +164,29 @@ func (s *Server) Start(z *Znet) error {
 			}
 		}()
 	}
+
+	go func() {
+		t := time.NewTicker(10 * time.Second)
+
+		for {
+			select {
+			case <-t.C:
+
+				// export the eventMachine data
+				eventMachineConsumers.WithLabelValues().Set(float64(len(s.eventMachine.EventConsumers)))
+
+				for name, handlers := range s.eventMachine.EventConsumers {
+					eventMachineHandlers.WithLabelValues(name).Set(float64(len(handlers)))
+				}
+
+				// export the event RPC server data
+				subscriberCount, eventCount := s.rpcEventServer.Report()
+
+				rpcEventServerSubscribers.WithLabelValues().Set(float64(subscriberCount))
+				rpcEventServerEventCount.WithLabelValues().Set(float64(eventCount))
+			}
+		}
+	}()
 
 	return nil
 }
