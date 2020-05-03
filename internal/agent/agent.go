@@ -107,16 +107,25 @@ func (a *Agent) passFilter(filter Filter, x interface{}) bool {
 	var xURL string
 	var xBranch string
 
-	filterHasName := func() bool {
+	passName := func() bool {
+		if len(filter.Names) == 0 {
+			return true
+		}
+
 		for _, name := range filter.Names {
 			if name == xName {
 				return true
 			}
 		}
+
 		return false
 	}
 
-	filterHasURL := func() bool {
+	passURL := func() bool {
+		if len(filter.URLs) == 0 {
+			return true
+		}
+
 		for _, url := range filter.URLs {
 			if url == xURL {
 				return true
@@ -125,7 +134,11 @@ func (a *Agent) passFilter(filter Filter, x interface{}) bool {
 		return false
 	}
 
-	filterHasBranch := func() bool {
+	passBranch := func() bool {
+		if len(filter.Branches) == 0 {
+			return true
+		}
+
 		for _, branch := range filter.Branches {
 			if branch == xBranch {
 				return true
@@ -134,25 +147,7 @@ func (a *Agent) passFilter(filter Filter, x interface{}) bool {
 		return false
 	}
 
-	if len(filter.Names) > 0 {
-		if !filterHasName() {
-			return false
-		}
-	}
-
-	if len(filter.URLs) > 0 {
-		if !filterHasURL() {
-			return false
-		}
-	}
-
-	if len(filter.Branches) > 0 {
-		if !filterHasBranch() {
-			return false
-		}
-	}
-
-	return true
+	return passName() && passURL() && passBranch()
 }
 
 func (a *Agent) executeForEvent(x interface{}) error {
