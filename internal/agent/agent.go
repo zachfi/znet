@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"reflect"
 	"text/template"
 	"time"
 
@@ -106,6 +107,18 @@ func (a *Agent) passFilter(filter Filter, x interface{}) bool {
 	var xName string
 	var xURL string
 	var xBranch string
+
+	t := reflect.TypeOf(x).String()
+
+	switch t {
+	case "gitwatch.NewTag":
+		xName = x.(gitwatch.NewTag).Name
+		xURL = x.(gitwatch.NewTag).URL
+	case "gitwatch.NewCommit":
+		xName = x.(gitwatch.NewCommit).Name
+		xURL = x.(gitwatch.NewCommit).URL
+		xBranch = x.(gitwatch.NewCommit).Branch
+	}
 
 	passName := func() bool {
 		if len(filter.Names) == 0 {
