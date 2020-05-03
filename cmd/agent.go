@@ -79,8 +79,6 @@ func runAgent(cmd *cobra.Command, args []string) {
 
 	client := pb.NewEventsClient(conn)
 
-	ctx, cancel := context.WithCancel(context.Background())
-
 	eventSub := &pb.EventSub{
 		Name: ag.EventNames(),
 	}
@@ -88,41 +86,48 @@ func runAgent(cmd *cobra.Command, args []string) {
 	// Run the receiver forever.
 	go func() {
 		for {
+			ctx, cancel := context.WithCancel(context.Background())
 			stream, receiverErr := client.SubscribeEvents(ctx, eventSub)
+
 			if receiverErr != nil {
+				cancel()
 				if receiverErr.Error() == codes.Canceled.String() {
 					return
 				}
 
 				log.Errorf("calling %+v.SubscribeEvents(_) = _, %+v", client, receiverErr)
-
-				time.Sleep(10 * time.Second)
+				time.Sleep(5 * time.Second)
 				continue
 			}
 
-			var ev *pb.Event
+			for {
+				var ev *pb.Event
 
-			ev, err = stream.Recv()
-			if status.Code(err) != codes.OK {
-				log.Errorf("stream.Recv() = %v, %v; want _, status.Code(err)=%v", ev, err, codes.OK)
-				continue
+				ev, err = stream.Recv()
+				if status.Code(err) != codes.OK {
+					cancel()
+					log.Errorf("stream.Recv() = %v, %v; want _, status.Code(err)=%v", ev, err, codes.OK)
+					break
+				}
+
+				if err != nil {
+					cancel()
+					log.Errorf("%v.SubscribeEvents(_) = _, %v", client, err)
+					time.Sleep(10 * time.Second)
+					break
+				}
+
+				log.Tracef("received event: %+v", ev)
+
+				evE := events.Event{
+					Name:    ev.Name,
+					Payload: ev.Payload,
+				}
+
+				machine.EventChannel <- evE
 			}
 
-			if err != nil {
-				log.Errorf("%v.SubscribeEvents(_) = _, %v", client, err)
-				time.Sleep(10 * time.Second)
-				continue
-			}
-
-			log.Tracef("received event: %+v", ev)
-
-			evE := events.Event{
-				Name:    ev.Name,
-				Payload: ev.Payload,
-			}
-
-			machine.EventChannel <- evE
-			stream.Context().Done()
+			cancel()
 		}
 	}()
 
@@ -139,8 +144,6 @@ func runAgent(cmd *cobra.Command, args []string) {
 	}()
 
 	<-done
-
-	cancel()
 
 	log.Debug("closing RPC connection")
 	err = conn.Close()
