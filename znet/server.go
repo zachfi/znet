@@ -168,23 +168,19 @@ func (s *Server) Start(z *Znet) error {
 	go func() {
 		t := time.NewTicker(10 * time.Second)
 
-		for {
-			select {
-			case <-t.C:
+		for range t.C {
+			// export the eventMachine data
+			eventMachineConsumers.WithLabelValues().Set(float64(len(s.eventMachine.EventConsumers)))
 
-				// export the eventMachine data
-				eventMachineConsumers.WithLabelValues().Set(float64(len(s.eventMachine.EventConsumers)))
-
-				for name, handlers := range s.eventMachine.EventConsumers {
-					eventMachineHandlers.WithLabelValues(name).Set(float64(len(handlers)))
-				}
-
-				// export the event RPC server data
-				subscriberCount, eventCount := s.rpcEventServer.Report()
-
-				rpcEventServerSubscribers.WithLabelValues().Set(float64(subscriberCount))
-				rpcEventServerEventCount.WithLabelValues().Set(float64(eventCount))
+			for name, handlers := range s.eventMachine.EventConsumers {
+				eventMachineHandlers.WithLabelValues(name).Set(float64(len(handlers)))
 			}
+
+			// export the event RPC server data
+			subscriberCount, eventCount := s.rpcEventServer.Report()
+
+			rpcEventServerSubscribers.WithLabelValues().Set(float64(subscriberCount))
+			rpcEventServerEventCount.WithLabelValues().Set(float64(eventCount))
 		}
 	}()
 
