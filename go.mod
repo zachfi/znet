@@ -6,7 +6,6 @@ require (
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
 	github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d // indirect
 	github.com/amimof/huego v0.0.0-20200504200310-b4a8f71aa2e3
-	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/frankban/quicktest v1.7.2 // indirect
 	github.com/go-git/go-git/v5 v5.0.0
 	github.com/go-ldap/ldap v3.1.8+incompatible
@@ -21,13 +20,11 @@ require (
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/nats-io/nats-server/v2 v2.1.6 // indirect
-	github.com/nats-io/nats.go v1.9.2
 	github.com/pelletier/go-toml v1.4.0 // indirect
 	github.com/pierrec/lz4 v2.2.7+incompatible // indirect
-	github.com/pkg/errors v0.9.1
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_golang v1.1.0
-	github.com/prometheus/common v0.7.0
+	github.com/prometheus/common v0.9.1
 	github.com/prometheus/procfs v0.0.4 // indirect
 	github.com/scottdware/go-junos v0.0.0-20191101184514-da1ec4631b03
 	github.com/sirupsen/logrus v1.4.2
