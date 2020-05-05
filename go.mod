@@ -8,7 +8,7 @@ require (
 	github.com/amimof/huego v0.0.0-20191031212646-fbe1857ba8f5
 	github.com/frankban/quicktest v1.7.2 // indirect
 	github.com/go-git/go-git/v5 v5.0.0
-	github.com/go-ldap/ldap v3.0.2+incompatible
+	github.com/go-ldap/ldap v3.1.8+incompatible
 	github.com/go-openapi/strfmt v0.19.3 // indirect
 	github.com/golang/protobuf v1.3.2
 	github.com/hashicorp/go-retryablehttp v0.6.4 // indirect
