@@ -5,7 +5,7 @@ go 1.13
 require (
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
 	github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d // indirect
-	github.com/amimof/huego v0.0.0-20191031212646-fbe1857ba8f5
+	github.com/amimof/huego v0.0.0-20200504200310-b4a8f71aa2e3
 	github.com/frankban/quicktest v1.7.2 // indirect
 	github.com/go-git/go-git/v5 v5.0.0
 	github.com/go-ldap/ldap v3.0.2+incompatible
