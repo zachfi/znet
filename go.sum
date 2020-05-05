@@ -261,6 +261,8 @@ github.com/ryanuber/go-glob v1.0.0 h1:iQh3xXAumdQ+4Ufa5b25cRpC5TYKlno6hsv6Cb3pkB
 github.com/ryanuber/go-glob v1.0.0/go.mod h1:807d1WSdnB0XRJzKNil9Om6lcp/3a0v4qIHxIXzX/Yc=
 github.com/scottdware/go-junos v0.0.0-20190812172236-2fce6f5c1db4 h1:/pOkVJtgCPksXEcwcFvU2nbiuTZ622Ca1JVelJ9ZNM8=
 github.com/scottdware/go-junos v0.0.0-20190812172236-2fce6f5c1db4/go.mod h1:HyXZ8sqZbS3YOTwqstgK9EQ2OGkTcPOg84RZKVUGJhQ=
+github.com/scottdware/go-junos v0.0.0-20191101184514-da1ec4631b03 h1:/j89wNUnNLvazyjcEcP7FfSXHNRxt/7q1nrVhNHwUg8=
+github.com/scottdware/go-junos v0.0.0-20191101184514-da1ec4631b03/go.mod h1:HyXZ8sqZbS3YOTwqstgK9EQ2OGkTcPOg84RZKVUGJhQ=
 github.com/scottdware/go-rested v0.0.0-20160313143639-93e152ef32a6 h1:299Uob4OQNsj4PcX5Lz0zrEUA3QJQR7cUb0QGKOCCMA=
 github.com/scottdware/go-rested v0.0.0-20160313143639-93e152ef32a6/go.mod h1:Pb2bmyrwODgla27iei9cFCcCyVCly15wW4rLEbd0RdM=
 github.com/sergi/go-diff v1.1.0 h1:we8PVUC3FE2uYfodKH/nBHMSetSfHDR6scGdBi+erh0=

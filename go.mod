@@ -26,7 +26,7 @@ require (
 	github.com/prometheus/client_golang v1.1.0
 	github.com/prometheus/common v0.7.0
 	github.com/prometheus/procfs v0.0.4 // indirect
-	github.com/scottdware/go-junos v0.0.0-20190812172236-2fce6f5c1db4
+	github.com/scottdware/go-junos v0.0.0-20191101184514-da1ec4631b03
 	github.com/sirupsen/logrus v1.4.2
 	github.com/smartystreets/assertions v1.0.0 // indirect
 	github.com/spf13/afero v1.2.2 // indirect

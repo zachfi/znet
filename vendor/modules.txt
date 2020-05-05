@@ -180,7 +180,7 @@ github.com/prometheus/procfs/internal/fs
 github.com/prometheus/procfs/internal/util
 # github.com/ryanuber/go-glob v1.0.0
 github.com/ryanuber/go-glob
-# github.com/scottdware/go-junos v0.0.0-20190812172236-2fce6f5c1db4
+# github.com/scottdware/go-junos v0.0.0-20191101184514-da1ec4631b03
 github.com/scottdware/go-junos
 # github.com/scottdware/go-rested v0.0.0-20160313143639-93e152ef32a6
 github.com/scottdware/go-rested
