@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"gopkg.in/asn1-ber.v1"
+	"github.com/go-asn1-ber/asn1-ber"
 )
 
 const (
@@ -63,7 +63,9 @@ func (c *ControlString) Encode() *ber.Packet {
 	if c.Criticality {
 		packet.AppendChild(ber.NewBoolean(ber.ClassUniversal, ber.TypePrimitive, ber.TagBoolean, c.Criticality, "Criticality"))
 	}
-	packet.AppendChild(ber.NewString(ber.ClassUniversal, ber.TypePrimitive, ber.TagOctetString, string(c.ControlValue), "Control Value"))
+	if c.ControlValue != "" {
+		packet.AppendChild(ber.NewString(ber.ClassUniversal, ber.TypePrimitive, ber.TagOctetString, string(c.ControlValue), "Control Value"))
+	}
 	return packet
 }
 
