@@ -39,7 +39,7 @@ require (
 	github.com/tj/assert v0.0.0-20190920132354-ee03d75cd160
 	github.com/xaque208/rftoy v0.0.0-20191203015236-4727b87c3461
 	go.mongodb.org/mongo-driver v1.1.1 // indirect
-	golang.org/x/crypto v0.0.0-20200323165209-0ec3e9974c59
+	golang.org/x/crypto v0.0.0-20200429183012-4b2356b1ed79
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
 	google.golang.org/genproto v0.0.0-20191115221424-83cc0476cb11 // indirect
 	google.golang.org/grpc v1.25.1
