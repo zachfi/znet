@@ -134,7 +134,7 @@ github.com/jbenet/go-context/io
 # github.com/jedib0t/go-pretty v4.3.0+incompatible
 github.com/jedib0t/go-pretty/table
 github.com/jedib0t/go-pretty/text
-# github.com/json-iterator/go v1.1.7
+# github.com/json-iterator/go v1.1.9
 github.com/json-iterator/go
 # github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 github.com/kballard/go-shellquote
@@ -201,7 +201,7 @@ github.com/spf13/cobra
 github.com/spf13/jwalterweatherman
 # github.com/spf13/pflag v1.0.5
 github.com/spf13/pflag
-# github.com/spf13/viper v1.6.2
+# github.com/spf13/viper v1.6.3
 github.com/spf13/viper
 # github.com/stretchr/testify v1.5.1
 github.com/stretchr/testify/assert
