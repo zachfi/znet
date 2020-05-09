@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/tj/assert"
+
 	"github.com/xaque208/znet/internal/gitwatch"
 )
 

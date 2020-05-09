@@ -84,3 +84,18 @@ service Events {
   rpc SubscribeEvents(EventSub) returns (stream Event) {}
 }
 
+// <discovery_prefix>/<component>/[<node_id>/]<object_id>/config
+message DeviceDiscovery {
+  string DiscoveryPrefix = 1;
+  string Component = 2;
+  string NodeID = 3;
+  string ObjectID = 4;
+  repeated string Endpoint = 5;
+  bytes Message = 6;
+}
+
+message NoticeResponse {}
+
+service Things {
+  rpc Notice(DeviceDiscovery) returns (NoticeResponse);
+}
