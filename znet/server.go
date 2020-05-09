@@ -61,20 +61,67 @@ var (
 		Help: "The current number of event handlers per consumer",
 	}, []string{"event_name"})
 
-	rpcEventServerSubscribers = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "znet_rpc_eventserver_subscriber_count",
-		Help: "The current number of rpc subscribers",
-	}, []string{})
-
-	rpcEventServerEventCount = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "znet_rpc_eventserver_event_name_count",
-		Help: "The current number of rpc events that are subscribed",
-	}, []string{})
-
 	// ciJobsRunning = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 	// 	Name: "znet_ci_jobs_running",
 	// 	Help: "Stats on running CI jobs",
 	// }, []string{})
+
+	airTemperature = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "thing_air_temperature",
+		Help: "Temperature",
+	}, []string{"device"})
+
+	airHumidity = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "thing_air_humidity",
+		Help: "humidity",
+	}, []string{"device"})
+
+	airHeatindex = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "thing_air_heatindex",
+		Help: "computed heat index",
+	}, []string{"device"})
+
+	waterTemperature = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "thing_water_temperature",
+		Help: "Water Temperature",
+	}, []string{"device"})
+
+	tempCoef = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "thing_air_temperature_coef",
+		Help: "Air Temperature Coefficient",
+	}, []string{"device"})
+
+	waterTempCoef = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "thing_water_temperature_coef",
+		Help: "Water Temperature Coefficient",
+	}, []string{"device"})
+
+	thingWireless = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "thing_wireless",
+		Help: "wireless information",
+	}, []string{"device", "ssid", "bssid", "ip"})
+
+	// rpc eventServer
+	rpcEventServerSubscriberCount = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "rpc_eventserver_subscriber_count",
+		Help: "The current number of rpc subscribers",
+	}, []string{})
+
+	rpcEventServerEventCount = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "rpc_eventserver_event_count",
+		Help: "The current number of rpc events that are subscribed",
+	}, []string{})
+
+	// rpc thingServer
+	rpcThingServerUnhandledObjectNotice = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "rpc_thingserver_unhandled_object_notice",
+		Help: "The total number of notice calls that include an unhandled object ID.",
+	}, []string{"object_id"})
+
+	rpcThingServerObjectNotice = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "rpc_thingserver_object_notice",
+		Help: "The total number of notice calls for an object ID.",
+	}, []string{"object_id"})
 )
 
 func init() {
@@ -84,8 +131,21 @@ func init() {
 		eventTotal,
 		executionDuration,
 		executionExitStatus,
+
+		airHeatindex,
+		airHumidity,
+		airTemperature,
+		tempCoef,
+		waterTempCoef,
+		waterTemperature,
+		thingWireless,
+
+		// rpc
 		rpcEventServerEventCount,
-		rpcEventServerSubscribers,
+		rpcEventServerSubscriberCount,
+
+		rpcThingServerUnhandledObjectNotice,
+		rpcThingServerObjectNotice,
 	)
 }
 
@@ -142,10 +202,15 @@ func (s *Server) Start(z *Znet) error {
 			lights: z.Lights,
 		}
 
+		rpcThingServer := newThingServer()
+
+		// Add the various servers to the RPC
 		pb.RegisterInventoryServer(s.grpcServer, rpcInventoryServer)
 		pb.RegisterLightsServer(s.grpcServer, rpcLightServer)
-		pb.RegisterEventsServer(s.grpcServer, s.rpcEventServer)
+		pb.RegisterThingsServer(s.grpcServer, rpcThingServer)
 
+		// Register and configure the rpcEventServer
+		pb.RegisterEventsServer(s.grpcServer, s.rpcEventServer)
 		s.rpcEventServer.RegisterEvents(agent.EventNames)
 		s.rpcEventServer.RegisterEvents(astro.EventNames)
 		s.rpcEventServer.RegisterEvents(continuous.EventNames)
@@ -179,7 +244,7 @@ func (s *Server) Start(z *Znet) error {
 			// export the event RPC server data
 			subscriberCount, eventCount := s.rpcEventServer.Report()
 
-			rpcEventServerSubscribers.WithLabelValues().Set(float64(subscriberCount))
+			rpcEventServerSubscriberCount.WithLabelValues().Set(float64(subscriberCount))
 			rpcEventServerEventCount.WithLabelValues().Set(float64(eventCount))
 		}
 	}()
