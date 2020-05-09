@@ -80,8 +80,6 @@ func runHarvest(cmd *cobra.Command, args []string) {
 			return
 		}
 
-		log.Infof("have topicPath: %+v", topicPath)
-
 		m := &pb.DeviceDiscovery{
 			Component: topicPath.Component,
 			NodeID:    topicPath.NodeID,
