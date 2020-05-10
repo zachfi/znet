@@ -194,19 +194,20 @@ func (s *Server) Start(z *Znet) error {
 	if s.rpcConfig.ListenAddress != "" {
 		log.Infof("starting RPC listener %s", s.rpcConfig.ListenAddress)
 
+		// inventoryServer
 		rpcInventoryServer := &inventoryServer{
 			inventory: z.Inventory,
 		}
+		pb.RegisterInventoryServer(s.grpcServer, rpcInventoryServer)
 
+		// lightServer
 		rpcLightServer := &lightServer{
 			lights: z.Lights,
 		}
-
-		rpcThingServer := newThingServer()
-
-		// Add the various servers to the RPC
-		pb.RegisterInventoryServer(s.grpcServer, rpcInventoryServer)
 		pb.RegisterLightsServer(s.grpcServer, rpcLightServer)
+
+		// thingServer
+		rpcThingServer := newThingServer(z.Inventory)
 		pb.RegisterThingsServer(s.grpcServer, rpcThingServer)
 
 		// Register and configure the rpcEventServer

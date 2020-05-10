@@ -7,11 +7,13 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/xaque208/znet/internal/inventory"
 	"github.com/xaque208/znet/pkg/iot"
 	pb "github.com/xaque208/znet/rpc"
 )
 
 type thingServer struct {
+	inventory  *inventory.Inventory
 	keeper     thingKeeper
 	seenThings map[string]time.Time
 }
@@ -19,14 +21,14 @@ type thingServer struct {
 type thingKeeper map[string]map[string]string
 
 // NewThingServer returns a new thingServer.
-func newThingServer() *thingServer {
+func newThingServer(inv *inventory.Inventory) *thingServer {
 	s := thingServer{
+		inventory:  inv,
 		keeper:     make(thingKeeper),
 		seenThings: make(map[string]time.Time),
 	}
 
 	go func(s thingServer) {
-
 		for {
 			// Make a copy
 			tMap := make(map[string]time.Time)
@@ -98,7 +100,6 @@ func (l *thingServer) hasLabels(nodeID string, labels []string) bool {
 		if !nodeHasLabel(nodeLabels, label) {
 			return false
 		}
-
 	}
 
 	return true
@@ -139,19 +140,35 @@ func (l *thingServer) Notice(ctx context.Context, request *pb.DeviceDiscovery) (
 
 		// l.storeThingLabel(request.NodeID, "tempcoef", m.TempCoef)
 
-		if m.Temperature != 0 {
-			airTemperature.WithLabelValues(request.NodeID).Set(float64(m.Temperature))
-		}
+		airTemperature.WithLabelValues(request.NodeID).Set(float64(m.Temperature))
+		airHumidity.WithLabelValues(request.NodeID).Set(float64(m.Humidity))
+		airHeatindex.WithLabelValues(request.NodeID).Set(float64(m.HeatIndex))
+	case "led1", "led2":
+		msg := iot.ReadMessage("led", request.Message)
+		m := msg.(iot.LEDMessage)
 
-		if m.Humidity != 0 {
-			airHumidity.WithLabelValues(request.NodeID).Set(float64(m.Humidity))
-		}
-
-		if m.HeatIndex != 0 {
-			airHeatindex.WithLabelValues(request.NodeID).Set(float64(m.HeatIndex))
+		for i, deviceConnection := range m.Device.Connections {
+			if len(deviceConnection) == 2 {
+				l.storeThingLabel(request.NodeID, "mac", m.Device.Connections[i][1])
+			}
 		}
 	default:
 		rpcThingServerUnhandledObjectNotice.WithLabelValues(request.ObjectID).Inc()
+	}
+
+	// Record an observation if all our parts are filled in.
+	labels := l.nodeLabels(request.NodeID)
+	if l.hasLabels(request.NodeID, []string{"ip", "mac"}) {
+		iotNode := iot.Node{
+			IP:         labels["ip"],
+			MACAddress: labels["mac"],
+			NodeID:     request.NodeID,
+		}
+
+		err := l.inventory.ObserveIOT(iotNode)
+		if err != nil {
+			log.Error(err)
+		}
 	}
 
 	return response, nil
