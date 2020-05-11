@@ -55,6 +55,99 @@ func (e *EventProducer) Stop() error {
 	return nil
 }
 
+func (e *EventProducer) handleRepos(repos []Repo, collection *string) error {
+	t := time.Now()
+	for _, repo := range repos {
+
+		if repo.Name == "" {
+			log.Errorf("repo name cannot be empty: %+v", repo)
+			continue
+		}
+
+		var cacheDir string
+		if collection != nil {
+			cacheDir = fmt.Sprintf("%s/%s/%s", e.config.CacheDir, *collection, repo.Name)
+
+		} else {
+			cacheDir = fmt.Sprintf("%s/%s", e.config.CacheDir, repo.Name)
+		}
+
+		var freshClone bool
+		if _, err := os.Stat(cacheDir); os.IsNotExist(err) {
+			freshClone = true
+		}
+
+		ci := continuous.NewCI(
+			repo.URL,
+			cacheDir,
+			e.config.SSHKeyPath,
+		)
+
+		newHeads, newTags, err := ci.Fetch()
+		if err != nil {
+			log.Error(err)
+			continue
+		}
+
+		// If we have a fresh clone, then
+		if freshClone {
+			lastTag := ci.LatestTag()
+
+			ev := NewTag{
+				Name: repo.Name,
+				URL:  repo.URL,
+				Time: &t,
+				Tag:  lastTag,
+			}
+
+			if collection != nil {
+				ev.Collection = *collection
+			}
+
+			err := events.ProduceEvent(e.conn, ev)
+			if err != nil {
+				log.Error(err)
+			}
+		}
+
+		for shortName, newHead := range newHeads {
+			ev := NewCommit{
+				Name:   repo.Name,
+				URL:    repo.URL,
+				Time:   &t,
+				Hash:   newHead,
+				Branch: shortName,
+			}
+
+			err = events.ProduceEvent(e.conn, ev)
+			if err != nil {
+				log.Error(err)
+			}
+		}
+
+		for _, r := range newTags {
+			ev := NewTag{
+				Name: repo.Name,
+				URL:  repo.URL,
+				Time: &t,
+				Tag:  r,
+			}
+
+			if collection != nil {
+				ev.Collection = *collection
+			}
+
+			err = events.ProduceEvent(e.conn, ev)
+			if err != nil {
+				log.Error(err)
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (e *EventProducer) watcher(done chan bool) error {
 
 	ticker := time.NewTicker(time.Duration(e.config.Interval) * time.Second)
@@ -63,79 +156,11 @@ func (e *EventProducer) watcher(done chan bool) error {
 		select {
 		case <-done:
 			return nil
-		case t := <-ticker.C:
-			for _, repo := range e.config.Repos {
+		case <-ticker.C:
+			e.handleRepos(e.config.Repos, nil)
 
-				if repo.Name == "" {
-					log.Errorf("repo name cannot be empty: %+v", repo)
-					continue
-				}
-
-				cacheDir := fmt.Sprintf("%s/%s", e.config.CacheDir, repo.Name)
-
-				var freshClone bool
-				if _, err := os.Stat(cacheDir); os.IsNotExist(err) {
-					freshClone = true
-				}
-
-				ci := continuous.NewCI(
-					repo.URL,
-					cacheDir,
-					e.config.SSHKeyPath,
-				)
-
-				newHeads, newTags, err := ci.Fetch()
-				if err != nil {
-					log.Error(err)
-					continue
-				}
-
-				// If we have a fresh clone, then
-				if freshClone {
-					lastTag := ci.LatestTag()
-
-					ev := NewTag{
-						Name: repo.Name,
-						URL:  repo.URL,
-						Time: &t,
-						Tag:  lastTag,
-					}
-
-					err := events.ProduceEvent(e.conn, ev)
-					if err != nil {
-						log.Error(err)
-					}
-				}
-
-				for shortName, newHead := range newHeads {
-					ev := NewCommit{
-						Name:   repo.Name,
-						URL:    repo.URL,
-						Time:   &t,
-						Hash:   newHead,
-						Branch: shortName,
-					}
-
-					err = events.ProduceEvent(e.conn, ev)
-					if err != nil {
-						log.Error(err)
-					}
-				}
-
-				for _, r := range newTags {
-					ev := NewTag{
-						Name: repo.Name,
-						URL:  repo.URL,
-						Time: &t,
-						Tag:  r,
-					}
-
-					err = events.ProduceEvent(e.conn, ev)
-					if err != nil {
-						log.Error(err)
-					}
-				}
-
+			for _, collection := range e.config.Collections {
+				e.handleRepos(collection.Repos, &collection.Name)
 			}
 
 		}
