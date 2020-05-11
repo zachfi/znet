@@ -2,6 +2,7 @@ package gitwatch
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	"google.golang.org/grpc"
@@ -72,6 +73,11 @@ func (e *EventProducer) watcher(done chan bool) error {
 
 				cacheDir := fmt.Sprintf("%s/%s", e.config.CacheDir, repo.Name)
 
+				var freshClone bool
+				if _, err := os.Stat(cacheDir); os.IsNotExist(err) {
+					freshClone = true
+				}
+
 				ci := continuous.NewCI(
 					repo.URL,
 					cacheDir,
@@ -82,6 +88,23 @@ func (e *EventProducer) watcher(done chan bool) error {
 				if err != nil {
 					log.Error(err)
 					continue
+				}
+
+				// If we have a fresh clone, then
+				if freshClone {
+					lastTag := ci.LatestTag()
+
+					ev := NewTag{
+						Name: repo.Name,
+						URL:  repo.URL,
+						Time: &t,
+						Tag:  lastTag,
+					}
+
+					err := events.ProduceEvent(e.conn, ev)
+					if err != nil {
+						log.Error(err)
+					}
 				}
 
 				for shortName, newHead := range newHeads {
