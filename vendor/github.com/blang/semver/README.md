@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 semver for golang [![Build Status](https://drone.io/github.com/blang/semver/status.png)](https://drone.io/github.com/blang/semver/latest) [![GoDoc](https://godoc.org/github.com/blang/semver?status.png)](https://godoc.org/github.com/blang/semver) [![Coverage Status](https://img.shields.io/coveralls/blang/semver.svg)](https://coveralls.io/r/blang/semver?branch=master)
+=======
+semver for golang [![Build Status](https://travis-ci.org/blang/semver.svg?branch=master)](https://travis-ci.org/blang/semver) [![GoDoc](https://godoc.org/github.com/blang/semver?status.png)](https://godoc.org/github.com/blang/semver) [![Coverage Status](https://img.shields.io/coveralls/blang/semver.svg)](https://coveralls.io/r/blang/semver?branch=master)
+>>>>>>> 2273e7a... chore(vendor): update
 ======
 
 semver is a [Semantic Versioning](http://semver.org/) library written in golang. It fully covers spec version `2.0.0`.
@@ -12,8 +16,13 @@ Note: Always vendor your dependencies or fix on a specific version tag.
 
 ```go
 import github.com/blang/semver
+<<<<<<< HEAD
 v1, err := semver.New("1.0.0-beta")
 v2, err := semver.New("2.0.0-beta")
+=======
+v1, err := semver.Make("1.0.0-beta")
+v2, err := semver.Make("2.0.0-beta")
+>>>>>>> 2273e7a... chore(vendor): update
 v1.Compare(v2)
 ```
 
@@ -40,10 +49,61 @@ Features
 - Comparator-like comparisons
 - Compare Helper Methods
 - InPlace manipulation
+<<<<<<< HEAD
+=======
+- Ranges `>=1.0.0 <2.0.0 || >=3.0.0 !3.0.1-beta.1`
+- Wildcards `>=1.x`, `<=2.5.x`
+>>>>>>> 2273e7a... chore(vendor): update
 - Sortable (implements sort.Interface)
 - database/sql compatible (sql.Scanner/Valuer)
 - encoding/json compatible (json.Marshaler/Unmarshaler)
 
+<<<<<<< HEAD
+=======
+Ranges
+------
+
+A `Range` is a set of conditions which specify which versions satisfy the range.
+
+A condition is composed of an operator and a version. The supported operators are:
+
+- `<1.0.0` Less than `1.0.0`
+- `<=1.0.0` Less than or equal to `1.0.0`
+- `>1.0.0` Greater than `1.0.0`
+- `>=1.0.0` Greater than or equal to `1.0.0`
+- `1.0.0`, `=1.0.0`, `==1.0.0` Equal to `1.0.0`
+- `!1.0.0`, `!=1.0.0` Not equal to `1.0.0`. Excludes version `1.0.0`.
+
+Note that spaces between the operator and the version will be gracefully tolerated.
+
+A `Range` can link multiple `Ranges` separated by space:
+
+Ranges can be linked by logical AND:
+
+  - `>1.0.0 <2.0.0` would match between both ranges, so `1.1.1` and `1.8.7` but not `1.0.0` or `2.0.0`
+  - `>1.0.0 <3.0.0 !2.0.3-beta.2` would match every version between `1.0.0` and `3.0.0` except `2.0.3-beta.2`
+
+Ranges can also be linked by logical OR:
+
+  - `<2.0.0 || >=3.0.0` would match `1.x.x` and `3.x.x` but not `2.x.x`
+
+AND has a higher precedence than OR. It's not possible to use brackets.
+
+Ranges can be combined by both AND and OR
+
+  - `>1.0.0 <2.0.0 || >3.0.0 !4.2.1` would match `1.2.3`, `1.9.9`, `3.1.1`, but not `4.2.1`, `2.1.1`
+
+Range usage:
+
+```
+v, err := semver.Parse("1.2.3")
+range, err := semver.ParseRange(">1.0.0 <2.0.0 || >=3.0.0")
+if range(v) {
+    //valid
+}
+
+```
+>>>>>>> 2273e7a... chore(vendor): update
 
 Example
 -----
@@ -53,7 +113,11 @@ Have a look at full examples in [examples/main.go](examples/main.go)
 ```go
 import github.com/blang/semver
 
+<<<<<<< HEAD
 v, err := semver.New("0.0.1-alpha.preview+123.github")
+=======
+v, err := semver.Make("0.0.1-alpha.preview+123.github")
+>>>>>>> 2273e7a... chore(vendor): update
 fmt.Printf("Major: %d\n", v.Major)
 fmt.Printf("Minor: %d\n", v.Minor)
 fmt.Printf("Patch: %d\n", v.Patch)
@@ -76,7 +140,11 @@ if len(v.Build) > 0 {
     }
 }
 
+<<<<<<< HEAD
 v001, err := semver.New("0.0.1")
+=======
+v001, err := semver.Make("0.0.1")
+>>>>>>> 2273e7a... chore(vendor): update
 // Compare using helpers: v.GT(v2), v.LT, v.GTE, v.LTE
 v001.GT(v) == true
 v.LT(v001) == true
@@ -103,6 +171,7 @@ if err != nil {
 }
 ```
 
+<<<<<<< HEAD
 Benchmarks
 -----
 
@@ -120,6 +189,32 @@ Benchmarks
     BenchmarkCompareComplex     50000000       40.9  ns/op     0 B/op   0 allocs/op
     BenchmarkCompareAverage     50000000       43.8  ns/op     0 B/op   0 allocs/op
     BenchmarkSort                5000000      436    ns/op   259 B/op   2 allocs/op
+=======
+
+Benchmarks
+-----
+
+    BenchmarkParseSimple-4           5000000    390    ns/op    48 B/op   1 allocs/op
+    BenchmarkParseComplex-4          1000000   1813    ns/op   256 B/op   7 allocs/op
+    BenchmarkParseAverage-4          1000000   1171    ns/op   163 B/op   4 allocs/op
+    BenchmarkStringSimple-4         20000000    119    ns/op    16 B/op   1 allocs/op
+    BenchmarkStringLarger-4         10000000    206    ns/op    32 B/op   2 allocs/op
+    BenchmarkStringComplex-4         5000000    324    ns/op    80 B/op   3 allocs/op
+    BenchmarkStringAverage-4         5000000    273    ns/op    53 B/op   2 allocs/op
+    BenchmarkValidateSimple-4      200000000      9.33 ns/op     0 B/op   0 allocs/op
+    BenchmarkValidateComplex-4       3000000    469    ns/op     0 B/op   0 allocs/op
+    BenchmarkValidateAverage-4       5000000    256    ns/op     0 B/op   0 allocs/op
+    BenchmarkCompareSimple-4       100000000     11.8  ns/op     0 B/op   0 allocs/op
+    BenchmarkCompareComplex-4       50000000     30.8  ns/op     0 B/op   0 allocs/op
+    BenchmarkCompareAverage-4       30000000     41.5  ns/op     0 B/op   0 allocs/op
+    BenchmarkSort-4                  3000000    419    ns/op   256 B/op   2 allocs/op
+    BenchmarkRangeParseSimple-4      2000000    850    ns/op   192 B/op   5 allocs/op
+    BenchmarkRangeParseAverage-4     1000000   1677    ns/op   400 B/op  10 allocs/op
+    BenchmarkRangeParseComplex-4      300000   5214    ns/op  1440 B/op  30 allocs/op
+    BenchmarkRangeMatchSimple-4     50000000     25.6  ns/op     0 B/op   0 allocs/op
+    BenchmarkRangeMatchAverage-4    30000000     56.4  ns/op     0 B/op   0 allocs/op
+    BenchmarkRangeMatchComplex-4    10000000    153    ns/op     0 B/op   0 allocs/op
+>>>>>>> 2273e7a... chore(vendor): update
 
 See benchmark cases at [semver_test.go](semver_test.go)
 

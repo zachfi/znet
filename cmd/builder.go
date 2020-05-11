@@ -97,7 +97,6 @@ func runBuilder(cmd *cobra.Command, args []string) {
 			}
 
 			for {
-
 				var ev *pb.Event
 
 				ev, err = stream.Recv()
