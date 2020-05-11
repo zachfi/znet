@@ -26,7 +26,8 @@ type Execution struct {
 // repos.  This does mean the events are handed to all scubscribers ,and the
 // subscriber is responsible for reducing the executions.
 type Filter struct {
-	Names    []string
-	URLs     []string
-	Branches []string
+	Names       []string
+	URLs        []string
+	Branches    []string
+	Collections []string
 }

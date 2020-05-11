@@ -107,6 +107,7 @@ func (a *Agent) passFilter(filter Filter, x interface{}) bool {
 	var xName string
 	var xURL string
 	var xBranch string
+	var xCollection string
 
 	t := reflect.TypeOf(x).String()
 
@@ -114,10 +115,12 @@ func (a *Agent) passFilter(filter Filter, x interface{}) bool {
 	case "gitwatch.NewTag":
 		xName = x.(gitwatch.NewTag).Name
 		xURL = x.(gitwatch.NewTag).URL
+		xCollection = x.(gitwatch.NewTag).Collection
 	case "gitwatch.NewCommit":
 		xName = x.(gitwatch.NewCommit).Name
 		xURL = x.(gitwatch.NewCommit).URL
 		xBranch = x.(gitwatch.NewCommit).Branch
+		xCollection = x.(gitwatch.NewCommit).Collection
 	}
 
 	passName := func() bool {
@@ -160,7 +163,20 @@ func (a *Agent) passFilter(filter Filter, x interface{}) bool {
 		return false
 	}
 
-	return passName() && passURL() && passBranch()
+	passCollection := func() bool {
+		if len(filter.Collections) == 0 {
+			return true
+		}
+
+		for _, collection := range filter.Collections {
+			if collection == xCollection {
+				return true
+			}
+		}
+		return false
+	}
+
+	return passName() && passURL() && passBranch() && passCollection()
 }
 
 func (a *Agent) executeForEvent(x interface{}) error {
