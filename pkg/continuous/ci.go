@@ -117,6 +117,11 @@ func (c *CI) CheckoutTag(tag string) error {
 		return err
 	}
 
+	err = w.Reset(&git.ResetOptions{Mode: git.HardReset, Commit: ref.Hash()})
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
