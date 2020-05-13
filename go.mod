@@ -17,7 +17,7 @@ require (
 	github.com/hashicorp/vault/api v1.0.5-0.20190814205542-3b036e58e950
 	github.com/imdario/mergo v0.3.9
 	github.com/jarcoal/httpmock v1.0.5 // indirect
-	github.com/jedib0t/go-pretty v4.3.0+incompatible
+	github.com/jedib0t/go-pretty/v5 v5.0.1
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
