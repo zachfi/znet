@@ -45,7 +45,7 @@ func (c *CI) LatestTag() string {
 	var lastTag string
 	var prefix string
 
-	for n, _ := range tags {
+	for n := range tags {
 		if lastTag == "" {
 			lastTag = n
 		}
@@ -76,6 +76,7 @@ func (c *CI) LatestTag() string {
 	return fmt.Sprintf("%s%s", prefix, lastTag)
 }
 
+// Fetch performs a git-fetch from the repo origin.
 func (c *CI) Fetch() (map[string]string, []string, error) {
 
 	err := CacheRepo(c.URL, c.CacheDir, c.SSHKeyPath)
