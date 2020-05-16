@@ -13,6 +13,7 @@ type Inventory struct {
 	ldapClient *ldap.Conn
 }
 
+// NewInventory returns a new Inventory object from the received config.
 func NewInventory(config LDAPConfig) *Inventory {
 	var inv *Inventory
 	var ldapClient *ldap.Conn
@@ -69,6 +70,8 @@ func (i *Inventory) NetworkHosts() ([]NetworkHost, error) {
 		for _, a := range e.Attributes {
 
 			switch a.Name {
+			case "dn":
+				h.DN = stringValues(a)[0]
 			case "cn":
 				{
 					h.Name = stringValues(a)[0]

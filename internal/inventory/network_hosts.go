@@ -17,18 +17,19 @@ import (
 
 // NetworkHost is a device that connects to the network.
 type NetworkHost struct {
-	Name        string
-	HostName    string
-	Domain      string
-	Platform    string
-	Group       string
-	Role        string
-	DeviceType  string
 	Data        netconfig.HostData
-	Watch       bool
 	Description string
-	MACAddress  []string
+	DeviceType  string
+	DN          string
+	Domain      string
 	Environment map[string]string
+	Group       string
+	HostName    string
+	MACAddress  []string
+	Name        string
+	Platform    string
+	Role        string
+	Watch       bool
 }
 
 var defaultHostAttributes = []string{
@@ -74,7 +75,7 @@ func (i *Inventory) RecordUnknownHost(baseDN string, address string, mac string)
 
 	dn := fmt.Sprintf("cn=%s,%s", cn, baseDN)
 
-	a := ldap.NewAddRequest(dn, []ldap.Control{})
+	a := ldap.NewAddRequest(dn, nil)
 	a.Attribute("objectClass", []string{"unknownNetHost", "top"})
 	a.Attribute("cn", []string{cn})
 	a.Attribute("v4Address", []string{address})
