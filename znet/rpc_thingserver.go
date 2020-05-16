@@ -114,44 +114,52 @@ func (l *thingServer) Notice(ctx context.Context, request *pb.DeviceDiscovery) (
 
 	switch request.ObjectID {
 	case "wifi":
-		msg := iot.ReadMessage("wifi", request.Message)
-		m := msg.(iot.WifiMessage)
+		msg := iot.ReadMessage("wifi", request.Message, request.Endpoint...)
+		if msg != nil {
+			m := msg.(iot.WifiMessage)
 
-		l.storeThingLabel(request.NodeID, "ssid", m.SSID)
-		l.storeThingLabel(request.NodeID, "bssid", m.BSSID)
-		l.storeThingLabel(request.NodeID, "ip", m.IP)
+			l.storeThingLabel(request.NodeID, "ssid", m.SSID)
+			l.storeThingLabel(request.NodeID, "bssid", m.BSSID)
+			l.storeThingLabel(request.NodeID, "ip", m.IP)
 
-		labels := l.nodeLabels(request.NodeID)
+			labels := l.nodeLabels(request.NodeID)
 
-		if l.hasLabels(request.NodeID, []string{"ssid", "bssid", "ip"}) {
-			if m.RSSI != 0 {
-				thingWireless.With(prometheus.Labels{
-					"device": request.NodeID,
-					"ssid":   labels["ssid"],
-					"bssid":  labels["ssid"],
-					"ip":     labels["ip"],
-				}).Set(float64(m.RSSI))
+			if l.hasLabels(request.NodeID, []string{"ssid", "bssid", "ip"}) {
+				if m.RSSI != 0 {
+					thingWireless.With(prometheus.Labels{
+						"device": request.NodeID,
+						"ssid":   labels["ssid"],
+						"bssid":  labels["ssid"],
+						"ip":     labels["ip"],
+					}).Set(float64(m.RSSI))
+				}
 			}
 		}
 
 	case "air":
-		msg := iot.ReadMessage("air", request.Message)
-		m := msg.(iot.AirMessage)
+		msg := iot.ReadMessage("air", request.Message, request.Endpoint...)
+		if msg != nil {
+			m := msg.(iot.AirMessage)
 
-		// l.storeThingLabel(request.NodeID, "tempcoef", m.TempCoef)
+			// l.storeThingLabel(request.NodeID, "tempcoef", m.TempCoef)
 
-		airTemperature.WithLabelValues(request.NodeID).Set(float64(m.Temperature))
-		airHumidity.WithLabelValues(request.NodeID).Set(float64(m.Humidity))
-		airHeatindex.WithLabelValues(request.NodeID).Set(float64(m.HeatIndex))
+			airTemperature.WithLabelValues(request.NodeID).Set(float64(m.Temperature))
+			airHumidity.WithLabelValues(request.NodeID).Set(float64(m.Humidity))
+			airHeatindex.WithLabelValues(request.NodeID).Set(float64(m.HeatIndex))
+		}
+
 	case "led1", "led2":
-		msg := iot.ReadMessage("led", request.Message)
-		m := msg.(iot.LEDMessage)
+		msg := iot.ReadMessage("led", request.Message, request.Endpoint...)
+		if msg != nil {
+			m := msg.(iot.LEDConfig)
 
-		for i, deviceConnection := range m.Device.Connections {
-			if len(deviceConnection) == 2 {
-				l.storeThingLabel(request.NodeID, "mac", m.Device.Connections[i][1])
+			for i, deviceConnection := range m.Device.Connections {
+				if len(deviceConnection) == 2 {
+					l.storeThingLabel(request.NodeID, "mac", m.Device.Connections[i][1])
+				}
 			}
 		}
+
 	default:
 		rpcThingServerUnhandledObjectNotice.WithLabelValues(request.ObjectID).Inc()
 	}
