@@ -1,6 +1,6 @@
-package inventory
+package iot
 
-type IOTNode struct {
+type Node struct {
 	IP         string
 	NodeID     string
 	MACAddress string
