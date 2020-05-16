@@ -6,7 +6,7 @@ require (
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
 	github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d // indirect
 	github.com/amimof/huego v0.0.0-20200504200310-b4a8f71aa2e3
-	github.com/blang/semver v2.2.0+incompatible
+	github.com/blang/semver v3.5.1+incompatible
 	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/frankban/quicktest v1.7.2 // indirect
 	github.com/go-git/go-git/v5 v5.0.0

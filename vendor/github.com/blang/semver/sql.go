@@ -25,11 +25,6 @@ func (v *Version) Scan(src interface{}) (err error) {
 }
 
 // Value implements the database/sql/driver.Valuer interface.
-<<<<<<< HEAD
-func (s Version) Value() (driver.Value, error) {
-	return s.String(), nil
-=======
 func (v Version) Value() (driver.Value, error) {
 	return v.String(), nil
->>>>>>> 2273e7a... chore(vendor): update
 }
