@@ -67,7 +67,6 @@ func (e *EventProducer) handleRepos(repos []Repo, collection *string) error {
 		var cacheDir string
 		if collection != nil {
 			cacheDir = fmt.Sprintf("%s/%s/%s", e.config.CacheDir, *collection, repo.Name)
-
 		} else {
 			cacheDir = fmt.Sprintf("%s/%s", e.config.CacheDir, repo.Name)
 		}
