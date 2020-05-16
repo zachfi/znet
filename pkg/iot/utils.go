@@ -67,10 +67,11 @@ func ParseTopicPath(topic string) (TopicPath, error) {
 	return tp, nil
 }
 
-func ReadMessage(endpoint string, payload []byte) interface{} {
+func ReadMessage(objectID string, payload []byte, endpoint ...string) interface{} {
 
-	switch endpoint {
-	// case "air":
+	log.Tracef("ReadMessage(): %s, %s: %+v", objectID, endpoint, string(payload))
+
+	switch objectID {
 	case "wifi":
 		m := WifiMessage{}
 		err := json.Unmarshal(payload, &m)
@@ -85,6 +86,24 @@ func ReadMessage(endpoint string, payload []byte) interface{} {
 			log.Error(err)
 		}
 		return m
+	case "led":
+		if len(endpoint) > 0 {
+			if endpoint[0] == "config" {
+				m := LEDConfig{}
+				err := json.Unmarshal(payload, &m)
+				if err != nil {
+					log.Error(err)
+				}
+				return m
+			} else if endpoint[0] == "color" {
+				m := LEDColor{}
+				err := json.Unmarshal(payload, &m)
+				if err != nil {
+					log.Error(err)
+				}
+			}
+			log.Warnf("unhandled led endpoint: %s : %+v", endpoint, string(payload))
+		}
 	}
 
 	return nil
