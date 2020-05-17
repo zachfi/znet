@@ -106,7 +106,7 @@ github.com/hashicorp/go-cleanhttp
 github.com/hashicorp/go-multierror
 # github.com/hashicorp/go-retryablehttp v0.6.4
 github.com/hashicorp/go-retryablehttp
-# github.com/hashicorp/go-rootcerts v1.0.1
+# github.com/hashicorp/go-rootcerts v1.0.0
 github.com/hashicorp/go-rootcerts
 # github.com/hashicorp/go-sockaddr v1.0.2
 github.com/hashicorp/go-sockaddr
@@ -121,15 +121,16 @@ github.com/hashicorp/hcl/hcl/token
 github.com/hashicorp/hcl/json/parser
 github.com/hashicorp/hcl/json/scanner
 github.com/hashicorp/hcl/json/token
-# github.com/hashicorp/vault/api v1.0.5-0.20190814205542-3b036e58e950
+# github.com/hashicorp/vault v1.1.1
 github.com/hashicorp/vault/api
-# github.com/hashicorp/vault/sdk v0.1.14-0.20190814205504-1cad00d1133b
-github.com/hashicorp/vault/sdk/helper/compressutil
-github.com/hashicorp/vault/sdk/helper/consts
-github.com/hashicorp/vault/sdk/helper/hclutil
-github.com/hashicorp/vault/sdk/helper/jsonutil
-github.com/hashicorp/vault/sdk/helper/parseutil
-github.com/hashicorp/vault/sdk/helper/strutil
+github.com/hashicorp/vault/helper/certutil
+github.com/hashicorp/vault/helper/compressutil
+github.com/hashicorp/vault/helper/consts
+github.com/hashicorp/vault/helper/errutil
+github.com/hashicorp/vault/helper/hclutil
+github.com/hashicorp/vault/helper/jsonutil
+github.com/hashicorp/vault/helper/parseutil
+github.com/hashicorp/vault/helper/strutil
 # github.com/imdario/mergo v0.3.9
 github.com/imdario/mergo
 # github.com/inconshreveable/mousetrap v1.0.0
@@ -139,6 +140,11 @@ github.com/jbenet/go-context/io
 # github.com/jedib0t/go-pretty v4.3.0+incompatible
 github.com/jedib0t/go-pretty/table
 github.com/jedib0t/go-pretty/text
+# github.com/johanbrandhorst/certify v1.8.0
+github.com/johanbrandhorst/certify
+github.com/johanbrandhorst/certify/internal/csr
+github.com/johanbrandhorst/certify/internal/keys
+github.com/johanbrandhorst/certify/issuers/vault
 # github.com/json-iterator/go v1.1.7
 github.com/json-iterator/go
 # github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
@@ -245,7 +251,6 @@ golang.org/x/crypto/openpgp/elgamal
 golang.org/x/crypto/openpgp/errors
 golang.org/x/crypto/openpgp/packet
 golang.org/x/crypto/openpgp/s2k
-golang.org/x/crypto/pbkdf2
 golang.org/x/crypto/poly1305
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/agent
@@ -263,6 +268,8 @@ golang.org/x/net/internal/timeseries
 golang.org/x/net/proxy
 golang.org/x/net/trace
 golang.org/x/net/websocket
+# golang.org/x/sync v0.0.0-20190423024810-112230192c58
+golang.org/x/sync/singleflight
 # golang.org/x/sys v0.0.0-20200302150141-5c8b2ff67527
 golang.org/x/sys/cpu
 golang.org/x/sys/unix
@@ -322,12 +329,11 @@ google.golang.org/grpc/tap
 gopkg.in/alecthomas/kingpin.v2
 # gopkg.in/ini.v1 v1.51.0
 gopkg.in/ini.v1
-# gopkg.in/square/go-jose.v2 v2.3.1
-gopkg.in/square/go-jose.v2
-gopkg.in/square/go-jose.v2/cipher
-gopkg.in/square/go-jose.v2/json
-gopkg.in/square/go-jose.v2/jwt
 # gopkg.in/warnings.v0 v0.1.2
 gopkg.in/warnings.v0
 # gopkg.in/yaml.v2 v2.3.0
 gopkg.in/yaml.v2
+# logur.dev/adapter/logrus v0.2.0
+logur.dev/adapter/logrus
+# logur.dev/logur v0.15.0
+logur.dev/logur
