@@ -2,15 +2,19 @@ package znet
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
 	"net"
 	"net/http"
 	"time"
 
+	"github.com/hashicorp/vault/helper/certutil"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 
 	"github.com/xaque208/znet/internal/agent"
 	"github.com/xaque208/znet/internal/astro"
@@ -150,16 +154,48 @@ func init() {
 }
 
 // NewServer creates a new Server composed of the received information.
-func NewServer(httpConfig HTTPConfig, rpcConfig RPCConfig, consumers []events.Consumer) *Server {
+func NewServer(config Config, consumers []events.Consumer) *Server {
 
 	eventMachine, err := eventmachine.New(consumers)
 	if err != nil {
 		log.Error(err)
 	}
 
+	vaultClient, err := NewSecretClient(config.Vault)
+	if err != nil {
+		log.Error(err)
+	}
+
+	secret, err := vaultClient.Logical().Read("pki/cert/ca")
+	if err != nil {
+		log.Errorf("error reading ca: %v", err)
+	}
+
+	roots := x509.NewCertPool()
+
+	parsedCertBundle, err := certutil.ParsePKIMap(secret.Data)
+	if err != nil {
+		log.Errorf("error parsing secret: %s", err)
+	}
+
+	roots.AddCert(parsedCertBundle.Certificate)
+
 	var httpServer *http.Server
-	if httpConfig.ListenAddress != "" {
-		httpServer = &http.Server{Addr: httpConfig.ListenAddress}
+	if config.HTTP.ListenAddress != "" {
+
+		httpServer = &http.Server{Addr: config.HTTP.ListenAddress}
+	}
+
+	c := newCertify(config.Vault, config.TLS)
+
+	log.Debugf("c: %+v", c)
+
+	tlsConfig := &tls.Config{
+		GetCertificate: c.GetCertificate,
+		ClientCAs:      roots,
+		// RootCAs:        cp,
+		ClientAuth: tls.RequireAndVerifyClientCert,
+		// ClientAuth:           tls.VerifyClientCertIfGiven,
 	}
 
 	s := &Server{
@@ -167,11 +203,12 @@ func NewServer(httpConfig HTTPConfig, rpcConfig RPCConfig, consumers []events.Co
 
 		rpcEventServer: &eventServer{ch: eventMachine.EventChannel},
 
-		httpConfig: httpConfig,
-		rpcConfig:  rpcConfig,
+		httpConfig: config.HTTP,
+		rpcConfig:  config.RPC,
 
 		httpServer: httpServer,
-		grpcServer: grpc.NewServer(),
+
+		grpcServer: grpc.NewServer(grpc.Creds(credentials.NewTLS(tlsConfig))),
 	}
 
 	return s

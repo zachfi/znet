@@ -24,6 +24,7 @@ type Config struct {
 	Rooms        []lights.Room        `yaml:"rooms,omitempty"`
 	RPC          RPCConfig            `yaml:"rpc,omitempty"`
 	Timer        timer.Config         `yaml:"timer,omitempty"`
+	TLS          TLSConfig            `yaml:"tls,omitempty"`
 	Vault        VaultConfig          `yaml:"vault,omitempty"`
 }
 
@@ -49,6 +50,11 @@ type HTTPConfig struct {
 type RPCConfig struct {
 	ListenAddress string
 	ServerAddress string
+}
+
+type TLSConfig struct {
+	CN     string
+	CAFile string
 }
 
 // VaultConfig is the client configuration for Vault.

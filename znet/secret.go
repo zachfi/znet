@@ -1,6 +1,7 @@
 package znet
 
 import (
+	"fmt"
 	"io/ioutil"
 
 	"github.com/hashicorp/vault/api"
@@ -11,7 +12,7 @@ import (
 func NewSecretClient(config VaultConfig) (*api.Client, error) {
 
 	apiConfig := &api.Config{
-		Address: config.Host,
+		Address: fmt.Sprintf("https://%s:8200", config.Host),
 	}
 
 	client, err := api.NewClient(apiConfig)
