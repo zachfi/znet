@@ -61,10 +61,7 @@ func runTimer(cmd *cobra.Command, args []string) {
 	var opts []grpc.DialOption
 	opts = append(opts, grpc.WithInsecure())
 
-	xConn, err := grpc.Dial(z.Config.RPC.ServerAddress, opts...)
-	if err != nil {
-		log.Error(err)
-	}
+	xConn := znet.NewConn(z.Config.RPC.ServerAddress, z.Config)
 
 	defer func() {
 		err = xConn.Close()
@@ -73,7 +70,7 @@ func runTimer(cmd *cobra.Command, args []string) {
 		}
 	}()
 
-	yConn, err := grpc.Dial(z.Config.RPC.ServerAddress, opts...)
+	yConn := znet.NewConn(z.Config.RPC.ServerAddress, z.Config)
 	if err != nil {
 		log.Error(err)
 	}

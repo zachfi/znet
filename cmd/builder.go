@@ -57,10 +57,7 @@ func runBuilder(cmd *cobra.Command, args []string) {
 	var opts []grpc.DialOption
 	opts = append(opts, grpc.WithInsecure())
 
-	conn, err := grpc.Dial(z.Config.RPC.ServerAddress, opts...)
-	if err != nil {
-		log.Error(err)
-	}
+	conn := znet.NewConn(z.Config.RPC.ServerAddress, z.Config)
 
 	x := builder.NewBuilder(conn, z.Config.Builder)
 

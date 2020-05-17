@@ -97,7 +97,7 @@ func listen(cmd *cobra.Command, args []string) {
 		z,
 	}
 
-	znetServer := znet.NewServer(z.Config.HTTP, z.Config.RPC, consumers)
+	znetServer := znet.NewServer(z.Config, consumers)
 	err = znetServer.Start(z)
 	if err != nil {
 		log.Error(err)

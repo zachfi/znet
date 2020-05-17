@@ -11,7 +11,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"google.golang.org/grpc"
 
 	"github.com/xaque208/znet/pkg/iot"
 	pb "github.com/xaque208/znet/rpc"
@@ -51,13 +50,7 @@ func runHarvest(cmd *cobra.Command, args []string) {
 
 	z.Config.RPC.ServerAddress = viper.GetString("rpc.server")
 
-	var opts []grpc.DialOption
-	opts = append(opts, grpc.WithInsecure())
-
-	conn, err := grpc.Dial(z.Config.RPC.ServerAddress, opts...)
-	if err != nil {
-		log.Error(err)
-	}
+	conn := znet.NewConn(z.Config.RPC.ServerAddress, z.Config)
 
 	defer func() {
 		err = conn.Close()
