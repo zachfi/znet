@@ -61,8 +61,12 @@ func newCertify(vaultConfig VaultConfig, tlsConfig TLSConfig) *certify.Certify {
 		KeyGenerator: &singletonKey{},
 	}
 
+	formatter := log.TextFormatter{
+		FullTimestamp: true,
+	}
 	logger := log.New()
 	logger.SetLevel(log.GetLevel())
+	logger.SetFormatter(&formatter)
 
 	c := &certify.Certify{
 		// Used when request client-side certificates and
