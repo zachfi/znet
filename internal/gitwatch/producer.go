@@ -103,7 +103,7 @@ func (e *EventProducer) handleRepos(repos []Repo, collection *string) error {
 				ev.Collection = *collection
 			}
 
-			err := events.ProduceEvent(e.conn, ev)
+			err = events.ProduceEvent(e.conn, ev)
 			if err != nil {
 				log.Error(err)
 			}
@@ -141,7 +141,6 @@ func (e *EventProducer) handleRepos(repos []Repo, collection *string) error {
 				log.Error(err)
 			}
 		}
-
 	}
 
 	return nil
@@ -156,12 +155,17 @@ func (e *EventProducer) watcher(done chan bool) error {
 		case <-done:
 			return nil
 		case <-ticker.C:
-			e.handleRepos(e.config.Repos, nil)
-
-			for _, collection := range e.config.Collections {
-				e.handleRepos(collection.Repos, &collection.Name)
+			err := e.handleRepos(e.config.Repos, nil)
+			if err != nil {
+				log.Errorf("error handling repos: %s", err)
 			}
 
+			for _, collection := range e.config.Collections {
+				err := e.handleRepos(collection.Repos, &collection.Name)
+				if err != nil {
+					log.Error(err)
+				}
+			}
 		}
 	}
 }

@@ -23,7 +23,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"google.golang.org/grpc"
 
 	"github.com/xaque208/znet/internal/inventory"
 	pb "github.com/xaque208/znet/rpc"
@@ -63,9 +62,6 @@ func runInv(cmd *cobra.Command, args []string) {
 	}
 
 	z.Config.RPC.ServerAddress = viper.GetString("rpc.server")
-
-	var opts []grpc.DialOption
-	opts = append(opts, grpc.WithInsecure())
 
 	conn := znet.NewConn(z.Config.RPC.ServerAddress, z.Config)
 

@@ -7,6 +7,7 @@ import (
 	ldap "github.com/go-ldap/ldap"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+
 	"github.com/xaque208/znet/pkg/iot"
 )
 
@@ -18,12 +19,12 @@ func (i *Inventory) ObserveIOT(node iot.Node) error {
 	var host NetworkHost
 	var err error
 
-	zone, err = i.NetworkZone("iot")
+	_, err = i.NetworkZone("iot")
 	if err != nil {
 		if strings.Contains(err.Error(), "networkZone not found") {
 			zone, err = i.NewNetworkZone("iot")
 			if err != nil {
-				return errors.Wrap(err, "error creating networkZone")
+				return errors.Wrap(err, fmt.Sprintf("error creating networkZone: %+s", "iot"))
 			}
 			log.Infof("new zone created: %+v", zone)
 		}
@@ -89,42 +90,4 @@ func (i *Inventory) hostWithMAC(mac string) (NetworkHost, error) {
 	}
 
 	return host, fmt.Errorf("unhandled result count: %d", len(searchResult.Entries))
-}
-
-func (i *Inventory) findMac(mac string) ([]string, error) {
-	var macs []string
-	searchRequest := ldap.NewSearchRequest(
-		i.config.BaseDN,
-		ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
-		fmt.Sprintf("(macAddress=%s)", mac),
-		// defaultHostAttributes,
-		nil,
-		nil,
-	)
-
-	log.Tracef("searchRequest: %+v", searchRequest)
-
-	searchResult, err := i.ldapClient.Search(searchRequest)
-	if err != nil {
-		return []string{}, err
-	}
-
-	log.Tracef("searchResult: %+v", searchResult)
-
-	for _, e := range searchResult.Entries {
-		log.Tracef("entry: %+v", *e)
-		for _, a := range e.Attributes {
-			log.Tracef("attribute: %+v", *a)
-
-			if a.Name == "macAddress" {
-				for _, m := range a.Values {
-					if strings.EqualFold(mac, m) {
-						macs = append(macs, a.Values...)
-					}
-				}
-			}
-		}
-	}
-
-	return macs, nil
 }

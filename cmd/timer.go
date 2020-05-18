@@ -8,7 +8,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"google.golang.org/grpc"
 
 	"github.com/xaque208/znet/internal/astro"
 	"github.com/xaque208/znet/internal/timer"
@@ -57,9 +56,6 @@ func runTimer(cmd *cobra.Command, args []string) {
 
 	z.Config.RPC.ServerAddress = viper.GetString("rpc.server")
 	z.Config.Timer.FutureLimit = viper.GetInt("timer.future_limit")
-
-	var opts []grpc.DialOption
-	opts = append(opts, grpc.WithInsecure())
 
 	xConn := znet.NewConn(z.Config.RPC.ServerAddress, z.Config)
 
