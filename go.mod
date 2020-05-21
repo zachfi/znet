@@ -6,8 +6,9 @@ require (
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
 	github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d // indirect
 	github.com/amimof/huego v0.0.0-20200504200310-b4a8f71aa2e3
-	github.com/blang/semver v3.5.1+incompatible
+	github.com/blang/semver v3.6.1+incompatible
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
+	github.com/circonus-labs/circonus-gometrics v2.3.1+incompatible
 	github.com/containerd/continuity v0.0.0-20190426062206-aaeac12a7ffc // indirect
 	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/fatih/structs v1.1.0 // indirect

@@ -11,8 +11,10 @@ github.com/amimof/huego
 github.com/asaskevich/govalidator
 # github.com/beorn7/perks v1.0.1
 github.com/beorn7/perks/quantile
-# github.com/blang/semver v3.5.1+incompatible
+# github.com/blang/semver v3.6.1+incompatible
 github.com/blang/semver
+# github.com/circonus-labs/circonus-gometrics v2.3.1+incompatible
+github.com/circonus-labs/circonus-gometrics/api/config
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
 # github.com/eclipse/paho.mqtt.golang v1.2.0
