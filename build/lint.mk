@@ -9,7 +9,7 @@ GOIMPORTS    ?= goimports
 
 COMMIT_LINT_CMD   ?= go-gitlint
 COMMIT_LINT_REGEX ?= "(chore|docs|feat|fix|refactor|tests?)(\([^\)]+\))?: .*"
-COMMIT_LINT_START ?= "2020-01-09"
+COMMIT_LINT_START ?= "2020-05-20"
 
 GOLINTER      = golangci-lint
 
@@ -29,7 +29,7 @@ GOTOOLS += github.com/client9/misspell/cmd/misspell \
            golang.org/x/tools/cmd/goimports
 
 
-lint: deps spell-check gofmt golangci goimports outdated
+lint: deps spell-check gofmt lint-commit golangci goimports outdated
 lint-fix: deps spell-check-fix gofmt-fix goimports
 
 #

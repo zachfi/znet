@@ -11,9 +11,7 @@ import (
 	"google.golang.org/grpc/credentials"
 )
 
-type ZnetClient struct {
-}
-
+// NewConn implements enough to get standard gRPC connection.
 func NewConn(serverAddress string, config Config) *grpc.ClientConn {
 	var opts []grpc.DialOption
 

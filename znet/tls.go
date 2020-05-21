@@ -1,6 +1,7 @@
 package znet
 
 import (
+	"context"
 	"crypto"
 	"crypto/ecdsa"
 	"crypto/elliptic"
@@ -13,6 +14,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/circonus-labs/circonus-gometrics/api/config"
+	"github.com/hashicorp/vault/api"
 	"github.com/johanbrandhorst/certify"
 	"github.com/johanbrandhorst/certify/issuers/vault"
 	log "github.com/sirupsen/logrus"
@@ -20,6 +23,16 @@ import (
 )
 
 func newCertify(vaultConfig VaultConfig, tlsConfig TLSConfig) *certify.Certify {
+	apiConfig := &api.Config{
+		Address: fmt.Sprintf("https://%s:8200", config.Host),
+	}
+
+	client, err := api.NewClient(apiConfig)
+
+	if err != nil {
+		log.Error(err)
+	}
+
 	token, err := ioutil.ReadFile(vaultConfig.TokenPath)
 	if err != nil {
 		log.Error(err)
@@ -27,11 +40,17 @@ func newCertify(vaultConfig VaultConfig, tlsConfig TLSConfig) *certify.Certify {
 
 	authMethod := &vault.RenewingToken{
 		Initial:     string(token),
-		RenewBefore: time.Hour,
+		RenewBefore: 15 * time.Minute,
 		TimeToLive:  24 * time.Hour,
 	}
 
-	// The CA for vault is the Puppet CA, which is written locally.
+	// calling SetToken here kick starts the autorenew processes
+	err = authMethod.SetToken(context.Background(), client)
+	if err != nil {
+		log.Error(err)
+	}
+
+	// The CA for vault is the Puppet CA, which is available locally.
 	b, _ := ioutil.ReadFile(tlsConfig.CAFile)
 	cp := x509.NewCertPool()
 	if !cp.AppendCertsFromPEM(b) {
@@ -61,12 +80,13 @@ func newCertify(vaultConfig VaultConfig, tlsConfig TLSConfig) *certify.Certify {
 		KeyGenerator: &singletonKey{},
 	}
 
-	formatter := log.TextFormatter{
+	logFormatter := log.TextFormatter{
 		FullTimestamp: true,
 	}
+
 	logger := log.New()
 	logger.SetLevel(log.GetLevel())
-	logger.SetFormatter(&formatter)
+	logger.SetFormatter(&logFormatter)
 
 	c := &certify.Certify{
 		// Used when request client-side certificates and
