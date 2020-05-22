@@ -21,7 +21,7 @@ require (
 	github.com/hashicorp/vault v1.1.1
 	github.com/imdario/mergo v0.3.9
 	github.com/jarcoal/httpmock v1.0.5 // indirect
-	github.com/jedib0t/go-pretty v4.3.0+incompatible
+	github.com/jedib0t/go-pretty/v6 v6.0.2
 	github.com/johanbrandhorst/certify v1.8.0
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 	github.com/lib/pq v1.2.0 // indirect
