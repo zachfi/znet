@@ -129,6 +129,7 @@ type StaticRoutes struct {
 type StaticRoute struct {
 	Prefix  string `yaml:"prefix"`
 	NextHop string `yaml:"next_hop"`
+	Discard bool   `yaml:"discard"`
 }
 
 // BGPGroup is a group of BGP neighbors.

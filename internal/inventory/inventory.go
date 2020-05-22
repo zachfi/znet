@@ -32,6 +32,7 @@ func NewInventory(config LDAPConfig) *Inventory {
 	return inv
 }
 
+// Close closes the LDAP client.
 func (i *Inventory) Close() {
 	i.ldapClient.Close()
 }
@@ -53,7 +54,7 @@ func (i *Inventory) NetworkHosts() ([]NetworkHost, error) {
 		nil,
 	)
 
-	log.Debugf("Searching LDAP base %s with query: %s", i.config.BaseDN, searchRequest.Filter)
+	log.Debugf("searching LDAP base %s with query: %s", i.config.BaseDN, searchRequest.Filter)
 
 	if i.ldapClient.IsClosing() {
 		log.Warnf("LDAP connection is closing")
@@ -73,47 +74,27 @@ func (i *Inventory) NetworkHosts() ([]NetworkHost, error) {
 			case "dn":
 				h.DN = stringValues(a)[0]
 			case "cn":
-				{
-					h.Name = stringValues(a)[0]
-				}
+				h.Name = stringValues(a)[0]
 			case "netHostPlatform":
-				{
-					h.Platform = stringValues(a)[0]
-				}
+				h.Platform = stringValues(a)[0]
 			case "netHostType":
-				{
-					h.DeviceType = stringValues(a)[0]
-				}
+				h.DeviceType = stringValues(a)[0]
 			case "netHostRole":
-				{
-					h.Role = stringValues(a)[0]
-				}
+				h.Role = stringValues(a)[0]
 			case "netHostGroup":
-				{
-					h.Group = stringValues(a)[0]
-				}
+				h.Group = stringValues(a)[0]
 			case "netHostName":
-				{
-					h.HostName = stringValues(a)[0]
-				}
+				h.HostName = stringValues(a)[0]
 			case "netHostDomain":
-				{
-					h.Domain = stringValues(a)[0]
-				}
+				h.Domain = stringValues(a)[0]
 			case "netHostWatch":
-				{
-					h.Watch = boolValues(a)[0]
-				}
+				h.Watch = boolValues(a)[0]
 			case "netHostDescription":
-				{
-					h.Description = stringValues(a)[0]
-				}
+				h.Description = stringValues(a)[0]
 			case "macAddress":
-				{
-					addrs := []string{}
-					addrs = append(addrs, stringValues(a)...)
-					h.MACAddress = addrs
-				}
+				addrs := []string{}
+				addrs = append(addrs, stringValues(a)...)
+				h.MACAddress = addrs
 			}
 		}
 
@@ -140,7 +121,7 @@ func (i *Inventory) UnknownHosts() ([]UnknownHost, error) {
 		nil,
 	)
 
-	log.Debugf("Searching LDAP base %s with query: %s", i.config.BaseDN, searchRequest.Filter)
+	log.Debugf("searching LDAP base %s with query: %s", i.config.BaseDN, searchRequest.Filter)
 
 	sr, err := i.ldapClient.Search(searchRequest)
 	if err != nil {
