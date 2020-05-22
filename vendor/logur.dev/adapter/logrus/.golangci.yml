@@ -6,6 +6,7 @@ linters-settings:
 
 linters:
     enable-all: true
-
-service:
-    golangci-lint-version: 1.17.x
+    disable:
+        - funlen
+        - wsl
+        - gomnd
