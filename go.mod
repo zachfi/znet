@@ -32,9 +32,8 @@ require (
 	github.com/pelletier/go-toml v1.4.0 // indirect
 	github.com/pierrec/lz4 v2.2.7+incompatible // indirect
 	github.com/pkg/errors v0.9.1
-	github.com/prometheus/client_golang v1.1.0
+	github.com/prometheus/client_golang v1.6.0
 	github.com/prometheus/common v0.10.0
-	github.com/prometheus/procfs v0.0.4 // indirect
 	github.com/scottdware/go-junos v0.0.0-20191101184514-da1ec4631b03
 	github.com/sirupsen/logrus v1.6.0
 	github.com/smartystreets/assertions v1.0.0 // indirect
@@ -49,7 +48,6 @@ require (
 	github.com/xaque208/rftoy v0.0.0-20191203015236-4727b87c3461
 	go.mongodb.org/mongo-driver v1.1.1 // indirect
 	golang.org/x/crypto v0.0.0-20200429183012-4b2356b1ed79
-	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e // indirect
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
 	google.golang.org/genproto v0.0.0-20191115221424-83cc0476cb11 // indirect
 	google.golang.org/grpc v1.29.1
