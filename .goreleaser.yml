@@ -1,26 +1,59 @@
-# This is an example goreleaser.yaml file with some sane defaults.
-# Make sure to check the documentation at http://goreleaser.com
+project_name: znet
+
+env:
+  - GO111MODULE=on
+
 before:
   hooks:
-    # You may remove this if you don't use go modules.
     - go mod download
-    # you may remove this if you don't need go generate
-    - go generate ./...
+
 builds:
-- env:
-  - CGO_ENABLED=0
+  - id: znet
+    dir: cmd/znet
+    binary: znet
+    env:
+      - CGO_ENABLED=0
+    goarm:
+      - 5
+      - 6
+      - 7
+    goos:
+      - linux
+      - freebsd
+    goarch:
+      - amd64
+      - arm
+    ldflags:
+      - -s -w -X main.version={{.Version}} -X main.appName={{.Binary}}
+    ignore:
+      - goos: freebsd
+        goarch: arm
+
 archives:
-- replacements:
-    freebsd: FreeBSD
-    linux: Linux
-    amd64: x86_64
+  - replacements:
+      freebsd: FreeBSD
+      linux: Linux
+      amd64: x86_64
 checksum:
-  name_template: 'checksums.txt'
+  name_template: "{{ .ProjectName }}_checksums.txt"
 snapshot:
   name_template: "{{ .Tag }}-next"
 changelog:
   sort: asc
   filters:
     exclude:
-    - '^docs:'
-    - '^test:'
+      - "^docs:"
+      - "^test:"
+dockers:
+  - dockerfile: build/package/Dockerfile
+    image_templates:
+      - "xaque208/znet:{{ .Tag }}"
+      - "xaque208/znet:v{{ .Major }}.{{ .Minor }}"
+      - "xaque208/znet:latest"
+    binaries:
+      - znet
+    build_flag_templates:
+      - "--pull"
+      - "--label=repository=http://github.com/xaque208/znet"
+release:
+  name_template: "{{.ProjectName}} v{{.Version}}"
