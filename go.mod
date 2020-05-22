@@ -54,5 +54,5 @@ require (
 	google.golang.org/genproto v0.0.0-20191115221424-83cc0476cb11 // indirect
 	google.golang.org/grpc v1.29.1
 	gopkg.in/yaml.v2 v2.3.0
-	logur.dev/adapter/logrus v0.2.0
+	logur.dev/adapter/logrus v0.5.0
 )

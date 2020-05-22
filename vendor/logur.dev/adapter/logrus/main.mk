@@ -1,3 +1,5 @@
+# Main targets for a Go library project
+#
 # A Self-Documenting Makefile: http://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 
 OS = $(shell uname | tr A-Z a-z)
@@ -6,7 +8,6 @@ export PATH := $(abspath bin/):${PATH}
 # Build variables
 BUILD_DIR ?= build
 export CGO_ENABLED ?= 0
-export GOOS = $(shell go env GOOS)
 ifeq (${VERBOSE}, 1)
 ifeq ($(filter -v,${GOARGS}),)
 	GOARGS += -v
@@ -15,12 +16,8 @@ TEST_FORMAT = short-verbose
 endif
 
 # Dependency versions
-GOTESTSUM_VERSION = 0.4.0
-GOLANGCI_VERSION = 1.21.0
-
-# Add the ability to override some variables
-# Use with care
--include override.mk
+GOTESTSUM_VERSION ?= 0.4.1
+GOLANGCI_VERSION ?= 1.24.0
 
 .PHONY: clear
 clear: ## Clear the working area and the project
@@ -48,7 +45,7 @@ bin/golangci-lint: bin/golangci-lint-${GOLANGCI_VERSION}
 	@ln -sf golangci-lint-${GOLANGCI_VERSION} bin/golangci-lint
 bin/golangci-lint-${GOLANGCI_VERSION}:
 	@mkdir -p bin
-	curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | bash -s -- -b ./bin/ v${GOLANGCI_VERSION}
+	curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | BINARY=golangci-lint bash -s -- v${GOLANGCI_VERSION}
 	@mv bin/golangci-lint $@
 
 .PHONY: lint
@@ -101,9 +98,6 @@ minor: ## Release a new minor version
 major: ## Release a new major version
 	@${MAKE} release-$(shell (git describe --abbrev=0 --tags 2> /dev/null || echo "0.0.0") | sed 's/^v//' | awk -F'[ .]' '{print $$1+1".0.0"}')
 
-# Add custom targets here
--include custom.mk
-
 .PHONY: list
 list: ## List all make targets
 	@${MAKE} -pRrn : -f $(MAKEFILE_LIST) 2>/dev/null | awk -v RS= -F: '/^# File/,/^# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | egrep -v -e '^[^[:alnum:]]' -e '^$@$$' | sort
@@ -116,3 +110,7 @@ help:
 # Variable outputting/exporting rules
 var-%: ; @echo $($*)
 varexport-%: ; @echo $*=$($*)
+
+# Update main targets
+_update:
+	curl https://raw.githubusercontent.com/sagikazarmark/makefiles/master/go-library/main.mk > main.mk

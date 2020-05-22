@@ -1,13 +1,13 @@
 package logur
 
 import (
+	"context"
 	"fmt"
 	"strings"
 )
 
 // Logger is a unified interface for various logging use cases and practices, including:
 // 		- leveled logging
-// 		- leveled formatters
 // 		- structured logging
 type Logger interface {
 	// Trace logs a Trace event.
@@ -40,133 +40,132 @@ type Logger interface {
 	Error(msg string, fields ...map[string]interface{})
 }
 
+// LoggerContext is an optional interface that MAY be implemented by a Logger.
+// It is similar to Logger, but it receives a context as the first parameter.
+// An implementation MAY extract information from the context and annotate the log context with it.
+//
+// LoggerContext MAY honor the deadline carried by the context, but that's not a hard requirement.
+type LoggerContext interface {
+	// TraceContext logs a Trace event.
+	//
+	// Even more fine-grained information than Debug events.
+	// Loggers not supporting this level should fall back to Debug.
+	TraceContext(ctx context.Context, msg string, fields ...map[string]interface{})
+
+	// DebugContext logs a Debug event.
+	//
+	// A verbose series of information events.
+	// They are useful when debugging the system.
+	DebugContext(ctx context.Context, msg string, fields ...map[string]interface{})
+
+	// InfoContext logs an Info event.
+	//
+	// General information about what's happening inside the system.
+	InfoContext(ctx context.Context, msg string, fields ...map[string]interface{})
+
+	// WarnContext logs a Warn(ing) event.
+	//
+	// Non-critical events that should be looked at.
+	WarnContext(ctx context.Context, msg string, fields ...map[string]interface{})
+
+	// ErrorContext logs an Error event.
+	//
+	// Critical events that require immediate attention.
+	// Loggers commonly provide Fatal and Panic levels above Error level,
+	// but exiting and panicing is out of scope for a logging library.
+	ErrorContext(ctx context.Context, msg string, fields ...map[string]interface{})
+}
+
+// LoggerFacade is a combination of Logger and LoggerContext.
+// It's sole purpose is to make the API of the package concise by exposing a common interface type
+// for returned handlers. It's not supposed to be used by consumers of this package.
+//
+// It goes directly against the "Use interfaces, return structs" idiom of Go,
+// but at the current phase of the package the smaller API surface makes more sense.
+//
+// In the future it might get replaced with concrete types.
+type LoggerFacade interface {
+	Logger
+	LoggerContext
+}
+
+func ensureLoggerFacade(logger Logger) LoggerFacade {
+	if logger, ok := logger.(LoggerFacade); ok {
+		return logger
+	}
+
+	if levelEnabler, ok := logger.(LevelEnabler); ok {
+		return levelEnablerLoggerFacade{
+			LoggerFacade: loggerFacade{logger},
+			LevelEnabler: levelEnabler,
+		}
+	}
+
+	return loggerFacade{logger}
+}
+
+type loggerFacade struct {
+	Logger
+}
+
+func (l loggerFacade) TraceContext(_ context.Context, msg string, fields ...map[string]interface{}) {
+	l.Trace(msg, fields...)
+}
+
+func (l loggerFacade) DebugContext(_ context.Context, msg string, fields ...map[string]interface{}) {
+	l.Debug(msg, fields...)
+}
+
+func (l loggerFacade) InfoContext(_ context.Context, msg string, fields ...map[string]interface{}) {
+	l.Info(msg, fields...)
+}
+
+func (l loggerFacade) WarnContext(_ context.Context, msg string, fields ...map[string]interface{}) {
+	l.Warn(msg, fields...)
+}
+
+func (l loggerFacade) ErrorContext(_ context.Context, msg string, fields ...map[string]interface{}) {
+	l.Error(msg, fields...)
+}
+
+type levelEnablerLoggerFacade struct {
+	LoggerFacade
+	LevelEnabler
+}
+
 // Fields is used to define structured fields which are appended to log events.
 // It can be used as a shorthand for map[string]interface{}.
 type Fields map[string]interface{}
 
-// LogFunc is a function recording a log event.
+// LogFunc records a log event.
 type LogFunc func(msg string, fields ...map[string]interface{})
 
-type noopLogger struct{}
+// LogContextFunc records a log event.
+type LogContextFunc func(ctx context.Context, msg string, fields ...map[string]interface{})
+
+// NoopLogger is a no-op logger that discards all received log events.
+//
+// It implements both Logger and LoggerContext interfaces.
+type NoopLogger struct{}
+
+func (NoopLogger) Trace(_ string, _ ...map[string]interface{}) {}
+func (NoopLogger) Debug(_ string, _ ...map[string]interface{}) {}
+func (NoopLogger) Info(_ string, _ ...map[string]interface{})  {}
+func (NoopLogger) Warn(_ string, _ ...map[string]interface{})  {}
+func (NoopLogger) Error(_ string, _ ...map[string]interface{}) {}
+
+func (NoopLogger) TraceContext(_ context.Context, _ string, _ ...map[string]interface{}) {}
+func (NoopLogger) DebugContext(_ context.Context, _ string, _ ...map[string]interface{}) {}
+func (NoopLogger) InfoContext(_ context.Context, _ string, _ ...map[string]interface{})  {}
+func (NoopLogger) WarnContext(_ context.Context, _ string, _ ...map[string]interface{})  {}
+func (NoopLogger) ErrorContext(_ context.Context, _ string, _ ...map[string]interface{}) {}
 
 // NewNoopLogger creates a no-op logger that discards all received log events.
 // Useful in examples and as a fallback logger.
+//
+// Deprecated: use NoopLogger.
 func NewNoopLogger() Logger {
-	return &noopLogger{}
-}
-
-func (*noopLogger) Trace(msg string, fields ...map[string]interface{}) {}
-func (*noopLogger) Debug(msg string, fields ...map[string]interface{}) {}
-func (*noopLogger) Info(msg string, fields ...map[string]interface{})  {}
-func (*noopLogger) Warn(msg string, fields ...map[string]interface{})  {}
-func (*noopLogger) Error(msg string, fields ...map[string]interface{}) {}
-
-// WithFields returns a new logger instance that attaches the given fields to every subsequent log call.
-func WithFields(logger Logger, fields map[string]interface{}) Logger {
-	if len(fields) == 0 {
-		return logger
-	}
-
-	// Do not add a new layer
-	// Create a new logger instead with the parent fields
-	if l, ok := logger.(*fieldLogger); ok && len(l.fields) > 0 {
-		_fields := make(map[string]interface{}, len(l.fields)+len(fields))
-
-		for key, value := range l.fields {
-			_fields[key] = value
-		}
-
-		for key, value := range fields {
-			_fields[key] = value
-		}
-
-		fields = _fields
-		logger = l.logger
-	}
-
-	l := &fieldLogger{logger: logger, fields: fields}
-
-	if levelEnabler, ok := logger.(LevelEnabler); ok {
-		l.levelEnabler = levelEnabler
-	}
-
-	return l
-}
-
-// fieldLogger holds a context and passes it to the underlying logger when a log event is recorded.
-type fieldLogger struct {
-	logger       Logger
-	fields       map[string]interface{}
-	levelEnabler LevelEnabler
-}
-
-// Trace implements the logur.Logger interface.
-func (l *fieldLogger) Trace(msg string, fields ...map[string]interface{}) {
-	l.log(Trace, l.logger.Trace, msg, fields)
-}
-
-// Debug implements the logur.Logger interface.
-func (l *fieldLogger) Debug(msg string, fields ...map[string]interface{}) {
-	l.log(Debug, l.logger.Debug, msg, fields)
-}
-
-// Info implements the logur.Logger interface.
-func (l *fieldLogger) Info(msg string, fields ...map[string]interface{}) {
-	l.log(Info, l.logger.Info, msg, fields)
-}
-
-// Warn implements the logur.Logger interface.
-func (l *fieldLogger) Warn(msg string, fields ...map[string]interface{}) {
-	l.log(Warn, l.logger.Warn, msg, fields)
-}
-
-// Error implements the logur.Logger interface.
-func (l *fieldLogger) Error(msg string, fields ...map[string]interface{}) {
-	l.log(Error, l.logger.Error, msg, fields)
-}
-
-// log deduplicates some field logger code.
-func (l *fieldLogger) log(level Level, logFunc LogFunc, msg string, fields []map[string]interface{}) {
-	if !l.levelEnabled(level) {
-		return
-	}
-
-	var f = l.fields
-	if len(fields) > 0 {
-		f = l.mergeFields(fields[0])
-	}
-
-	logFunc(msg, f)
-}
-
-func (l *fieldLogger) mergeFields(fields map[string]interface{}) map[string]interface{} {
-	if len(fields) == 0 { // Not having any fields passed to the log function has a higher chance
-		return l.fields
-	}
-
-	if len(l.fields) == 0 { // This is possible too, but has a much lower probability
-		return fields
-	}
-
-	f := make(map[string]interface{}, len(fields)+len(l.fields))
-
-	for key, value := range l.fields {
-		f[key] = value
-	}
-
-	for key, value := range fields {
-		f[key] = value
-	}
-
-	return f
-}
-
-func (l *fieldLogger) levelEnabled(level Level) bool {
-	if l.levelEnabler != nil {
-		return l.levelEnabler.LevelEnabled(level)
-	}
-
-	return true
+	return NoopLogger{}
 }
 
 // PrintLogger logs messages with fmt.Print* function semantics.
