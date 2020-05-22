@@ -46,21 +46,21 @@ func NewZnet(file string) (*Znet, error) {
 
 	environment, err := LoadEnvironment(config.Vault, e)
 	if err != nil {
-		log.Errorf("Failed to load environment: %s", err)
+		log.Errorf("failed to load environment: %s", err)
 	}
 
 	inv := inventory.NewInventory(config.LDAP)
 
 	lights := lights.NewLights(config.Lights)
 
-	z := &Znet{
+	z := Znet{
 		Config:      config,
 		Environment: environment,
 		Inventory:   inv,
 		Lights:      lights,
 	}
 
-	return z, nil
+	return &z, nil
 }
 
 // LoadConfig receives a file path for a configuration to load.
@@ -212,7 +212,7 @@ func (z *Znet) HierarchyForDevice(host inventory.NetworkHost) []string {
 			files = append(files, templateAbs)
 
 		} else if os.IsNotExist(err) {
-			log.Warnf("Data file %s does not exist", templateAbs)
+			log.Warnf("data file %s does not exist", templateAbs)
 		}
 	}
 
@@ -235,18 +235,19 @@ func (z *Znet) TemplatesForDevice(host inventory.NetworkHost) []string {
 			} else {
 				files = append(files, foundFiles...)
 			}
-
 		} else if os.IsNotExist(err) {
-			log.Warnf("Template path %s does not exist", templateAbs)
+			log.Warnf("template path %s does not exist", templateAbs)
 		}
 	}
+
+	log.Tracef("found %d templates for host: %s", len(files), host.HostName)
 
 	return files
 }
 
 // RenderHostTemplateFile renders a template file using a Host object.
 func (z *Znet) RenderHostTemplateFile(host inventory.NetworkHost, path string) string {
-	// log.Debugf("Rendering host template file %s for host %s", path, host.Name)
+	// log.Debugf("rendering host template file %s for host %s", path, host.Name)
 
 	b, err := ioutil.ReadFile(path)
 	if err != nil {

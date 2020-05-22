@@ -8,8 +8,7 @@ import (
 
 // GetEnvironmentConfig receives a slice of environment configurations and returns the one that matches the given name.
 func GetEnvironmentConfig(environments []EnvironmentConfig, envName string) (EnvironmentConfig, error) {
-
-	log.Debugf("looking for environment %s: %+v", envName, environments)
+	log.Debugf("getting environment %s", envName)
 
 	for _, e := range environments {
 		if e.Name == envName {

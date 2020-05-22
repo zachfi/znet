@@ -15,8 +15,6 @@ github.com/beorn7/perks/quantile
 github.com/blang/semver
 # github.com/cespare/xxhash/v2 v2.1.1
 github.com/cespare/xxhash/v2
-# github.com/circonus-labs/circonus-gometrics v2.3.1+incompatible
-github.com/circonus-labs/circonus-gometrics/api/config
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
 # github.com/eclipse/paho.mqtt.golang v1.2.0

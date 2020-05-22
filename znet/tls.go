@@ -14,7 +14,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/circonus-labs/circonus-gometrics/api/config"
 	"github.com/hashicorp/vault/api"
 	"github.com/johanbrandhorst/certify"
 	"github.com/johanbrandhorst/certify/issuers/vault"
@@ -24,11 +23,10 @@ import (
 
 func newCertify(vaultConfig VaultConfig, tlsConfig TLSConfig) *certify.Certify {
 	apiConfig := &api.Config{
-		Address: fmt.Sprintf("https://%s:8200", config.Host),
+		Address: fmt.Sprintf("https://%s:8200", vaultConfig.Host),
 	}
 
 	client, err := api.NewClient(apiConfig)
-
 	if err != nil {
 		log.Error(err)
 	}
@@ -50,13 +48,6 @@ func newCertify(vaultConfig VaultConfig, tlsConfig TLSConfig) *certify.Certify {
 		log.Error(err)
 	}
 
-	// The CA for vault is the Puppet CA, which is available locally.
-	b, _ := ioutil.ReadFile(tlsConfig.CAFile)
-	cp := x509.NewCertPool()
-	if !cp.AppendCertsFromPEM(b) {
-		log.Error("credentials: failed to append certificates")
-	}
-
 	issuer := &vault.Issuer{
 		URL: &url.URL{
 			Scheme: "https",
@@ -65,10 +56,24 @@ func newCertify(vaultConfig VaultConfig, tlsConfig TLSConfig) *certify.Certify {
 		AuthMethod: authMethod,
 		Role:       "znet",
 		TimeToLive: 72 * time.Hour,
-		TLSConfig: &tls.Config{
+	}
+
+	if tlsConfig.CAFile != "" {
+		log.Debugf("loading CA file: %s", tlsConfig.CAFile)
+
+		// The CA for vault is the Puppet CA, which is available locally.
+		b, _ := ioutil.ReadFile(tlsConfig.CAFile)
+		cp := x509.NewCertPool()
+		if !cp.AppendCertsFromPEM(b) {
+			log.Error("credentials: failed to append certificates")
+		}
+
+		issuer.TLSConfig = &tls.Config{
 			RootCAs:            cp,
 			InsecureSkipVerify: false,
-		},
+		}
+	} else {
+		log.Warn("skipping TLS due to missing tlsConfig.CAFile")
 	}
 
 	cfg := certify.CertConfig{

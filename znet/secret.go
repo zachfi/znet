@@ -10,7 +10,6 @@ import (
 
 // NewSecretClient receives a configuration and returns a client for Vault.
 func NewSecretClient(config VaultConfig) (*api.Client, error) {
-
 	apiConfig := &api.Config{
 		Address: fmt.Sprintf("https://%s:8200", config.Host),
 	}
