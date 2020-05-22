@@ -8,7 +8,7 @@ require (
 	github.com/amimof/huego v0.0.0-20200504200310-b4a8f71aa2e3
 	github.com/blang/semver v3.6.1+incompatible
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
-	github.com/circonus-labs/circonus-gometrics v2.3.1+incompatible
+	github.com/circonus-labs/circonus-gometrics/v3 v3.0.0
 	github.com/containerd/continuity v0.0.0-20190426062206-aaeac12a7ffc // indirect
 	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/fatih/structs v1.1.0 // indirect
