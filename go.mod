@@ -8,6 +8,7 @@ require (
 	github.com/amimof/huego v0.0.0-20200504200310-b4a8f71aa2e3
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
+	github.com/circonus-labs/circonus-gometrics v2.3.1+incompatible
 	github.com/containerd/continuity v0.0.0-20190426062206-aaeac12a7ffc // indirect
 	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/fatih/structs v1.1.0 // indirect
@@ -32,7 +33,7 @@ require (
 	github.com/pierrec/lz4 v2.2.7+incompatible // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.1.0
-	github.com/prometheus/common v0.9.1
+	github.com/prometheus/common v0.10.0
 	github.com/prometheus/procfs v0.0.4 // indirect
 	github.com/scottdware/go-junos v0.0.0-20191101184514-da1ec4631b03
 	github.com/sirupsen/logrus v1.6.0
