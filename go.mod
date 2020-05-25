@@ -12,7 +12,7 @@ require (
 	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/frankban/quicktest v1.7.2 // indirect
-	github.com/go-git/go-git/v5 v5.0.0
+	github.com/go-git/go-git/v5 v5.1.0
 	github.com/go-ldap/ldap v3.1.10+incompatible
 	github.com/go-openapi/strfmt v0.19.3 // indirect
 	github.com/golang/protobuf v1.4.2
@@ -20,7 +20,7 @@ require (
 	github.com/hashicorp/vault v1.1.1
 	github.com/imdario/mergo v0.3.9
 	github.com/jarcoal/httpmock v1.0.5 // indirect
-	github.com/jedib0t/go-pretty/v6 v6.0.2
+	github.com/jedib0t/go-pretty v4.3.0+incompatible
 	github.com/johanbrandhorst/certify v1.8.0
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 	github.com/lib/pq v1.2.0 // indirect
