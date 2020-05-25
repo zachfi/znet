@@ -96,9 +96,20 @@ type BGP struct {
 
 // Routing is the routing configuration on a Juniper router.
 type Routing struct {
-	RouterID     string       `yaml:"router_id"`
-	ASN          int          `yaml:"asn"`
-	StaticRoutes StaticRoutes `yaml:"static_routes"`
+	RouterID     string            `yaml:"router_id"`
+	ASN          int               `yaml:"asn"`
+	StaticRoutes StaticRoutes      `yaml:"static_routes"`
+	Instances    []RoutingInstance `yaml:"instances"`
+}
+
+type RoutingInstance struct {
+	Name                  string   `yaml:"name"`
+	Description           string   `yaml:"description"`
+	InstanceType          string   `yaml:"instance_type"`
+	Interfaces            []string `yaml:"interfaces"`
+	BGP                   BGP      `yaml:"bgp"`
+	DHCPForwardInterfaces []string `yaml:"dhcp_forward_interfaces"`
+	DHCPServer            string   `yaml:"dhcp_server"`
 }
 
 // PolicyOptions configures the options for a policy.
