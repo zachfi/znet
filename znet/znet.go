@@ -89,7 +89,7 @@ func (z *Znet) LoadData(configDir string) {
 }
 
 // ConfigureNetworkHost renders the templates using associated data for a network host.  The hosts about which to load the templates, are retrieved from LDAP.
-func (z *Znet) ConfigureNetworkHost(host *inventory.NetworkHost, commit bool, auth *junos.AuthMethod, show bool) error {
+func (z *Znet) ConfigureNetworkHost(host *inventory.NetworkHost, commit bool, confirm int, auth *junos.AuthMethod, show bool) error {
 
 	// log.Debugf("Using auth: %+v", auth)
 	session, err := junos.NewSession(host.HostName, auth)
@@ -142,6 +142,18 @@ func (z *Znet) ConfigureNetworkHost(host *inventory.NetworkHost, commit bool, au
 		log.Infof("configuration changes for %s: %s", host.HostName, diff)
 
 		if commit {
+			if confirm > 0 {
+				err = session.CommitConfirm(confirm)
+				if err != nil {
+					return err
+				}
+			} else {
+				err = session.Commit()
+				if err != nil {
+					return err
+				}
+			}
+
 			err = session.Commit()
 			if err != nil {
 				return err

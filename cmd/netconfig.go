@@ -29,6 +29,7 @@ import (
 var commit bool
 var show bool
 var limit int
+var confirm int
 
 // invCmd represents the inv command
 var netconfigCmd = &cobra.Command{
@@ -47,6 +48,7 @@ func init() {
 	netconfigCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Increase verbosity")
 	netconfigCmd.PersistentFlags().BoolVarP(&show, "show", "s", false, "Show the rendered templates")
 	netconfigCmd.PersistentFlags().IntVarP(&limit, "limit", "l", 0, "Limit the number of devices to configure")
+	netconfigCmd.PersistentFlags().IntVarP(&confirm, "confirm", "", 0, "Number of minutes at which the config will be rolled back")
 }
 
 func runNetconfig(cmd *cobra.Command, args []string) {
@@ -101,13 +103,17 @@ func runNetconfig(cmd *cobra.Command, args []string) {
 	wg := sync.WaitGroup{}
 
 	for _, host := range hosts {
+		// if host.Name != "cr01" {
+		// 	continue
+		// }
+
 		wg.Add(1)
 		go func(h inventory.NetworkHost) {
 
 			if h.Platform == "junos" {
 				log.Debugf("configuring network host: %+v", h.HostName)
 
-				err = z.ConfigureNetworkHost(&h, commit, auth, show)
+				err = z.ConfigureNetworkHost(&h, commit, confirm, auth, show)
 				if err != nil {
 					log.Error(err)
 				}
