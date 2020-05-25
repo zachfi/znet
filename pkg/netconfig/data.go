@@ -102,14 +102,16 @@ type Routing struct {
 	Instances    []RoutingInstance `yaml:"instances"`
 }
 
+// RoutingInstance is the configuration for a Juniper routing instance.
 type RoutingInstance struct {
-	Name                  string   `yaml:"name"`
-	Description           string   `yaml:"description"`
-	InstanceType          string   `yaml:"instance_type"`
-	Interfaces            []string `yaml:"interfaces"`
-	BGP                   BGP      `yaml:"bgp"`
-	DHCPForwardInterfaces []string `yaml:"dhcp_forward_interfaces"`
-	DHCPServer            string   `yaml:"dhcp_server"`
+	Name                  string       `yaml:"name"`
+	Description           string       `yaml:"description"`
+	InstanceType          string       `yaml:"instance_type"`
+	Interfaces            []string     `yaml:"interfaces"`
+	BGP                   BGP          `yaml:"bgp"`
+	DHCPForwardInterfaces []string     `yaml:"dhcp_forward_interfaces"`
+	DHCPServer            string       `yaml:"dhcp_server"`
+	StaticRoutes          StaticRoutes `yaml:"static_routes"`
 }
 
 // PolicyOptions configures the options for a policy.
