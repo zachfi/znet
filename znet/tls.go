@@ -1,7 +1,6 @@
 package znet
 
 import (
-	"context"
 	"crypto"
 	"crypto/ecdsa"
 	"crypto/elliptic"
@@ -10,7 +9,6 @@ import (
 	"crypto/x509"
 	"fmt"
 	"io/ioutil"
-	"net/url"
 	"sync"
 	"time"
 
@@ -36,27 +34,16 @@ func newCertify(vaultConfig VaultConfig, tlsConfig TLSConfig) *certify.Certify {
 		log.Error(err)
 	}
 
+	client.SetToken(string(token))
+
 	authMethod := &vault.RenewingToken{
 		Initial:     string(token),
 		RenewBefore: 15 * time.Minute,
 		TimeToLive:  24 * time.Hour,
 	}
 
-	// calling SetToken here kick starts the autorenew processes
-	err = authMethod.SetToken(context.Background(), client)
-	if err != nil {
-		log.Error(err)
-	}
-
-	issuer := &vault.Issuer{
-		URL: &url.URL{
-			Scheme: "https",
-			Host:   fmt.Sprintf("%s:8200", vaultConfig.Host),
-		},
-		AuthMethod: authMethod,
-		Role:       "znet",
-		TimeToLive: 72 * time.Hour,
-	}
+	issuer := vault.FromClient(client, "znet")
+	issuer.AuthMethod = authMethod
 
 	if tlsConfig.CAFile != "" {
 		log.Debugf("loading CA file: %s", tlsConfig.CAFile)
