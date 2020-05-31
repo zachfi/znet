@@ -7,12 +7,10 @@ import (
 	"crypto/rand"
 	"crypto/tls"
 	"crypto/x509"
-	"fmt"
 	"io/ioutil"
 	"sync"
 	"time"
 
-	"github.com/hashicorp/vault/api"
 	"github.com/johanbrandhorst/certify"
 	"github.com/johanbrandhorst/certify/issuers/vault"
 	log "github.com/sirupsen/logrus"
@@ -20,24 +18,14 @@ import (
 )
 
 func newCertify(vaultConfig VaultConfig, tlsConfig TLSConfig) *certify.Certify {
-	apiConfig := &api.Config{
-		Address: fmt.Sprintf("https://%s:8200", vaultConfig.Host),
-	}
 
-	client, err := api.NewClient(apiConfig)
+	client, err := NewSecretClient(vaultConfig)
 	if err != nil {
 		log.Error(err)
 	}
-
-	token, err := ioutil.ReadFile(vaultConfig.TokenPath)
-	if err != nil {
-		log.Error(err)
-	}
-
-	client.SetToken(string(token))
 
 	authMethod := &vault.RenewingToken{
-		Initial:     string(token),
+		Initial:     client.Token(),
 		RenewBefore: 15 * time.Minute,
 		TimeToLive:  24 * time.Hour,
 	}
