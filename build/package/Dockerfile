@@ -1,3 +1,3 @@
 FROM alpine:3.11
-
-ENTRYPOINT ["/bin/bash"]
+COPY znet /bin/znet
+ENTRYPOINT ["/bin/znet"]
