@@ -3,7 +3,7 @@ package inventory
 import (
 	"time"
 
-	ldap "github.com/go-ldap/ldap"
+	ldap "github.com/go-ldap/ldap/v3"
 	log "github.com/sirupsen/logrus"
 )
 

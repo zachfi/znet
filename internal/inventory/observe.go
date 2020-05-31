@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	ldap "github.com/go-ldap/ldap"
+	ldap "github.com/go-ldap/ldap/v3"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 

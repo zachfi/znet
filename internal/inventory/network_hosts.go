@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	ldap "github.com/go-ldap/ldap"
+	ldap "github.com/go-ldap/ldap/v3"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"

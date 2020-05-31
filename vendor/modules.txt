@@ -85,8 +85,8 @@ github.com/go-git/go-git/v5/utils/merkletrie/filesystem
 github.com/go-git/go-git/v5/utils/merkletrie/index
 github.com/go-git/go-git/v5/utils/merkletrie/internal/frame
 github.com/go-git/go-git/v5/utils/merkletrie/noder
-# github.com/go-ldap/ldap v3.1.10+incompatible
-github.com/go-ldap/ldap
+# github.com/go-ldap/ldap/v3 v3.1.10
+github.com/go-ldap/ldap/v3
 # github.com/go-openapi/errors v0.19.2
 github.com/go-openapi/errors
 # github.com/go-openapi/strfmt v0.19.3
