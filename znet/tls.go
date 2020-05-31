@@ -18,7 +18,6 @@ import (
 )
 
 func newCertify(vaultConfig VaultConfig, tlsConfig TLSConfig) *certify.Certify {
-
 	client, err := NewSecretClient(vaultConfig)
 	if err != nil {
 		log.Error(err)

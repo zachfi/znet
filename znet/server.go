@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
@@ -37,6 +38,10 @@ type Server struct {
 	grpcServer *grpc.Server
 
 	rpcEventServer *eventServer
+}
+
+type statusCheckHandler struct {
+	server *Server
 }
 
 var (
@@ -214,9 +219,28 @@ func NewServer(config Config, consumers []events.Consumer) *Server {
 	return s
 }
 
+func (s *statusCheckHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	status := make(map[string]interface{})
+
+	status["status"] = "healthy"
+
+	grpcInfo := s.server.grpcServer.GetServiceInfo()
+
+	status["grpcServices"] = len(grpcInfo)
+
+	payload, err := json.MarshalIndent(status, "", "  ")
+	if err != nil {
+		log.Error(err)
+	}
+
+	fmt.Fprint(w, string(payload))
+}
+
 // Start is used to launch the server routines.
 func (s *Server) Start(z *Znet) error {
 	http.Handle("/metrics", promhttp.Handler())
+
+	http.Handle("/status/check", &statusCheckHandler{server: s})
 
 	if s.httpConfig.ListenAddress != "" {
 		log.Infof("starting HTTP listener %s", s.httpConfig.ListenAddress)
