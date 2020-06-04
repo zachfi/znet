@@ -193,8 +193,6 @@ func NewServer(config Config, consumers []events.Consumer) *Server {
 
 	c := newCertify(config.Vault, config.TLS)
 
-	log.Debugf("c: %+v", c)
-
 	tlsConfig := &tls.Config{
 		GetCertificate: c.GetCertificate,
 		ClientCAs:      roots,
