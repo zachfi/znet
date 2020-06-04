@@ -219,13 +219,13 @@ github.com/spf13/jwalterweatherman
 github.com/spf13/pflag
 # github.com/spf13/viper v1.7.0
 github.com/spf13/viper
-# github.com/stretchr/testify v1.5.1
+# github.com/stretchr/testify v1.6.0
 github.com/stretchr/testify/assert
 # github.com/subosito/gotenv v1.2.0
 github.com/subosito/gotenv
 # github.com/tcnksm/go-input v0.0.0-20180404061846-548a7d7a8ee8
 github.com/tcnksm/go-input
-# github.com/tj/assert v0.0.0-20190920132354-ee03d75cd160
+# github.com/tj/assert v0.0.1
 github.com/tj/assert
 # github.com/xanzy/ssh-agent v0.2.1
 github.com/xanzy/ssh-agent
@@ -367,6 +367,8 @@ gopkg.in/ini.v1
 gopkg.in/warnings.v0
 # gopkg.in/yaml.v2 v2.3.0
 gopkg.in/yaml.v2
+# gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
+gopkg.in/yaml.v3
 # logur.dev/adapter/logrus v0.5.0
 logur.dev/adapter/logrus
 # logur.dev/logur v0.16.1
