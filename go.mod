@@ -13,7 +13,7 @@ require (
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/frankban/quicktest v1.7.2 // indirect
 	github.com/go-git/go-git/v5 v5.1.0
-	github.com/go-ldap/ldap/v3 v3.1.10
+	github.com/go-ldap/ldap/v3 v3.1.11
 	github.com/go-openapi/strfmt v0.19.3 // indirect
 	github.com/golang/protobuf v1.4.2
 	github.com/hashicorp/go-retryablehttp v0.6.4 // indirect
