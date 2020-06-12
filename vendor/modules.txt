@@ -29,7 +29,7 @@ github.com/emirpasic/gods/trees/binaryheap
 github.com/emirpasic/gods/utils
 # github.com/fsnotify/fsnotify v1.4.7
 github.com/fsnotify/fsnotify
-# github.com/go-asn1-ber/asn1-ber v1.3.1
+# github.com/go-asn1-ber/asn1-ber v1.5.0
 github.com/go-asn1-ber/asn1-ber
 # github.com/go-git/gcfg v1.5.0
 github.com/go-git/gcfg
@@ -85,7 +85,7 @@ github.com/go-git/go-git/v5/utils/merkletrie/filesystem
 github.com/go-git/go-git/v5/utils/merkletrie/index
 github.com/go-git/go-git/v5/utils/merkletrie/internal/frame
 github.com/go-git/go-git/v5/utils/merkletrie/noder
-# github.com/go-ldap/ldap/v3 v3.1.10
+# github.com/go-ldap/ldap/v3 v3.1.11
 github.com/go-ldap/ldap/v3
 # github.com/go-openapi/errors v0.19.2
 github.com/go-openapi/errors
