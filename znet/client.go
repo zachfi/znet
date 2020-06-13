@@ -57,7 +57,5 @@ func NewConn(serverAddress string, config Config) *grpc.ClientConn {
 		log.Error(err)
 	}
 
-	log.Debug("returning grpc connection")
-
 	return conn
 }

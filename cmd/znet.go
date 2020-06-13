@@ -37,8 +37,6 @@ var rootCmd = &cobra.Command{
 
 Run commands on a ZNet RPC.
 `,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
 	//	Run: func(cmd *cobra.Command, args []string) { },
 }
 

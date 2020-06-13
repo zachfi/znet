@@ -43,7 +43,6 @@ var netconfigCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(netconfigCmd)
 
-	netconfigCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.netconfig.yaml)")
 	netconfigCmd.PersistentFlags().BoolVarP(&commit, "commit", "", false, "Commit the configuration")
 	netconfigCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Increase verbosity")
 	netconfigCmd.PersistentFlags().BoolVarP(&show, "show", "s", false, "Show the rendered templates")
@@ -81,9 +80,9 @@ func runNetconfig(cmd *cobra.Command, args []string) {
 		}
 	}()
 
+	// Load the network data.
 	configDir := viper.GetString("netconfig.configdir")
 	z.ConfigDir = configDir
-
 	z.LoadData(configDir)
 
 	hosts, err := z.Inventory.NetworkHosts()
@@ -92,7 +91,7 @@ func runNetconfig(cmd *cobra.Command, args []string) {
 	}
 
 	if len(hosts) == 0 {
-		log.Fatalf("No hosts.")
+		log.Fatalf("no hosts.")
 	}
 
 	auth := &junos.AuthMethod{
@@ -103,10 +102,6 @@ func runNetconfig(cmd *cobra.Command, args []string) {
 	wg := sync.WaitGroup{}
 
 	for _, host := range hosts {
-		// if host.Name != "cr01" {
-		// 	continue
-		// }
-
 		wg.Add(1)
 		go func(h inventory.NetworkHost) {
 
