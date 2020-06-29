@@ -3,7 +3,6 @@ module github.com/xaque208/znet
 go 1.13
 
 require (
-	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
 	github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d // indirect
 	github.com/amimof/huego v0.0.0-20200504200310-b4a8f71aa2e3
 	github.com/blang/semver/v4 v4.0.0
@@ -16,6 +15,7 @@ require (
 	github.com/go-ldap/ldap/v3 v3.1.11
 	github.com/go-openapi/strfmt v0.19.3 // indirect
 	github.com/golang/protobuf v1.4.2
+	github.com/google/go-cmp v0.4.1 // indirect
 	github.com/hashicorp/go-retryablehttp v0.6.4 // indirect
 	github.com/hashicorp/vault v1.1.1
 	github.com/imdario/mergo v0.3.9
@@ -23,6 +23,7 @@ require (
 	github.com/jedib0t/go-pretty v4.3.0+incompatible
 	github.com/johanbrandhorst/certify v1.8.0
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
+	github.com/kr/pretty v0.2.0 // indirect
 	github.com/lib/pq v1.2.0 // indirect
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
@@ -46,10 +47,14 @@ require (
 	github.com/tj/assert v0.0.3
 	github.com/xaque208/rftoy v0.0.0-20191203015236-4727b87c3461
 	go.mongodb.org/mongo-driver v1.1.1 // indirect
-	golang.org/x/crypto v0.0.0-20200429183012-4b2356b1ed79
+	golang.org/x/crypto v0.0.0-20200604202706-70a84ac30bf9
+	golang.org/x/net v0.0.0-20200602114024-627f9648deb9 // indirect
+	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a // indirect
+	golang.org/x/sys v0.0.0-20200602225109-6fdc65e7d980 // indirect
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
-	google.golang.org/genproto v0.0.0-20191115221424-83cc0476cb11 // indirect
+	google.golang.org/genproto v0.0.0-20200611194920-44ba362f84c1 // indirect
 	google.golang.org/grpc v1.29.1
+	google.golang.org/protobuf v1.24.0
 	gopkg.in/yaml.v2 v2.3.0
 	logur.dev/adapter/logrus v0.5.0
 )
