@@ -62,9 +62,16 @@ func runHarvest(cmd *cobra.Command, args []string) {
 	sigs := make(chan os.Signal, 1)
 	done := make(chan bool, 1)
 
-	thingClient := pb.NewThingsClient(conn)
-
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		sig := <-sigs
+		log.Warnf("caught signal: %s", sig.String())
+
+		done <- true
+	}()
+
+	telemetryClient := pb.NewTelemetryClient(conn)
 
 	var onMessageReceived mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 		topicPath, err := iot.ParseTopicPath(msg.Topic())
@@ -73,15 +80,19 @@ func runHarvest(cmd *cobra.Command, args []string) {
 			return
 		}
 
-		m := &pb.DeviceDiscovery{
+		discovery := &pb.DeviceDiscovery{
 			Component: topicPath.Component,
-			NodeID:    topicPath.NodeID,
-			ObjectID:  topicPath.ObjectID,
+			NodeId:    topicPath.NodeID,
+			ObjectId:  topicPath.ObjectID,
 			Endpoint:  topicPath.Endpoint,
 			Message:   msg.Payload(),
 		}
 
-		_, err = thingClient.Notice(context.Background(), m)
+		iotDevice := &pb.IOTDevice{
+			DeviceDiscovery: discovery,
+		}
+
+		_, err = telemetryClient.ReportIOTDevice(context.Background(), iotDevice)
 		if err != nil {
 			log.Error(err)
 		}
