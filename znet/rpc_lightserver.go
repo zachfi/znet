@@ -108,7 +108,7 @@ func (l *lightServer) Status(ctx context.Context, request *pb.LightRequest) (*pb
 func (l *lightServer) Brightness(ctx context.Context, request *pb.LightGroup) (*pb.LightResponse, error) {
 	response := &pb.LightResponse{}
 
-	log.Infof("request: %+v", *request)
+	// log.Infof("request: %+v", *request)
 
 	l.lights.Dim(request.Name, request.State.Brightness)
 
@@ -118,7 +118,7 @@ func (l *lightServer) Brightness(ctx context.Context, request *pb.LightGroup) (*
 func (l *lightServer) Alert(ctx context.Context, request *pb.LightGroup) (*pb.LightResponse, error) {
 	response := &pb.LightResponse{}
 
-	log.Infof("request: %+v", *request)
+	// log.Infof("request: %+v", *request)
 
 	l.lights.Alert(request.Name)
 

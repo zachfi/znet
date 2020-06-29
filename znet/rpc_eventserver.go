@@ -78,8 +78,6 @@ func (e *eventServer) NoticeEvent(ctx context.Context, request *pb.Event) (*pb.E
 	response := &pb.EventResponse{}
 
 	for _, x := range e.remoteChans {
-		// BUG!
-		// TODO on a closed channel, this is a problem
 		x <- request
 	}
 
