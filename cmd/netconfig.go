@@ -15,19 +15,17 @@
 package cmd
 
 import (
-	"sync"
-
 	"github.com/scottdware/go-junos"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/xaque208/znet/internal/inventory"
+	"github.com/xaque208/znet/pkg/netconfig"
 	"github.com/xaque208/znet/znet"
 )
 
 var commit bool
-var show bool
+var diff bool
 var limit int
 var confirm int
 
@@ -44,8 +42,7 @@ func init() {
 	rootCmd.AddCommand(netconfigCmd)
 
 	netconfigCmd.PersistentFlags().BoolVarP(&commit, "commit", "", false, "Commit the configuration")
-	netconfigCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Increase verbosity")
-	netconfigCmd.PersistentFlags().BoolVarP(&show, "show", "s", false, "Show the rendered templates")
+	netconfigCmd.PersistentFlags().BoolVarP(&diff, "diff", "d", false, "Show the rendered templates")
 	netconfigCmd.PersistentFlags().IntVarP(&limit, "limit", "l", 0, "Limit the number of devices to configure")
 	netconfigCmd.PersistentFlags().IntVarP(&confirm, "confirm", "", 0, "Number of minutes at which the config will be rolled back")
 }
@@ -82,16 +79,14 @@ func runNetconfig(cmd *cobra.Command, args []string) {
 
 	// Load the network data.
 	configDir := viper.GetString("netconfig.configdir")
-	z.ConfigDir = configDir
-	z.LoadData(configDir)
 
-	hosts, err := z.Inventory.NetworkHosts()
+	hosts, err := z.Inventory.ListNetworkHosts()
 	if err != nil {
-		log.Error(err)
+		log.Fatal(err)
 	}
 
-	if len(hosts) == 0 {
-		log.Fatalf("no hosts.")
+	if len(*hosts) == 0 {
+		log.Fatalf("zero hosts to configure")
 	}
 
 	auth := &junos.AuthMethod{
@@ -99,24 +94,14 @@ func runNetconfig(cmd *cobra.Command, args []string) {
 		PrivateKey: viper.GetString("junos.keyfile"),
 	}
 
-	wg := sync.WaitGroup{}
-
-	for _, host := range hosts {
-		wg.Add(1)
-		go func(h inventory.NetworkHost) {
-
-			if h.Platform == "junos" {
-				log.Debugf("configuring network host: %+v", h.HostName)
-
-				err = z.ConfigureNetworkHost(&h, commit, confirm, auth, show)
-				if err != nil {
-					log.Error(err)
-				}
-			}
-
-			wg.Done()
-		}(host)
+	nc, err := netconfig.NewNetConfig(configDir, hosts, auth, z.Environment)
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	wg.Wait()
+	err = nc.ConfigureNetwork(commit, confirm, diff)
+	if err != nil {
+		log.Error(err)
+	}
+
 }
