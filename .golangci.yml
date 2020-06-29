@@ -41,11 +41,13 @@ linters:
     - deadcode
     - errcheck
     - gocyclo
+    - godox
     - gofmt
     - golint
     - gosimple
     - govet
     - ineffassign
+    - lll
     - maligned
     - misspell
     - staticcheck
@@ -59,4 +61,8 @@ issues:
   # disable limits on issue reporting
   max-per-linter: 0
   max-same-issues: 0
-
+  exclude-rules:
+    - path: internal/inventory/rpc_types.go
+      text: "struct field"
+      linters:
+        - golint

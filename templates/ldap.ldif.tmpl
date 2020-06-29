@@ -1,0 +1,92 @@
+{{- if eq .File.GetName "rpc.proto"}}
+dn: cn={7}network,cn=schema,cn=config
+changetype: modify
+replace: olcAttributeTypes
+{{- $messages := list "NetworkHost" "NetworkID" "L3Network" "InetNetwork" "Inet6Network"}}
+{{- $structures := list "NetworkHost" "NetworkID" "L3Network" "InetNetwork" "Inet6Network"}}
+{{- $oidNum := 800}}
+  {{- range .File.MessageType }}
+    {{- $type := .}}
+    {{- if has .GetName $messages }}
+{{- $typename := (.GetName|snakeCase)}}
+        {{- range .GetField }}
+{{- $attr := list $typename (.GetJsonName |snakeCase) | join "_"}}
+{{- $oidNum = $oidNum | add1 }}
+        {{- if hasPrefix ".rpc." .GetTypeName }}
+        {{- /* If the type has .rpc. prefix, we know its TYPE_MESSAGE, and is generated as an objectClass below, and not an attribute here. */}}
+        {{- else if has .GetJsonName (list "macAddress" "name" "dn") }}
+        {{- /* Skip the macAddress attribute since its part of another schema*/}}
+        {{- /* Skip the name attribute since we use cn for storing */}}
+        {{- /* Skip the dn attribute since its part of another schema*/}}
+        {{- else }}
+olcAttributeTypes: ( 1.3.6.1.4.1.99.{{$oidNum}} NAME ( '{{$attr | lowerCamelCase}}' )
+              {{- /* repeated attributes */}}
+              {{- if ne .GetLabel.String "LABEL_REPEATED" }}
+    SINGLE-VALUE
+              {{- end }}
+              {{- if eq .GetType.String "TYPE_BOOL" }}
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+              {{- end }}
+              {{- if eq .GetType.String "TYPE_STRING" }}
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+              {{- end }}
+              {{- if eq .GetType.String "TYPE_MESSAGE" }}
+                  {{- if eq .GetTypeName ".google.protobuf.Timestamp" }}
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+                  {{- end }}
+              {{- end }}
+    )
+        {{- end }}
+
+    {{- end }}
+{{- end }}
+{{- end }}
+-
+replace: olcObjectClasses
+{{- range $i, $message := .File.MessageType }}
+{{- $sup := "top"}}
+{{- $must := list "cn"}}
+{{- $may := compact (list "") }}
+    {{- if has .GetName $messages }}
+{{- $typename := (.GetName|snakeCase)}}
+{{- $type := .}}
+olcObjectClasses:  ( 1.3.6.1.4.1.99.{{ add $i 700 }} NAME '{{.GetName | kebabcase | lowerCamelCase}}'
+      {{- /* Should we generate a STRUCTURAL object */}}
+        {{- /* handle the MAY clause */}}
+        {{- range .GetField }}
+{{- $attr := list $typename (.GetJsonName |snakeCase) | join "_" | lowerCamelCase}}
+            {{- if eq .GetLabel.String "LABEL_OPTIONAL" }}
+              {{- if has .GetJsonName (list "name" "dn") }}
+              {{- /* skip name, since we use cn in the MUST */}}
+              {{- /* skip dn, since its part of objects */}}
+              {{- else }}
+                {{- $may = append $may $attr }}
+              {{- end }}
+            {{- else if eq .GetLabel.String "LABEL_REPEATED" }}
+              {{- if eq .GetJsonName "macAddress" }}
+                {{- $may = append $may .GetJsonName }}
+              {{- else }}
+                {{- if has (.GetName|camelCase) $messages }}
+                  {{- /* skip mesages that are built as objectClass */}}
+                {{- else }}
+                  {{- $may = append $may $attr }}
+                {{- end }}
+              {{- end }}
+            {{- end }}
+        {{- end }}
+
+    {{- if has .GetName $structures }}
+    STRUCTURAL
+    {{- end }}
+    SUP {{$sup | lowerCamelCase}}
+    MUST ( {{ $must | join " $ "}} )
+    MAY ( {{ $may | join " $ " }} )
+    )
+    {{- end }}
+
+  {{- end }}
+{{- end }}

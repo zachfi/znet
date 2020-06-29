@@ -119,9 +119,6 @@ func (e *EventProducer) scheduleRepeatEvents(scheduledEvents *events.Scheduler) 
 			log.Tracef("End is: %+v", end)
 			log.Tracef("next.Before(end) is: %+v, %s", next.Before(end), time.Since(next))
 
-			// TODO make the map handling here simpler.  Perhaps use the Scheduler interface
-			// e.Schedule.Set(next, v.Produce)
-
 			if next.Before(end) {
 				err := scheduledEvents.Set(next, v.Produce)
 				if err != nil {

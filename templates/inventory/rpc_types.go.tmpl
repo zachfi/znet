@@ -1,0 +1,38 @@
+{{- if eq .File.GetName "rpc.proto"}}
+package inventory
+
+import (
+	"time"
+)
+
+// GENERATED FROM rpc.proto
+{{ $messages := list "DeviceDiscovery" "NetworkID" "IOTDevice" "NetworkHost" "L3Network" "InetNetwork" "Inet6Network" }}
+{{- range .File.MessageType }}
+	{{- if has .GetName $messages }}
+
+type {{.GetName}} struct {
+		{{- range $i, $message := .GetField }}
+			{{- $prefix := "" }}
+			{{- if eq .GetLabel.String "LABEL_REPEATED" }}
+				{{- $prefix = "*[]" }}
+			{{- end }}
+			{{- if eq .GetType.String "TYPE_BOOL" }}
+	{{ .Name | camelCase }} *bool
+			{{- else if eq .GetType.String "TYPE_STRING" }}
+	{{ .Name | camelCase }} {{$prefix}}string
+			{{- else if eq .GetType.String "TYPE_BYTES" }}
+	{{ .Name | camelCase }} []byte
+			{{- else if eq .GetType.String "TYPE_MESSAGE" }}
+				{{- if eq .GetTypeName ".google.protobuf.Timestamp" }}
+	{{ .Name | camelCase }} *time.Time
+				{{- else }}
+	{{ trimPrefix ".rpc." .GetTypeName }} *{{trimPrefix ".rpc." .GetTypeName}}
+				{{- end }}
+			{{- else }}
+	// unknown: {{.GetType}}
+			{{- end }}
+		{{- end }}
+}
+{{- end }}
+{{- end }}
+{{- end }}

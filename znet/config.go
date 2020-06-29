@@ -52,6 +52,7 @@ type RPCConfig struct {
 	ServerAddress string
 }
 
+// TLSConfig is the configuration for an RPC TLS client and server.
 type TLSConfig struct {
 	CN     string
 	CAFile string
