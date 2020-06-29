@@ -1,0 +1,167 @@
+
+
+dn: cn={7}network,cn=schema,cn=config
+changetype: modify
+replace: olcAttributeTypes
+olcAttributeTypes: ( 1.3.6.1.4.1.99.801 NAME ( 'networkHostRole' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.802 NAME ( 'networkHostGroup' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.804 NAME ( 'networkHostOperatingSystem' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.805 NAME ( 'networkHostPlatform' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.806 NAME ( 'networkHostType' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.807 NAME ( 'networkHostDomain' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.808 NAME ( 'networkHostDescription' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.809 NAME ( 'networkHostWatch' )
+    SINGLE-VALUE
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.810 NAME ( 'networkHostInetAddress' )
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.811 NAME ( 'networkHostInet6Address' )
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.813 NAME ( 'networkHostLastSeen' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.817 NAME ( 'networkIdIpAddress' )
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.818 NAME ( 'networkIdReportingSource' )
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.819 NAME ( 'networkIdReportingSourceInterface' )
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.820 NAME ( 'networkIdLastSeen' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.823 NAME ( 'l3NetworkSoa' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.824 NAME ( 'l3NetworkDomain' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.825 NAME ( 'l3NetworkNtpServers' )
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.830 NAME ( 'inetNetworkPrefix' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.831 NAME ( 'inetNetworkGateway' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.832 NAME ( 'inetNetworkDynamicRange' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.835 NAME ( 'inet6NetworkPrefix' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.836 NAME ( 'inet6NetworkGateway' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+-
+replace: olcObjectClasses
+olcObjectClasses:  ( 1.3.6.1.4.1.99.703 NAME 'networkHost'
+    STRUCTURAL
+    SUP top
+    MUST ( cn )
+    MAY ( networkHostRole $ networkHostGroup $ networkHostOperatingSystem $ networkHostPlatform $ networkHostType $ networkHostDomain $ networkHostDescription $ networkHostWatch $ networkHostInetAddress $ networkHostInet6Address $ macAddress $ networkHostLastSeen )
+    )
+olcObjectClasses:  ( 1.3.6.1.4.1.99.704 NAME 'networkId'
+    STRUCTURAL
+    SUP top
+    MUST ( cn )
+    MAY ( macAddress $ networkIdIpAddress $ networkIdReportingSource $ networkIdReportingSourceInterface $ networkIdLastSeen )
+    )
+olcObjectClasses:  ( 1.3.6.1.4.1.99.705 NAME 'l3Network'
+    STRUCTURAL
+    SUP top
+    MUST ( cn )
+    MAY ( l3NetworkSoa $ l3NetworkDomain $ l3NetworkNtpServers )
+    )
+olcObjectClasses:  ( 1.3.6.1.4.1.99.706 NAME 'inetNetwork'
+    STRUCTURAL
+    SUP top
+    MUST ( cn )
+    MAY ( inetNetworkPrefix $ inetNetworkGateway $ inetNetworkDynamicRange )
+    )
+olcObjectClasses:  ( 1.3.6.1.4.1.99.707 NAME 'inet6Network'
+    STRUCTURAL
+    SUP top
+    MUST ( cn )
+    MAY ( inet6NetworkPrefix $ inet6NetworkGateway )
+    )

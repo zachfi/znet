@@ -25,7 +25,9 @@ compile: deps compile-only proto
 
 proto:
 	@echo "=== $(PROJECT_NAME) === [ proto compile    ]: compiling protobufs:"
-	@protoc -I rpc/ rpc/rpc.proto --go_out=plugins=grpc:rpc
+	@protoc -I rpc/ rpc/rpc.proto \
+		--go_out=plugins=grpc:rpc \
+		--gotemplate_out=template_dir=templates,debug=true,single-package-mode=true,all=true:internal
 
 compile-all: deps-only
 	@echo "=== $(PROJECT_NAME) === [ compile          ]: building commands:"
