@@ -265,9 +265,9 @@ func (s *Server) Start(z *Znet) error {
 		}
 		pb.RegisterLightsServer(s.grpcServer, rpcLightServer)
 
-		// thingServer
-		rpcThingServer := newThingServer(z.Inventory)
-		pb.RegisterThingsServer(s.grpcServer, rpcThingServer)
+		// telemetryServer
+		rpcTelemetryServer := newTelemetryServer(z.Inventory)
+		pb.RegisterTelemetryServer(s.grpcServer, rpcTelemetryServer)
 
 		// Register and configure the rpcEventServer
 		pb.RegisterEventsServer(s.grpcServer, s.rpcEventServer)
