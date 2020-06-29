@@ -3,6 +3,7 @@ package inventory
 import (
 	"crypto/tls"
 	"fmt"
+	"strconv"
 	"time"
 
 	ldap "github.com/go-ldap/ldap/v3"
@@ -77,8 +78,12 @@ func boolValues(a *ldap.EntryAttribute) []bool {
 	var values []bool
 
 	for _, b := range a.ByteValues {
-		fmt.Printf("Received bool: %b", b)
-		// values = append(values, b.(bool))
+		v, err := strconv.ParseBool(string(b))
+		if err != nil {
+			log.Errorf("unable to parse bool: %+v", err)
+		}
+
+		values = append(values, v)
 	}
 
 	return values

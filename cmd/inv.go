@@ -17,14 +17,12 @@ package cmd
 import (
 	"context"
 	"os"
-	"strings"
 
 	"github.com/jedib0t/go-pretty/table"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/xaque208/znet/internal/inventory"
 	pb "github.com/xaque208/znet/rpc"
 	"github.com/xaque208/znet/znet"
 )
@@ -72,11 +70,9 @@ func runInv(cmd *cobra.Command, args []string) {
 		}
 	}()
 
-	client := pb.NewInventoryClient(conn)
+	inventoryClient := pb.NewInventoryClient(conn)
 
-	req := &pb.SearchRequest{}
-
-	res, err := client.Search(context.Background(), req)
+	resp, err := inventoryClient.ListNetworkHosts(context.Background(), &pb.Empty{})
 	if err != nil {
 		log.Error(err)
 	}
@@ -85,7 +81,7 @@ func runInv(cmd *cobra.Command, args []string) {
 	t.SetOutputMirror(os.Stdout)
 	t.AppendHeader(table.Row{"Name", "Platform", "Type", "Description"})
 
-	for _, h := range res.Hosts {
+	for _, h := range resp.Hosts {
 		t.AppendRow([]interface{}{
 			h.Name,
 			h.Platform,
@@ -101,28 +97,28 @@ func runInv(cmd *cobra.Command, args []string) {
 	t.SetOutputMirror(os.Stdout)
 	t.AppendHeader(table.Row{"Name", "IP", "MAC"})
 
-	for _, h := range res.UnknownHosts {
-		t.AppendRow([]interface{}{
-			h.Name,
-			h.Ip,
-			h.Mac,
-		})
-	}
+	// for _, h := range res.UnknownHosts {
+	// 	t.AppendRow([]interface{}{
+	// 		h.Name,
+	// 		h.Ip,
+	// 		h.Mac,
+	// 	})
+	// }
 
 	// t.AppendFooter(table.Row{"", "", "Total", 10000})
 	t.Render()
 
-	if adopt != "" {
-		for _, h := range res.UnknownHosts {
-			if strings.EqualFold(h.Mac, adopt) {
-				x := inventory.UnknownHost{
-					Name:       h.Name,
-					MACAddress: h.Mac,
-					IP:         h.Ip,
-				}
-				z.Inventory.AdoptUnknownHost(x, "cn=new,ou=network,dc=znet")
-			}
-		}
-	}
-
+	// if adopt != "" {
+	// 	for _, h := range res.UnknownHosts {
+	// 		if strings.EqualFold(h.Mac, adopt) {
+	// 			x := inventory.UnknownHost{
+	// 				Name:       h.Name,
+	// 				MACAddress: h.Mac,
+	// 				IP:         h.Ip,
+	// 			}
+	// 			z.Inventory.AdoptUnknownHost(x, "cn=new,ou=network,dc=znet")
+	// 		}
+	// 	}
+	// }
+	//
 }

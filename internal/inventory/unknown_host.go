@@ -17,12 +17,6 @@ type UnknownHost struct {
 	MACAddress string
 }
 
-var unknownHostDefaultAttributes = []string{
-	"cn",
-	"v4Address",
-	"macAddress",
-}
-
 // AdoptUnknownHost converts an UnknownHost into a known host in LDAP.
 func (i *Inventory) AdoptUnknownHost(u UnknownHost, baseDN string) {
 	log.Infof("Adopting host: %+v", u)
