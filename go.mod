@@ -15,7 +15,6 @@ require (
 	github.com/go-ldap/ldap/v3 v3.2.1
 	github.com/go-openapi/strfmt v0.19.3 // indirect
 	github.com/golang/protobuf v1.4.2
-	github.com/google/go-cmp v0.4.1 // indirect
 	github.com/hashicorp/go-retryablehttp v0.6.4 // indirect
 	github.com/hashicorp/vault v1.1.1
 	github.com/imdario/mergo v0.3.9
@@ -54,7 +53,7 @@ require (
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
 	google.golang.org/genproto v0.0.0-20200611194920-44ba362f84c1 // indirect
 	google.golang.org/grpc v1.29.1
-	google.golang.org/protobuf v1.24.0
+	google.golang.org/protobuf v1.25.0
 	gopkg.in/yaml.v2 v2.3.0
 	logur.dev/adapter/logrus v0.5.0
 )
