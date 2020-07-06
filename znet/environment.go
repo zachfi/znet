@@ -23,7 +23,7 @@ func GetEnvironmentConfig(environments []EnvironmentConfig, envName string) (Env
 func LoadEnvironment(config VaultConfig, e EnvironmentConfig) (map[string]string, error) {
 
 	environment := make(map[string]string)
-	if config.Host == "" || config.VaultPath == "" {
+	if config.Host == "" || config.SecretRoot == "" {
 		return map[string]string{}, fmt.Errorf("incomplete vault configuration, unable to load Environment")
 	}
 
@@ -33,7 +33,7 @@ func LoadEnvironment(config VaultConfig, e EnvironmentConfig) (map[string]string
 	}
 
 	for _, k := range e.SecretValues {
-		path := fmt.Sprintf("%s/%s", config.VaultPath, k)
+		path := fmt.Sprintf("%s/%s", config.SecretRoot, k)
 		// log.Debugf("Reading vault path: %s", path)
 		secret, err := s.Logical().Read(path)
 		if err != nil {

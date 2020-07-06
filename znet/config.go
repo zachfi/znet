@@ -60,7 +60,12 @@ type TLSConfig struct {
 
 // VaultConfig is the client configuration for Vault.
 type VaultConfig struct {
-	Host      string
-	TokenPath string `yaml:"token_path,omitempty"`
-	VaultPath string `yaml:"vault_path,omitempty"`
+	Host       string
+	TokenPath  string `yaml:"token_path,omitempty"`
+	SecretRoot string `yaml:"secret_root,omitempty"`
+
+	ClientKey  string `yaml:"client_key,omitempty"`
+	ClientCert string `yaml:"client_cert,omitempty"`
+	CACert     string `yaml:"ca_cert,omitempty"`
+	LoginName  string `yaml:"login_name,omitempty"`
 }
