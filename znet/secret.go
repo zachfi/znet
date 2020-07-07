@@ -12,6 +12,7 @@ import (
 // NewSecretClient receives a configuration and returns a client for Vault.
 func NewSecretClient(config VaultConfig) (*api.Client, error) {
 	var err error
+	var token string
 
 	apiConfig := &api.Config{
 		Address: fmt.Sprintf("https://%s:8200", config.Host),
@@ -42,25 +43,31 @@ func NewSecretClient(config VaultConfig) (*api.Client, error) {
 	envToken := os.Getenv("VAULT_TOKEN")
 
 	if envToken != "" {
-		client.SetToken(envToken)
+		token = envToken
 	} else if config.TokenPath != "" {
-		token, err := ioutil.ReadFile(config.TokenPath)
+		cachedToken, err := ioutil.ReadFile(config.TokenPath)
 		if err != nil {
 			log.Error(err)
 		}
 
-		client.SetToken(string(token))
+		token = string(cachedToken)
+	}
+
+	if token == "" {
+		certAuthToken, err := tryCertAuth(client, config)
+		if err != nil {
+			log.Error(err)
+		}
+
+		if certAuthToken != "" {
+			token = certAuthToken
+		}
+	}
+
+	if token != "" {
+		client.SetToken(token)
 	} else {
-		token, err := tryCertAuth(client, config)
-		if err != nil {
-			log.Error(err)
-		}
-
-		if token != "" {
-			client.SetToken(token)
-		} else {
-			return nil, fmt.Errorf("unable to summon vault token")
-		}
+		return nil, fmt.Errorf("unable to summon vault token")
 	}
 
 	return client, nil
