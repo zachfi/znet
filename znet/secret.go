@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"time"
 
 	"github.com/hashicorp/vault/api"
 	log "github.com/sirupsen/logrus"
@@ -51,6 +52,17 @@ func NewSecretClient(config VaultConfig) (*api.Client, error) {
 		}
 
 		token = string(cachedToken)
+
+		// Once we've loaded a token from the file, we should validate it before
+		// moving on.  This gives us an opportinutiy to replace the token with a
+		// valid one using the cert auth below.  If we receive an error here, we
+		// clear the token to allow us to proceed.
+		err = validateToken(client, token)
+		if err != nil {
+			log.Error(err)
+			token = ""
+			client.ClearToken()
+		}
 	}
 
 	if token == "" {
@@ -61,6 +73,13 @@ func NewSecretClient(config VaultConfig) (*api.Client, error) {
 
 		if certAuthToken != "" {
 			token = certAuthToken
+
+			if config.TokenPath != "" {
+				err = saveToken(token, config.TokenPath)
+				if err != nil {
+					log.Error(err)
+				}
+			}
 		}
 	}
 
@@ -77,7 +96,7 @@ func NewSecretClient(config VaultConfig) (*api.Client, error) {
 func tryCertAuth(client *api.Client, config VaultConfig) (string, error) {
 	// https://www.vaultproject.io/api-docs/auth/cert
 
-	log.Debugf("attempting cert authentication")
+	log.Debug("attempting cert authentication")
 	var err error
 
 	// to pass the password
@@ -95,4 +114,63 @@ func tryCertAuth(client *api.Client, config VaultConfig) (string, error) {
 	}
 
 	return secret.Auth.ClientToken, nil
+}
+
+func saveToken(token string, tokenPath string) error {
+	log.Debugf("saving token to file %s", tokenPath)
+
+	f, err := os.Create(tokenPath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	err = f.Chmod(0600)
+	if err != nil {
+		return err
+	}
+
+	_, err = f.WriteString(token)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateToken ensures that a token is still valid.  The caller is resposible
+// for setting the token on the client again.  Any errors are returned.
+func validateToken(client *api.Client, token string) error {
+	var err error
+
+	client.SetToken(token)
+	defer client.ClearToken()
+
+	t := client.Auth().Token()
+	if err != nil {
+		return err
+	}
+
+	s, err := t.LookupSelf()
+	if err != nil {
+		return err
+	}
+
+	var expireTime time.Time
+	if s != nil {
+		if expireTimeStamp, ok := s.Data["expire_time"]; ok {
+			expireTime, err = time.Parse(time.RFC3339, expireTimeStamp.(string))
+			if err != nil {
+				return err
+			}
+		}
+
+		log.Debugf("token expires at %s", expireTime.Format(time.RFC3339))
+
+		if time.Until(expireTime) < 60*time.Second {
+			return fmt.Errorf("token expires soon: %s", expireTime.Format(time.RFC3339))
+		}
+	}
+
+	return nil
 }
