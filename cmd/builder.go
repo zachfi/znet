@@ -55,7 +55,11 @@ func runBuilder(cmd *cobra.Command, args []string) {
 
 	conn := znet.NewConn(z.Config.RPC.ServerAddress, z.Config)
 
-	x := builder.NewBuilder(conn, z.Config.Builder)
+	if z.Config.Builder == nil {
+		log.Fatal("unable to create agent with nil Builder configuration")
+	}
+
+	x := builder.NewBuilder(conn, *z.Config.Builder)
 
 	consumers := []events.Consumer{
 		x,

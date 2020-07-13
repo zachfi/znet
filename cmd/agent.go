@@ -59,7 +59,11 @@ func runAgent(cmd *cobra.Command, args []string) {
 
 	conn := znet.NewConn(z.Config.RPC.ServerAddress, z.Config)
 
-	ag := agent.NewAgent(z.Config.Agent, conn)
+	if z.Config.Agent == nil {
+		log.Fatal("unable to create agent with nil Agent configuration")
+	}
+
+	ag := agent.NewAgent(*z.Config.Agent, conn)
 
 	consumers := []events.Consumer{
 		ag,

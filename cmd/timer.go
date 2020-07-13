@@ -78,13 +78,20 @@ func runTimer(cmd *cobra.Command, args []string) {
 		}
 	}()
 
-	y := astro.NewProducer(yConn, z.Config.Astro)
+	if z.Config.Astro == nil {
+		log.Fatal("unable to create agent with nil Astro configuration")
+	}
+
+	y := astro.NewProducer(yConn, *z.Config.Astro)
 	err = y.Start()
 	if err != nil {
 		log.Error(err)
 	}
 
-	x := timer.NewProducer(xConn, z.Config.Timer)
+	if z.Config.Timer == nil {
+		log.Fatal("unable to create agent with nil Timer configuration")
+	}
+	x := timer.NewProducer(xConn, *z.Config.Timer)
 	err = x.Start()
 	if err != nil {
 		log.Error(err)

@@ -72,7 +72,6 @@ func runArpwtach(cmd *cobra.Command, args []string) {
 	z.Config.RPC.ServerAddress = viper.GetString("rpc.server")
 
 	conn := znet.NewConn(z.Config.RPC.ServerAddress, z.Config)
-
 	defer func() {
 		err = conn.Close()
 		if err != nil {

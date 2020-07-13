@@ -55,7 +55,11 @@ func runGitwatch(cmd *cobra.Command, args []string) {
 		}
 	}()
 
-	x := gitwatch.NewProducer(conn, z.Config.GitWatch)
+	if z.Config.GitWatch == nil {
+		log.Fatal("unable to create agent with nil GitWatch configuration")
+	}
+
+	x := gitwatch.NewProducer(conn, *z.Config.GitWatch)
 	err = x.Start()
 	if err != nil {
 		log.Error(err)

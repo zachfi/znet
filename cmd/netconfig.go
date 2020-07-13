@@ -15,12 +15,15 @@
 package cmd
 
 import (
+	"context"
+
 	"github.com/scottdware/go-junos"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
 	"github.com/xaque208/znet/pkg/netconfig"
+	pb "github.com/xaque208/znet/rpc"
 	"github.com/xaque208/znet/znet"
 )
 
@@ -29,12 +32,12 @@ var diff bool
 var limit int
 var confirm int
 
-// invCmd represents the inv command
+// netconfigCmd represents the netconfig command
 var netconfigCmd = &cobra.Command{
 	Use:     "netconfig",
 	Short:   "Configure Junos Devices",
-	Long:    "Run an inventory report",
-	Example: "znet inv",
+	Long:    "Configure the network",
+	Example: "znet netconfig",
 	Run:     runNetconfig,
 }
 
@@ -69,7 +72,6 @@ func runNetconfig(cmd *cobra.Command, args []string) {
 	z.Config.RPC.ServerAddress = viper.GetString("rpc.server")
 
 	conn := znet.NewConn(z.Config.RPC.ServerAddress, z.Config)
-
 	defer func() {
 		err = conn.Close()
 		if err != nil {
@@ -80,12 +82,14 @@ func runNetconfig(cmd *cobra.Command, args []string) {
 	// Load the network data.
 	configDir := viper.GetString("netconfig.configdir")
 
-	hosts, err := z.Inventory.ListNetworkHosts()
+	inventoryClient := pb.NewInventoryClient(conn)
+
+	resp, err := inventoryClient.ListNetworkHosts(context.Background(), &pb.Empty{})
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 
-	if len(*hosts) == 0 {
+	if len(resp.Hosts) == 0 {
 		log.Fatalf("zero hosts to configure")
 	}
 
@@ -94,7 +98,7 @@ func runNetconfig(cmd *cobra.Command, args []string) {
 		PrivateKey: viper.GetString("junos.keyfile"),
 	}
 
-	nc, err := netconfig.NewNetConfig(configDir, hosts, auth, z.Environment)
+	nc, err := netconfig.NewNetConfig(configDir, resp.Hosts, auth, z.Environment)
 	if err != nil {
 		log.Fatal(err)
 	}

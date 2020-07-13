@@ -14,13 +14,13 @@ import (
 	"github.com/scottdware/go-junos"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/xaque208/znet/internal/inventory"
+	pb "github.com/xaque208/znet/rpc"
 )
 
 // Host is a single configurable host.
 type Host struct {
 	HostName    string
-	NetworkHost *inventory.NetworkHost
+	NetworkHost *pb.NetworkHost
 	Data        HostData
 	Environment map[string]string
 }
@@ -34,15 +34,13 @@ type NetConfig struct {
 }
 
 // NewNetConfig is used to build a new *NetConfig.
-func NewNetConfig(configDir string, hosts *[]inventory.NetworkHost, auth *junos.AuthMethod, env map[string]string) (*NetConfig, error) {
+func NewNetConfig(configDir string, hosts []*pb.NetworkHost, auth *junos.AuthMethod, env map[string]string) (*NetConfig, error) {
 	data, err := loadData(configDir)
 	if err != nil {
 		return nil, err
 	}
 
-	if hosts == nil {
-		return nil, fmt.Errorf("unable to configure nil hosts")
-	} else if len(*hosts) == 0 {
+	if len(hosts) == 0 {
 		return nil, fmt.Errorf("unable to configure zero hosts")
 	}
 
@@ -56,12 +54,17 @@ func NewNetConfig(configDir string, hosts *[]inventory.NetworkHost, auth *junos.
 		junosAuth: auth,
 	}
 
-	for _, h := range *hosts {
+	for _, h := range hosts {
+
+		if h != nil {
+			log.Error("unable to configure nil nost")
+			continue
+		}
 
 		netHost := h
 
 		host := Host{
-			NetworkHost: &netHost,
+			NetworkHost: netHost,
 			HostName:    strings.Join([]string{h.Name, h.Domain}, "."),
 			Environment: env,
 		}
