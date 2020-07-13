@@ -7,18 +7,24 @@ import (
 	"crypto/rand"
 	"crypto/tls"
 	"crypto/x509"
+	"fmt"
 	"io/ioutil"
 	"sync"
 	"time"
 
+	"github.com/hashicorp/vault/helper/certutil"
 	"github.com/johanbrandhorst/certify"
 	"github.com/johanbrandhorst/certify/issuers/vault"
 	log "github.com/sirupsen/logrus"
 	logrusadapter "logur.dev/adapter/logrus"
 )
 
-func newCertify(vaultConfig VaultConfig, tlsConfig TLSConfig) *certify.Certify {
-	client, err := NewSecretClient(vaultConfig)
+func newCertify(vaultConfig *VaultConfig, tlsConfig *TLSConfig) (*certify.Certify, error) {
+	if vaultConfig == nil || tlsConfig == nil {
+		return nil, fmt.Errorf("unable to create new Certify with nil tlsConfig or vaultConfig")
+	}
+
+	client, err := NewSecretClient(*vaultConfig)
 	if err != nil {
 		log.Error(err)
 	}
@@ -83,7 +89,7 @@ func newCertify(vaultConfig VaultConfig, tlsConfig TLSConfig) *certify.Certify {
 		IssueTimeout: 15 * time.Second,
 	}
 
-	return c
+	return c, nil
 }
 
 type singletonKey struct {
@@ -98,4 +104,32 @@ func (s *singletonKey) Generate() (crypto.PrivateKey, error) {
 	})
 
 	return s.key, s.err
+}
+
+func CABundle(vaultConfig *VaultConfig) (*x509.CertPool, error) {
+	if vaultConfig == nil {
+		return nil, fmt.Errorf("unable to read CABundle using nil Vault config")
+	}
+
+	// Setup the vault client to read the CA cert
+	vaultClient, err := NewSecretClient(*vaultConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	secret, err := vaultClient.Logical().Read("pki/cert/ca")
+	if err != nil {
+		log.Errorf("error reading ca: %v", err)
+	}
+
+	roots := x509.NewCertPool()
+
+	parsedCertBundle, err := certutil.ParsePKIMap(secret.Data)
+	if err != nil {
+		log.Errorf("error parsing secret: %s", err)
+	}
+
+	roots.AddCert(parsedCertBundle.Certificate)
+
+	return roots, nil
 }

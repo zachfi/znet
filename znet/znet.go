@@ -9,7 +9,6 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/xaque208/znet/internal/agent"
-	"github.com/xaque208/znet/internal/inventory"
 	"github.com/xaque208/znet/internal/lights"
 	"github.com/xaque208/znet/pkg/events"
 	"github.com/xaque208/znet/pkg/netconfig"
@@ -22,36 +21,44 @@ type Znet struct {
 	Config      Config
 	Data        netconfig.Data
 	Environment map[string]string
-	Inventory   *inventory.Inventory
 	Lights      *lights.Lights
 }
 
 // NewZnet creates and returns a new Znet object.
 func NewZnet(file string) (*Znet, error) {
+	var err error
+	var environment map[string]string
+
 	config, err := loadConfig(file)
 	if err != nil {
 		return &Znet{}, fmt.Errorf("failed to load config file %s: %s", file, err)
 	}
 
-	e, err := GetEnvironmentConfig(config.Environments, "common")
-	if err != nil {
-		log.Error(err)
+	if config.Environments != nil && config.Vault != nil {
+		e, err := GetEnvironmentConfig(*config.Environments, "common")
+		if err != nil {
+			log.Error(err)
+		}
+
+		environment, err = LoadEnvironment(*config.Vault, e)
+		if err != nil {
+			log.Errorf("failed to load environment: %s", err)
+		}
+	} else {
+		log.Debug("missing vault/environment config")
 	}
 
-	environment, err := LoadEnvironment(config.Vault, e)
-	if err != nil {
-		log.Errorf("failed to load environment: %s", err)
+	var light *lights.Lights
+	if config.Lights != nil {
+		light = lights.NewLights(*config.Lights)
+	} else {
+		log.Debug("missing lights config")
 	}
-
-	inv := inventory.NewInventory(config.LDAP)
-
-	lights := lights.NewLights(config.Lights)
 
 	z := Znet{
 		Config:      config,
 		Environment: environment,
-		Inventory:   inv,
-		Lights:      lights,
+		Lights:      light,
 	}
 
 	return &z, nil
@@ -72,7 +79,6 @@ func loadConfig(file string) (Config, error) {
 
 // Stop the znet connections
 func (z *Znet) Stop() {
-	z.Inventory.Close()
 }
 
 // Subscriptions is yet to be used, but conforms to the interface for

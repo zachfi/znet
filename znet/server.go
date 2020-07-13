@@ -3,14 +3,12 @@ package znet
 import (
 	"context"
 	"crypto/tls"
-	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
 	"time"
 
-	"github.com/hashicorp/vault/helper/certutil"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
@@ -20,6 +18,7 @@ import (
 	"github.com/xaque208/znet/internal/agent"
 	"github.com/xaque208/znet/internal/astro"
 	"github.com/xaque208/znet/internal/gitwatch"
+	"github.com/xaque208/znet/internal/inventory"
 	"github.com/xaque208/znet/internal/timer"
 	"github.com/xaque208/znet/pkg/continuous"
 	"github.com/xaque208/znet/pkg/eventmachine"
@@ -31,8 +30,9 @@ import (
 type Server struct {
 	eventMachine *eventmachine.EventMachine
 
-	httpConfig HTTPConfig
-	rpcConfig  RPCConfig
+	httpConfig *HTTPConfig
+	rpcConfig  *RPCConfig
+	ldapConfig *inventory.LDAPConfig
 
 	httpServer *http.Server
 	grpcServer *grpc.Server
@@ -160,30 +160,10 @@ func init() {
 
 // NewServer creates a new Server composed of the received information.
 func NewServer(config Config, consumers []events.Consumer) *Server {
-
 	eventMachine, err := eventmachine.New(consumers)
 	if err != nil {
 		log.Error(err)
 	}
-
-	vaultClient, err := NewSecretClient(config.Vault)
-	if err != nil {
-		log.Error(err)
-	}
-
-	secret, err := vaultClient.Logical().Read("pki/cert/ca")
-	if err != nil {
-		log.Errorf("error reading ca: %v", err)
-	}
-
-	roots := x509.NewCertPool()
-
-	parsedCertBundle, err := certutil.ParsePKIMap(secret.Data)
-	if err != nil {
-		log.Errorf("error parsing secret: %s", err)
-	}
-
-	roots.AddCert(parsedCertBundle.Certificate)
 
 	var httpServer *http.Server
 	if config.HTTP.ListenAddress != "" {
@@ -191,7 +171,15 @@ func NewServer(config Config, consumers []events.Consumer) *Server {
 		httpServer = &http.Server{Addr: config.HTTP.ListenAddress}
 	}
 
-	c := newCertify(config.Vault, config.TLS)
+	roots, err := CABundle(config.Vault)
+	if err != nil {
+		log.Error(err)
+	}
+
+	c, err := newCertify(config.Vault, config.TLS)
+	if err != nil {
+		log.Error(err)
+	}
 
 	tlsConfig := &tls.Config{
 		GetCertificate: c.GetCertificate,
@@ -201,6 +189,10 @@ func NewServer(config Config, consumers []events.Consumer) *Server {
 		// ClientAuth:           tls.VerifyClientCertIfGiven,
 	}
 
+	if config.HTTP == nil || config.RPC == nil {
+		log.Errorf("unable to build znet Server with nil HTTPConfig or RPCConfig")
+	}
+
 	s := &Server{
 		eventMachine: eventMachine,
 
@@ -208,6 +200,7 @@ func NewServer(config Config, consumers []events.Consumer) *Server {
 
 		httpConfig: config.HTTP,
 		rpcConfig:  config.RPC,
+		ldapConfig: config.LDAP,
 
 		httpServer: httpServer,
 
@@ -253,9 +246,11 @@ func (s *Server) Start(z *Znet) error {
 	if s.rpcConfig.ListenAddress != "" {
 		log.Infof("starting RPC listener %s", s.rpcConfig.ListenAddress)
 
+		inv := inventory.NewInventory(*s.ldapConfig)
+
 		// inventoryServer
 		rpcInventoryServer := &inventoryServer{
-			inventory: z.Inventory,
+			inventory: inv,
 		}
 		pb.RegisterInventoryServer(s.grpcServer, rpcInventoryServer)
 
@@ -266,7 +261,7 @@ func (s *Server) Start(z *Znet) error {
 		pb.RegisterLightsServer(s.grpcServer, rpcLightServer)
 
 		// telemetryServer
-		rpcTelemetryServer := newTelemetryServer(z.Inventory)
+		rpcTelemetryServer := newTelemetryServer(inv)
 		pb.RegisterTelemetryServer(s.grpcServer, rpcTelemetryServer)
 
 		// Register and configure the rpcEventServer

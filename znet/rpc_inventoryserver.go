@@ -76,6 +76,10 @@ func (r *inventoryServer) Search(ctx context.Context, request *pb.SearchRequest)
 	return response, nil
 }
 
+func (r *inventoryServer) Stop() {
+	r.inventory.Close()
+}
+
 func (r *inventoryServer) ListNetworkHosts(ctx context.Context, request *pb.Empty) (*pb.SearchResponse, error) {
 	response := &pb.SearchResponse{}
 

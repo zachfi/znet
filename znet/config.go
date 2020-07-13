@@ -12,20 +12,20 @@ import (
 
 // Config stores the items that are required to configure this project.
 type Config struct {
-	Agent        agent.Config         `yaml:"agent,omitempty"`
-	Astro        astro.Config         `yaml:"astro,omitempty"`
-	Environments []EnvironmentConfig  `yaml:"environments,omitempty"`
-	GitWatch     gitwatch.Config      `yaml:"gitwatch,omitempty"`
-	Builder      builder.Config       `yaml:"builder,omitempty"`
-	HTTP         HTTPConfig           `yaml:"http,omitempty"`
-	Junos        JunosConfig          `yaml:"junos,omitempty"`
-	LDAP         inventory.LDAPConfig `yaml:"ldap,omitempty"`
-	Lights       lights.Config        `yaml:"lights,omitempty"`
-	Rooms        []lights.Room        `yaml:"rooms,omitempty"`
-	RPC          RPCConfig            `yaml:"rpc,omitempty"`
-	Timer        timer.Config         `yaml:"timer,omitempty"`
-	TLS          TLSConfig            `yaml:"tls,omitempty"`
-	Vault        VaultConfig          `yaml:"vault,omitempty"`
+	Agent        *agent.Config         `yaml:"agent,omitempty"`
+	Astro        *astro.Config         `yaml:"astro,omitempty"`
+	Environments *[]EnvironmentConfig  `yaml:"environments,omitempty"`
+	GitWatch     *gitwatch.Config      `yaml:"gitwatch,omitempty"`
+	Builder      *builder.Config       `yaml:"builder,omitempty"`
+	HTTP         *HTTPConfig           `yaml:"http,omitempty"`
+	Junos        *JunosConfig          `yaml:"junos,omitempty"`
+	LDAP         *inventory.LDAPConfig `yaml:"ldap,omitempty"`
+	Lights       *lights.Config        `yaml:"lights,omitempty"`
+	Rooms        *[]lights.Room        `yaml:"rooms,omitempty"`
+	RPC          *RPCConfig            `yaml:"rpc,omitempty"`
+	Timer        *timer.Config         `yaml:"timer,omitempty"`
+	TLS          *TLSConfig            `yaml:"tls,omitempty"`
+	Vault        *VaultConfig          `yaml:"vault,omitempty"`
 }
 
 // EnvironmentConfig is the environment configuration.

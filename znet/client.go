@@ -2,10 +2,8 @@ package znet
 
 import (
 	"crypto/tls"
-	"crypto/x509"
 	"strings"
 
-	"github.com/hashicorp/vault/helper/certutil"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -15,27 +13,15 @@ import (
 func NewConn(serverAddress string, config Config) *grpc.ClientConn {
 	var opts []grpc.DialOption
 
-	// Setup the vault client to read the CA cert
-	vaultClient, err := NewSecretClient(config.Vault)
+	roots, err := CABundle(config.Vault)
 	if err != nil {
 		log.Error(err)
 	}
 
-	secret, err := vaultClient.Logical().Read("pki/cert/ca")
+	c, err := newCertify(config.Vault, config.TLS)
 	if err != nil {
-		log.Errorf("error reading ca: %v", err)
+		log.Error(err)
 	}
-
-	roots := x509.NewCertPool()
-
-	parsedCertBundle, err := certutil.ParsePKIMap(secret.Data)
-	if err != nil {
-		log.Errorf("error parsing secret: %s", err)
-	}
-
-	roots.AddCert(parsedCertBundle.Certificate)
-
-	c := newCertify(config.Vault, config.TLS)
 
 	serverName := strings.Split(serverAddress, ":")[0]
 
