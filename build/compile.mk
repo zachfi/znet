@@ -21,7 +21,7 @@ compile-clean:
 	@echo "=== $(PROJECT_NAME) === [ compile-clean    ]: removing binaries..."
 	@rm -rfv $(BUILD_DIR)/*
 
-compile: deps compile-only proto
+compile: deps compile-only
 
 proto:
 	@echo "=== $(PROJECT_NAME) === [ proto compile    ]: compiling protobufs:"
