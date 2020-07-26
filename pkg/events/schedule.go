@@ -14,6 +14,9 @@ type Scheduler struct {
 	timeSlice *TimeSlice
 }
 
+// TimeSlice is an association between a specific time, and the names of the events that should fire at that time.
+type TimeSlice map[time.Time][]string
+
 // NewScheduler returns a new Scheduler.
 func NewScheduler() *Scheduler {
 	return &Scheduler{
@@ -71,9 +74,23 @@ func (s *Scheduler) ordered() []time.Time {
 	return keys
 }
 
-// NamesForTime returns all events names that are scheduled for a given timeSlice.
-func (s *Scheduler) NamesForTime(t time.Time) []string {
+// TimesForName returns all timeSlices for a given event name.
+func (s *Scheduler) TimesForName(n string) []time.Time {
+	var times []time.Time
 
+	for t, names := range *s.timeSlice {
+		for _, name := range names {
+			if n == name {
+				times = append(times, t)
+			}
+		}
+	}
+
+	return times
+}
+
+// NamesForTime returns all event names that are scheduled for a given timeSlice.
+func (s *Scheduler) NamesForTime(t time.Time) []string {
 	log.Tracef("*s.timeSlice %+v", *s.timeSlice)
 	return (*s.timeSlice)[t]
 }
@@ -146,6 +163,3 @@ func (s *Scheduler) Set(t time.Time, name string) error {
 
 	return nil
 }
-
-// TimeSlice is an association between a specific time, and the names of the events that should fire at that time.
-type TimeSlice map[time.Time][]string
