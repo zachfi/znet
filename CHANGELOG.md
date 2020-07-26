@@ -26,7 +26,7 @@
 - **lint:** adjust
 
 ### Features
-- **agent:** include filtering on git colleciton
+- **agent:** include filtering on git collection
 - **ci:** include semver parsing for latest tag retrieval
 - **inventory:** include utility methods for ldap calls
 - **inventory:** provide more structure for recording inventory
@@ -144,7 +144,7 @@
 <a name="v0.13.5"></a>
 ## [v0.13.5] - 2020-04-25
 ### Features
-- **ci:** new pacakge for git repo tracking
+- **ci:** new package for git repo tracking
 
 <a name="v0.13.4"></a>
 ## [v0.13.4] - 2020-04-25
