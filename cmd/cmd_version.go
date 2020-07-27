@@ -9,7 +9,7 @@ import (
 var versionCmd = &cobra.Command{
 	Use:     "version",
 	Short:   "Show znet version",
-	Long:    "Shows the current built version of the znet command.",
+	Long:    "Displays the current built version of the znet command.",
 	Example: "znet version",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println(rootCmd.Use + " " + Version)

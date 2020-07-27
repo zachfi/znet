@@ -63,6 +63,8 @@ func listen(cmd *cobra.Command, args []string) {
 		log.SetLevel(log.InfoLevel)
 	}
 
+	log.Infof("v%s starting", Version)
+
 	// Handle environment variables
 	replacer := strings.NewReplacer(".", "_")
 	viper.SetEnvKeyReplacer(replacer)
