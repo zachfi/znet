@@ -57,7 +57,7 @@ func newCertify(vaultConfig *VaultConfig, tlsConfig *TLSConfig) (*certify.Certif
 	}
 
 	cfg := certify.CertConfig{
-		// SubjectAlternativeNames: []string{"localhost"},
+		SubjectAlternativeNames: []string{},
 		// IPSubjectAlternativeNames: []net.IP{
 		// 	net.ParseIP("127.0.0.1"),
 		// 	net.ParseIP("::1"),
