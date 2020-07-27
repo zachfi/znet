@@ -54,8 +54,14 @@ type RPCConfig struct {
 
 // TLSConfig is the configuration for an RPC TLS client and server.
 type TLSConfig struct {
-	CN     string
-	CAFile string
+	// CN is the common name to use when issuing a new certificate.
+	CN string `yaml:"cn"`
+
+	// CAFile is the file path of the CA for vault HTTPs certificate.
+	CAFile string `yaml:"ca_file"`
+
+	// CacheDir is the directory to cache the TLS files in.
+	CacheDir string `yaml:"cache_dir"`
 }
 
 // VaultConfig is the client configuration for Vault.

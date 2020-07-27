@@ -73,13 +73,22 @@ func newCertify(vaultConfig *VaultConfig, tlsConfig *TLSConfig) (*certify.Certif
 	logger.SetLevel(log.GetLevel())
 	logger.SetFormatter(&logFormatter)
 
+	var tlsCache certify.Cache
+
+	if tlsConfig.CacheDir != "" {
+		log.Debugf("caching tls: %s", tlsConfig.CacheDir)
+		tlsCache = certify.DirCache(tlsConfig.CacheDir)
+	} else {
+		tlsCache = certify.NewMemCache()
+	}
+
 	c := &certify.Certify{
 		// Used when request client-side certificates and
 		// added to SANs or IPSANs depending on format.
 		CommonName: tlsConfig.CN,
 		Issuer:     issuer,
 		// It is recommended to use a cache.
-		Cache:      certify.NewMemCache(),
+		Cache:      tlsCache,
 		CertConfig: &cfg,
 		// It is recommended to set RenewBefore.
 		// Refresh cached certificates when < 24H left before expiry.
