@@ -153,6 +153,13 @@ func (l *telemetryServer) findMACs(macs []string) (*[]inventory.NetworkHost, *[]
 }
 
 func (l *telemetryServer) ReportNetworkID(ctx context.Context, request *pb.NetworkID) (*pb.Empty, error) {
+	log.WithFields(log.Fields{
+		"name":                       request.Name,
+		"ip_address":                 request.IpAddress,
+		"reporting_source":           request.ReportingSource,
+		"reporting_source_interface": request.ReportingSourceInterface,
+	}).Trace("NetworkID report")
+
 	if request.Name == "" {
 		return &pb.Empty{}, fmt.Errorf("unable to fetch NetworkID with empty name")
 	}
@@ -224,85 +231,48 @@ func (l *telemetryServer) ReportNetworkID(ctx context.Context, request *pb.Netwo
 }
 
 func (l *telemetryServer) ReportIOTDevice(ctx context.Context, request *pb.IOTDevice) (*pb.Empty, error) {
-	if request.Name == "" {
-		return &pb.Empty{}, fmt.Errorf("unable to fetch NetworkID with empty name")
-	}
+	var err error
 
-	//GOAL here we would like to ensure IOT deivce information is written to the
-	//host entry that belongs to this device.
-
-	// Check the message content for an IP address or mac.  Report
-
-	// hosts, ids, err := l.findMACs(request.NetworkId.GetMacAddress())
-	// if err != nil {
-	// 	return &pb.Empty{}, err
-	// }
-	//
-	// // do nothing if we did not match any networkHosts
-	// if hosts != nil {
-	// 	return &pb.Empty{}, nil
-	// }
-	//
-	// if ids != nil {
-	// 	return &pb.Empty{}, nil
-	// }
+	log.WithFields(log.Fields{
+		"component": request.DeviceDiscovery.Component,
+		"node_id":   request.DeviceDiscovery.NodeId,
+		"object_id": request.DeviceDiscovery.ObjectId,
+		"endpoint":  request.DeviceDiscovery.Endpoint,
+		"message":   string(request.DeviceDiscovery.Message),
+	}).Trace("IOTDevice report")
 
 	discovery := request.DeviceDiscovery
 
 	if discovery.ObjectId != "" {
-		rpcThingServerObjectNotice.WithLabelValues(discovery.ObjectId).Inc()
+		telemetryIOTReport.WithLabelValues(discovery.ObjectId, discovery.Component).Inc()
+	}
+
+	switch discovery.Component {
+	case "zigbee2mqtt":
+		err = l.handleZigbeeReport(request)
+		if err != nil {
+			return &pb.Empty{}, err
+		}
 	}
 
 	switch discovery.ObjectId {
 	case "wifi":
-		msg := iot.ReadMessage("wifi", discovery.Message, discovery.Endpoint...)
-		if msg != nil {
-			m := msg.(iot.WifiMessage)
-
-			l.storeThingLabel(discovery.NodeId, "ssid", m.SSID)
-			l.storeThingLabel(discovery.NodeId, "bssid", m.BSSID)
-			l.storeThingLabel(discovery.NodeId, "ip", m.IP)
-
-			labels := l.nodeLabels(discovery.NodeId)
-
-			if l.hasLabels(discovery.NodeId, []string{"ssid", "bssid", "ip"}) {
-				if m.RSSI != 0 {
-					thingWireless.With(prometheus.Labels{
-						"device": discovery.NodeId,
-						"ssid":   labels["ssid"],
-						"bssid":  labels["ssid"],
-						"ip":     labels["ip"],
-					}).Set(float64(m.RSSI))
-				}
-			}
+		err = l.handleWifiReport(request)
+		if err != nil {
+			return &pb.Empty{}, err
 		}
-
 	case "air":
-		msg := iot.ReadMessage("air", discovery.Message, discovery.Endpoint...)
-		if msg != nil {
-			m := msg.(iot.AirMessage)
-
-			// l.storeThingLabel(discovery.NodeId, "tempcoef", m.TempCoef)
-
-			airTemperature.WithLabelValues(discovery.NodeId).Set(float64(m.Temperature))
-			airHumidity.WithLabelValues(discovery.NodeId).Set(float64(m.Humidity))
-			airHeatindex.WithLabelValues(discovery.NodeId).Set(float64(m.HeatIndex))
+		err = l.handleAirReport(request)
+		if err != nil {
+			return &pb.Empty{}, err
 		}
-
 	case "led1", "led2":
-		msg := iot.ReadMessage("led", discovery.Message, discovery.Endpoint...)
-		if msg != nil {
-			m := msg.(iot.LEDConfig)
-
-			for i, deviceConnection := range m.Device.Connections {
-				if len(deviceConnection) == 2 {
-					l.storeThingLabel(discovery.NodeId, "mac", m.Device.Connections[i][1])
-				}
-			}
+		err = l.handleLEDReport(request)
+		if err != nil {
+			return &pb.Empty{}, err
 		}
-
 	default:
-		rpcThingServerUnhandledObjectNotice.WithLabelValues(discovery.ObjectId).Inc()
+		telemetryIOTUnhandledReport.WithLabelValues(discovery.ObjectId).Inc()
 	}
 
 	// Record an observation if all our parts are filled in.
@@ -321,4 +291,132 @@ func (l *telemetryServer) ReportIOTDevice(ctx context.Context, request *pb.IOTDe
 	}
 
 	return &pb.Empty{}, nil
+}
+
+func (l *telemetryServer) handleZigbeeReport(request *pb.IOTDevice) error {
+	if request == nil {
+		return fmt.Errorf("unable to read wifi report from nil request")
+	}
+
+	discovery := request.DeviceDiscovery
+
+	msg, err := iot.ReadZigbeeMessage(discovery.ObjectId, discovery.Message, discovery.Endpoint...)
+	if err != nil {
+		return err
+	}
+
+	if msg != nil {
+		m := msg.(iot.ZigbeeMessage)
+		log.Infof("msg: %+v", m)
+
+		// for i, deviceConnection := range m.Device.Connections {
+		// 	if len(deviceConnection) == 2 {
+		// 		l.storeThingLabel(discovery.NodeId, "mac", m.Device.Connections[i][1])
+		// 	}
+		// }
+
+		now := time.Now()
+
+		x := inventory.ZigbeeDevice{
+			Name:     request.DeviceDiscovery.ObjectId,
+			LastSeen: &now,
+		}
+
+		_, err = l.inventory.FetchZigbeeDevice(x.Name)
+		if err != nil {
+			log.Error(err)
+			_, err = l.inventory.CreateZigbeeDevice(x)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func (l *telemetryServer) handleLEDReport(request *pb.IOTDevice) error {
+	if request == nil {
+		return fmt.Errorf("unable to read wifi report from nil request")
+	}
+
+	discovery := request.DeviceDiscovery
+
+	msg, err := iot.ReadMessage("led", discovery.Message, discovery.Endpoint...)
+	if err != nil {
+		return err
+	}
+
+	if msg != nil {
+		m := msg.(iot.LEDConfig)
+
+		for i, deviceConnection := range m.Device.Connections {
+			if len(deviceConnection) == 2 {
+				l.storeThingLabel(discovery.NodeId, "mac", m.Device.Connections[i][1])
+			}
+		}
+	}
+
+	return nil
+}
+
+func (l *telemetryServer) handleAirReport(request *pb.IOTDevice) error {
+	if request == nil {
+		return fmt.Errorf("unable to read wifi report from nil request")
+	}
+
+	discovery := request.DeviceDiscovery
+
+	msg, err := iot.ReadMessage("air", discovery.Message, discovery.Endpoint...)
+	if err != nil {
+		return err
+	}
+
+	if msg != nil {
+		m := msg.(iot.AirMessage)
+
+		// l.storeThingLabel(discovery.NodeId, "tempcoef", m.TempCoef)
+
+		airTemperature.WithLabelValues(discovery.NodeId).Set(float64(m.Temperature))
+		airHumidity.WithLabelValues(discovery.NodeId).Set(float64(m.Humidity))
+		airHeatindex.WithLabelValues(discovery.NodeId).Set(float64(m.HeatIndex))
+	}
+
+	return nil
+}
+
+func (l *telemetryServer) handleWifiReport(request *pb.IOTDevice) error {
+	if request == nil {
+		return fmt.Errorf("unable to read wifi report from nil request")
+	}
+
+	discovery := request.DeviceDiscovery
+
+	msg, err := iot.ReadMessage("wifi", discovery.Message, discovery.Endpoint...)
+	if err != nil {
+		return err
+	}
+
+	if msg != nil {
+		m := msg.(iot.WifiMessage)
+
+		l.storeThingLabel(discovery.NodeId, "ssid", m.SSID)
+		l.storeThingLabel(discovery.NodeId, "bssid", m.BSSID)
+		l.storeThingLabel(discovery.NodeId, "ip", m.IP)
+
+		labels := l.nodeLabels(discovery.NodeId)
+
+		if l.hasLabels(discovery.NodeId, []string{"ssid", "bssid", "ip"}) {
+			if m.RSSI != 0 {
+				thingWireless.With(prometheus.Labels{
+					"device": discovery.NodeId,
+					"ssid":   labels["ssid"],
+					"bssid":  labels["ssid"],
+					"ip":     labels["ip"],
+				}).Set(float64(m.RSSI))
+			}
+		}
+	}
+
+	return nil
 }

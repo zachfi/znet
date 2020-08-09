@@ -121,16 +121,16 @@ var (
 		Help: "The current number of rpc events that are subscribed",
 	}, []string{})
 
-	// rpc thingServer
-	rpcThingServerUnhandledObjectNotice = prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name: "rpc_thingserver_unhandled_object_notice",
+	// rpc telemetry
+	telemetryIOTUnhandledReport = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "rpc_telemetryunhandled_object_notice",
 		Help: "The total number of notice calls that include an unhandled object ID.",
 	}, []string{"object_id"})
 
-	rpcThingServerObjectNotice = prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name: "rpc_thingserver_object_notice",
+	telemetryIOTReport = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "rpc_telemetryobject_notice",
 		Help: "The total number of notice calls for an object ID.",
-	}, []string{"object_id"})
+	}, []string{"object_id", "componenet"})
 )
 
 func init() {
@@ -153,8 +153,8 @@ func init() {
 		rpcEventServerEventCount,
 		rpcEventServerSubscriberCount,
 
-		rpcThingServerUnhandledObjectNotice,
-		rpcThingServerObjectNotice,
+		telemetryIOTUnhandledReport,
+		telemetryIOTReport,
 	)
 }
 
