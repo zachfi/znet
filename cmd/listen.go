@@ -55,6 +55,7 @@ func listen(cmd *cobra.Command, args []string) {
 	}
 
 	log.SetFormatter(&formatter)
+
 	if trace {
 		log.SetLevel(log.TraceLevel)
 	} else if verbose {
@@ -63,7 +64,7 @@ func listen(cmd *cobra.Command, args []string) {
 		log.SetLevel(log.InfoLevel)
 	}
 
-	log.Infof("v%s starting", Version)
+	log.Infof("%s starting", Version)
 
 	// Handle environment variables
 	replacer := strings.NewReplacer(".", "_")
