@@ -32,11 +32,13 @@ func newCertify(vaultConfig *VaultConfig, tlsConfig *TLSConfig) (*certify.Certif
 	authMethod := &vault.RenewingToken{
 		Initial:     client.Token(),
 		RenewBefore: 15 * time.Minute,
-		TimeToLive:  24 * time.Hour,
+		TimeToLive:  72 * time.Hour,
 	}
 
 	issuer := vault.FromClient(client, "znet")
 	issuer.AuthMethod = authMethod
+
+	log.Debugf("using PKI role: %s", issuer.Role)
 
 	if tlsConfig.CAFile != "" {
 		log.Debugf("loading CA file: %s", tlsConfig.CAFile)
@@ -57,7 +59,7 @@ func newCertify(vaultConfig *VaultConfig, tlsConfig *TLSConfig) (*certify.Certif
 	}
 
 	cfg := certify.CertConfig{
-		SubjectAlternativeNames: []string{},
+		// SubjectAlternativeNames: []string{},
 		// IPSubjectAlternativeNames: []net.IP{
 		// 	net.ParseIP("127.0.0.1"),
 		// 	net.ParseIP("::1"),
