@@ -35,7 +35,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.6.0
 	github.com/prometheus/common v0.10.0
-	github.com/scottdware/go-junos v0.0.0-20191101184514-da1ec4631b03
+	github.com/scottdware/go-junos v0.0.0-20200809143445-1805793fac10
 	github.com/sirupsen/logrus v1.6.0
 	github.com/smartystreets/assertions v1.0.0 // indirect
 	github.com/spf13/afero v1.3.2 // indirect
