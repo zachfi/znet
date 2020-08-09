@@ -418,8 +418,8 @@ github.com/ryanuber/columnize v0.0.0-20160712163229-9b3edd62028f/go.mod h1:sm1tb
 github.com/ryanuber/columnize v2.1.0+incompatible/go.mod h1:sm1tb6uqfes/u+d4ooFouqFdy9/2g9QGwK3SQygK0Ts=
 github.com/ryanuber/go-glob v1.0.0 h1:iQh3xXAumdQ+4Ufa5b25cRpC5TYKlno6hsv6Cb3pkBk=
 github.com/ryanuber/go-glob v1.0.0/go.mod h1:807d1WSdnB0XRJzKNil9Om6lcp/3a0v4qIHxIXzX/Yc=
-github.com/scottdware/go-junos v0.0.0-20191101184514-da1ec4631b03 h1:/j89wNUnNLvazyjcEcP7FfSXHNRxt/7q1nrVhNHwUg8=
-github.com/scottdware/go-junos v0.0.0-20191101184514-da1ec4631b03/go.mod h1:HyXZ8sqZbS3YOTwqstgK9EQ2OGkTcPOg84RZKVUGJhQ=
+github.com/scottdware/go-junos v0.0.0-20200809143445-1805793fac10 h1:SSdK8KJfUeNeqlLbtKve4wC0O3JaVT87cxLiJ3x31lQ=
+github.com/scottdware/go-junos v0.0.0-20200809143445-1805793fac10/go.mod h1:HyXZ8sqZbS3YOTwqstgK9EQ2OGkTcPOg84RZKVUGJhQ=
 github.com/scottdware/go-rested v0.0.0-20160313143639-93e152ef32a6 h1:299Uob4OQNsj4PcX5Lz0zrEUA3QJQR7cUb0QGKOCCMA=
 github.com/scottdware/go-rested v0.0.0-20160313143639-93e152ef32a6/go.mod h1:Pb2bmyrwODgla27iei9cFCcCyVCly15wW4rLEbd0RdM=
 github.com/sean-/seed v0.0.0-20170313163322-e2103e2c3529/go.mod h1:DxrIzT+xaE7yg65j358z/aeFdxmN0P9QXhEzd20vsDc=
