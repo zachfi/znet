@@ -2,6 +2,7 @@ package iot
 
 import (
 	"encoding/json"
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -67,9 +68,28 @@ func ParseTopicPath(topic string) (TopicPath, error) {
 	return tp, nil
 }
 
-func ReadMessage(objectID string, payload []byte, endpoint ...string) interface{} {
+// ReadZigbeeMessage implements the payload unmarshaling for zigbee2mqtt
+// https://www.zigbee2mqtt.io/information/mqtt_topics_and_message_structure.html
+func ReadZigbeeMessage(friendlyName string, payload []byte, endpoint ...string) (interface{}, error) {
 
-	log.Tracef("ReadMessage(): %s, %s: %+v", objectID, endpoint, string(payload))
+	if len(endpoint) == 0 {
+		m := ZigbeeMessage{}
+		err := json.Unmarshal(payload, &m)
+		if err != nil {
+			log.Error(err)
+		}
+		return m, nil
+	}
+
+	return nil, nil
+}
+
+func ReadMessage(objectID string, payload []byte, endpoint ...string) (interface{}, error) {
+	log.WithFields(log.Fields{
+		"objectID": objectID,
+		"endpoint": endpoint,
+		"payload":  string(payload),
+	}).Trace("ReadMessage()")
 
 	switch objectID {
 	case "wifi":
@@ -78,14 +98,14 @@ func ReadMessage(objectID string, payload []byte, endpoint ...string) interface{
 		if err != nil {
 			log.Error(err)
 		}
-		return m
+		return m, nil
 	case "air":
 		m := AirMessage{}
 		err := json.Unmarshal(payload, &m)
 		if err != nil {
 			log.Error(err)
 		}
-		return m
+		return m, nil
 	case "led":
 		if len(endpoint) > 0 {
 			if endpoint[0] == "config" {
@@ -94,7 +114,7 @@ func ReadMessage(objectID string, payload []byte, endpoint ...string) interface{
 				if err != nil {
 					log.Error(err)
 				}
-				return m
+				return m, nil
 			} else if endpoint[0] == "color" {
 				m := LEDColor{}
 				err := json.Unmarshal(payload, &m)
@@ -102,9 +122,9 @@ func ReadMessage(objectID string, payload []byte, endpoint ...string) interface{
 					log.Error(err)
 				}
 			}
-			log.Warnf("unhandled led endpoint: %s : %+v", endpoint, string(payload))
+			return nil, fmt.Errorf("unhandled led endpoint: %s : %+v", endpoint, string(payload))
 		}
 	}
 
-	return nil
+	return nil, nil
 }
