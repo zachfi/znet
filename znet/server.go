@@ -123,14 +123,24 @@ var (
 
 	// rpc telemetry
 	telemetryIOTUnhandledReport = prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name: "rpc_telemetryunhandled_object_notice",
+		Name: "rpc_telemetryunhandled_object_report",
 		Help: "The total number of notice calls that include an unhandled object ID.",
-	}, []string{"object_id"})
+	}, []string{"object_id", "component"})
 
 	telemetryIOTReport = prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name: "rpc_telemetryobject_notice",
+		Name: "rpc_telemetryobject_report",
 		Help: "The total number of notice calls for an object ID.",
-	}, []string{"object_id", "componenet"})
+	}, []string{"object_id", "component"})
+
+	telemetryIOTBatteryPercent = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "rpc_telemetry_iot_battery_percent",
+		Help: "The reported batter percentage remaining.",
+	}, []string{"object_id", "component"})
+
+	telemetryIOTLinkQuality = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "rpc_telemetry_iot_link_quality",
+		Help: "The reported link quality",
+	}, []string{"object_id", "component"})
 )
 
 func init() {
@@ -155,6 +165,8 @@ func init() {
 
 		telemetryIOTUnhandledReport,
 		telemetryIOTReport,
+		telemetryIOTBatteryPercent,
+		telemetryIOTLinkQuality,
 	)
 }
 

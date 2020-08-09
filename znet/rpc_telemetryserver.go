@@ -272,7 +272,7 @@ func (l *telemetryServer) ReportIOTDevice(ctx context.Context, request *pb.IOTDe
 			return &pb.Empty{}, err
 		}
 	default:
-		telemetryIOTUnhandledReport.WithLabelValues(discovery.ObjectId).Inc()
+		telemetryIOTUnhandledReport.WithLabelValues(discovery.ObjectId, discovery.Component).Inc()
 	}
 
 	// Record an observation if all our parts are filled in.
@@ -307,13 +307,14 @@ func (l *telemetryServer) handleZigbeeReport(request *pb.IOTDevice) error {
 
 	if msg != nil {
 		m := msg.(iot.ZigbeeMessage)
-		log.Infof("msg: %+v", m)
 
-		// for i, deviceConnection := range m.Device.Connections {
-		// 	if len(deviceConnection) == 2 {
-		// 		l.storeThingLabel(discovery.NodeId, "mac", m.Device.Connections[i][1])
-		// 	}
-		// }
+		if m.Battery > 0 {
+			telemetryIOTBatteryPercent.WithLabelValues(request.DeviceDiscovery.ObjectId, request.DeviceDiscovery.Component).Set(float64(m.Battery))
+		}
+
+		if m.LinkQuality > 0 {
+			telemetryIOTLinkQuality.WithLabelValues(request.DeviceDiscovery.ObjectId, request.DeviceDiscovery.Component).Set(float64(m.LinkQuality))
+		}
 
 		now := time.Now()
 
