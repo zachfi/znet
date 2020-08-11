@@ -1,3 +1,3 @@
 # ZNet
 
-[![Build Status](https://travis-ci.org/xaque208/znet.svg?branch=master)](https://travis-ci.org/xaque208/znet)
+![Build Status](https://github.com/xaque208/znet/workflows/Compiling/badge.svg)
