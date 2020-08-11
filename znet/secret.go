@@ -117,7 +117,9 @@ func tryCertAuth(client *api.Client, config VaultConfig) (string, error) {
 }
 
 func saveToken(token string, tokenPath string) error {
-	log.Debugf("saving token to file %s", tokenPath)
+	log.WithFields(log.Fields{
+		"token_path": tokenPath,
+	}).Debugf("saving token")
 
 	f, err := os.Create(tokenPath)
 	if err != nil {
@@ -165,7 +167,9 @@ func validateToken(client *api.Client, token string) error {
 			}
 		}
 
-		log.Debugf("token expires at %s", expireTime.Format(time.RFC3339))
+		log.WithFields(log.Fields{
+			"expire_time": expireTime.Format(time.RFC3339),
+		}).Trace("vault token")
 
 		if time.Until(expireTime) < 60*time.Second {
 			return fmt.Errorf("token expires soon: %s", expireTime.Format(time.RFC3339))

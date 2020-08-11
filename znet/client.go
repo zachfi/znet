@@ -37,7 +37,10 @@ func NewConn(serverAddress string, config Config) *grpc.ClientConn {
 	opts = append(opts, grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
 	// opts = append(opts, grpc.WithBlock())
 
-	log.Debugf("dialing grpc: %s", serverAddress)
+	log.WithFields(log.Fields{
+		"server_address": serverAddress,
+	}).Debug("dialing grpc")
+
 	conn, err := grpc.Dial(serverAddress, opts...)
 	if err != nil {
 		log.Error(err)

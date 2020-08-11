@@ -246,7 +246,9 @@ func (s *Server) Start(z *Znet) error {
 	http.Handle("/status/check", &statusCheckHandler{server: s})
 
 	if s.httpConfig.ListenAddress != "" {
-		log.Infof("starting HTTP listener %s", s.httpConfig.ListenAddress)
+		log.WithFields(log.Fields{
+			"listen_address": s.httpConfig.ListenAddress,
+		}).Info("starting HTTP listener")
 
 		go func() {
 			if err := s.httpServer.ListenAndServe(); err != nil {
@@ -256,7 +258,9 @@ func (s *Server) Start(z *Znet) error {
 	}
 
 	if s.rpcConfig.ListenAddress != "" {
-		log.Infof("starting RPC listener %s", s.rpcConfig.ListenAddress)
+		log.WithFields(log.Fields{
+			"listen_address": s.rpcConfig.ListenAddress,
+		}).Info("starting RPC listener")
 
 		inv := inventory.NewInventory(*s.ldapConfig)
 
