@@ -8,15 +8,13 @@ import (
 
 // GetEnvironmentConfig receives a slice of environment configurations and returns the one that matches the given name.
 func GetEnvironmentConfig(environments []EnvironmentConfig, envName string) (EnvironmentConfig, error) {
-	log.Debugf("getting environment %s", envName)
-
 	for _, e := range environments {
 		if e.Name == envName {
 			return e, nil
 		}
 	}
 
-	return EnvironmentConfig{}, fmt.Errorf("no environment with name %s found", envName)
+	return EnvironmentConfig{}, fmt.Errorf("no environment found: %s", envName)
 }
 
 // LoadEnvironment reads reads environment variables out of vault for return.
@@ -34,7 +32,6 @@ func LoadEnvironment(config VaultConfig, e EnvironmentConfig) (map[string]string
 
 	for _, k := range e.SecretValues {
 		path := fmt.Sprintf("%s/%s", config.SecretRoot, k)
-		// log.Debugf("Reading vault path: %s", path)
 		secret, err := s.Logical().Read(path)
 		if err != nil {
 			log.Error(err)

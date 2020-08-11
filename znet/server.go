@@ -121,16 +121,26 @@ var (
 		Help: "The current number of rpc events that are subscribed",
 	}, []string{})
 
-	// rpc thingServer
-	rpcThingServerUnhandledObjectNotice = prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name: "rpc_thingserver_unhandled_object_notice",
+	// rpc telemetry
+	telemetryIOTUnhandledReport = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "rpc_telemetryunhandled_object_report",
 		Help: "The total number of notice calls that include an unhandled object ID.",
-	}, []string{"object_id"})
+	}, []string{"object_id", "component"})
 
-	rpcThingServerObjectNotice = prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name: "rpc_thingserver_object_notice",
+	telemetryIOTReport = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "rpc_telemetryobject_report",
 		Help: "The total number of notice calls for an object ID.",
-	}, []string{"object_id"})
+	}, []string{"object_id", "component"})
+
+	telemetryIOTBatteryPercent = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "rpc_telemetry_iot_battery_percent",
+		Help: "The reported batter percentage remaining.",
+	}, []string{"object_id", "component"})
+
+	telemetryIOTLinkQuality = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "rpc_telemetry_iot_link_quality",
+		Help: "The reported link quality",
+	}, []string{"object_id", "component"})
 )
 
 func init() {
@@ -153,8 +163,10 @@ func init() {
 		rpcEventServerEventCount,
 		rpcEventServerSubscriberCount,
 
-		rpcThingServerUnhandledObjectNotice,
-		rpcThingServerObjectNotice,
+		telemetryIOTUnhandledReport,
+		telemetryIOTReport,
+		telemetryIOTBatteryPercent,
+		telemetryIOTLinkQuality,
 	)
 }
 
@@ -234,7 +246,9 @@ func (s *Server) Start(z *Znet) error {
 	http.Handle("/status/check", &statusCheckHandler{server: s})
 
 	if s.httpConfig.ListenAddress != "" {
-		log.Infof("starting HTTP listener %s", s.httpConfig.ListenAddress)
+		log.WithFields(log.Fields{
+			"listen_address": s.httpConfig.ListenAddress,
+		}).Info("starting HTTP listener")
 
 		go func() {
 			if err := s.httpServer.ListenAndServe(); err != nil {
@@ -244,7 +258,9 @@ func (s *Server) Start(z *Znet) error {
 	}
 
 	if s.rpcConfig.ListenAddress != "" {
-		log.Infof("starting RPC listener %s", s.rpcConfig.ListenAddress)
+		log.WithFields(log.Fields{
+			"listen_address": s.rpcConfig.ListenAddress,
+		}).Info("starting RPC listener")
 
 		inv := inventory.NewInventory(*s.ldapConfig)
 

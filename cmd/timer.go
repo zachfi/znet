@@ -47,7 +47,7 @@ func runTimer(cmd *cobra.Command, args []string) {
 		log.SetLevel(log.InfoLevel)
 	}
 
-	log.Infof("v%s starting", Version)
+	log.Infof("%s starting", Version)
 
 	viper.SetDefault("timer.future_limit", 1000)
 

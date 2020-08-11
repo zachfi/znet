@@ -1,12 +1,12 @@
 {{- if eq .File.GetName "rpc.proto"}}
+// Code generated, do not edit
 package inventory
 
 import (
 	"time"
 )
 
-// GENERATED FROM rpc.proto
-{{ $messages := list "DeviceDiscovery" "NetworkID" "IOTDevice" "NetworkHost" "L3Network" "InetNetwork" "Inet6Network" }}
+{{ $messages := list "DeviceDiscovery" "NetworkID" "IOTDevice" "NetworkHost" "L3Network" "InetNetwork" "Inet6Network" "ZigbeeDevice" }}
 {{- range .File.MessageType }}
 	{{- if has .GetName $messages }}
 

@@ -1,4 +1,5 @@
 {{- if eq .File.GetName "rpc.proto"}}
+// Code generated, do not edit
 package inventory
 
 import (
@@ -11,10 +12,7 @@ import (
 )
 
 {{/* The resulting Go code, not the template here */}}
-// CODE HERE IS GENERATED
-// DO NOT EDIT
-
-{{- $messages := list "Inet6Network" "InetNetwork" "L3Network" "NetworkHost" "NetworkID" }}
+{{- $messages := list "Inet6Network" "InetNetwork" "L3Network" "NetworkHost" "NetworkID" "ZigbeeDevice" }}
     {{- range .File.MessageType }}
       {{- if has .GetName $messages }}
 {{- $typename := (.GetName|snakeCase)}}

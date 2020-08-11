@@ -1,3 +1,4 @@
+// Code generated, do not edit
 package inventory
 
 import (
@@ -8,9 +9,6 @@ import (
 	ldap "github.com/go-ldap/ldap/v3"
 	log "github.com/sirupsen/logrus"
 )
-
-// CODE HERE IS GENERATED
-// DO NOT EDIT
 
 var defaultNetworkHostAttributes = []string{
 	"networkHostRole",
@@ -428,6 +426,7 @@ var defaultL3NetworkAttributes = []string{
 	"l3NetworkInetNetwork",
 	"l3NetworkInet6Network",
 	"dn",
+	"l3NetworkDescription",
 }
 
 // CreateL3Network creates a new LDAP entry by the received name.
@@ -472,6 +471,9 @@ func (i *Inventory) UpdateL3Network(x L3Network) (*L3Network, error) {
 	}
 	if x.NtpServers != nil {
 		a.Replace("l3NetworkNtpServers", *x.NtpServers)
+	}
+	if x.Description != "" {
+		a.Replace("l3NetworkDescription", []string{x.Description})
 	}
 
 	log.Debugf("updating l3Network: %+v", a)
@@ -560,6 +562,10 @@ func (i *Inventory) ListL3Networks() (*[]L3Network, error) {
 			case "dn":
 				{
 					h.Dn = stringValues(a)[0]
+				}
+			case "l3NetworkDescription":
+				{
+					h.Description = stringValues(a)[0]
 				}
 			}
 		}
@@ -832,6 +838,150 @@ func (i *Inventory) ListInet6Networks() (*[]Inet6Network, error) {
 			case "dn":
 				{
 					h.Dn = stringValues(a)[0]
+				}
+			}
+		}
+
+		xxx = append(xxx, h)
+	}
+
+	return &xxx, nil
+}
+
+var defaultZigbeeDeviceAttributes = []string{
+	"cn",
+	"zigbeeDeviceDescription",
+	"dn",
+	"zigbeeDeviceLastSeen",
+}
+
+// CreateZigbeeDevice creates a new LDAP entry by the received name.
+func (i *Inventory) CreateZigbeeDevice(x ZigbeeDevice) (*ZigbeeDevice, error) {
+	if x.Name == "" {
+		return nil, fmt.Errorf("unable to create a node with no Name set")
+	}
+
+	var err error
+
+	dn := fmt.Sprintf("cn=%s,ou=network,%s", x.Name, i.config.BaseDN)
+	x.Dn = dn
+
+	a := ldap.NewAddRequest(dn, []ldap.Control{})
+	a.Attribute("objectClass", []string{"zigbeeDevice", "top"})
+	a.Attribute("cn", []string{x.Name})
+
+	log.Debugf("creating new zigbeeDevice: %+v", a)
+
+	err = i.ldapClient.Add(a)
+	if err != nil {
+		return nil, err
+	}
+
+	return i.UpdateZigbeeDevice(x)
+}
+
+// UpdateZigbeeDevice updates an existing LDAP entry, retrieved by name.
+func (i *Inventory) UpdateZigbeeDevice(x ZigbeeDevice) (*ZigbeeDevice, error) {
+	if x.Dn == "" {
+		return nil, fmt.Errorf("unable to update a node with no Dn set")
+	}
+
+	var err error
+
+	a := ldap.NewModifyRequest(x.Dn, []ldap.Control{})
+	if x.Description != "" {
+		a.Replace("zigbeeDeviceDescription", []string{x.Description})
+	}
+	if x.LastSeen != nil {
+		a.Replace("zigbeeDeviceLastSeen", []string{x.LastSeen.Format(time.RFC3339)})
+	}
+
+	log.Debugf("updating zigbeeDevice: %+v", a)
+
+	err = i.ldapClient.Modify(a)
+	if err != nil {
+		return nil, err
+	}
+
+	return i.FetchZigbeeDevice(x.Name)
+}
+
+// FetchZigbeeDevice will retrieve a ZigbeeDevice by name.
+func (i *Inventory) FetchZigbeeDevice(name string) (*ZigbeeDevice, error) {
+
+	results, err := i.ListZigbeeDevices()
+	if err != nil {
+		return nil, err
+	}
+
+	if results != nil {
+		for _, x := range *results {
+			if x.Name == name {
+				return &x, nil
+			}
+		}
+	}
+
+	return nil, fmt.Errorf("zigbeeDevice not found: %s", name)
+}
+
+// ListZigbeeDevices retrieves all existing LDAP entries.
+// nolint:gocyclo
+func (i *Inventory) ListZigbeeDevices() (*[]ZigbeeDevice, error) {
+	if i.ldapClient == nil {
+		return nil, fmt.Errorf("unable to ListZigbeeDevices() with nil LDAP client")
+	}
+
+	var xxx []ZigbeeDevice
+	searchRequest := ldap.NewSearchRequest(
+		i.config.BaseDN,
+		ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
+		"(&(objectClass=zigbeeDevice)(cn=*))",
+		defaultZigbeeDeviceAttributes,
+		nil,
+	)
+
+	// log.Tracef("searching LDAP base %s with query: %s", i.config.BaseDN, searchRequest.Filter)
+
+	sr, err := i.ldapClient.Search(searchRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	// log.Tracef("search response: %+v", sr)
+
+	for _, e := range sr.Entries {
+		h := ZigbeeDevice{}
+
+		for _, a := range e.Attributes {
+			switch a.Name {
+			case "cn":
+				{
+					h.Name = stringValues(a)[0]
+				}
+			case "zigbeeDeviceDescription":
+				{
+					h.Description = stringValues(a)[0]
+				}
+			case "dn":
+				{
+					h.Dn = stringValues(a)[0]
+				}
+			case "zigbeeDeviceLastSeen":
+				{
+					attrs := []time.Time{}
+
+					for _, v := range stringValues(a) {
+						t, err := time.Parse(time.RFC3339, v)
+						if err != nil {
+							log.Errorf("unable to parse time: %s", err)
+							continue
+						}
+
+						attrs = append(attrs, t)
+					}
+
+					h.LastSeen = &attrs[0]
 				}
 			}
 		}

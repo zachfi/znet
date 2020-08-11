@@ -1,10 +1,9 @@
+// Code generated, do not edit
 package inventory
 
 import (
 	"time"
 )
-
-// GENERATED FROM rpc.proto
 
 type IOTDevice struct {
 	Name            string
@@ -47,6 +46,7 @@ type L3Network struct {
 	InetNetwork  *InetNetwork
 	Inet6Network *Inet6Network
 	Dn           string
+	Description  string
 }
 
 type InetNetwork struct {
@@ -71,4 +71,11 @@ type DeviceDiscovery struct {
 	ObjectId        string
 	Endpoint        *[]string
 	Message         []byte
+}
+
+type ZigbeeDevice struct {
+	Name        string
+	Description string
+	Dn          string
+	LastSeen    *time.Time
 }

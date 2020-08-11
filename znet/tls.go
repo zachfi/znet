@@ -32,20 +32,24 @@ func newCertify(vaultConfig *VaultConfig, tlsConfig *TLSConfig) (*certify.Certif
 	authMethod := &vault.RenewingToken{
 		Initial:     client.Token(),
 		RenewBefore: 15 * time.Minute,
-		TimeToLive:  24 * time.Hour,
+		TimeToLive:  72 * time.Hour,
 	}
 
 	issuer := vault.FromClient(client, "znet")
 	issuer.AuthMethod = authMethod
 
-	if tlsConfig.CAFile != "" {
-		log.Debugf("loading CA file: %s", tlsConfig.CAFile)
+	log.WithFields(log.Fields{
+		"role": issuer.Role,
+	}).Debug("using PKI")
 
+	if tlsConfig.CAFile != "" {
 		// The CA for vault is the Puppet CA, which is available locally.
 		b, _ := ioutil.ReadFile(tlsConfig.CAFile)
 		cp := x509.NewCertPool()
 		if !cp.AppendCertsFromPEM(b) {
-			log.Error("credentials: failed to append certificates")
+			log.WithFields(log.Fields{
+				"ca_file": tlsConfig.CAFile,
+			}).Error("failed loading CA")
 		}
 
 		issuer.TLSConfig = &tls.Config{
@@ -57,7 +61,7 @@ func newCertify(vaultConfig *VaultConfig, tlsConfig *TLSConfig) (*certify.Certif
 	}
 
 	cfg := certify.CertConfig{
-		SubjectAlternativeNames: []string{},
+		// SubjectAlternativeNames: []string{},
 		// IPSubjectAlternativeNames: []net.IP{
 		// 	net.ParseIP("127.0.0.1"),
 		// 	net.ParseIP("::1"),
@@ -76,7 +80,10 @@ func newCertify(vaultConfig *VaultConfig, tlsConfig *TLSConfig) (*certify.Certif
 	var tlsCache certify.Cache
 
 	if tlsConfig.CacheDir != "" {
-		log.Debugf("caching tls: %s", tlsConfig.CacheDir)
+		log.WithFields(log.Fields{
+			"cache_dir": tlsConfig.CacheDir,
+		}).Trace("caching TLS")
+
 		tlsCache = certify.DirCache(tlsConfig.CacheDir)
 	} else {
 		tlsCache = certify.NewMemCache()

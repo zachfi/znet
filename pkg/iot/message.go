@@ -1,5 +1,12 @@
 package iot
 
+type ZigbeeMessage struct {
+	Battery     int    `json:"battery,omitempty"`
+	LinkQuality int    `json:"linkquality,omitempty"`
+	Click       string `json:"click,omitempty"`
+	Voltage     int    `json:"voltage,omitempty"`
+}
+
 type WifiMessage struct {
 	BSSID string `json:"bssid,omitempty"`
 	IP    string `json:"ip,omitempty"`

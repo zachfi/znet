@@ -64,7 +64,10 @@ func (e *eventServer) ValidEventName(name string) bool {
 
 // RegisterEvents is used to update the e.eventNames list.
 func (e *eventServer) RegisterEvents(nameSet []string) {
-	log.Debugf("eventServer registering %d events: %+v", len(nameSet), nameSet)
+	log.WithFields(log.Fields{
+		"count": len(nameSet),
+		"names": nameSet,
+	}).Debug("registering event")
 
 	if len(e.eventNames) == 0 {
 		e.eventNames = make([]string, 0)
@@ -91,8 +94,10 @@ func (e *eventServer) NoticeEvent(ctx context.Context, request *pb.Event) (*pb.E
 	} else {
 		response.Errors = true
 		response.Message = fmt.Sprintf("unknown RPC event name: %s", request.Name)
-		log.Tracef("payload: %s", request.Payload)
-		log.Tracef("known events: %+v", e.eventNames)
+		log.WithFields(log.Fields{
+			"known_events": e.eventNames,
+			"failed":       request.Name,
+		}).Trace("failed to register events")
 	}
 
 	return response, nil

@@ -54,10 +54,13 @@ func NewNetConfig(configDir string, hosts []*pb.NetworkHost, auth *junos.AuthMet
 		junosAuth: auth,
 	}
 
-	for _, h := range hosts {
+	log.WithFields(log.Fields{
+		"host_count": len(hosts),
+	}).Debug("netconfig")
 
-		if h != nil {
-			log.Error("unable to configure nil nost")
+	for _, h := range hosts {
+		if h == nil {
+			log.Error("unable to configure nil host")
 			continue
 		}
 
