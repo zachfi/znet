@@ -41,7 +41,9 @@ func newTelemetryServer(inv *inventory.Inventory) *telemetryServer {
 			// Expire the old entries
 			for k, v := range tMap {
 				if time.Since(v) > (600 * time.Second) {
-					log.Infof("expiring device %s", k)
+					log.WithFields(log.Fields{
+						"device": k,
+					}).Info("expiring")
 
 					airTemperature.Delete(prometheus.Labels{"device": k})
 					airHumidity.Delete(prometheus.Labels{"device": k})

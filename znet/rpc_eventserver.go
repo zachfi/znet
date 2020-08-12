@@ -15,37 +15,12 @@ import (
 )
 
 type eventServer struct {
-	ch          chan events.Event
-	eventNames  []string
-	mux         sync.Mutex
-	remoteChans []chan *rpc.Event
-	quitChans   []chan bool
-}
-
-func (e *eventServer) Start() error {
-	var err error
-	log.Debug("eventServer starting")
-
-	ch := make(chan bool)
-
-	e.mux.Lock()
-	e.quitChans = append(e.quitChans, ch)
-	e.mux.Unlock()
-
-	return err
-}
-
-// Shutdown sents t
-func (e *eventServer) Stop() error {
-	var err error
-	log.Debug("eventServer shutting down")
-
-	for _, x := range e.quitChans {
-		x <- true
-		close(x)
-	}
-
-	return err
+	// the channel on which the eventMachine is listening
+	eventMachineChannel chan events.Event
+	eventNames          []string
+	mux                 sync.Mutex
+	remoteChans         []chan *rpc.Event
+	ctx                 context.Context
 }
 
 func (e *eventServer) Report() (int, int) {
@@ -90,7 +65,7 @@ func (e *eventServer) NoticeEvent(ctx context.Context, request *pb.Event) (*pb.E
 			Payload: request.Payload,
 		}
 
-		e.ch <- ev
+		e.eventMachineChannel <- ev
 	} else {
 		response.Errors = true
 		response.Message = fmt.Sprintf("unknown RPC event name: %s", request.Name)
@@ -110,12 +85,14 @@ func (e *eventServer) SubscribeEvents(subs *pb.EventSub, stream pb.Events_Subscr
 	ch := e.subscriberChan()
 	defer e.subscriberChanRemove(ch)
 
-	ctx := stream.Context()
+	streamContext := stream.Context()
 
 	for {
 		select {
-		case <-ctx.Done():
-			return fmt.Errorf("done")
+		case <-e.ctx.Done():
+			return fmt.Errorf("eventServer done")
+		case <-streamContext.Done():
+			return fmt.Errorf("stream done")
 		case ev := <-ch:
 
 			eventTotal.WithLabelValues(ev.Name).Inc()

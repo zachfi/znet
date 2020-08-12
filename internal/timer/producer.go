@@ -1,6 +1,7 @@
 package timer
 
 import (
+	"context"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -12,17 +13,22 @@ import (
 // EventProducer implements events.Producer with an attached GRPC connection
 // and a configuration.
 type EventProducer struct {
-	conn    *grpc.ClientConn
-	config  Config
-	diechan chan bool
+	conn   *grpc.ClientConn
+	config Config
+	ctx    context.Context
+	cancel func()
 }
 
 // NewProducer creates a new EventProducer to implement events.Producer and
 // attach the received GRPC connection.
 func NewProducer(conn *grpc.ClientConn, config Config) events.Producer {
+	ctx, cancel := context.WithCancel(context.Background())
+
 	var producer events.Producer = &EventProducer{
 		conn:   conn,
 		config: config,
+		ctx:    ctx,
+		cancel: cancel,
 	}
 
 	return producer
@@ -31,7 +37,6 @@ func NewProducer(conn *grpc.ClientConn, config Config) events.Producer {
 // Start initializes the producer.
 func (e *EventProducer) Start() error {
 	log.Info("starting timer eventProducer")
-	e.diechan = make(chan bool)
 
 	go func() {
 		err := e.scheduler()
@@ -45,9 +50,7 @@ func (e *EventProducer) Start() error {
 
 // Stop shuts down the producer.
 func (e *EventProducer) Stop() error {
-	e.diechan <- true
-	close(e.diechan)
-
+	e.cancel()
 	return nil
 }
 
@@ -131,13 +134,11 @@ func (e *EventProducer) scheduleRepeatEvents(scheduledEvents *events.Scheduler, 
 }
 
 func (e *EventProducer) scheduler() error {
-	log.Debug("scheduler started")
-
 	sch := events.NewScheduler()
 
-	log.Debugf("%d timer events scheduled", len(sch.All()))
-
-	otherchan := make(chan bool, 1)
+	log.WithFields(log.Fields{
+		"event_count": len(sch.All()),
+	}).Debug("timer scheduler started")
 
 	go func() {
 		for {
@@ -196,13 +197,8 @@ func (e *EventProducer) scheduler() error {
 		}
 	}()
 
-	for {
-		select {
-		case <-otherchan:
+	<-e.ctx.Done()
+	log.Debug("scheduler dying")
 
-		case <-e.diechan:
-			log.Debugf("scheduler dying")
-			return nil
-		}
-	}
+	return nil
 }

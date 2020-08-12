@@ -1,6 +1,7 @@
 package gitwatch
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"time"
@@ -16,17 +17,22 @@ import (
 // EventProducer implements events.Producer with an attached GRPC connection
 // and a configuration.
 type EventProducer struct {
-	conn    *grpc.ClientConn
-	config  Config
-	diechan chan bool
+	config Config
+	conn   *grpc.ClientConn
+	ctx    context.Context
+	cancel func()
 }
 
 // NewProducer creates a new EventProducer to implement events.Producer and
 // attach the received GRPC connection.
 func NewProducer(conn *grpc.ClientConn, config Config) events.Producer {
+	ctx, cancel := context.WithCancel(context.Background())
+
 	var producer events.Producer = &EventProducer{
 		conn:   conn,
 		config: config,
+		ctx:    ctx,
+		cancel: cancel,
 	}
 
 	return producer
@@ -35,23 +41,20 @@ func NewProducer(conn *grpc.ClientConn, config Config) events.Producer {
 // Start initializes the producer.
 func (e *EventProducer) Start() error {
 	log.Info("starting gitwatch eventProducer")
-	e.diechan = make(chan bool)
 
-	go func(done chan bool) {
-		err := e.watcher(done)
+	go func(ctx context.Context) {
+		err := e.watcher(ctx)
 		if err != nil {
-			log.Errorf("error e.Watcher(done): %s", err)
+			log.Error(err)
 		}
-	}(e.diechan)
+	}(e.ctx)
 
 	return nil
 }
 
 // Stop shuts down the producer.
 func (e *EventProducer) Stop() error {
-	// e.diechan <- true
-	close(e.diechan)
-
+	e.cancel()
 	return nil
 }
 
@@ -146,13 +149,12 @@ func (e *EventProducer) handleRepos(repos []Repo, collection *string) error {
 	return nil
 }
 
-func (e *EventProducer) watcher(done chan bool) error {
-
+func (e *EventProducer) watcher(ctx context.Context) error {
 	ticker := time.NewTicker(time.Duration(e.config.Interval) * time.Second)
 
 	for {
 		select {
-		case <-done:
+		case <-ctx.Done():
 			return nil
 		case <-ticker.C:
 			err := e.handleRepos(e.config.Repos, nil)

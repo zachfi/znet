@@ -17,17 +17,22 @@ import (
 
 // EventProducer implements events.Producer with an attached GRPC connection.
 type EventProducer struct {
-	conn    *grpc.ClientConn
-	config  Config
-	diechan chan bool
+	conn   *grpc.ClientConn
+	config Config
+	ctx    context.Context
+	cancel func()
 }
 
 // NewProducer creates a new EventProducer to implement events.Producer and
 // attach the received GRPC connection.
 func NewProducer(conn *grpc.ClientConn, config Config) events.Producer {
+	ctx, cancel := context.WithCancel(context.Background())
+
 	var producer events.Producer = &EventProducer{
 		conn:   conn,
 		config: config,
+		ctx:    ctx,
+		cancel: cancel,
 	}
 
 	return producer
@@ -36,7 +41,6 @@ func NewProducer(conn *grpc.ClientConn, config Config) events.Producer {
 // Start initializes the producer.
 func (e *EventProducer) Start() error {
 	log.Info("starting astro eventProducer")
-	e.diechan = make(chan bool)
 
 	go func() {
 		err := e.scheduler()
@@ -50,9 +54,7 @@ func (e *EventProducer) Start() error {
 
 // Stop shuts down the producer.
 func (e *EventProducer) Stop() error {
-	e.diechan <- true
-	close(e.diechan)
-
+	e.cancel()
 	return nil
 }
 
@@ -67,8 +69,8 @@ func (e *EventProducer) scheduleEvents(sch *events.Scheduler) error {
 	}
 
 	for _, l := range e.config.Locations {
-		sunriseTime := queryForTime(client, fmt.Sprintf("owm_sunrise_time{location=\"%s\"}", l))
-		sunsetTime := queryForTime(client, fmt.Sprintf("owm_sunset_time{location=\"%s\"}", l))
+		sunriseTime := queryForTime(e.ctx, client, fmt.Sprintf("owm_sunrise_time{location=\"%s\"}", l))
+		sunsetTime := queryForTime(e.ctx, client, fmt.Sprintf("owm_sunset_time{location=\"%s\"}", l))
 
 		log.Tracef("astro found sunriseTime: %+v", sunriseTime)
 		log.Tracef("astro found sunsetTime: %+v", sunsetTime)
@@ -105,8 +107,6 @@ func (e *EventProducer) scheduleEvents(sch *events.Scheduler) error {
 }
 
 func (e *EventProducer) scheduler() error {
-	log.Debug("astro scheduler started")
-
 	sch := events.NewScheduler()
 
 	err := e.scheduleEvents(sch)
@@ -114,9 +114,9 @@ func (e *EventProducer) scheduler() error {
 		log.Error(err)
 	}
 
-	log.Infof("%d astro events scheduled: %+v", len(sch.All()), sch.All())
-
-	otherchan := make(chan bool, 1)
+	log.WithFields(log.Fields{
+		"event_count": len(sch.All()),
+	}).Debug("astro scheduler started")
 
 	go func() {
 		for {
@@ -148,20 +148,15 @@ func (e *EventProducer) scheduler() error {
 		}
 	}()
 
-	for {
-		select {
-		case <-otherchan:
+	<-e.ctx.Done()
+	log.Debugf("scheduler dying")
 
-		case <-e.diechan:
-			log.Debugf("scheduler dying")
-			return nil
-		}
-	}
+	return nil
 }
 
-func queryForTime(client api.Client, query string) time.Time {
+func queryForTime(c context.Context, client api.Client, query string) time.Time {
 	v1api := v1.NewAPI(client)
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(c, 10*time.Second)
 	defer cancel()
 
 	result, warnings, err := v1api.Query(ctx, query, time.Now())

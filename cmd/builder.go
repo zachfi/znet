@@ -65,7 +65,9 @@ func runBuilder(cmd *cobra.Command, args []string) {
 		x,
 	}
 
-	machine, err := eventmachine.New(consumers)
+	ctx, cancel := context.WithCancel(context.Background())
+
+	machine, err := eventmachine.New(ctx, consumers)
 	if err != nil {
 		log.Error(err)
 	}
@@ -77,13 +79,13 @@ func runBuilder(cmd *cobra.Command, args []string) {
 	}
 
 	// Run the receiver forever.
-	go func() {
+	go func(c context.Context) {
 		for {
-			ctx, cancel := context.WithCancel(context.Background())
-			stream, receiverErr := client.SubscribeEvents(ctx, eventSub)
+			ccc, cancelaton := context.WithCancel(c)
+			stream, receiverErr := client.SubscribeEvents(ccc, eventSub)
 
 			if receiverErr != nil {
-				cancel()
+				cancelaton()
 				if receiverErr.Error() == codes.Canceled.String() {
 					return
 				}
@@ -121,7 +123,7 @@ func runBuilder(cmd *cobra.Command, args []string) {
 			}
 			cancel()
 		}
-	}()
+	}(ctx)
 
 	sigs := make(chan os.Signal, 1)
 	done := make(chan bool, 1)
@@ -148,4 +150,6 @@ func runBuilder(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Error(err)
 	}
+
+	cancel()
 }

@@ -28,120 +28,20 @@ import (
 
 // Server is a znet Server.
 type Server struct {
-	eventMachine *eventmachine.EventMachine
-
-	httpConfig *HTTPConfig
-	rpcConfig  *RPCConfig
-	ldapConfig *inventory.LDAPConfig
-
-	httpServer *http.Server
-	grpcServer *grpc.Server
-
+	cancel         func()
+	ctx            context.Context
+	eventMachine   *eventmachine.EventMachine
+	grpcServer     *grpc.Server
+	httpConfig     *HTTPConfig
+	httpServer     *http.Server
+	ldapConfig     *inventory.LDAPConfig
+	rpcConfig      *RPCConfig
 	rpcEventServer *eventServer
 }
 
 type statusCheckHandler struct {
 	server *Server
 }
-
-var (
-	executionExitStatus = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "znet_execution_result",
-		Help: "Stats on the received ExecutionResult RPC events",
-	}, []string{"command"})
-
-	executionDuration = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "znet_execution_duration",
-		Help: "Stats on the received ExecutionResult RPC events",
-	}, []string{"command"})
-
-	eventTotal = prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name: "znet_event_total",
-		Help: "The total number of events that have been seen since start",
-	}, []string{"event_name"})
-
-	eventMachineConsumers = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "znet_event_machine_consumers",
-		Help: "The current number of event consumers",
-	}, []string{})
-
-	eventMachineHandlers = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "znet_event_machine_handlers",
-		Help: "The current number of event handlers per consumer",
-	}, []string{"event_name"})
-
-	// ciJobsRunning = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-	// 	Name: "znet_ci_jobs_running",
-	// 	Help: "Stats on running CI jobs",
-	// }, []string{})
-
-	airTemperature = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "thing_air_temperature",
-		Help: "Temperature",
-	}, []string{"device"})
-
-	airHumidity = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "thing_air_humidity",
-		Help: "humidity",
-	}, []string{"device"})
-
-	airHeatindex = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "thing_air_heatindex",
-		Help: "computed heat index",
-	}, []string{"device"})
-
-	waterTemperature = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "thing_water_temperature",
-		Help: "Water Temperature",
-	}, []string{"device"})
-
-	tempCoef = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "thing_air_temperature_coef",
-		Help: "Air Temperature Coefficient",
-	}, []string{"device"})
-
-	waterTempCoef = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "thing_water_temperature_coef",
-		Help: "Water Temperature Coefficient",
-	}, []string{"device"})
-
-	thingWireless = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "thing_wireless",
-		Help: "wireless information",
-	}, []string{"device", "ssid", "bssid", "ip"})
-
-	// rpc eventServer
-	rpcEventServerSubscriberCount = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "rpc_eventserver_subscriber_count",
-		Help: "The current number of rpc subscribers",
-	}, []string{})
-
-	rpcEventServerEventCount = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "rpc_eventserver_event_count",
-		Help: "The current number of rpc events that are subscribed",
-	}, []string{})
-
-	// rpc telemetry
-	telemetryIOTUnhandledReport = prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name: "rpc_telemetryunhandled_object_report",
-		Help: "The total number of notice calls that include an unhandled object ID.",
-	}, []string{"object_id", "component"})
-
-	telemetryIOTReport = prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name: "rpc_telemetryobject_report",
-		Help: "The total number of notice calls for an object ID.",
-	}, []string{"object_id", "component"})
-
-	telemetryIOTBatteryPercent = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "rpc_telemetry_iot_battery_percent",
-		Help: "The reported batter percentage remaining.",
-	}, []string{"object_id", "component"})
-
-	telemetryIOTLinkQuality = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "rpc_telemetry_iot_link_quality",
-		Help: "The reported link quality",
-	}, []string{"object_id", "component"})
-)
 
 func init() {
 	prometheus.MustRegister(
@@ -172,7 +72,9 @@ func init() {
 
 // NewServer creates a new Server composed of the received information.
 func NewServer(config Config, consumers []events.Consumer) *Server {
-	eventMachine, err := eventmachine.New(consumers)
+	ctx := context.Background()
+
+	eventMachine, err := eventmachine.New(ctx, consumers)
 	if err != nil {
 		log.Error(err)
 	}
@@ -206,9 +108,13 @@ func NewServer(config Config, consumers []events.Consumer) *Server {
 	}
 
 	s := &Server{
+		ctx:          ctx,
 		eventMachine: eventMachine,
 
-		rpcEventServer: &eventServer{ch: eventMachine.EventChannel},
+		rpcEventServer: &eventServer{
+			eventMachineChannel: eventMachine.EventChannel,
+			ctx:                 ctx,
+		},
 
 		httpConfig: config.HTTP,
 		rpcConfig:  config.RPC,
@@ -326,20 +232,19 @@ func (s *Server) Start(z *Znet) error {
 // Stop is used to close up the connections and channels.
 func (s *Server) Stop() error {
 	errs := []error{}
-
 	var err error
 
-	s.grpcServer.Stop()
+	ctx, cancel := context.WithTimeout(s.ctx, 10*time.Second)
 
-	err = s.httpServer.Shutdown(context.Background())
+	err = s.httpServer.Shutdown(ctx)
 	if err != nil {
 		errs = append(errs, err)
 	}
 
-	err = s.eventMachine.Stop()
-	if err != nil {
-		errs = append(errs, err)
-	}
+	s.grpcServer.GracefulStop()
+
+	cancel()
+	s.cancel()
 
 	if len(errs) > 0 {
 		return fmt.Errorf("errors while shutting down: %s", errs)

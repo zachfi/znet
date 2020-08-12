@@ -48,13 +48,6 @@ func runGitwatch(cmd *cobra.Command, args []string) {
 
 	conn := znet.NewConn(z.Config.RPC.ServerAddress, z.Config)
 
-	defer func() {
-		err = conn.Close()
-		if err != nil {
-			log.Error(err)
-		}
-	}()
-
 	if z.Config.GitWatch == nil {
 		log.Fatal("unable to create agent with nil GitWatch configuration")
 	}
@@ -79,6 +72,12 @@ func runGitwatch(cmd *cobra.Command, args []string) {
 	<-done
 
 	err = x.Stop()
+	if err != nil {
+		log.Error(err)
+	}
+
+	log.Debug("closing RPC connection")
+	err = conn.Close()
 	if err != nil {
 		log.Error(err)
 	}
