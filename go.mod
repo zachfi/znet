@@ -18,7 +18,7 @@ require (
 	github.com/golang/protobuf v1.4.2
 	github.com/hashicorp/go-retryablehttp v0.6.4 // indirect
 	github.com/hashicorp/vault v1.1.1
-	github.com/imdario/mergo v0.3.10
+	github.com/imdario/mergo v0.3.11
 	github.com/jarcoal/httpmock v1.0.5 // indirect
 	github.com/jedib0t/go-pretty v4.3.0+incompatible
 	github.com/johanbrandhorst/certify v1.8.0
