@@ -2,6 +2,8 @@ package eventmachine
 
 import (
 	"context"
+	"encoding/json"
+	"reflect"
 
 	log "github.com/sirupsen/logrus"
 
@@ -47,6 +49,23 @@ func (m *EventMachine) Stop() error {
 	return nil
 }
 
+// Send is used to marshal an object into an events.Event and write it to the event channel.
+func (m *EventMachine) Send(t interface{}) error {
+	payload, err := json.Marshal(t)
+	if err != nil {
+		return err
+	}
+
+	e := events.Event{
+		Name:    reflect.TypeOf(t).Name(),
+		Payload: payload,
+	}
+
+	m.EventChannel <- e
+
+	return nil
+}
+
 // initEventConsumer starts a routine that never ends to read from
 // z.EventChannel and execute the loaded handlers with the event Payload.
 func (m *EventMachine) initEventConsumer(c context.Context) func() {
@@ -70,7 +89,10 @@ func (m *EventMachine) initEventConsumer(c context.Context) func() {
 						}
 					}
 				} else {
-					log.Warnf("received event with no handlers: %+v", e.Name)
+					log.WithFields(log.Fields{
+						"name":    e.Name,
+						"payload": string(e.Payload),
+					}).Warn("unhandled event")
 				}
 			}
 		}

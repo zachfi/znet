@@ -29,8 +29,6 @@ func MakeEvent(t interface{}) *pb.Event {
 }
 
 func ProduceEvent(conn *grpc.ClientConn, ev interface{}) error {
-	// Create the RPC client
-
 	if conn == nil {
 		return fmt.Errorf("unable to make use of nil grpc client")
 	}
