@@ -14,9 +14,9 @@ release-clean:
 	@echo "=== $(PROJECT_NAME) === [ release-clean    ]: distribution files..."
 	@rm -rfv $(DIST_DIR) $(SRCDIR)/tmp
 
-release-publish: clean tools docker-login
+release-publish: clean tools docker-login release-notes
 	@echo "=== $(PROJECT_NAME) === [ release-publish  ]: Publishing release via $(REL_CMD)"
-	$(REL_CMD)
+	$(REL_CMD) --release-notes=$(SRCDIR)/tmp/$(RELEASE_NOTES_FILE)
 
 # Local Snapshot
 snapshot: release-clean
