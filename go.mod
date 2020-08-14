@@ -25,6 +25,7 @@ require (
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 	github.com/lib/pq v1.2.0 // indirect
 	github.com/llorllale/go-gitlint v0.0.0-20200802191503-5984945d4b80
+	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/pierrec/lz4 v2.2.7+incompatible // indirect
 	github.com/pkg/errors v0.9.1
@@ -43,6 +44,7 @@ require (
 	github.com/xaque208/rftoy v0.0.0-20191203015236-4727b87c3461
 	go.mongodb.org/mongo-driver v1.1.1 // indirect
 	golang.org/x/crypto v0.0.0-20200709230013-948cd5f35899
+	golang.org/x/sys v0.0.0-20200814200057-3d37ad5750ed // indirect
 	golang.org/x/tools v0.0.0-20200724022722-7017fd6b1305
 	google.golang.org/genproto v0.0.0-20200611194920-44ba362f84c1 // indirect
 	google.golang.org/grpc v1.31.0
