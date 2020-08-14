@@ -81,12 +81,12 @@ var (
 
 	// rpc telemetry
 	telemetryIOTUnhandledReport = prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name: "rpc_telemetryunhandled_object_report",
+		Name: "rpc_telemetry_unhandled_object_report",
 		Help: "The total number of notice calls that include an unhandled object ID.",
 	}, []string{"object_id", "component"})
 
 	telemetryIOTReport = prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name: "rpc_telemetryobject_report",
+		Name: "rpc_telemetry_object_report",
 		Help: "The total number of notice calls for an object ID.",
 	}, []string{"object_id", "component"})
 
