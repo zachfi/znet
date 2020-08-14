@@ -1,4 +1,4 @@
-# RELEASE_SCRIPT ?= ./scripts/release.sh
+RELEASE_SCRIPT ?= ./scripts/release.sh
 
 GOTOOLS += github.com/goreleaser/goreleaser
 
@@ -6,11 +6,9 @@ REL_CMD ?= goreleaser
 DIST_DIR ?= ./dist
 
 # Example usage: make release version=0.11.0
-release: build release-publish
+release: build
 	@echo "=== $(PROJECT_NAME) === [ release          ]: Generating release."
-	# $(RELEASE_SCRIPT) $(version)
-
-release: build release-publish
+	$(RELEASE_SCRIPT) $(version)
 
 release-clean:
 	@echo "=== $(PROJECT_NAME) === [ release-clean    ]: distribution files..."
