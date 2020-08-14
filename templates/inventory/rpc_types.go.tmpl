@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-{{ $messages := list "DeviceDiscovery" "NetworkID" "IOTDevice" "NetworkHost" "L3Network" "InetNetwork" "Inet6Network" "ZigbeeDevice" }}
+{{ $messages := list "DeviceDiscovery" "NetworkID" "IOTDevice" "NetworkHost" "L3Network" "InetNetwork" "Inet6Network" "ZigbeeDevice" "IOTZone" }}
 {{- range .File.MessageType }}
 	{{- if has .GetName $messages }}
 

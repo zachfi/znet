@@ -2,7 +2,7 @@
 dn: cn={7}network,cn=schema,cn=config
 changetype: modify
 replace: olcAttributeTypes
-    {{- $structures := list "NetworkHost" "NetworkID" "L3Network" "InetNetwork" "Inet6Network" "ZigbeeDevice"}}
+    {{- $structures := list "NetworkHost" "NetworkID" "L3Network" "InetNetwork" "Inet6Network" "ZigbeeDevice" "IOTZone"}}
     {{- $oidStart := 2000}}
     {{- $oidJump := 100}}
     {{- $sectionOid := $oidStart}}

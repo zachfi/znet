@@ -12,7 +12,7 @@ import (
 )
 
 {{/* The resulting Go code, not the template here */}}
-{{- $messages := list "Inet6Network" "InetNetwork" "L3Network" "NetworkHost" "NetworkID" "ZigbeeDevice" }}
+{{- $messages := list "Inet6Network" "InetNetwork" "L3Network" "NetworkHost" "NetworkID" "ZigbeeDevice" "IOTZone" }}
     {{- range .File.MessageType }}
       {{- if has .GetName $messages }}
 {{- $typename := (.GetName|snakeCase)}}

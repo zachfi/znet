@@ -853,6 +853,7 @@ var defaultZigbeeDeviceAttributes = []string{
 	"zigbeeDeviceDescription",
 	"dn",
 	"zigbeeDeviceLastSeen",
+	"zigbeeDeviceIotZone",
 }
 
 // CreateZigbeeDevice creates a new LDAP entry by the received name.
@@ -894,6 +895,9 @@ func (i *Inventory) UpdateZigbeeDevice(x ZigbeeDevice) (*ZigbeeDevice, error) {
 	}
 	if x.LastSeen != nil {
 		a.Replace("zigbeeDeviceLastSeen", []string{x.LastSeen.Format(time.RFC3339)})
+	}
+	if x.IotZone != "" {
+		a.Replace("zigbeeDeviceIotZone", []string{x.IotZone})
 	}
 
 	log.Debugf("updating zigbeeDevice: %+v", a)
@@ -982,6 +986,134 @@ func (i *Inventory) ListZigbeeDevices() (*[]ZigbeeDevice, error) {
 					}
 
 					h.LastSeen = &attrs[0]
+				}
+			case "zigbeeDeviceIotZone":
+				{
+					h.IotZone = stringValues(a)[0]
+				}
+			}
+		}
+
+		xxx = append(xxx, h)
+	}
+
+	return &xxx, nil
+}
+
+var defaultIOTZoneAttributes = []string{
+	"cn",
+	"iotZoneDescription",
+	"dn",
+}
+
+// CreateIOTZone creates a new LDAP entry by the received name.
+func (i *Inventory) CreateIOTZone(x IOTZone) (*IOTZone, error) {
+	if x.Name == "" {
+		return nil, fmt.Errorf("unable to create a node with no Name set")
+	}
+
+	var err error
+
+	dn := fmt.Sprintf("cn=%s,ou=network,%s", x.Name, i.config.BaseDN)
+	x.Dn = dn
+
+	a := ldap.NewAddRequest(dn, []ldap.Control{})
+	a.Attribute("objectClass", []string{"iotZone", "top"})
+	a.Attribute("cn", []string{x.Name})
+
+	log.Debugf("creating new iotZone: %+v", a)
+
+	err = i.ldapClient.Add(a)
+	if err != nil {
+		return nil, err
+	}
+
+	return i.UpdateIOTZone(x)
+}
+
+// UpdateIOTZone updates an existing LDAP entry, retrieved by name.
+func (i *Inventory) UpdateIOTZone(x IOTZone) (*IOTZone, error) {
+	if x.Dn == "" {
+		return nil, fmt.Errorf("unable to update a node with no Dn set")
+	}
+
+	var err error
+
+	a := ldap.NewModifyRequest(x.Dn, []ldap.Control{})
+	if x.Description != "" {
+		a.Replace("iotZoneDescription", []string{x.Description})
+	}
+
+	log.Debugf("updating iotZone: %+v", a)
+
+	err = i.ldapClient.Modify(a)
+	if err != nil {
+		return nil, err
+	}
+
+	return i.FetchIOTZone(x.Name)
+}
+
+// FetchIOTZone will retrieve a IOTZone by name.
+func (i *Inventory) FetchIOTZone(name string) (*IOTZone, error) {
+
+	results, err := i.ListIOTZones()
+	if err != nil {
+		return nil, err
+	}
+
+	if results != nil {
+		for _, x := range *results {
+			if x.Name == name {
+				return &x, nil
+			}
+		}
+	}
+
+	return nil, fmt.Errorf("iotZone not found: %s", name)
+}
+
+// ListIOTZones retrieves all existing LDAP entries.
+// nolint:gocyclo
+func (i *Inventory) ListIOTZones() (*[]IOTZone, error) {
+	if i.ldapClient == nil {
+		return nil, fmt.Errorf("unable to ListIOTZones() with nil LDAP client")
+	}
+
+	var xxx []IOTZone
+	searchRequest := ldap.NewSearchRequest(
+		i.config.BaseDN,
+		ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
+		"(&(objectClass=iotZone)(cn=*))",
+		defaultIOTZoneAttributes,
+		nil,
+	)
+
+	// log.Tracef("searching LDAP base %s with query: %s", i.config.BaseDN, searchRequest.Filter)
+
+	sr, err := i.ldapClient.Search(searchRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	// log.Tracef("search response: %+v", sr)
+
+	for _, e := range sr.Entries {
+		h := IOTZone{}
+
+		for _, a := range e.Attributes {
+			switch a.Name {
+			case "cn":
+				{
+					h.Name = stringValues(a)[0]
+				}
+			case "iotZoneDescription":
+				{
+					h.Description = stringValues(a)[0]
+				}
+			case "dn":
+				{
+					h.Dn = stringValues(a)[0]
 				}
 			}
 		}

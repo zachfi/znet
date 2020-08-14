@@ -151,6 +151,18 @@ olcAttributeTypes: ( 1.3.6.1.4.1.99.2602 NAME ( 'zigbeeDeviceLastSeen' )
     SUBSTR caseIgnoreSubstringsMatch
     SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
     )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2603 NAME ( 'zigbeeDeviceIotZone' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2701 NAME ( 'iotZoneDescription' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
 -
 replace: olcObjectClasses
 olcObjectClasses:  ( 1.3.6.1.4.1.99.1001 NAME 'networkHost'
@@ -187,5 +199,11 @@ olcObjectClasses:  ( 1.3.6.1.4.1.99.1006 NAME 'zigbeeDevice'
     STRUCTURAL
     SUP top
     MUST ( cn )
-    MAY ( zigbeeDeviceDescription $ zigbeeDeviceLastSeen )
+    MAY ( zigbeeDeviceDescription $ zigbeeDeviceLastSeen $ zigbeeDeviceIotZone )
+    )
+olcObjectClasses:  ( 1.3.6.1.4.1.99.1007 NAME 'iotZone'
+    STRUCTURAL
+    SUP top
+    MUST ( cn )
+    MAY ( iotZoneDescription )
     )

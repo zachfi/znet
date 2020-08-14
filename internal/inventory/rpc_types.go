@@ -78,4 +78,11 @@ type ZigbeeDevice struct {
 	Description string
 	Dn          string
 	LastSeen    *time.Time
+	IotZone     string
+}
+
+type IOTZone struct {
+	Name        string
+	Description string
+	Dn          string
 }
