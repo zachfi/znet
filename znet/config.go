@@ -36,20 +36,20 @@ type EnvironmentConfig struct {
 
 // JunosConfig is the configuration for Junos devices.
 type JunosConfig struct {
-	Hosts      []string
-	Username   string
-	PrivateKey string
+	Hosts      []string `yaml:"hosts,omitempty"`
+	Username   string   `yaml:"username,omitempty"`
+	PrivateKey string   `yaml:"private_key,omitempty"`
 }
 
 // HTTPConfig is the configuration for the listening HTTP server.
 type HTTPConfig struct {
-	ListenAddress string
+	ListenAddress string `yaml:"listen_address,omitempty"`
 }
 
 // RPCConfig is the configuration for the RPC client and server.
 type RPCConfig struct {
-	ListenAddress string
-	ServerAddress string
+	ListenAddress string `yaml:"listen_address,omitempty"`
+	ServerAddress string `yaml:"server_address,omitempty"`
 }
 
 // TLSConfig is the configuration for an RPC TLS client and server.
@@ -66,7 +66,7 @@ type TLSConfig struct {
 
 // VaultConfig is the client configuration for Vault.
 type VaultConfig struct {
-	Host       string
+	Host       string `yaml:"host,omitempty"`
 	TokenPath  string `yaml:"token_path,omitempty"`
 	SecretRoot string `yaml:"secret_root,omitempty"`
 
