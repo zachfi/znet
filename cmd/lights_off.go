@@ -55,7 +55,7 @@ func off(cmd *cobra.Command, args []string) {
 		log.Error(err)
 	}
 
-	z.Config.RPC.ServerAddress = viper.GetString("rpc.server")
+	z.Config.RPC.ServerAddress = viper.GetString("rpc.server_address")
 
 	var opts []grpc.DialOption
 	opts = append(opts, grpc.WithInsecure())

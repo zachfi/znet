@@ -77,20 +77,20 @@ func listen(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 
-	viper.SetDefault("http.listen", listenAddr)
-	viper.SetDefault("rpc.listen", rpcListenAddr)
+	viper.SetDefault("http.listen_address", listenAddr)
+	viper.SetDefault("rpc.listen_address", rpcListenAddr)
 
 	if z.Config.RPC == nil {
 		z.Config.RPC = &znet.RPCConfig{}
 	}
 
-	z.Config.RPC.ListenAddress = viper.GetString("rpc.listen")
+	z.Config.RPC.ListenAddress = viper.GetString("rpc.listen_address")
 
 	if z.Config.HTTP == nil {
 		z.Config.HTTP = &znet.HTTPConfig{}
 	}
 
-	z.Config.HTTP.ListenAddress = viper.GetString("http.listen")
+	z.Config.HTTP.ListenAddress = viper.GetString("http.listen_address")
 
 	sigs := make(chan os.Signal, 1)
 	done := make(chan bool, 1)

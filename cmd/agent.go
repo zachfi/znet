@@ -51,7 +51,7 @@ func runAgent(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 
-	z.Config.RPC.ServerAddress = viper.GetString("rpc.server")
+	z.Config.RPC.ServerAddress = viper.GetString("rpc.server_address")
 
 	if z.Config.RPC.ServerAddress == "" {
 		log.Fatal("no rpc.server configuration specified")

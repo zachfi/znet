@@ -44,7 +44,7 @@ func runGitwatch(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 
-	z.Config.RPC.ServerAddress = viper.GetString("rpc.server")
+	z.Config.RPC.ServerAddress = viper.GetString("rpc.server_address")
 
 	conn := znet.NewConn(z.Config.RPC.ServerAddress, z.Config)
 

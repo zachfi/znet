@@ -56,7 +56,7 @@ func runTimer(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 
-	z.Config.RPC.ServerAddress = viper.GetString("rpc.server")
+	z.Config.RPC.ServerAddress = viper.GetString("rpc.server_address")
 	z.Config.Timer.FutureLimit = viper.GetInt("timer.future_limit")
 
 	xConn := znet.NewConn(z.Config.RPC.ServerAddress, z.Config)
