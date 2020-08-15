@@ -61,7 +61,7 @@ github.com/alecthomas/template
 github.com/alecthomas/template/parse
 # github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d
 github.com/alecthomas/units
-# github.com/amimof/huego v0.0.0-20200504200310-b4a8f71aa2e3
+# github.com/amimof/huego v1.1.0
 github.com/amimof/huego
 # github.com/apex/log v1.8.0
 github.com/apex/log

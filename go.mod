@@ -3,7 +3,7 @@ module github.com/xaque208/znet
 go 1.13
 
 require (
-	github.com/amimof/huego v0.0.0-20200504200310-b4a8f71aa2e3
+	github.com/amimof/huego v1.1.0
 	github.com/blang/semver/v4 v4.0.0
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/client9/misspell v0.3.4
