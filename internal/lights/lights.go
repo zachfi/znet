@@ -11,6 +11,7 @@ import (
 
 	"github.com/xaque208/znet/internal/timer"
 	"github.com/xaque208/znet/pkg/events"
+	"github.com/xaque208/znet/pkg/iot"
 )
 
 // Lights holds the information necessary to communicate with lighting
@@ -35,12 +36,77 @@ func NewLights(config Config) *Lights {
 func (l *Lights) Subscriptions() map[string][]events.Handler {
 	s := events.NewSubscriptions()
 
-	s.Subscribe("PreSunset", l.eventHandler)
-	s.Subscribe("SolarEvent", l.eventHandler)
-	s.Subscribe("TimerExpired", l.eventHandler)
-	s.Subscribe("NamedTimer", l.eventHandler)
+	namedEvents := []string{
+		"PreSunset",
+		"SolarEvent",
+		"TimerExpired",
+		"NamedTimer",
+	}
+
+	for _, e := range namedEvents {
+		s.Subscribe(e, l.eventHandler)
+	}
+
+	s.Subscribe("Click", l.clickHandler)
 
 	return s.Table
+}
+
+func (l *Lights) clickHandler(name string, payload events.Payload) error {
+	log.Tracef("Lights.clickHandler: %s : %+v", name, string(payload))
+
+	var e iot.Click
+
+	err := json.Unmarshal(payload, &e)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal %T: %s", e, err)
+	}
+
+	for _, room := range l.config.Rooms {
+		alert := false
+		dim := false
+		off := false
+		on := false
+
+		if room.Name == e.Zone {
+			log.WithFields(log.Fields{
+				"room_name": room.Name,
+				"name":      e.Zone,
+			}).Trace("using room")
+
+			switch e.Count {
+			case "single":
+				off = true
+			case "double":
+				on = true
+			case "long":
+				dim = true
+			case "many":
+				alert = true
+			default:
+				log.Warnf("e: %+v", e)
+			}
+
+			if off {
+				l.Off(room.Name)
+			}
+
+			if on {
+				l.On(room.Name)
+			}
+
+			if alert {
+				l.Alert(room.Name)
+			}
+
+			if dim {
+				l.Dim(room.Name, 100)
+			}
+		}
+
+	}
+
+	return nil
 }
 
 func (l *Lights) eventHandler(name string, payload events.Payload) error {
@@ -77,7 +143,6 @@ func (l *Lights) eventHandler(name string, payload events.Payload) error {
 				l.Alert(room.Name)
 			}
 		}
-
 	}
 
 	return nil
@@ -142,15 +207,20 @@ func (l *Lights) On(groupName string) {
 		if err != nil {
 			log.Error(err)
 		} else {
-			log.Debugf("turning on light %s", light.Name)
+			log.WithFields(log.Fields{
+				"name": light.Name,
+			}).Debug("turning on light")
+
 			err = light.On()
 			if err != nil {
 				log.Error(err)
 			}
 		}
-
 	} else {
-		log.Debugf("turning on light group %s", g.Name)
+		log.WithFields(log.Fields{
+			"group": g.Name,
+		}).Debug("turning on light group")
+
 		err = g.On()
 		if err != nil {
 			log.Error(err)
@@ -158,7 +228,10 @@ func (l *Lights) On(groupName string) {
 	}
 
 	if len(room.IDs) > 0 {
-		log.Debugf("turning on rftoy lights: %+v", room.IDs)
+		log.WithFields(log.Fields{
+			"ids": room.IDs,
+		}).Debug("turning on rftoy ids")
+
 		for _, i := range room.IDs {
 			err := l.RFToy.On(i)
 			if err != nil {
@@ -186,7 +259,10 @@ func (l *Lights) Off(groupName string) {
 		if err != nil {
 			log.Error(err)
 		} else {
-			log.Debugf("turning off light %s", light.Name)
+			log.WithFields(log.Fields{
+				"name": light.Name,
+			}).Debug("turning off light")
+
 			err = light.Off()
 			if err != nil {
 				log.Error(err)
@@ -194,7 +270,10 @@ func (l *Lights) Off(groupName string) {
 		}
 
 	} else {
-		log.Debugf("turning off light group %s", g.Name)
+		log.WithFields(log.Fields{
+			"group": g.Name,
+		}).Debug("turning off light group")
+
 		err = g.Off()
 		if err != nil {
 			log.Error(err)
@@ -202,7 +281,10 @@ func (l *Lights) Off(groupName string) {
 	}
 
 	if len(room.IDs) > 0 {
-		log.Debugf("Turning off rftoy lights: %+v", room.IDs)
+		log.WithFields(log.Fields{
+			"ids": room.IDs,
+		}).Debug("turning off rftoy ids")
+
 		for _, i := range room.IDs {
 			err := l.RFToy.Off(i)
 			if err != nil {
@@ -227,7 +309,11 @@ func (l *Lights) Dim(groupName string, brightness int32) {
 	for _, g := range groups {
 		for _, i := range room.HueIDs {
 			if g.ID == i {
-				log.Debugf("Setting brightness for group %s: %+v", g.Name, g.State)
+				log.WithFields(log.Fields{
+					"name":  g.Name,
+					"state": g.State,
+				}).Debug("setting group brightness")
+
 				err := g.Bri(uint8(brightness))
 				if err != nil {
 					log.Error(err)
@@ -248,7 +334,9 @@ func (l *Lights) Alert(groupName string) {
 		if err != nil {
 			log.Error(err)
 		} else {
-			log.Debugf("alert light %s", light.Name)
+			log.WithFields(log.Fields{
+				"name": light.Name,
+			}).Debug("alerting light")
 
 			err := light.Alert("select")
 			if err != nil {
@@ -257,7 +345,10 @@ func (l *Lights) Alert(groupName string) {
 		}
 
 	} else {
-		log.Debugf("alert light group %s", g.Name)
+		log.WithFields(log.Fields{
+			"group": g.Name,
+		}).Debug("alerting light group")
+
 		err := g.Alert("select")
 		if err != nil {
 			log.Error(err)
