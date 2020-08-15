@@ -15,16 +15,17 @@ import (
 )
 
 type eventServer struct {
+	ctx context.Context
 	// the channel on which the eventMachine is listening
 	eventMachineChannel chan events.Event
 	eventNames          []string
 	mux                 sync.Mutex
 	remoteChans         []chan *rpc.Event
-	ctx                 context.Context
 }
 
-func (e *eventServer) Report() (int, int) {
-	return len(e.remoteChans), len(e.eventNames)
+func (e *eventServer) Report() {
+	rpcEventServerSubscriberCount.WithLabelValues().Set(float64(len(e.remoteChans)))
+	rpcEventServerEventCount.WithLabelValues().Set(float64(len(e.eventNames)))
 }
 
 func (e *eventServer) ValidEventName(name string) bool {
@@ -54,6 +55,8 @@ func (e *eventServer) RegisterEvents(nameSet []string) {
 // NoticeEvent is the call when an event should be fired.
 func (e *eventServer) NoticeEvent(ctx context.Context, request *pb.Event) (*pb.EventResponse, error) {
 	response := &pb.EventResponse{}
+
+	e.Report()
 
 	for _, x := range e.remoteChans {
 		x <- request

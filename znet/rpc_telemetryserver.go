@@ -10,24 +10,27 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/xaque208/znet/internal/inventory"
+	"github.com/xaque208/znet/pkg/eventmachine"
 	"github.com/xaque208/znet/pkg/iot"
 	pb "github.com/xaque208/znet/rpc"
 )
 
 type telemetryServer struct {
-	inventory  *inventory.Inventory
-	keeper     thingKeeper
-	seenThings map[string]time.Time
+	eventMachine *eventmachine.EventMachine
+	inventory    *inventory.Inventory
+	keeper       thingKeeper
+	seenThings   map[string]time.Time
 }
 
 type thingKeeper map[string]map[string]string
 
 // newThingServer returns a new telemetryServer.
-func newTelemetryServer(inv *inventory.Inventory) *telemetryServer {
+func newTelemetryServer(inv *inventory.Inventory, eventMachine *eventmachine.EventMachine) *telemetryServer {
 	s := telemetryServer{
-		inventory:  inv,
-		keeper:     make(thingKeeper),
-		seenThings: make(map[string]time.Time),
+		eventMachine: eventMachine,
+		inventory:    inv,
+		keeper:       make(thingKeeper),
+		seenThings:   make(map[string]time.Time),
 	}
 
 	go func(s telemetryServer) {
@@ -325,7 +328,7 @@ func (l *telemetryServer) handleZigbeeReport(request *pb.IOTDevice) error {
 			LastSeen: &now,
 		}
 
-		_, err = l.inventory.FetchZigbeeDevice(x.Name)
+		result, err := l.inventory.FetchZigbeeDevice(x.Name)
 		if err != nil {
 			log.Error(err)
 			_, err = l.inventory.CreateZigbeeDevice(x)
@@ -333,6 +336,26 @@ func (l *telemetryServer) handleZigbeeReport(request *pb.IOTDevice) error {
 				return err
 			}
 		}
+
+		log.WithFields(log.Fields{
+			"name":        result.Name,
+			"Description": result.Description,
+			"zone":        result.IotZone,
+		}).Debug("zigbeeResult")
+
+		if m.Click != "" {
+			t := iot.Click{
+				Count:  m.Click,
+				Device: x.Name,
+				Zone:   result.IotZone,
+			}
+
+			err = l.eventMachine.Send(t)
+			if err != nil {
+				log.Error(err)
+			}
+		}
+
 	}
 
 	return nil

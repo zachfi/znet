@@ -23,20 +23,20 @@ import (
 	"github.com/xaque208/znet/pkg/continuous"
 	"github.com/xaque208/znet/pkg/eventmachine"
 	"github.com/xaque208/znet/pkg/events"
+	"github.com/xaque208/znet/pkg/iot"
 	pb "github.com/xaque208/znet/rpc"
 )
 
 // Server is a znet Server.
 type Server struct {
-	cancel         func()
-	ctx            context.Context
-	eventMachine   *eventmachine.EventMachine
-	grpcServer     *grpc.Server
-	httpConfig     *HTTPConfig
-	httpServer     *http.Server
-	ldapConfig     *inventory.LDAPConfig
-	rpcConfig      *RPCConfig
-	rpcEventServer *eventServer
+	cancel       func()
+	ctx          context.Context
+	eventMachine *eventmachine.EventMachine
+	grpcServer   *grpc.Server
+	httpConfig   *HTTPConfig
+	httpServer   *http.Server
+	ldapConfig   *inventory.LDAPConfig
+	rpcConfig    *RPCConfig
 }
 
 type statusCheckHandler struct {
@@ -72,7 +72,7 @@ func init() {
 
 // NewServer creates a new Server composed of the received information.
 func NewServer(config Config, consumers []events.Consumer) *Server {
-	ctx := context.Background()
+	ctx, cancel := context.WithCancel(context.Background())
 
 	eventMachine, err := eventmachine.New(ctx, consumers)
 	if err != nil {
@@ -81,7 +81,6 @@ func NewServer(config Config, consumers []events.Consumer) *Server {
 
 	var httpServer *http.Server
 	if config.HTTP.ListenAddress != "" {
-
 		httpServer = &http.Server{Addr: config.HTTP.ListenAddress}
 	}
 
@@ -109,12 +108,8 @@ func NewServer(config Config, consumers []events.Consumer) *Server {
 
 	s := &Server{
 		ctx:          ctx,
+		cancel:       cancel,
 		eventMachine: eventMachine,
-
-		rpcEventServer: &eventServer{
-			eventMachineChannel: eventMachine.EventChannel,
-			ctx:                 ctx,
-		},
 
 		httpConfig: config.HTTP,
 		rpcConfig:  config.RPC,
@@ -147,6 +142,11 @@ func (s *statusCheckHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // Start is used to launch the server routines.
 func (s *Server) Start(z *Znet) error {
+	log.WithFields(log.Fields{
+		"rpc_listen":  s.rpcConfig.ListenAddress,
+		"http_listen": s.httpConfig.ListenAddress,
+	}).Debug("starting znetd")
+
 	http.Handle("/metrics", promhttp.Handler())
 
 	http.Handle("/status/check", &statusCheckHandler{server: s})
@@ -158,7 +158,9 @@ func (s *Server) Start(z *Znet) error {
 
 		go func() {
 			if err := s.httpServer.ListenAndServe(); err != nil {
-				log.Error(err)
+				if err != http.ErrServerClosed {
+					log.Error(err)
+				}
 			}
 		}()
 	}
@@ -183,16 +185,22 @@ func (s *Server) Start(z *Znet) error {
 		pb.RegisterLightsServer(s.grpcServer, rpcLightServer)
 
 		// telemetryServer
-		rpcTelemetryServer := newTelemetryServer(inv)
+		rpcTelemetryServer := newTelemetryServer(inv, s.eventMachine)
 		pb.RegisterTelemetryServer(s.grpcServer, rpcTelemetryServer)
 
 		// Register and configure the rpcEventServer
-		pb.RegisterEventsServer(s.grpcServer, s.rpcEventServer)
-		s.rpcEventServer.RegisterEvents(agent.EventNames)
-		s.rpcEventServer.RegisterEvents(astro.EventNames)
-		s.rpcEventServer.RegisterEvents(continuous.EventNames)
-		s.rpcEventServer.RegisterEvents(gitwatch.EventNames)
-		s.rpcEventServer.RegisterEvents(timer.EventNames)
+		rpcEventServer := &eventServer{
+			eventMachineChannel: s.eventMachine.EventChannel,
+			ctx:                 s.ctx,
+		}
+
+		pb.RegisterEventsServer(s.grpcServer, rpcEventServer)
+		rpcEventServer.RegisterEvents(agent.EventNames)
+		rpcEventServer.RegisterEvents(astro.EventNames)
+		rpcEventServer.RegisterEvents(continuous.EventNames)
+		rpcEventServer.RegisterEvents(gitwatch.EventNames)
+		rpcEventServer.RegisterEvents(iot.EventNames)
+		rpcEventServer.RegisterEvents(timer.EventNames)
 
 		go func() {
 			lis, err := net.Listen("tcp", s.rpcConfig.ListenAddress)
@@ -217,12 +225,6 @@ func (s *Server) Start(z *Znet) error {
 			for name, handlers := range s.eventMachine.EventConsumers {
 				eventMachineHandlers.WithLabelValues(name).Set(float64(len(handlers)))
 			}
-
-			// export the event RPC server data
-			subscriberCount, eventCount := s.rpcEventServer.Report()
-
-			rpcEventServerSubscriberCount.WithLabelValues().Set(float64(subscriberCount))
-			rpcEventServerEventCount.WithLabelValues().Set(float64(eventCount))
 		}
 	}()
 
@@ -234,7 +236,11 @@ func (s *Server) Stop() error {
 	errs := []error{}
 	var err error
 
-	ctx, cancel := context.WithTimeout(s.ctx, 10*time.Second)
+	log.Debug("stopping znetd")
+
+	d := time.Now().Add(1500 * time.Millisecond)
+	ctx, cancel := context.WithDeadline(s.ctx, d)
+	defer cancel()
 
 	err = s.httpServer.Shutdown(ctx)
 	if err != nil {
@@ -243,7 +249,16 @@ func (s *Server) Stop() error {
 
 	s.grpcServer.GracefulStop()
 
-	cancel()
+	select {
+	case <-time.After(500 * time.Millisecond):
+	case <-ctx.Done():
+		log.Error(ctx.Err())
+		err = ctx.Err()
+		if err != nil {
+			errs = append(errs, err)
+		}
+	}
+
 	s.cancel()
 
 	if len(errs) > 0 {
