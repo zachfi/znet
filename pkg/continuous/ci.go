@@ -142,7 +142,10 @@ func (c *CI) CheckoutHash(commit string) error {
 
 	hash := plumbing.NewHash(commit)
 
-	err = w.Checkout(&git.CheckoutOptions{Hash: hash})
+	err = w.Checkout(&git.CheckoutOptions{
+		Hash:  hash,
+		Force: true,
+	})
 	if err != nil {
 		return err
 	}
