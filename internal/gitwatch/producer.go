@@ -68,6 +68,109 @@ func (e *EventProducer) Stop() error {
 	return nil
 }
 
+func (e *EventProducer) handleRepo(ctx context.Context, repo Repo, collection *string) error {
+	if repo.Name == "" {
+		return fmt.Errorf("repo name cannot be empty: %+v", repo)
+	}
+
+	t := time.Now()
+
+	var cacheDir string
+	if collection != nil {
+		cacheDir = fmt.Sprintf("%s/%s/%s", e.config.CacheDir, *collection, repo.Name)
+	} else {
+		cacheDir = fmt.Sprintf("%s/%s", e.config.CacheDir, repo.Name)
+	}
+
+	var freshClone bool
+	if _, err := os.Stat(cacheDir); os.IsNotExist(err) {
+		freshClone = true
+	}
+
+	ci := continuous.NewCI(
+		repo.URL,
+		cacheDir,
+		e.config.SSHKeyPath,
+	)
+
+	newHeads, newTags, err := ci.Fetch()
+	if err != nil {
+		return err
+	}
+
+	if len(newHeads) > 0 {
+		log.WithFields(log.Fields{
+			"url":   repo.URL,
+			"heads": newHeads,
+		}).Debug("new heads found")
+	}
+
+	if len(newTags) > 0 {
+		log.WithFields(log.Fields{
+			"url":  repo.URL,
+			"tags": newTags,
+		}).Debug("new tags found")
+	}
+
+	// If we have a fresh clone, then
+	if freshClone {
+		lastTag := ci.LatestTag()
+
+		if lastTag != "" {
+			ev := NewTag{
+				Name: repo.Name,
+				URL:  repo.URL,
+				Time: &t,
+				Tag:  lastTag,
+			}
+
+			if collection != nil {
+				ev.Collection = *collection
+			}
+
+			err = events.ProduceEvent(e.conn, ev)
+			if err != nil {
+				log.Error(err)
+			}
+		}
+	}
+
+	for shortName, newHead := range newHeads {
+		ev := NewCommit{
+			Name:   repo.Name,
+			URL:    repo.URL,
+			Time:   &t,
+			Hash:   newHead,
+			Branch: shortName,
+		}
+
+		err = events.ProduceEvent(e.conn, ev)
+		if err != nil {
+			log.Error(err)
+		}
+	}
+
+	for _, r := range newTags {
+		ev := NewTag{
+			Name: repo.Name,
+			URL:  repo.URL,
+			Time: &t,
+			Tag:  r,
+		}
+
+		if collection != nil {
+			ev.Collection = *collection
+		}
+
+		err = events.ProduceEvent(e.conn, ev)
+		if err != nil {
+			log.Error(err)
+		}
+	}
+
+	return nil
+}
+
 func (e *EventProducer) trackRepos(ctx context.Context, repos []Repo, collection *string, ticker *time.Ticker) {
 	for {
 		select {
@@ -79,105 +182,12 @@ func (e *EventProducer) trackRepos(ctx context.Context, repos []Repo, collection
 					"collection": *collection,
 				}).Debug("updating collection")
 			}
-
-			t := time.Now()
 			for _, repo := range repos {
-				if repo.Name == "" {
-					log.Errorf("repo name cannot be empty: %+v", repo)
-					continue
-				}
-
-				var cacheDir string
-				if collection != nil {
-					cacheDir = fmt.Sprintf("%s/%s/%s", e.config.CacheDir, *collection, repo.Name)
-				} else {
-					cacheDir = fmt.Sprintf("%s/%s", e.config.CacheDir, repo.Name)
-				}
-
-				var freshClone bool
-				if _, err := os.Stat(cacheDir); os.IsNotExist(err) {
-					freshClone = true
-				}
-
-				ci := continuous.NewCI(
-					repo.URL,
-					cacheDir,
-					e.config.SSHKeyPath,
-				)
-
-				newHeads, newTags, err := ci.Fetch()
+				err := e.handleRepo(ctx, repo, collection)
 				if err != nil {
-					log.Error(err)
-				}
-
-				if len(newHeads) > 0 {
 					log.WithFields(log.Fields{
-						"url":   repo.URL,
-						"heads": newHeads,
-					}).Debug("new heads found")
-				}
-
-				if len(newTags) > 0 {
-					log.WithFields(log.Fields{
-						"url":  repo.URL,
-						"tags": newTags,
-					}).Debug("new tags found")
-				}
-
-				// If we have a fresh clone, then
-				if freshClone {
-					lastTag := ci.LatestTag()
-
-					if lastTag != "" {
-						ev := NewTag{
-							Name: repo.Name,
-							URL:  repo.URL,
-							Time: &t,
-							Tag:  lastTag,
-						}
-
-						if collection != nil {
-							ev.Collection = *collection
-						}
-
-						err = events.ProduceEvent(e.conn, ev)
-						if err != nil {
-							log.Error(err)
-						}
-					}
-				}
-
-				for shortName, newHead := range newHeads {
-					ev := NewCommit{
-						Name:   repo.Name,
-						URL:    repo.URL,
-						Time:   &t,
-						Hash:   newHead,
-						Branch: shortName,
-					}
-
-					err = events.ProduceEvent(e.conn, ev)
-					if err != nil {
-						log.Error(err)
-					}
-				}
-
-				for _, r := range newTags {
-					ev := NewTag{
-						Name: repo.Name,
-						URL:  repo.URL,
-						Time: &t,
-						Tag:  r,
-					}
-
-					if collection != nil {
-						ev.Collection = *collection
-					}
-
-					err = events.ProduceEvent(e.conn, ev)
-					if err != nil {
-						log.Error(err)
-					}
+						"name": repo.Name,
+					}).Error("failed to fetch repo")
 				}
 			}
 		}
