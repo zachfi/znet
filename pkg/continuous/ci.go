@@ -78,6 +78,9 @@ func (c *CI) LatestTag() string {
 
 // Fetch performs a git-fetch from the repo origin.
 func (c *CI) Fetch() (map[string]string, []string, error) {
+	log.WithFields(log.Fields{
+		"url": c.URL,
+	}).Trace("fetching")
 
 	err := CacheRepo(c.URL, c.CacheDir, c.SSHKeyPath)
 	if err != nil {
