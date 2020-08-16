@@ -9,8 +9,9 @@ type Config struct {
 }
 
 type Collection struct {
-	Name  string
-	Repos []Repo `yaml:"repos"`
+	Name     string
+	Repos    []Repo `yaml:"repos"`
+	Interval int    `yaml:"interval"`
 }
 
 type Repo struct {

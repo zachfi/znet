@@ -40,14 +40,24 @@ func NewProducer(conn *grpc.ClientConn, config Config) events.Producer {
 
 // Start initializes the producer.
 func (e *EventProducer) Start() error {
-	log.Info("starting gitwatch eventProducer")
+	var interval int = 600
 
-	go func(ctx context.Context) {
-		err := e.watcher(ctx)
+	if e.config.Interval > 0 {
+		interval = e.config.Interval
+	}
+
+	log.WithFields(log.Fields{
+		"interval": interval,
+	}).Info("starting gitwatch")
+
+	go func(ctx context.Context, i int) {
+		ticker := time.NewTicker(time.Duration(i) * time.Second)
+
+		err := e.watcher(ctx, ticker)
 		if err != nil {
 			log.Error(err)
 		}
-	}(e.ctx)
+	}(e.ctx, interval)
 
 	return nil
 }
@@ -58,116 +68,150 @@ func (e *EventProducer) Stop() error {
 	return nil
 }
 
-func (e *EventProducer) handleRepos(repos []Repo, collection *string) error {
-	t := time.Now()
-	for _, repo := range repos {
-
-		if repo.Name == "" {
-			log.Errorf("repo name cannot be empty: %+v", repo)
-			continue
-		}
-
-		var cacheDir string
-		if collection != nil {
-			cacheDir = fmt.Sprintf("%s/%s/%s", e.config.CacheDir, *collection, repo.Name)
-		} else {
-			cacheDir = fmt.Sprintf("%s/%s", e.config.CacheDir, repo.Name)
-		}
-
-		var freshClone bool
-		if _, err := os.Stat(cacheDir); os.IsNotExist(err) {
-			freshClone = true
-		}
-
-		ci := continuous.NewCI(
-			repo.URL,
-			cacheDir,
-			e.config.SSHKeyPath,
-		)
-
-		newHeads, newTags, err := ci.Fetch()
-		if err != nil {
-			log.Error(err)
-			continue
-		}
-
-		// If we have a fresh clone, then
-		if freshClone {
-			lastTag := ci.LatestTag()
-
-			ev := NewTag{
-				Name: repo.Name,
-				URL:  repo.URL,
-				Time: &t,
-				Tag:  lastTag,
-			}
-
-			if collection != nil {
-				ev.Collection = *collection
-			}
-
-			err = events.ProduceEvent(e.conn, ev)
-			if err != nil {
-				log.Error(err)
-			}
-		}
-
-		for shortName, newHead := range newHeads {
-			ev := NewCommit{
-				Name:   repo.Name,
-				URL:    repo.URL,
-				Time:   &t,
-				Hash:   newHead,
-				Branch: shortName,
-			}
-
-			err = events.ProduceEvent(e.conn, ev)
-			if err != nil {
-				log.Error(err)
-			}
-		}
-
-		for _, r := range newTags {
-			ev := NewTag{
-				Name: repo.Name,
-				URL:  repo.URL,
-				Time: &t,
-				Tag:  r,
-			}
-
-			if collection != nil {
-				ev.Collection = *collection
-			}
-
-			err = events.ProduceEvent(e.conn, ev)
-			if err != nil {
-				log.Error(err)
-			}
-		}
-	}
-
-	return nil
-}
-
-func (e *EventProducer) watcher(ctx context.Context) error {
-	ticker := time.NewTicker(time.Duration(e.config.Interval) * time.Second)
-
+func (e *EventProducer) trackRepos(ctx context.Context, repos []Repo, collection *string, ticker *time.Ticker) {
 	for {
 		select {
 		case <-ctx.Done():
-			return nil
+			return
 		case <-ticker.C:
-			err := e.handleRepos(e.config.Repos, nil)
-			if err != nil {
-				log.Errorf("error handling repos: %s", err)
+			if collection != nil {
+				log.WithFields(log.Fields{
+					"collection": *collection,
+				}).Debug("updating collection")
 			}
 
-			for _, collection := range e.config.Collections {
-				err := e.handleRepos(collection.Repos, &collection.Name)
+			t := time.Now()
+			for _, repo := range repos {
+				if repo.Name == "" {
+					log.Errorf("repo name cannot be empty: %+v", repo)
+					continue
+				}
+
+				var cacheDir string
+				if collection != nil {
+					cacheDir = fmt.Sprintf("%s/%s/%s", e.config.CacheDir, *collection, repo.Name)
+				} else {
+					cacheDir = fmt.Sprintf("%s/%s", e.config.CacheDir, repo.Name)
+				}
+
+				var freshClone bool
+				if _, err := os.Stat(cacheDir); os.IsNotExist(err) {
+					freshClone = true
+				}
+
+				ci := continuous.NewCI(
+					repo.URL,
+					cacheDir,
+					e.config.SSHKeyPath,
+				)
+
+				newHeads, newTags, err := ci.Fetch()
 				if err != nil {
 					log.Error(err)
+				}
+
+				if len(newHeads) > 0 {
+					log.WithFields(log.Fields{
+						"url":   repo.URL,
+						"heads": newHeads,
+					}).Debug("new heads found")
+				}
+
+				if len(newTags) > 0 {
+					log.WithFields(log.Fields{
+						"url":  repo.URL,
+						"tags": newTags,
+					}).Debug("new tags found")
+				}
+
+				// If we have a fresh clone, then
+				if freshClone {
+					lastTag := ci.LatestTag()
+
+					if lastTag != "" {
+						ev := NewTag{
+							Name: repo.Name,
+							URL:  repo.URL,
+							Time: &t,
+							Tag:  lastTag,
+						}
+
+						if collection != nil {
+							ev.Collection = *collection
+						}
+
+						err = events.ProduceEvent(e.conn, ev)
+						if err != nil {
+							log.Error(err)
+						}
+					}
+				}
+
+				for shortName, newHead := range newHeads {
+					ev := NewCommit{
+						Name:   repo.Name,
+						URL:    repo.URL,
+						Time:   &t,
+						Hash:   newHead,
+						Branch: shortName,
+					}
+
+					err = events.ProduceEvent(e.conn, ev)
+					if err != nil {
+						log.Error(err)
+					}
+				}
+
+				for _, r := range newTags {
+					ev := NewTag{
+						Name: repo.Name,
+						URL:  repo.URL,
+						Time: &t,
+						Tag:  r,
+					}
+
+					if collection != nil {
+						ev.Collection = *collection
+					}
+
+					err = events.ProduceEvent(e.conn, ev)
+					if err != nil {
+						log.Error(err)
+					}
 				}
 			}
 		}
 	}
+}
+
+func (e *EventProducer) watcher(ctx context.Context, ticker *time.Ticker) error {
+	if len(e.config.Repos) > 0 {
+		go func() {
+			log.WithFields(log.Fields{
+				"repo_count": len(e.config.Repos),
+			}).Debug("tracking repos")
+			e.trackRepos(ctx, e.config.Repos, nil, ticker)
+		}()
+	}
+
+	for _, collection := range e.config.Collections {
+		var t *time.Ticker
+		if collection.Interval > 0 {
+			t = time.NewTicker(time.Duration(collection.Interval) * time.Second)
+		} else {
+			t = ticker
+		}
+
+		go func(collection Collection) {
+			log.WithFields(log.Fields{
+				"name":       collection.Name,
+				"interval":   collection.Interval,
+				"repo_count": len(collection.Repos),
+			}).Debug("tracking collection")
+
+			e.trackRepos(ctx, collection.Repos, &collection.Name, t)
+		}(collection)
+	}
+
+	return nil
 }
