@@ -247,8 +247,6 @@ func (s *Server) Stop() error {
 		errs = append(errs, err)
 	}
 
-	s.grpcServer.GracefulStop()
-
 	select {
 	case <-time.After(500 * time.Millisecond):
 	case <-ctx.Done():
@@ -259,6 +257,8 @@ func (s *Server) Stop() error {
 		}
 	}
 
+	s.grpcServer.Stop()
+	s.eventMachine.Stop()
 	s.cancel()
 
 	if len(errs) > 0 {
