@@ -4,10 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"reflect"
+	"time"
 
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/xaque208/znet/pkg/events"
+	"github.com/xaque208/znet/rpc"
+	pb "github.com/xaque208/znet/rpc"
 )
 
 // EventMachine is a system to facilitate receiving events and passing them along to a number of subscribers.
@@ -64,6 +69,66 @@ func (m *EventMachine) Send(t interface{}) error {
 	m.EventChannel <- e
 
 	return nil
+}
+
+// ReadStream will forever execute the readStreamOnce to consume events from the rpc client.
+func (m *EventMachine) ReadStream(client rpc.EventsClient, eventSub *rpc.EventSub) {
+	for {
+		select {
+		case <-m.ctx.Done():
+			return
+		default:
+			err := m.readStreamOnce(m.ctx, client, eventSub)
+			if err != nil {
+				log.Error(err)
+			}
+
+			time.Sleep(500 * time.Millisecond)
+		}
+	}
+}
+
+// readStreamOnce will read from the rpc stream or return an error.
+func (m *EventMachine) readStreamOnce(c context.Context, client rpc.EventsClient, eventSub *rpc.EventSub) error {
+	var err error
+
+	ctx, cancel := context.WithCancel(c)
+	defer cancel()
+
+	stream, err := client.SubscribeEvents(ctx, eventSub)
+	if err != nil {
+		if status.Code(err) == codes.Canceled {
+			return nil
+		}
+
+		return err
+	}
+
+	for {
+		var ev *pb.Event
+
+		ev, err = stream.Recv()
+		if err != nil {
+			switch status.Code(err) {
+			case codes.OK:
+				continue
+			default:
+				return err
+			}
+		}
+
+		log.WithFields(log.Fields{
+			"name":    ev.Name,
+			"payload": ev.Payload,
+		}).Trace("event received")
+
+		evE := events.Event{
+			Name:    ev.Name,
+			Payload: ev.Payload,
+		}
+
+		m.EventChannel <- evE
+	}
 }
 
 // initEventConsumer starts a routine that never ends to read from

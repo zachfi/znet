@@ -5,13 +5,10 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	"github.com/xaque208/znet/internal/agent"
 	"github.com/xaque208/znet/pkg/eventmachine"
@@ -70,6 +67,7 @@ func runAgent(cmd *cobra.Command, args []string) {
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	machine, err := eventmachine.New(ctx, consumers)
 	if err != nil {
@@ -82,53 +80,7 @@ func runAgent(cmd *cobra.Command, args []string) {
 		Name: ag.EventNames(),
 	}
 
-	// Run the receiver forever.
-	go func(c context.Context) {
-		for {
-			ccc, cancelaton := context.WithCancel(c)
-			stream, receiverErr := client.SubscribeEvents(ccc, eventSub)
-
-			if receiverErr != nil {
-				cancelaton()
-				if receiverErr.Error() == codes.Canceled.String() {
-					return
-				}
-
-				log.Errorf("calling %+v.SubscribeEvents(_) = _, %+v", client, receiverErr)
-				time.Sleep(5 * time.Second)
-				continue
-			}
-
-			for {
-				var ev *pb.Event
-
-				ev, err = stream.Recv()
-				if status.Code(err) != codes.OK {
-					cancel()
-					log.Errorf("stream.Recv() = %v, %v; want _, status.Code(err)=%v", ev, err, codes.OK)
-					break
-				}
-
-				if err != nil {
-					cancel()
-					log.Errorf("%v.SubscribeEvents(_) = _, %v", client, err)
-					time.Sleep(10 * time.Second)
-					break
-				}
-
-				log.Tracef("received event: %+v", ev)
-
-				evE := events.Event{
-					Name:    ev.Name,
-					Payload: ev.Payload,
-				}
-
-				machine.EventChannel <- evE
-			}
-
-			cancel()
-		}
-	}(ctx)
+	go machine.ReadStream(client, eventSub)
 
 	sigs := make(chan os.Signal, 1)
 	done := make(chan bool, 1)
@@ -137,7 +89,7 @@ func runAgent(cmd *cobra.Command, args []string) {
 
 	go func() {
 		sig := <-sigs
-		log.Warnf("caught signal: %s", sig.String())
+		log.Debugf("caught signal: %s", sig.String())
 
 		done <- true
 	}()
@@ -155,6 +107,4 @@ func runAgent(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Error(err)
 	}
-
-	cancel()
 }
