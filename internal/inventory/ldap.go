@@ -13,6 +13,7 @@ import (
 // NewLDAPClient constructs an LDAP client to return.
 func NewLDAPClient(config LDAPConfig) (*ldap.Conn, error) {
 
+	// TODO require BaseDN too?  Would help move logic out of network.go
 	if config.BindDN == "" || config.BindPW == "" {
 		return &ldap.Conn{}, fmt.Errorf("incomplete LDAP credentials")
 	}

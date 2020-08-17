@@ -170,7 +170,6 @@ func (b *Builder) loadRepoConfig(cacheDir string) (*RepoConfig, error) {
 }
 
 func (b *Builder) buildForEvent(x interface{}, cacheDir string) error {
-
 	repoConfig, err := b.loadRepoConfig(cacheDir)
 	if err != nil {
 		return fmt.Errorf("error loading repo config: %s", err)
