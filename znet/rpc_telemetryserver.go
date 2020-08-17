@@ -15,6 +15,28 @@ import (
 	pb "github.com/xaque208/znet/rpc"
 )
 
+var (
+	telemetryIOTUnhandledReport = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "rpc_telemetry_unhandled_object_report",
+		Help: "The total number of notice calls that include an unhandled object ID.",
+	}, []string{"object_id", "component"})
+
+	telemetryIOTReport = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "rpc_telemetry_object_report",
+		Help: "The total number of notice calls for an object ID.",
+	}, []string{"object_id", "component"})
+
+	telemetryIOTBatteryPercent = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "rpc_telemetry_iot_battery_percent",
+		Help: "The reported batter percentage remaining.",
+	}, []string{"object_id", "component"})
+
+	telemetryIOTLinkQuality = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "rpc_telemetry_iot_link_quality",
+		Help: "The reported link quality",
+	}, []string{"object_id", "component"})
+)
+
 type telemetryServer struct {
 	eventMachine *eventmachine.EventMachine
 	inventory    *inventory.Inventory

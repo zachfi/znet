@@ -6,12 +6,25 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/xaque208/znet/internal/timer"
 	"github.com/xaque208/znet/pkg/events"
 	"github.com/xaque208/znet/rpc"
 	pb "github.com/xaque208/znet/rpc"
+)
+
+var (
+	rpcEventServerSubscriberCount = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "rpc_eventserver_subscriber_count",
+		Help: "The current number of rpc subscribers",
+	}, []string{})
+
+	rpcEventServerEventCount = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "rpc_eventserver_event_count",
+		Help: "The current number of rpc events that are subscribed",
+	}, []string{})
 )
 
 type eventServer struct {
