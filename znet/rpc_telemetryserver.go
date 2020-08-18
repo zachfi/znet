@@ -425,9 +425,16 @@ func (l *telemetryServer) handleAirReport(request *pb.IOTDevice) error {
 
 		// l.storeThingLabel(discovery.NodeId, "tempcoef", m.TempCoef)
 
-		airTemperature.WithLabelValues(discovery.NodeId).Set(float64(m.Temperature))
-		airHumidity.WithLabelValues(discovery.NodeId).Set(float64(m.Humidity))
-		airHeatindex.WithLabelValues(discovery.NodeId).Set(float64(m.HeatIndex))
+		if m.Temperature != nil {
+			airTemperature.WithLabelValues(discovery.NodeId).Set(float64(*m.Temperature))
+		}
+
+		if m.Humidity != nil {
+			airHumidity.WithLabelValues(discovery.NodeId).Set(float64(*m.Humidity))
+		}
+		if m.HeatIndex != nil {
+			airHeatindex.WithLabelValues(discovery.NodeId).Set(float64(*m.HeatIndex))
+		}
 	}
 
 	return nil

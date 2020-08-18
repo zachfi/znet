@@ -15,10 +15,10 @@ type WifiMessage struct {
 }
 
 type AirMessage struct {
-	Humidity    float32 `json:"humidity,omitempty"`
-	Temperature float32 `json:"temperature,omitempty"`
-	HeatIndex   float32 `json:"heatindex,omitempty"`
-	TempCoef    float64 `json:"tempcoef,omitempty"`
+	Humidity    *float32 `json:"humidity,omitempty"`
+	Temperature *float32 `json:"temperature,omitempty"`
+	HeatIndex   *float32 `json:"heatindex,omitempty"`
+	TempCoef    *float64 `json:"tempcoef,omitempty"`
 }
 
 type LEDConfig struct {
