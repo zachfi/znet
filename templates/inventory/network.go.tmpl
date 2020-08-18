@@ -37,10 +37,6 @@ func (i *Inventory) Create{{.GetName}}(x {{.GetName}}) (*{{.GetName}}, error) {
     return nil, fmt.Errorf("unable to create a node with no Name set")
   }
 
-  if i.config.BaseDN == "" {
-    return nil, fmt.Errorf("unable to create {{.GetName}} with empty BaseDN")
-  }
-
   var err error
 
 	dn := fmt.Sprintf("cn=%s,ou=network,%s", x.Name, i.config.BaseDN)
@@ -159,10 +155,6 @@ func (i *Inventory) List{{.GetName}}s() (*[]{{.GetName}}, error) {
 	if i.ldapClient == nil {
 		return nil, fmt.Errorf("unable to List{{.GetName}}s() with nil LDAP client")
 	}
-
-  if i.config.BaseDN == "" {
-    return nil, fmt.Errorf("unable to list {{.GetName}}s with empty BaseDN")
-  }
 
   var xxx []{{.GetName}}
 

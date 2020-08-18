@@ -33,10 +33,6 @@ func (i *Inventory) CreateNetworkHost(x NetworkHost) (*NetworkHost, error) {
 		return nil, fmt.Errorf("unable to create a node with no Name set")
 	}
 
-	if i.config.BaseDN == "" {
-		return nil, fmt.Errorf("unable to create NetworkHost with empty BaseDN")
-	}
-
 	var err error
 
 	dn := fmt.Sprintf("cn=%s,ou=network,%s", x.Name, i.config.BaseDN)
@@ -137,10 +133,6 @@ func (i *Inventory) FetchNetworkHost(name string) (*NetworkHost, error) {
 func (i *Inventory) ListNetworkHosts() (*[]NetworkHost, error) {
 	if i.ldapClient == nil {
 		return nil, fmt.Errorf("unable to ListNetworkHosts() with nil LDAP client")
-	}
-
-	if i.config.BaseDN == "" {
-		return nil, fmt.Errorf("unable to list NetworkHosts with empty BaseDN")
 	}
 
 	var xxx []NetworkHost
@@ -266,10 +258,6 @@ func (i *Inventory) CreateNetworkID(x NetworkID) (*NetworkID, error) {
 		return nil, fmt.Errorf("unable to create a node with no Name set")
 	}
 
-	if i.config.BaseDN == "" {
-		return nil, fmt.Errorf("unable to create NetworkID with empty BaseDN")
-	}
-
 	var err error
 
 	dn := fmt.Sprintf("cn=%s,ou=network,%s", x.Name, i.config.BaseDN)
@@ -348,10 +336,6 @@ func (i *Inventory) FetchNetworkID(name string) (*NetworkID, error) {
 func (i *Inventory) ListNetworkIDs() (*[]NetworkID, error) {
 	if i.ldapClient == nil {
 		return nil, fmt.Errorf("unable to ListNetworkIDs() with nil LDAP client")
-	}
-
-	if i.config.BaseDN == "" {
-		return nil, fmt.Errorf("unable to list NetworkIDs with empty BaseDN")
 	}
 
 	var xxx []NetworkID
@@ -451,10 +435,6 @@ func (i *Inventory) CreateL3Network(x L3Network) (*L3Network, error) {
 		return nil, fmt.Errorf("unable to create a node with no Name set")
 	}
 
-	if i.config.BaseDN == "" {
-		return nil, fmt.Errorf("unable to create L3Network with empty BaseDN")
-	}
-
 	var err error
 
 	dn := fmt.Sprintf("cn=%s,ou=network,%s", x.Name, i.config.BaseDN)
@@ -530,10 +510,6 @@ func (i *Inventory) FetchL3Network(name string) (*L3Network, error) {
 func (i *Inventory) ListL3Networks() (*[]L3Network, error) {
 	if i.ldapClient == nil {
 		return nil, fmt.Errorf("unable to ListL3Networks() with nil LDAP client")
-	}
-
-	if i.config.BaseDN == "" {
-		return nil, fmt.Errorf("unable to list L3Networks with empty BaseDN")
 	}
 
 	var xxx []L3Network
@@ -614,10 +590,6 @@ func (i *Inventory) CreateInetNetwork(x InetNetwork) (*InetNetwork, error) {
 		return nil, fmt.Errorf("unable to create a node with no Name set")
 	}
 
-	if i.config.BaseDN == "" {
-		return nil, fmt.Errorf("unable to create InetNetwork with empty BaseDN")
-	}
-
 	var err error
 
 	dn := fmt.Sprintf("cn=%s,ou=network,%s", x.Name, i.config.BaseDN)
@@ -692,10 +664,6 @@ func (i *Inventory) ListInetNetworks() (*[]InetNetwork, error) {
 		return nil, fmt.Errorf("unable to ListInetNetworks() with nil LDAP client")
 	}
 
-	if i.config.BaseDN == "" {
-		return nil, fmt.Errorf("unable to list InetNetworks with empty BaseDN")
-	}
-
 	var xxx []InetNetwork
 	searchRequest := ldap.NewSearchRequest(
 		i.config.BaseDN,
@@ -759,10 +727,6 @@ var defaultInet6NetworkAttributes = []string{
 func (i *Inventory) CreateInet6Network(x Inet6Network) (*Inet6Network, error) {
 	if x.Name == "" {
 		return nil, fmt.Errorf("unable to create a node with no Name set")
-	}
-
-	if i.config.BaseDN == "" {
-		return nil, fmt.Errorf("unable to create Inet6Network with empty BaseDN")
 	}
 
 	var err error
@@ -836,10 +800,6 @@ func (i *Inventory) ListInet6Networks() (*[]Inet6Network, error) {
 		return nil, fmt.Errorf("unable to ListInet6Networks() with nil LDAP client")
 	}
 
-	if i.config.BaseDN == "" {
-		return nil, fmt.Errorf("unable to list Inet6Networks with empty BaseDN")
-	}
-
 	var xxx []Inet6Network
 	searchRequest := ldap.NewSearchRequest(
 		i.config.BaseDN,
@@ -900,10 +860,6 @@ var defaultZigbeeDeviceAttributes = []string{
 func (i *Inventory) CreateZigbeeDevice(x ZigbeeDevice) (*ZigbeeDevice, error) {
 	if x.Name == "" {
 		return nil, fmt.Errorf("unable to create a node with no Name set")
-	}
-
-	if i.config.BaseDN == "" {
-		return nil, fmt.Errorf("unable to create ZigbeeDevice with empty BaseDN")
 	}
 
 	var err error
@@ -978,10 +934,6 @@ func (i *Inventory) FetchZigbeeDevice(name string) (*ZigbeeDevice, error) {
 func (i *Inventory) ListZigbeeDevices() (*[]ZigbeeDevice, error) {
 	if i.ldapClient == nil {
 		return nil, fmt.Errorf("unable to ListZigbeeDevices() with nil LDAP client")
-	}
-
-	if i.config.BaseDN == "" {
-		return nil, fmt.Errorf("unable to list ZigbeeDevices with empty BaseDN")
 	}
 
 	var xxx []ZigbeeDevice
@@ -1060,10 +1012,6 @@ func (i *Inventory) CreateIOTZone(x IOTZone) (*IOTZone, error) {
 		return nil, fmt.Errorf("unable to create a node with no Name set")
 	}
 
-	if i.config.BaseDN == "" {
-		return nil, fmt.Errorf("unable to create IOTZone with empty BaseDN")
-	}
-
 	var err error
 
 	dn := fmt.Sprintf("cn=%s,ou=network,%s", x.Name, i.config.BaseDN)
@@ -1130,10 +1078,6 @@ func (i *Inventory) FetchIOTZone(name string) (*IOTZone, error) {
 func (i *Inventory) ListIOTZones() (*[]IOTZone, error) {
 	if i.ldapClient == nil {
 		return nil, fmt.Errorf("unable to ListIOTZones() with nil LDAP client")
-	}
-
-	if i.config.BaseDN == "" {
-		return nil, fmt.Errorf("unable to list IOTZones with empty BaseDN")
 	}
 
 	var xxx []IOTZone

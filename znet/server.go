@@ -258,7 +258,10 @@ func (s *Server) Stop() error {
 	}
 
 	s.grpcServer.Stop()
-	s.eventMachine.Stop()
+	err = s.eventMachine.Stop()
+	if err != nil {
+		errs = append(errs, err)
+	}
 	s.cancel()
 
 	if len(errs) > 0 {

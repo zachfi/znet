@@ -13,9 +13,8 @@ import (
 // NewLDAPClient constructs an LDAP client to return.
 func NewLDAPClient(config LDAPConfig) (*ldap.Conn, error) {
 
-	// TODO require BaseDN too?  Would help move logic out of network.go
-	if config.BindDN == "" || config.BindPW == "" {
-		return &ldap.Conn{}, fmt.Errorf("incomplete LDAP credentials")
+	if config.BindDN == "" || config.BindPW == "" || config.BaseDN == "" {
+		return nil, fmt.Errorf("incomplete LDAP credentials, need [BindDN, BindPW, BaseDN]")
 	}
 
 	l, err := ldap.DialTLS(
@@ -24,14 +23,14 @@ func NewLDAPClient(config LDAPConfig) (*ldap.Conn, error) {
 		&tls.Config{InsecureSkipVerify: true},
 	)
 	if err != nil {
-		return &ldap.Conn{}, err
+		return nil, err
 	}
 	// defer l.Close()
 
 	// First bind with a read only user
 	err = l.Bind(config.BindDN, config.BindPW)
 	if err != nil {
-		return &ldap.Conn{}, err
+		return nil, err
 	}
 
 	// Handle reconnection
