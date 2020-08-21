@@ -30,7 +30,7 @@ require (
 	github.com/pierrec/lz4 v2.2.7+incompatible // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.7.1
-	github.com/prometheus/common v0.10.0
+	github.com/prometheus/common v0.13.0
 	github.com/psampaz/go-mod-outdated v0.6.0
 	github.com/scottdware/go-junos v0.0.0-20200809143445-1805793fac10
 	github.com/sirupsen/logrus v1.6.0
