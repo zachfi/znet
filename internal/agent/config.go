@@ -23,7 +23,7 @@ type Execution struct {
 }
 
 // Filter is a way of reducing when the executions fire, in the case of many
-// repos.  This does mean the events are handed to all scubscribers ,and the
+// repos.  This does mean the events are handed to all scubscribers, and the
 // subscriber is responsible for reducing the executions.
 type Filter struct {
 	Names       []string

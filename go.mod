@@ -5,7 +5,6 @@ go 1.13
 require (
 	github.com/amimof/huego v1.1.0
 	github.com/blang/semver/v4 v4.0.0
-	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/client9/misspell v0.3.4
 	github.com/containerd/continuity v0.0.0-20190426062206-aaeac12a7ffc // indirect
 	github.com/eclipse/paho.mqtt.golang v1.2.0
