@@ -51,7 +51,8 @@ func init() {
 
 func listen(cmd *cobra.Command, args []string) {
 	formatter := log.TextFormatter{
-		FullTimestamp: true,
+		DisableQuote:     true,
+		DisableTimestamp: true,
 	}
 
 	log.SetFormatter(&formatter)
