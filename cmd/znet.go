@@ -58,7 +58,8 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&trace, "trace", "", false, "Trace level verbosity")
 
 	formatter := log.TextFormatter{
-		FullTimestamp: true,
+		// FullTimestamp: true,
+		ForceQuote: false,
 	}
 
 	log.SetFormatter(&formatter)

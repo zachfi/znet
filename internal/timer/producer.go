@@ -86,7 +86,9 @@ func (e *EventProducer) scheduleEvents(scheduledEvents *events.Scheduler, v Even
 	timeRemaining := time.Until(d)
 
 	if time.Since(d) > 0 {
-		log.Tracef("skipping past event %s", v.Produce)
+		log.WithFields(log.Fields{
+			"event": v.Produce,
+		}).Trace("skipping past event")
 		return nil
 	}
 
@@ -113,9 +115,10 @@ func (e *EventProducer) scheduleRepeatEvents(scheduledEvents *events.Scheduler, 
 	for {
 		next = next.Add(time.Duration(v.Every.Seconds) * time.Second)
 
-		log.Tracef("next is: %+v", next)
-		log.Tracef("end is: %+v", end)
-		log.Tracef("next.Before(end) is: %+v, %s", next.Before(end), time.Since(next))
+		log.WithFields(log.Fields{
+			"next": next,
+			"end":  end,
+		}).Trace("timer")
 
 		if next.Before(end) {
 			err := scheduledEvents.Set(next, v.Produce)
@@ -162,7 +165,7 @@ func (e *EventProducer) scheduler() error {
 
 					if len(sch.All()) == 0 {
 						dur := 10 * time.Minute
-						log.Debugf("no timer names found after reschedule, retry in %s", dur)
+						log.Debugf("no timer names found after reschedule, retry in %s seconds", dur)
 						time.Sleep(dur)
 					}
 
