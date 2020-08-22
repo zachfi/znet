@@ -239,6 +239,7 @@ func (a *Agent) executeForEvent(x interface{}) error {
 					cmd.Env = append(os.Environ(), env...)
 				}
 
+				start := time.Now()
 				// var out bytes.Buffer
 				// cmd.Stdout = &out
 				output, err := cmd.CombinedOutput()
@@ -255,6 +256,7 @@ func (a *Agent) executeForEvent(x interface{}) error {
 					Dir:      execution.Dir,
 					Output:   output,
 					ExitCode: cmd.ProcessState.ExitCode(),
+					Duration: time.Since(start),
 				}
 
 				err = events.ProduceEvent(a.conn, ev)
