@@ -150,6 +150,14 @@ message ZigbeeDevice {
   string dn = 3;
   google.protobuf.Timestamp last_seen = 4;
   string iot_zone = 5;
+  string type = 6;
+  string software_build_id = 7;
+  string date_code = 8;
+  string model = 9;
+  string vendor = 10;
+  string manufacturer_name = 11;
+  string power_source = 12;
+  string model_id = 13;
 }
 
 message IOTZone {
