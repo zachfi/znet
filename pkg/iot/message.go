@@ -1,10 +1,73 @@
 package iot
 
+import (
+	"encoding/json"
+
+	log "github.com/sirupsen/logrus"
+)
+
 type ZigbeeMessage struct {
 	Battery     int    `json:"battery,omitempty"`
 	LinkQuality int    `json:"linkquality,omitempty"`
 	Click       string `json:"click,omitempty"`
 	Voltage     int    `json:"voltage,omitempty"`
+}
+
+// ZigbeeBridgeLogMessage
+// https://www.zigbee2mqtt.io/information/mqtt_topics_and_message_structure.html#zigbee2mqttbridgelog
+// zigbee2mqtt/bridge/log
+// {"type":"device_announced","message":"announce","meta":{"friendly_name":"0x0017880104650857"}}
+type ZigbeeBridgeLog struct {
+	Type    string                 `json:"type,omitempty"`
+	Message interface{}            `json:"message,omitempty"`
+	Meta    map[string]interface{} `json:"meta,omitempty"`
+}
+
+func (z *ZigbeeBridgeLog) UnmarshalJSON(data []byte) error {
+
+	var v map[string]interface{}
+	if err := json.Unmarshal(data, &v); err != nil {
+		return err
+	}
+
+	z.Type, _ = v["type"].(string)
+	message, _ := v["message"]
+
+	switch z.Type {
+	case "devices":
+		j, err := json.Marshal(message)
+		if err != nil {
+			log.Error(err)
+		}
+
+		m := ZigbeeBridgeMessageDevices{}
+		err = json.Unmarshal(j, &m)
+		if err != nil {
+			return err
+		}
+
+		z.Message = m
+	}
+
+	return nil
+}
+
+type ZigbeeBridgeMessageDevices []struct {
+	IeeeAddr         string `json:"ieeeAddr"`
+	Type             string `json:"type"`
+	NetworkAddress   int    `json:"networkAddress"`
+	FriendlyName     string `json:"friendly_name"`
+	SoftwareBuildID  string `json:"softwareBuildID,omitempty"`
+	DateCode         string `json:"dateCode,omitempty"`
+	LastSeen         int64  `json:"lastSeen"`
+	Model            string `json:"model,omitempty"`
+	Vendor           string `json:"vendor,omitempty"`
+	Description      string `json:"description,omitempty"`
+	ManufacturerID   int    `json:"manufacturerID,omitempty"`
+	ManufacturerName string `json:"manufacturerName,omitempty"`
+	PowerSource      string `json:"powerSource,omitempty"`
+	ModelID          string `json:"modelID,omitempty"`
+	HardwareVersion  int    `json:"hardwareVersion,omitempty"`
 }
 
 type WifiMessage struct {

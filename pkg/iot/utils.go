@@ -70,15 +70,32 @@ func ParseTopicPath(topic string) (TopicPath, error) {
 
 // ReadZigbeeMessage implements the payload unmarshaling for zigbee2mqtt
 // https://www.zigbee2mqtt.io/information/mqtt_topics_and_message_structure.html
-func ReadZigbeeMessage(friendlyName string, payload []byte, endpoint ...string) (interface{}, error) {
+func ReadZigbeeMessage(objectID string, payload []byte, endpoint ...string) (interface{}, error) {
 
-	if len(endpoint) == 0 {
-		m := ZigbeeMessage{}
-		err := json.Unmarshal(payload, &m)
-		if err != nil {
-			log.Error(err)
+	switch objectID {
+	case "bridge":
+		if len(endpoint) == 1 {
+			// topic: zigbee2mqtt/bridge/log
+			switch endpoint[0] {
+			case "log":
+				m := ZigbeeBridgeLog{}
+				err := json.Unmarshal(payload, &m)
+				if err != nil {
+					log.Error(err)
+				}
+				return m, nil
+			}
 		}
-		return m, nil
+		return nil, fmt.Errorf("unhandled bridge endpoint: %s", endpoint)
+	default:
+		if len(endpoint) == 0 {
+			m := ZigbeeMessage{}
+			err := json.Unmarshal(payload, &m)
+			if err != nil {
+				log.Error(err)
+			}
+			return m, nil
+		}
 	}
 
 	return nil, nil
