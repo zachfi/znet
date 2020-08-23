@@ -61,8 +61,13 @@ func (*Deb) ConventionalFileName(info *nfpm.Info) string {
 	if info.Release != "" {
 		version += "-" + info.Release
 	}
+
 	if info.Prerelease != "" {
 		version += "~" + info.Prerelease
+	}
+
+	if info.VersionMetadata != "" {
+		version += "+" + info.VersionMetadata
 	}
 
 	// package_version_architecture.package-type
@@ -154,7 +159,7 @@ func createSymlinksInsideTarGz(info *nfpm.Info, out *tar.Writer, created map[str
 		}
 
 		err := newItemInsideTarGz(out, []byte{}, &tar.Header{
-			Name:     src,
+			Name:     strings.TrimLeft(src, "/"),
 			Linkname: dst,
 			Typeflag: tar.TypeSymlink,
 			ModTime:  time.Now(),
@@ -392,7 +397,7 @@ func newItemInsideTarGz(out *tar.Writer, content []byte, header *tar.Header) err
 
 func newFileInsideTarGz(out *tar.Writer, name string, content []byte) error {
 	return newItemInsideTarGz(out, content, &tar.Header{
-		Name:     filepath.ToSlash(name),
+		Name:     strings.TrimLeft(filepath.ToSlash(name), "/"),
 		Size:     int64(len(content)),
 		Mode:     0644,
 		ModTime:  time.Now(),
@@ -502,7 +507,7 @@ Package: {{.Info.Name}}
 Version: {{ if .Info.Epoch}}{{ .Info.Epoch }}:{{ end }}{{.Info.Version}}
          {{- if .Info.Release}}-{{ .Info.Release }}{{- end }}
          {{- if .Info.Prerelease}}~{{ .Info.Prerelease }}{{- end }}
-         {{- if .Info.Deb.VersionMetadata}}+{{ .Info.Deb.VersionMetadata }}{{- end }}
+         {{- if .Info.VersionMetadata}}+{{ .Info.VersionMetadata }}{{- end }}
 Section: {{.Info.Section}}
 Priority: {{.Info.Priority}}
 Architecture: {{.Info.Arch}}
