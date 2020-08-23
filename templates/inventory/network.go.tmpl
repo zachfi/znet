@@ -56,7 +56,7 @@ func (i *Inventory) Create{{.GetName}}(x {{.GetName}}) (*{{.GetName}}, error) {
 
 	log.Debugf("creating new {{$objectClass}}: %+v", a)
 
-	err = i.ldapClient.Add(a)
+	err = i.conn.Add(a)
 	if err != nil {
 		return nil, err
 	}
@@ -121,7 +121,7 @@ func (i *Inventory) Update{{.GetName}}(x {{.GetName}}) (*{{.GetName}}, error) {
 
 	log.Debugf("updating {{$objectClass}}: %+v", a)
 
-	err = i.ldapClient.Modify(a)
+	err = i.conn.Modify(a)
 	if err != nil {
 		return nil, err
 	}
@@ -152,7 +152,7 @@ func (i *Inventory) Fetch{{.GetName}}(name string) (*{{.GetName}}, error) {
 // List{{.GetName}}s retrieves all existing LDAP entries.
 // nolint:gocyclo
 func (i *Inventory) List{{.GetName}}s() (*[]{{.GetName}}, error) {
-	if i.ldapClient == nil {
+	if i.conn == nil {
 		return nil, fmt.Errorf("unable to List{{.GetName}}s() with nil LDAP client")
 	}
 
@@ -167,16 +167,26 @@ func (i *Inventory) List{{.GetName}}s() (*[]{{.GetName}}, error) {
 		nil,
 	)
 
-	// log.Tracef("searching LDAP base %s with query: %s", i.config.BaseDN, searchRequest.Filter)
+	var searchResult *ldap.SearchResult
+  attempts := 0
+  for attempts < 3 {
+    attempts += 1
+    sr, err := i.conn.Search(searchRequest)
+    if err != nil && ldap.IsErrorWithCode(err, 200) {
+      log.Info("connection is closed, trying to reconnect...")
+      if err = i.reconnect(); err != nil {
+        return nil, err
+      }
+    } else if err != nil {
+      return nil, err
+    }
+    searchResult = sr
+    break
+  }
 
-	sr, err := i.ldapClient.Search(searchRequest)
-	if err != nil {
-		return nil, err
-	}
+	// log.Tracef("search response: %+v", searchResult)
 
-	// log.Tracef("search response: %+v", sr)
-
-	for _, e := range sr.Entries {
+	for _, e := range searchResult.Entries {
 		h := {{.GetName}}{}
 
 		for _, a := range e.Attributes {
