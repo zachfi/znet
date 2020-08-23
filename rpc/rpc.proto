@@ -22,6 +22,7 @@ message SearchRequest {
 message SearchResponse {
   repeated NetworkHost hosts = 1;
   repeated NetworkID network_ids = 2;
+  repeated ZigbeeDevice zigbee_devices = 3;
 }
 
 message IOTDevice {

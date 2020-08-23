@@ -56,7 +56,6 @@ func listen(cmd *cobra.Command, args []string) {
 	}
 
 	log.SetFormatter(&formatter)
-
 	if trace {
 		log.SetLevel(log.TraceLevel)
 	} else if verbose {
