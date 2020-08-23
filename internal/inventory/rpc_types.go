@@ -74,11 +74,19 @@ type DeviceDiscovery struct {
 }
 
 type ZigbeeDevice struct {
-	Name        string
-	Description string
-	Dn          string
-	LastSeen    *time.Time
-	IotZone     string
+	Name             string
+	Description      string
+	Dn               string
+	LastSeen         *time.Time
+	IotZone          string
+	Type             string
+	SoftwareBuildId  string
+	DateCode         string
+	Model            string
+	Vendor           string
+	ManufacturerName string
+	PowerSource      string
+	ModelId          string
 }
 
 type IOTZone struct {

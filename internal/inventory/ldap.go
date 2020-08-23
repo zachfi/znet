@@ -25,7 +25,8 @@ func NewLDAPClient(config LDAPConfig) (*ldap.Conn, error) {
 	if err != nil {
 		return nil, err
 	}
-	// defer l.Close()
+
+	l.SetTimeout(15 * time.Second)
 
 	// First bind with a read only user
 	err = l.Bind(config.BindDN, config.BindPW)

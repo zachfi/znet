@@ -18,7 +18,7 @@ func (i *Inventory) SetAttribute(dn, attributeName, attributeValue string, repla
 		modify.Add(attributeName, []string{attributeValue})
 	}
 
-	err := i.ldapClient.Modify(modify)
+	err := i.conn.Modify(modify)
 	if err != nil {
 		return err
 	}

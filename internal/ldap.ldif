@@ -157,6 +157,54 @@ olcAttributeTypes: ( 1.3.6.1.4.1.99.2603 NAME ( 'zigbeeDeviceIotZone' )
     SUBSTR caseIgnoreSubstringsMatch
     SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
     )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2604 NAME ( 'zigbeeDeviceType' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2605 NAME ( 'zigbeeDeviceSoftwareBuildId' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2606 NAME ( 'zigbeeDeviceDateCode' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2607 NAME ( 'zigbeeDeviceModel' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2608 NAME ( 'zigbeeDeviceVendor' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2609 NAME ( 'zigbeeDeviceManufacturerName' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2610 NAME ( 'zigbeeDevicePowerSource' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2611 NAME ( 'zigbeeDeviceModelId' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
 olcAttributeTypes: ( 1.3.6.1.4.1.99.2701 NAME ( 'iotZoneDescription' )
     SINGLE-VALUE
     EQUALITY caseIgnoreMatch
@@ -199,7 +247,7 @@ olcObjectClasses:  ( 1.3.6.1.4.1.99.1006 NAME 'zigbeeDevice'
     STRUCTURAL
     SUP top
     MUST ( cn )
-    MAY ( zigbeeDeviceDescription $ zigbeeDeviceLastSeen $ zigbeeDeviceIotZone )
+    MAY ( zigbeeDeviceDescription $ zigbeeDeviceLastSeen $ zigbeeDeviceIotZone $ zigbeeDeviceType $ zigbeeDeviceSoftwareBuildId $ zigbeeDeviceDateCode $ zigbeeDeviceModel $ zigbeeDeviceVendor $ zigbeeDeviceManufacturerName $ zigbeeDevicePowerSource $ zigbeeDeviceModelId )
     )
 olcObjectClasses:  ( 1.3.6.1.4.1.99.1007 NAME 'iotZone'
     STRUCTURAL

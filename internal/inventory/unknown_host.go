@@ -44,7 +44,7 @@ func (i *Inventory) AdoptUnknownHost(u UnknownHost, baseDN string) {
 	// a.Attribute("v4Address", []string{u.IP})
 	a.Attribute("macAddress", []string{u.MACAddress})
 
-	err = i.ldapClient.Add(a)
+	err = i.conn.Add(a)
 	if err != nil {
 		log.Error(err)
 	}
@@ -54,7 +54,7 @@ func (i *Inventory) AdoptUnknownHost(u UnknownHost, baseDN string) {
 	d := ldap.NewDelRequest(delDN, []ldap.Control{})
 
 	log.Infof("deleting object: %s", d)
-	err = i.ldapClient.Del(d)
+	err = i.conn.Del(d)
 	if err != nil {
 		log.Error(err)
 	}
