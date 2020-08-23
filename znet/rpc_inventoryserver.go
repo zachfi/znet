@@ -31,14 +31,23 @@ func (r *inventoryServer) Search(ctx context.Context, request *pb.SearchRequest)
 				Dn:              h.Dn,
 				Domain:          h.Domain,
 				Group:           h.Group,
-				Inet6Address:    *h.Inet6Address,
-				InetAddress:     *h.InetAddress,
-				MacAddress:      *h.MacAddress,
 				Name:            h.Name,
 				OperatingSystem: h.OperatingSystem,
 				Platform:        h.Platform,
 				Role:            h.Role,
 				Type:            h.Type,
+			}
+
+			if h.Inet6Address != nil {
+				host.Inet6Address = *h.Inet6Address
+			}
+
+			if h.InetAddress != nil {
+				host.InetAddress = *h.InetAddress
+			}
+
+			if h.MacAddress != nil {
+				host.MacAddress = *h.MacAddress
 			}
 
 			if h.LastSeen != nil {
@@ -61,12 +70,24 @@ func (r *inventoryServer) Search(ctx context.Context, request *pb.SearchRequest)
 	if networkIDs != nil {
 		for _, h := range *networkIDs {
 			host := &pb.NetworkID{
-				Dn:                       h.Dn,
-				Name:                     h.Name,
-				IpAddress:                *h.IpAddress,
-				MacAddress:               *h.MacAddress,
-				ReportingSource:          *h.ReportingSource,
-				ReportingSourceInterface: *h.ReportingSourceInterface,
+				Dn:   h.Dn,
+				Name: h.Name,
+			}
+
+			if h.IpAddress != nil {
+				host.IpAddress = *h.IpAddress
+			}
+
+			if h.MacAddress != nil {
+				host.MacAddress = *h.MacAddress
+			}
+
+			if h.ReportingSource != nil {
+				host.ReportingSource = *h.ReportingSource
+			}
+
+			if h.ReportingSourceInterface != nil {
+				host.ReportingSourceInterface = *h.ReportingSourceInterface
 			}
 
 			response.NetworkIds = append(response.NetworkIds, host)
