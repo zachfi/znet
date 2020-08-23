@@ -48,7 +48,15 @@ func init() {
 }
 
 func runInv(cmd *cobra.Command, args []string) {
-	if verbose {
+	formatter := log.TextFormatter{
+		DisableQuote:     true,
+		DisableTimestamp: true,
+	}
+
+	log.SetFormatter(&formatter)
+	if trace {
+		log.SetLevel(log.TraceLevel)
+	} else if verbose {
 		log.SetLevel(log.DebugLevel)
 	} else {
 		log.SetLevel(log.InfoLevel)
@@ -61,6 +69,10 @@ func runInv(cmd *cobra.Command, args []string) {
 
 	z.Config.RPC.ServerAddress = viper.GetString("rpc.server_address")
 
+	if z.Config.RPC.ServerAddress == "" {
+		log.Fatal("no rpc.server configuration specified")
+	}
+
 	conn := znet.NewConn(z.Config.RPC.ServerAddress, z.Config)
 
 	defer func() {
@@ -68,15 +80,24 @@ func runInv(cmd *cobra.Command, args []string) {
 		if err != nil {
 			log.Error(err)
 		}
+
+		z.Stop()
 	}()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	inventoryClient := pb.NewInventoryClient(conn)
 
-	resp, err := inventoryClient.ListNetworkHosts(context.Background(), &pb.Empty{})
+	resp, err := inventoryClient.Search(ctx, &pb.SearchRequest{})
 	if err != nil {
 		log.Error(err)
 	}
-
+	// resp, err := inventoryClient.ListNetworkHosts(context.Background(), &pb.Empty{})
+	// if err != nil {
+	// 	log.Error(err)
+	// }
+	//
 	t := table.NewWriter()
 	t.SetOutputMirror(os.Stdout)
 	t.AppendHeader(table.Row{"Name", "Platform", "Type", "Description"})
@@ -90,12 +111,12 @@ func runInv(cmd *cobra.Command, args []string) {
 		})
 	}
 
-	// t.AppendFooter(table.Row{"", "", "Total", 10000})
+	t.AppendFooter(table.Row{"", "", "Total", 10000})
 	t.Render()
 
-	t = table.NewWriter()
-	t.SetOutputMirror(os.Stdout)
-	t.AppendHeader(table.Row{"Name", "IP", "MAC"})
+	// t = table.NewWriter()
+	// t.SetOutputMirror(os.Stdout)
+	// t.AppendHeader(table.Row{"Name", "IP", "MAC"})
 
 	// for _, h := range res.UnknownHosts {
 	// 	t.AppendRow([]interface{}{
@@ -106,7 +127,7 @@ func runInv(cmd *cobra.Command, args []string) {
 	// }
 
 	// t.AppendFooter(table.Row{"", "", "Total", 10000})
-	t.Render()
+	// t.Render()
 
 	// if adopt != "" {
 	// 	for _, h := range res.UnknownHosts {
@@ -121,4 +142,43 @@ func runInv(cmd *cobra.Command, args []string) {
 	// 	}
 	// }
 	//
+
+	t = table.NewWriter()
+	t.SetOutputMirror(os.Stdout)
+	t.AppendHeader(table.Row{
+		// "DateCode",
+		"Description",
+		"Dn",
+		"IotZone",
+		"LastSeen",
+		// "ManufacturerName",
+		"Model",
+		"ModelId",
+		"Name",
+		"PowerSource",
+		"SoftwareBuildId",
+		"Type",
+		"Vendor",
+	})
+
+	for _, h := range resp.ZigbeeDevices {
+		t.AppendRow([]interface{}{
+			// h.DateCode,
+			h.Description,
+			h.Dn,
+			h.IotZone,
+			h.LastSeen,
+			// h.ManufacturerName,
+			h.Model,
+			h.ModelId,
+			h.Name,
+			h.PowerSource,
+			h.SoftwareBuildId,
+			h.Type,
+			h.Vendor,
+		})
+	}
+
+	t.Render()
+
 }
