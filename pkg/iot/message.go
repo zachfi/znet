@@ -31,7 +31,7 @@ func (z *ZigbeeBridgeLog) UnmarshalJSON(data []byte) error {
 	}
 
 	z.Type, _ = v["type"].(string)
-	message, _ := v["message"]
+	message := v["message"]
 
 	switch z.Type {
 	case "devices":
