@@ -3,6 +3,7 @@ package znet
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"strings"
 	"time"
 
@@ -327,7 +328,7 @@ func (l *telemetryServer) ReportIOTDevice(ctx context.Context, request *pb.IOTDe
 
 func (l *telemetryServer) handleZigbeeReport(request *pb.IOTDevice) error {
 	if request == nil {
-		return fmt.Errorf("unable to read wifi report from nil request")
+		return fmt.Errorf("unable to read zigbee report from nil request")
 	}
 
 	discovery := request.DeviceDiscovery
@@ -337,52 +338,96 @@ func (l *telemetryServer) handleZigbeeReport(request *pb.IOTDevice) error {
 		return err
 	}
 
+	now := time.Now()
+
 	if msg != nil {
-		m := msg.(iot.ZigbeeMessage)
-
-		if m.Battery > 0 {
-			telemetryIOTBatteryPercent.WithLabelValues(request.DeviceDiscovery.ObjectId, request.DeviceDiscovery.Component).Set(float64(m.Battery))
-		}
-
-		if m.LinkQuality > 0 {
-			telemetryIOTLinkQuality.WithLabelValues(request.DeviceDiscovery.ObjectId, request.DeviceDiscovery.Component).Set(float64(m.LinkQuality))
-		}
-
-		now := time.Now()
-
-		x := inventory.ZigbeeDevice{
-			Name:     request.DeviceDiscovery.ObjectId,
-			LastSeen: &now,
-		}
-
-		result, err := l.inventory.FetchZigbeeDevice(x.Name)
-		if err != nil {
-			log.Error(err)
-			_, err = l.inventory.CreateZigbeeDevice(x)
-			if err != nil {
-				return err
-			}
-		}
-
-		log.WithFields(log.Fields{
-			"name":        result.Name,
-			"Description": result.Description,
-			"zone":        result.IotZone,
-		}).Debug("zigbeeResult")
-
-		if m.Click != "" {
-			t := iot.Click{
-				Count:  m.Click,
-				Device: x.Name,
-				Zone:   result.IotZone,
+		switch reflect.TypeOf(msg).String() {
+		case "iot.ZigbeeBridgeState":
+			m := msg.(iot.ZigbeeBridgeState)
+			switch m {
+			case iot.Offline:
+				telemetryIOTBridgeState.WithLabelValues().Set(float64(0))
+			case iot.Online:
+				telemetryIOTBridgeState.WithLabelValues().Set(float64(1))
 			}
 
-			err = l.eventMachine.Send(t)
+		case "iot.ZigbeeBridgeLog":
+			m := msg.(iot.ZigbeeBridgeLog)
+
+			if m.Message != nil {
+				for _, d := range m.Message.(iot.ZigbeeBridgeMessageDevices) {
+					x := inventory.ZigbeeDevice{
+						Name:     d.FriendlyName,
+						LastSeen: &now,
+						// IeeeAddr:        d.IeeeAddr,
+						Type:            d.Type,
+						SoftwareBuildId: d.SoftwareBuildID,
+						DateCode:        d.DateCode,
+						Model:           d.Model,
+						Vendor:          d.Vendor,
+						// Description      : d.Description,
+						ManufacturerName: d.ManufacturerName,
+						PowerSource:      d.PowerSource,
+						ModelId:          d.ModelID,
+						// HardwareVersion:  d.HardwareVersion,
+					}
+
+					_, err := l.inventory.FetchZigbeeDevice(x.Name)
+					if err != nil {
+						log.Error(err)
+						createResult, err := l.inventory.CreateZigbeeDevice(x)
+						if err != nil {
+							return err
+						}
+
+						log.WithFields(log.Fields{
+							"name":   createResult.Name,
+							"vendor": createResult.Vendor,
+							"model":  createResult.Model,
+							"zone":   createResult.IotZone,
+						}).Debug("createResult")
+					}
+				}
+			}
+
+		case "iot.ZigbeeMessage":
+			m := msg.(iot.ZigbeeMessage)
+
+			if m.Battery > 0 {
+				telemetryIOTBatteryPercent.WithLabelValues(request.DeviceDiscovery.ObjectId, request.DeviceDiscovery.Component).Set(float64(m.Battery))
+			}
+
+			if m.LinkQuality > 0 {
+				telemetryIOTLinkQuality.WithLabelValues(request.DeviceDiscovery.ObjectId, request.DeviceDiscovery.Component).Set(float64(m.LinkQuality))
+			}
+
+			x := inventory.ZigbeeDevice{
+				Name:     request.DeviceDiscovery.ObjectId,
+				LastSeen: &now,
+			}
+
+			result, err := l.inventory.FetchZigbeeDevice(x.Name)
 			if err != nil {
 				log.Error(err)
+				_, err = l.inventory.CreateZigbeeDevice(x)
+				if err != nil {
+					return err
+				}
+			}
+
+			if m.Click != "" {
+				t := iot.Click{
+					Count:  m.Click,
+					Device: x.Name,
+					Zone:   result.IotZone,
+				}
+
+				err = l.eventMachine.Send(t)
+				if err != nil {
+					log.Error(err)
+				}
 			}
 		}
-
 	}
 
 	return nil
