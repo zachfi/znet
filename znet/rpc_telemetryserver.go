@@ -35,6 +35,11 @@ var (
 		Name: "rpc_telemetry_iot_link_quality",
 		Help: "The reported link quality",
 	}, []string{"object_id", "component"})
+
+	telemetryIOTBridgeState = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "rpc_telemetry_iot_bridge_state",
+		Help: "The reported bridge state",
+	}, []string{})
 )
 
 type telemetryServer struct {

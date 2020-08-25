@@ -67,6 +67,7 @@ func init() {
 		telemetryIOTReport,
 		telemetryIOTBatteryPercent,
 		telemetryIOTLinkQuality,
+		telemetryIOTBridgeState,
 	)
 }
 
@@ -178,7 +179,7 @@ func (s *Server) Start(z *Znet) error {
 		}
 		pb.RegisterInventoryServer(s.grpcServer, rpcInventoryServer)
 
-		// lightServer
+		// lightServer to receive RPC calls for lighting changes directly.
 		rpcLightServer := &lightServer{
 			lights: z.Lights,
 		}
