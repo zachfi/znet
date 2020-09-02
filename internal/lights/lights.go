@@ -6,9 +6,11 @@ import (
 	"strings"
 
 	"github.com/amimof/huego"
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 	log "github.com/sirupsen/logrus"
 	"github.com/xaque208/rftoy/rftoy"
 
+	"github.com/xaque208/znet/internal/inventory"
 	"github.com/xaque208/znet/internal/timer"
 	"github.com/xaque208/znet/pkg/events"
 	"github.com/xaque208/znet/pkg/iot"
@@ -17,18 +19,22 @@ import (
 // Lights holds the information necessary to communicate with lighting
 // equipment, and the configuration to add a bit of context.
 type Lights struct {
-	RFToy  *rftoy.RFToy
-	HUE    *huego.Bridge
-	config Config
+	RFToy      *rftoy.RFToy
+	HUE        *huego.Bridge
+	inv        *inventory.Inventory
+	config     Config
+	mqttClient mqtt.Client
 }
 
 // NewLights creates and returns a new Lights object based on the received
 // configuration.
-func NewLights(config Config) *Lights {
+func NewLights(config Config, inv *inventory.Inventory, mqttClient mqtt.Client) *Lights {
 	return &Lights{
-		HUE:    huego.New(config.Hue.Endpoint, config.Hue.User),
-		RFToy:  &rftoy.RFToy{Address: config.RFToy.Endpoint},
-		config: config,
+		HUE:        huego.New(config.Hue.Endpoint, config.Hue.User),
+		RFToy:      &rftoy.RFToy{Address: config.RFToy.Endpoint},
+		inv:        inv,
+		config:     config,
+		mqttClient: mqttClient,
 	}
 }
 
@@ -67,6 +73,7 @@ func (l *Lights) clickHandler(name string, payload events.Payload) error {
 		dim := false
 		off := false
 		on := false
+		toggle := false
 
 		if room.Name == e.Zone {
 			log.WithFields(log.Fields{
@@ -79,12 +86,18 @@ func (l *Lights) clickHandler(name string, payload events.Payload) error {
 				off = true
 			case "double":
 				on = true
+			case "triple":
+				toggle = true
 			case "long":
 				dim = true
 			case "many":
 				alert = true
 			default:
 				log.Warnf("e: %+v", e)
+			}
+
+			if toggle {
+				l.Toggle(room.Name)
 			}
 
 			if off {
@@ -103,7 +116,6 @@ func (l *Lights) clickHandler(name string, payload events.Payload) error {
 				l.Dim(room.Name, 100)
 			}
 		}
-
 	}
 
 	return nil
@@ -189,6 +201,43 @@ func (l *Lights) getGroup(groupName string) (*huego.Group, error) {
 	}
 
 	return &huego.Group{}, fmt.Errorf("group %s not found", groupName)
+}
+
+func (l *Lights) Toggle(groupName string) error {
+
+	log.Debugf("toggle: %s", groupName)
+
+	result, err := l.inv.ListZigbeeDevices()
+	if err != nil {
+		return err
+	}
+
+	if result != nil {
+		log.Debugf("result: %s", *result)
+		for _, d := range *result {
+			if d.IotZone != groupName {
+				continue
+			}
+
+			log.Debugf("match: %s", d)
+
+			topic := fmt.Sprintf("zigbee2mqtt/%s/set", d.Name)
+			message := map[string]string{
+				"state": "TOGGLE",
+			}
+
+			m, err := json.Marshal(message)
+			if err != nil {
+				log.Error(err)
+				continue
+			}
+
+			l.mqttClient.Publish(topic, byte(0), false, string(m))
+
+		}
+	}
+
+	return nil
 }
 
 // On turns off the Hue lights for a room.
