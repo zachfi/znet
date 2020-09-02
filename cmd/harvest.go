@@ -125,7 +125,7 @@ func runHarvest(cmd *cobra.Command, args []string) {
 	mqttClient := mqtt.NewClient(mqttOpts)
 
 	if token := mqttClient.Connect(); token.Wait() && token.Error() != nil {
-		panic(token.Error())
+		log.Error(token.Error())
 	} else {
 		log.Debugf("connected to MQTT: %s", mqttURL)
 	}

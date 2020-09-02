@@ -13,6 +13,13 @@ type ZigbeeMessage struct {
 	Voltage     int    `json:"voltage,omitempty"`
 }
 
+type ZigbeeBridgeState string
+
+const (
+	Offline ZigbeeBridgeState = "offline"
+	Online  ZigbeeBridgeState = "online"
+)
+
 // ZigbeeBridgeLogMessage
 // https://www.zigbee2mqtt.io/information/mqtt_topics_and_message_structure.html#zigbee2mqttbridgelog
 // zigbee2mqtt/bridge/log

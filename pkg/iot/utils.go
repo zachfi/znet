@@ -84,6 +84,11 @@ func ReadZigbeeMessage(objectID string, payload []byte, endpoint ...string) (int
 					log.Error(err)
 				}
 				return m, nil
+			case "state":
+				m := ZigbeeBridgeState(string(payload))
+				if m != "" {
+					return m, nil
+				}
 			}
 		}
 		return nil, fmt.Errorf("unhandled bridge endpoint: %s", endpoint)

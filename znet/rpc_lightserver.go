@@ -121,6 +121,5 @@ func (l *lightServer) Alert(ctx context.Context, request *pb.LightGroup) (*pb.Li
 	// log.Infof("request: %+v", *request)
 
 	l.lights.Alert(request.Name)
-
 	return response, nil
 }
