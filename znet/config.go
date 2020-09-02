@@ -14,13 +14,14 @@ import (
 type Config struct {
 	Agent        *agent.Config         `yaml:"agent,omitempty"`
 	Astro        *astro.Config         `yaml:"astro,omitempty"`
+	Builder      *builder.Config       `yaml:"builder,omitempty"`
 	Environments *[]EnvironmentConfig  `yaml:"environments,omitempty"`
 	GitWatch     *gitwatch.Config      `yaml:"gitwatch,omitempty"`
-	Builder      *builder.Config       `yaml:"builder,omitempty"`
 	HTTP         *HTTPConfig           `yaml:"http,omitempty"`
 	Junos        *JunosConfig          `yaml:"junos,omitempty"`
 	LDAP         *inventory.LDAPConfig `yaml:"ldap,omitempty"`
 	Lights       *lights.Config        `yaml:"lights,omitempty"`
+	MQTT         *MQTTConfig           `yaml:"mqtt,omitempty"`
 	Rooms        *[]lights.Room        `yaml:"rooms,omitempty"`
 	RPC          *RPCConfig            `yaml:"rpc,omitempty"`
 	Timer        *timer.Config         `yaml:"timer,omitempty"`
@@ -74,4 +75,11 @@ type VaultConfig struct {
 	ClientCert string `yaml:"client_cert,omitempty"`
 	CACert     string `yaml:"ca_cert,omitempty"`
 	LoginName  string `yaml:"login_name,omitempty"`
+}
+
+type MQTTConfig struct {
+	URL      string `yaml:"url,omitempty"`
+	Topic    string `yaml:"topic,omitempty"`
+	Username string `yaml:"username,omitempty"`
+	Password string `yaml:"password,omitempty"`
 }
