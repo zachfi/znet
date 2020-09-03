@@ -44,7 +44,7 @@ require (
 	go.mongodb.org/mongo-driver v1.1.1 // indirect
 	golang.org/x/crypto v0.0.0-20200709230013-948cd5f35899
 	golang.org/x/sys v0.0.0-20200814200057-3d37ad5750ed // indirect
-	golang.org/x/tools v0.0.0-20200724022722-7017fd6b1305
+	golang.org/x/tools v0.0.0-20200903005429-2364a5e8fdcf
 	google.golang.org/genproto v0.0.0-20200611194920-44ba362f84c1 // indirect
 	google.golang.org/grpc v1.31.0
 	google.golang.org/protobuf v1.25.0
