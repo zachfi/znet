@@ -68,7 +68,6 @@ func (a *Agent) Subscriptions() map[string][]events.Handler {
 }
 
 func (a *Agent) newTagHandler(name string, payload events.Payload) error {
-
 	var x gitwatch.NewTag
 
 	err := json.Unmarshal(payload, &x)
@@ -76,12 +75,7 @@ func (a *Agent) newTagHandler(name string, payload events.Payload) error {
 		log.Errorf("failed to unmarshal %T: %s", x, err)
 	}
 
-	err = a.executeForEvent(x)
-	if err != nil {
-		log.Error(err)
-	}
-
-	return nil
+	return a.executeForEvent(x)
 }
 
 func (a *Agent) newCommitHandler(name string, payload events.Payload) error {
@@ -95,12 +89,7 @@ func (a *Agent) newCommitHandler(name string, payload events.Payload) error {
 		log.Errorf("failed to unmarshal %T: %s", x, err)
 	}
 
-	err = a.executeForEvent(x)
-	if err != nil {
-		log.Error(err)
-	}
-
-	return nil
+	return a.executeForEvent(x)
 }
 
 func (a *Agent) passFilter(filter Filter, x interface{}) bool {
