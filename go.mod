@@ -16,7 +16,7 @@ require (
 	github.com/golang/protobuf v1.4.2
 	github.com/golangci/golangci-lint v1.30.0
 	github.com/goreleaser/goreleaser v0.142.0
-	github.com/hashicorp/vault v1.1.1
+	github.com/hashicorp/vault v1.5.3
 	github.com/hashicorp/vault/sdk v0.1.13
 	github.com/imdario/mergo v0.3.11
 	github.com/jedib0t/go-pretty v4.3.0+incompatible
