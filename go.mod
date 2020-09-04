@@ -8,7 +8,6 @@ require (
 	github.com/client9/misspell v0.3.4
 	github.com/containerd/continuity v0.0.0-20190426062206-aaeac12a7ffc // indirect
 	github.com/eclipse/paho.mqtt.golang v1.2.0
-	github.com/fatih/structs v1.1.0 // indirect
 	github.com/frankban/quicktest v1.7.2 // indirect
 	github.com/git-chglog/git-chglog v0.0.0-20200414013904-db796966b373
 	github.com/go-git/go-git/v5 v5.1.0
@@ -18,6 +17,7 @@ require (
 	github.com/golangci/golangci-lint v1.30.0
 	github.com/goreleaser/goreleaser v0.142.0
 	github.com/hashicorp/vault v1.1.1
+	github.com/hashicorp/vault/sdk v0.1.13
 	github.com/imdario/mergo v0.3.11
 	github.com/jedib0t/go-pretty v4.3.0+incompatible
 	github.com/johanbrandhorst/certify v1.8.0
