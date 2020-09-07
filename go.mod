@@ -17,7 +17,7 @@ require (
 	github.com/golangci/golangci-lint v1.30.0
 	github.com/goreleaser/goreleaser v0.142.0
 	github.com/hashicorp/vault v1.1.1
-	github.com/hashicorp/vault/sdk v0.1.13
+	github.com/hashicorp/vault/sdk v0.11.6
 	github.com/imdario/mergo v0.3.11
 	github.com/jedib0t/go-pretty v4.3.0+incompatible
 	github.com/johanbrandhorst/certify v1.8.0
