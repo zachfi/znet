@@ -20,7 +20,7 @@ require (
 	github.com/hashicorp/vault/sdk v0.1.13
 	github.com/imdario/mergo v0.3.11
 	github.com/jedib0t/go-pretty v4.3.0+incompatible
-	github.com/johanbrandhorst/certify v1.8.0
+	github.com/johanbrandhorst/certify v1.8.1
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 	github.com/lib/pq v1.2.0 // indirect
 	github.com/llorllale/go-gitlint v0.0.0-20200802191503-5984945d4b80
