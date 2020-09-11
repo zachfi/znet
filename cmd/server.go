@@ -24,32 +24,31 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/xaque208/znet/pkg/events"
 	"github.com/xaque208/znet/znet"
 )
 
-// listenCmd represents the listen command
-var listenCmd = &cobra.Command{
-	Use:   "listen",
+// serverCmd represents the listen command
+var serverCmd = &cobra.Command{
+	Use:   "server",
 	Short: "Listen for commands/events/messages sent to the RPC server",
 	Long: `
 
 `,
-	Example: "znet listen -v --trace",
-	Run:     listen,
+	Example: "znet server -v --trace",
+	Run:     server,
 }
 
 var listenAddr string
 var rpcListenAddr string
 
 func init() {
-	rootCmd.AddCommand(listenCmd)
+	rootCmd.AddCommand(serverCmd)
 
-	listenCmd.PersistentFlags().StringVarP(&listenAddr, "listen", "l", ":9100", "Specify HTTP listen address")
-	listenCmd.PersistentFlags().StringVarP(&rpcListenAddr, "rpc", "r", ":8800", "Specify RPC listen address")
+	serverCmd.PersistentFlags().StringVarP(&listenAddr, "listen", "l", ":9100", "Specify HTTP listen address")
+	serverCmd.PersistentFlags().StringVarP(&rpcListenAddr, "rpc", "r", ":8800", "Specify RPC listen address")
 }
 
-func listen(cmd *cobra.Command, args []string) {
+func server(cmd *cobra.Command, args []string) {
 	formatter := log.TextFormatter{
 		DisableQuote:     true,
 		DisableTimestamp: true,
@@ -104,12 +103,7 @@ func listen(cmd *cobra.Command, args []string) {
 		done <- true
 	}()
 
-	consumers := []events.Consumer{
-		z.Lights,
-		z,
-	}
-
-	znetServer := znet.NewServer(z.Config, consumers)
+	znetServer := znet.NewServer(z.Config)
 	err = znetServer.Start(z)
 	if err != nil {
 		log.Error(err)
