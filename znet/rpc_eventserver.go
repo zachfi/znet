@@ -12,7 +12,6 @@ import (
 	"github.com/xaque208/znet/internal/timer"
 	"github.com/xaque208/znet/pkg/events"
 	"github.com/xaque208/znet/rpc"
-	pb "github.com/xaque208/znet/rpc"
 )
 
 var (
@@ -66,8 +65,8 @@ func (e *eventServer) RegisterEvents(nameSet []string) {
 }
 
 // NoticeEvent is the call when an event should be fired.
-func (e *eventServer) NoticeEvent(ctx context.Context, request *pb.Event) (*pb.EventResponse, error) {
-	response := &pb.EventResponse{}
+func (e *eventServer) NoticeEvent(ctx context.Context, request *rpc.Event) (*rpc.EventResponse, error) {
+	response := &rpc.EventResponse{}
 
 	e.Report()
 
@@ -96,7 +95,7 @@ func (e *eventServer) NoticeEvent(ctx context.Context, request *pb.Event) (*pb.E
 
 // SubscribeEvents is used to allow a caller to block while streaming events
 // from the event server that match the given event names.
-func (e *eventServer) SubscribeEvents(subs *pb.EventSub, stream pb.Events_SubscribeEventsServer) error {
+func (e *eventServer) SubscribeEvents(subs *rpc.EventSub, stream rpc.Events_SubscribeEventsServer) error {
 
 	ch := e.subscriberChan()
 	defer e.subscriberChanRemove(ch)
@@ -110,48 +109,42 @@ func (e *eventServer) SubscribeEvents(subs *pb.EventSub, stream pb.Events_Subscr
 		case <-streamContext.Done():
 			return fmt.Errorf("stream done")
 		case ev := <-ch:
-
 			eventTotal.WithLabelValues(ev.Name).Inc()
 
-			match := func() bool {
-				// Check for direct match first.
-				for _, n := range subs.Name {
-					if n == ev.Name {
-						return true
+			for _, eventName := range subs.EventNames {
+				if matchName(ev, eventName) {
+					log.Debugf("sending remote event: %s", ev.Name)
+					if err := stream.Send(ev); err != nil {
+						eventRemoteSendErrorTotal.WithLabelValues(ev.Name).Inc()
+						log.Error(err)
 					}
 				}
-
-				// Check the name of the timer, rather than the event name.
-				if ev.Name == "NamedTimer" {
-					var x timer.NamedTimer
-
-					err := json.Unmarshal(ev.Payload, &x)
-					if err != nil {
-						log.Errorf("failed to unmarshal %T: %s", x, err)
-					}
-
-					for _, n := range subs.Name {
-						if n == x.Name {
-							return true
-						}
-					}
-				}
-
-				return false
-			}()
-
-			log.Tracef("received remote event %+v", ev)
-
-			if match {
-				log.Debugf("sending remote event: %s", ev.Name)
-				if err := stream.Send(ev); err != nil {
-					return err
-				}
-			} else {
-				log.Tracef("event name not matched: %s", ev.Name)
 			}
 		}
 	}
+}
+
+func matchName(ev *rpc.Event, name string) bool {
+	// Check for direct match first.
+	if name == ev.Name {
+		return true
+	}
+
+	// Also check the name of the timer, rather than the event name.
+	if ev.Name == "NamedTimer" {
+		var x timer.NamedTimer
+
+		err := json.Unmarshal(ev.Payload, &x)
+		if err != nil {
+			log.Errorf("failed to unmarshal %T: %s", x, err)
+		}
+
+		if name == x.Name {
+			return true
+		}
+	}
+
+	return false
 }
 
 // subscriberChan creates a new channel to register with the eventServer before returning the channel.

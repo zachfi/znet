@@ -5,13 +5,10 @@ import (
 	"fmt"
 	"path/filepath"
 
-	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/xaque208/znet/internal/agent"
-	"github.com/xaque208/znet/internal/inventory"
-	"github.com/xaque208/znet/internal/lights"
 	"github.com/xaque208/znet/pkg/events"
 	"github.com/xaque208/znet/pkg/netconfig"
 )
@@ -23,7 +20,6 @@ type Znet struct {
 	Config      Config
 	Data        netconfig.Data
 	Environment map[string]string
-	Lights      *lights.Lights
 }
 
 // NewZnet creates and returns a new Znet object.
@@ -50,44 +46,9 @@ func NewZnet(file string) (*Znet, error) {
 		log.Debug("missing vault/environment config")
 	}
 
-	var inv *inventory.Inventory
-	if config.LDAP != nil {
-		inv = inventory.NewInventory(*config.LDAP)
-	} else {
-		log.Debug("missing LDAP config")
-	}
-
-	var mqttClient mqtt.Client
-	if config.MQTT != nil {
-		mqttOpts := mqtt.NewClientOptions()
-		mqttOpts.AddBroker(config.MQTT.URL)
-		mqttOpts.SetCleanSession(true)
-
-		if config.MQTT.Username != "" && config.MQTT.Password != "" {
-			mqttOpts.Username = config.MQTT.Username
-			mqttOpts.Password = config.MQTT.Password
-		}
-
-		mqttConn := mqtt.NewClient(mqttOpts)
-		if token := mqttConn.Connect(); token.Wait() && token.Error() != nil {
-			log.Error(token.Error())
-		} else {
-			log.Debugf("connected to MQTT: %s", config.MQTT.URL)
-			mqttClient = mqttConn
-		}
-	}
-
-	var light *lights.Lights
-	if config.Lights != nil {
-		light = lights.NewLights(*config.Lights, inv, mqttClient)
-	} else {
-		log.Debug("missing lights config")
-	}
-
 	z := Znet{
 		Config:      config,
 		Environment: environment,
-		Lights:      light,
 	}
 
 	return &z, nil
@@ -108,16 +69,6 @@ func loadConfig(file string) (Config, error) {
 
 // Stop the znet connections
 func (z *Znet) Stop() {
-}
-
-// Subscriptions is yet to be used, but conforms to the interface for
-// generating consumers of named events.
-func (z *Znet) Subscriptions() map[string][]events.Handler {
-	s := events.NewSubscriptions()
-
-	s.Subscribe("ExecutionResult", z.executionResultHandler)
-
-	return s.Table
 }
 
 func (z *Znet) executionResultHandler(name string, payload events.Payload) error {

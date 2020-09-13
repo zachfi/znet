@@ -22,9 +22,8 @@ import (
 	"github.com/xaque208/znet/internal/timer"
 	"github.com/xaque208/znet/pkg/continuous"
 	"github.com/xaque208/znet/pkg/eventmachine"
-	"github.com/xaque208/znet/pkg/events"
 	"github.com/xaque208/znet/pkg/iot"
-	pb "github.com/xaque208/znet/rpc"
+	"github.com/xaque208/znet/rpc"
 )
 
 // Server is a znet Server.
@@ -45,8 +44,6 @@ type statusCheckHandler struct {
 
 func init() {
 	prometheus.MustRegister(
-		eventMachineConsumers,
-		eventMachineHandlers,
 		eventTotal,
 		executionDuration,
 		executionExitStatus,
@@ -72,10 +69,11 @@ func init() {
 }
 
 // NewServer creates a new Server composed of the received information.
-func NewServer(config Config, consumers []events.Consumer) *Server {
+// func NewServer(config Config, consumers []events.Consumer) *Server {
+func NewServer(config Config) *Server {
 	ctx, cancel := context.WithCancel(context.Background())
 
-	eventMachine, err := eventmachine.New(ctx, consumers)
+	eventMachine, err := eventmachine.New(ctx, nil)
 	if err != nil {
 		log.Error(err)
 	}
@@ -177,25 +175,19 @@ func (s *Server) Start(z *Znet) error {
 		rpcInventoryServer := &inventoryServer{
 			inventory: inv,
 		}
-		pb.RegisterInventoryServer(s.grpcServer, rpcInventoryServer)
-
-		// lightServer to receive RPC calls for lighting changes directly.
-		rpcLightServer := &lightServer{
-			lights: z.Lights,
-		}
-		pb.RegisterLightsServer(s.grpcServer, rpcLightServer)
+		rpc.RegisterInventoryServer(s.grpcServer, rpcInventoryServer)
 
 		// telemetryServer
 		rpcTelemetryServer := newTelemetryServer(inv, s.eventMachine)
-		pb.RegisterTelemetryServer(s.grpcServer, rpcTelemetryServer)
+		rpc.RegisterTelemetryServer(s.grpcServer, rpcTelemetryServer)
 
-		// Register and configure the rpcEventServer
+		// rpcEventServer
 		rpcEventServer := &eventServer{
 			eventMachineChannel: s.eventMachine.EventChannel,
 			ctx:                 s.ctx,
 		}
 
-		pb.RegisterEventsServer(s.grpcServer, rpcEventServer)
+		rpc.RegisterEventsServer(s.grpcServer, rpcEventServer)
 		rpcEventServer.RegisterEvents(agent.EventNames)
 		rpcEventServer.RegisterEvents(astro.EventNames)
 		rpcEventServer.RegisterEvents(continuous.EventNames)
@@ -215,19 +207,6 @@ func (s *Server) Start(z *Znet) error {
 			}
 		}()
 	}
-
-	go func() {
-		t := time.NewTicker(10 * time.Second)
-
-		for range t.C {
-			// export the eventMachine data
-			eventMachineConsumers.WithLabelValues().Set(float64(len(s.eventMachine.EventConsumers)))
-
-			for name, handlers := range s.eventMachine.EventConsumers {
-				eventMachineHandlers.WithLabelValues(name).Set(float64(len(handlers)))
-			}
-		}
-	}()
 
 	return nil
 }

@@ -18,20 +18,10 @@ var (
 		Help: "The total number of events that have been seen since start",
 	}, []string{"event_name"})
 
-	eventMachineConsumers = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "znet_event_machine_consumers",
-		Help: "The current number of event consumers",
-	}, []string{})
-
-	eventMachineHandlers = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "znet_event_machine_handlers",
-		Help: "The current number of event handlers per consumer",
+	eventRemoteSendErrorTotal = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "znet_remote_send_error_total",
+		Help: "The total number of that returned an error when sent",
 	}, []string{"event_name"})
-
-	// ciJobsRunning = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-	// 	Name: "znet_ci_jobs_running",
-	// 	Help: "Stats on running CI jobs",
-	// }, []string{})
 
 	airTemperature = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "thing_air_temperature",
