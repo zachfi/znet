@@ -143,7 +143,9 @@ message EventResponse {
   string message = 2;
 }
 
-message EventSub { repeated string name = 1; }
+message EventSub {
+  repeated string event_names = 1;
+}
 
 message ZigbeeDevice {
   string name = 1;
@@ -171,6 +173,7 @@ service Inventory {
   rpc Search(SearchRequest) returns (SearchResponse);
 
   rpc ListNetworkHosts(Empty) returns (SearchResponse);
+  // rpc ListZigbeeDevices(Empty) returns (SearchResponse);
   // rpc SearchNetworks(Empty) returns (Empty);
   // rpc SearchZones(Empty) returns (Empty);
 }
