@@ -13,7 +13,7 @@ import (
 	"github.com/xaque208/znet/internal/builder"
 	"github.com/xaque208/znet/pkg/eventmachine"
 	"github.com/xaque208/znet/pkg/events"
-	pb "github.com/xaque208/znet/rpc"
+	"github.com/xaque208/znet/rpc"
 	"github.com/xaque208/znet/znet"
 )
 
@@ -65,15 +65,20 @@ func runBuilder(cmd *cobra.Command, args []string) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	machine, err := eventmachine.New(ctx, consumers)
+	machine, err := eventmachine.New(ctx, &consumers)
 	if err != nil {
 		log.Error(err)
 	}
 
-	client := pb.NewEventsClient(conn)
+	client := rpc.NewEventsClient(conn)
 
-	eventSub := &pb.EventSub{
-		Name: x.EventNames(),
+	eventNames := []string{}
+	for _, exec := range z.Config.Agent.Executions {
+		eventNames = append(eventNames, exec.Events...)
+	}
+
+	eventSub := &rpc.EventSub{
+		EventNames: eventNames,
 	}
 
 	go machine.ReadStream(client, eventSub)

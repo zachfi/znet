@@ -93,11 +93,12 @@ func runInv(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Error(err)
 	}
+
 	// resp, err := inventoryClient.ListNetworkHosts(context.Background(), &pb.Empty{})
 	// if err != nil {
 	// 	log.Error(err)
 	// }
-	//
+
 	t := table.NewWriter()
 	t.SetOutputMirror(os.Stdout)
 	t.AppendHeader(table.Row{"Name", "Platform", "Type", "Description"})

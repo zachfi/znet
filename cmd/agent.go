@@ -6,14 +6,16 @@ import (
 	"os/signal"
 	"syscall"
 
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
 	"github.com/xaque208/znet/internal/agent"
+	"github.com/xaque208/znet/internal/lights"
 	"github.com/xaque208/znet/pkg/eventmachine"
 	"github.com/xaque208/znet/pkg/events"
-	pb "github.com/xaque208/znet/rpc"
+	"github.com/xaque208/znet/rpc"
 	"github.com/xaque208/znet/znet"
 )
 
@@ -54,30 +56,66 @@ func runAgent(cmd *cobra.Command, args []string) {
 		log.Fatal("no rpc.server configuration specified")
 	}
 
+	viper.SetDefault("mqtt.url", "tcp://localhost:1883")
+
+	mqttURL := viper.GetString("mqtt.url")
+	mqttUsername := viper.GetString("mqtt.username")
+	mqttPassword := viper.GetString("mqtt.password")
+
+	mqttOpts := mqtt.NewClientOptions()
+	mqttOpts.AddBroker(mqttURL)
+	mqttOpts.SetCleanSession(true)
+
+	if mqttUsername != "" && mqttPassword != "" {
+		mqttOpts.Username = mqttUsername
+		mqttOpts.Password = mqttPassword
+	}
+
+	mqttClient := mqtt.NewClient(mqttOpts)
+
+	if token := mqttClient.Connect(); token.Wait() && token.Error() != nil {
+		log.Error(token.Error())
+	} else {
+		log.Debugf("connected to MQTT: %s", mqttURL)
+	}
+
 	conn := znet.NewConn(z.Config.RPC.ServerAddress, z.Config)
 
 	if z.Config.Agent == nil {
 		log.Fatal("unable to create agent with nil Agent configuration")
 	}
 
-	ag := agent.NewAgent(*z.Config.Agent, conn)
+	consumers := []events.Consumer{}
 
-	consumers := []events.Consumer{
-		ag,
+	var agentConsumer *agent.Agent
+	if z.Config.Agent != nil {
+		agentConsumer = agent.NewAgent(*z.Config.Agent, conn)
+		consumers = append(consumers, agentConsumer)
+	}
+
+	inventoryClient := rpc.NewInventoryClient(conn)
+	if z.Config.Lights != nil && inventoryClient != nil && mqttClient != nil {
+		lightsConsumer := lights.NewLights(*z.Config.Lights, inventoryClient, mqttClient)
+		consumers = append(consumers, lightsConsumer)
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	machine, err := eventmachine.New(ctx, consumers)
+	machine, err := eventmachine.New(ctx, &consumers)
 	if err != nil {
 		log.Error(err)
 	}
 
-	client := pb.NewEventsClient(conn)
+	client := rpc.NewEventsClient(conn)
 
-	eventSub := &pb.EventSub{
-		Name: ag.EventNames(),
+	eventNames := []string{}
+	for _, exec := range z.Config.Agent.Executions {
+		eventNames = append(eventNames, exec.Events...)
+	}
+
+	eventSub := &rpc.EventSub{
+		EventNames: eventNames,
 	}
 
 	go machine.ReadStream(client, eventSub)
