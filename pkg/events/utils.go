@@ -11,16 +11,16 @@ import (
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
-	pb "github.com/xaque208/znet/rpc"
+	"github.com/xaque208/znet/rpc"
 )
 
-func MakeEvent(t interface{}) *pb.Event {
+func MakeEvent(t interface{}) *rpc.Event {
 	payload, err := json.Marshal(t)
 	if err != nil {
 		log.Error(err)
 	}
 
-	req := &pb.Event{
+	req := &rpc.Event{
 		Name:    reflect.TypeOf(t).Name(),
 		Payload: payload,
 	}
@@ -33,7 +33,7 @@ func ProduceEvent(conn *grpc.ClientConn, ev interface{}) error {
 		return fmt.Errorf("unable to make use of nil grpc client")
 	}
 
-	ec := pb.NewEventsClient(conn)
+	ec := rpc.NewEventsClient(conn)
 	// t := reflect.TypeOf(ev).String()
 
 	req := MakeEvent(ev)

@@ -103,7 +103,9 @@ func (s *Scheduler) WaitForNext() []string {
 		return s.NamesForTime(*next)
 	}
 
-	log.Infof("scheduler waiting for next event: %s", next)
+	log.WithFields(log.Fields{
+		"next": time.Until(*next),
+	}).Info("scheduler waiting")
 	ti := time.NewTimer(time.Until(*next))
 	<-ti.C
 
