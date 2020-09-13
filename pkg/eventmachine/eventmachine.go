@@ -10,9 +10,9 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/xaque208/znet/internal/timer"
 	"github.com/xaque208/znet/pkg/events"
 	"github.com/xaque208/znet/rpc"
-	pb "github.com/xaque208/znet/rpc"
 )
 
 // EventMachine is a system to facilitate receiving events and passing them along to a number of subscribers.
@@ -20,26 +20,29 @@ type EventMachine struct {
 	// EventChannel is the channel to which the RPC eventServer writes events.
 	EventChannel chan events.Event
 
-	// EventConsumers is the map between event names and which event handlers to
-	// call with the event event payload.
-	EventConsumers map[string][]events.Handler
-	ctx            context.Context
-	cancel         func()
+	subscriptions []*events.Subscriptions
+	ctx           context.Context
+	cancel        func()
 }
 
 // New creates a new EventMachine using the received consumers, complete with channels and exit.
-func New(c context.Context, consumers []events.Consumer) (*EventMachine, error) {
+func New(c context.Context, consumers *[]events.Consumer) (*EventMachine, error) {
 	ctx, cancel := context.WithCancel(c)
 
+	subs := []*events.Subscriptions{}
+	if consumers != nil {
+		for _, c := range *consumers {
+			subs = append(subs, c.Subscriptions())
+		}
+	}
+
 	m := &EventMachine{
-		ctx:    ctx,
-		cancel: cancel,
+		ctx:           ctx,
+		cancel:        cancel,
+		subscriptions: subs,
 	}
 
 	m.EventChannel = make(chan events.Event)
-	m.EventConsumers = make(map[string][]events.Handler)
-
-	m.initEventConsumers(consumers)
 	m.initEventConsumer(ctx)
 
 	return m, nil
@@ -88,7 +91,7 @@ func (m *EventMachine) ReadStream(client rpc.EventsClient, eventSub *rpc.EventSu
 	}
 }
 
-// readStreamOnce will read from the rpc stream or return an error.
+// readStreamOnce will read from the RPC stream or return an error.
 func (m *EventMachine) readStreamOnce(c context.Context, client rpc.EventsClient, eventSub *rpc.EventSub) error {
 	var err error
 
@@ -97,7 +100,8 @@ func (m *EventMachine) readStreamOnce(c context.Context, client rpc.EventsClient
 
 	stream, err := client.SubscribeEvents(ctx, eventSub)
 	if err != nil {
-		if status.Code(err) == codes.Canceled {
+		switch status.Code(err) {
+		case codes.Canceled:
 			return nil
 		}
 
@@ -105,7 +109,7 @@ func (m *EventMachine) readStreamOnce(c context.Context, client rpc.EventsClient
 	}
 
 	for {
-		var ev *pb.Event
+		var ev *rpc.Event
 
 		ev, err = stream.Recv()
 		if err != nil {
@@ -117,63 +121,81 @@ func (m *EventMachine) readStreamOnce(c context.Context, client rpc.EventsClient
 			}
 		}
 
-		log.WithFields(log.Fields{
-			"name":    ev.Name,
-			"payload": ev.Payload,
-		}).Trace("event received")
-
 		evE := events.Event{
 			Name:    ev.Name,
 			Payload: ev.Payload,
 		}
 
+		log.WithFields(log.Fields{
+			"name":    ev.Name,
+			"payload": string(ev.Payload),
+		}).Trace("received RPC event")
 		m.EventChannel <- evE
 	}
 }
 
 // initEventConsumer starts a routine that never ends to read from
 // z.EventChannel and execute the loaded handlers with the event Payload.
-func (m *EventMachine) initEventConsumer(c context.Context) func() {
-	ctx, cancel := context.WithCancel(c)
-
+func (m *EventMachine) initEventConsumer(ctx context.Context) {
 	go func(ch chan events.Event, ctx context.Context) {
-		log.Debugf("total %d m.EventConsumers", len(m.EventConsumers))
+		// log.Debugf("total %d m.EventHandlers", len(m.EventHandlers))
 
 		for {
 			select {
 			case <-ctx.Done():
 				return
-			case e := <-ch:
-				if handlers, ok := m.EventConsumers[e.Name]; ok {
-					log.Tracef("EventMachine heard event %s: %s", e.Name, string(e.Payload))
-					log.Debugf("executing %d handlers for event %s", len(handlers), e.Name)
-					for _, h := range handlers {
-						err := h(e.Name, e.Payload)
-						if err != nil {
-							log.Error(err)
+			case ev := <-ch:
+
+				for _, sub := range m.subscriptions {
+					fail := 0
+					if filters, ok := sub.Filters[ev.Name]; ok {
+						for _, f := range filters {
+							if ok := f.Filter(ev); !ok {
+								fail++
+							}
 						}
 					}
-				} else {
-					log.WithFields(log.Fields{
-						"name":    e.Name,
-						"payload": string(e.Payload),
-					}).Warn("unhandled event")
+
+					if fail == 0 {
+						if handlers, ok := sub.Handlers[ev.Name]; ok {
+							log.WithFields(log.Fields{
+								"name":    ev.Name,
+								"payload": string(ev.Payload),
+							}).Tracef("eventmachine executing %d handler", len(handlers))
+
+							for _, h := range handlers {
+								err := h(ev.Name, ev.Payload)
+								if err != nil {
+									log.Error(err)
+								}
+							}
+						}
+					}
 				}
 			}
 		}
 	}(m.EventChannel, ctx)
-
-	return cancel
 }
 
-// initEventConsumers updates the m.EventConsumers map.  For each received
-// consumer, the handler subscriptions are determined, and appended to the
-// z.EventConsumers map for execution when the named event is received.
-func (m *EventMachine) initEventConsumers(consumers []events.Consumer) {
-	for _, e := range consumers {
-		subs := e.Subscriptions()
-		for k, handlers := range subs {
-			m.EventConsumers[k] = append(m.EventConsumers[k], handlers...)
+func matchName(ev events.Event, name string) bool {
+	// Check for direct match first.
+	if name == ev.Name {
+		return true
+	}
+
+	// Also check the name of the timer, rather than the event name.
+	if ev.Name == "NamedTimer" {
+		var x timer.NamedTimer
+
+		err := json.Unmarshal(ev.Payload, &x)
+		if err != nil {
+			log.Errorf("failed to unmarshal %T: %s", x, err)
+		}
+
+		if name == x.Name {
+			return true
 		}
 	}
+
+	return false
 }
