@@ -106,10 +106,6 @@ func (e *EventProducer) scheduleRepeatEvents(scheduledEvents *events.Scheduler, 
 
 	// Stop calculating events beyond this time.
 	end := time.Now().Add(time.Duration(e.config.FutureLimit) * time.Second)
-	err := scheduledEvents.Set(end, "ReloadConfig")
-	if err != nil {
-		log.Error(err)
-	}
 
 	next := time.Now()
 	for {
