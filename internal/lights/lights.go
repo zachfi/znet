@@ -1,61 +1,107 @@
 package lights
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/amimof/huego"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
+	"github.com/mpvl/unique"
 	log "github.com/sirupsen/logrus"
 	"github.com/xaque208/rftoy/rftoy"
 
-	"github.com/xaque208/znet/internal/inventory"
+	"github.com/xaque208/znet/internal/astro"
 	"github.com/xaque208/znet/internal/timer"
 	"github.com/xaque208/znet/pkg/events"
 	"github.com/xaque208/znet/pkg/iot"
+	"github.com/xaque208/znet/rpc"
 )
 
 // Lights holds the information necessary to communicate with lighting
 // equipment, and the configuration to add a bit of context.
 type Lights struct {
-	RFToy      *rftoy.RFToy
-	HUE        *huego.Bridge
-	inv        *inventory.Inventory
-	config     Config
-	mqttClient mqtt.Client
+	config          Config
+	HUE             *huego.Bridge
+	inventoryClient rpc.InventoryClient
+	mqttClient      mqtt.Client
+	RFToy           *rftoy.RFToy
 }
 
 // NewLights creates and returns a new Lights object based on the received
 // configuration.
-func NewLights(config Config, inv *inventory.Inventory, mqttClient mqtt.Client) *Lights {
-	return &Lights{
-		HUE:        huego.New(config.Hue.Endpoint, config.Hue.User),
-		RFToy:      &rftoy.RFToy{Address: config.RFToy.Endpoint},
-		inv:        inv,
-		config:     config,
-		mqttClient: mqttClient,
+func NewLights(config Config, inventoryClient rpc.InventoryClient, mqttClient mqtt.Client) *Lights {
+	l := Lights{
+		config:          config,
+		HUE:             huego.New(config.Hue.Endpoint, config.Hue.User),
+		inventoryClient: inventoryClient,
+		mqttClient:      mqttClient,
+		RFToy:           &rftoy.RFToy{Address: config.RFToy.Endpoint},
 	}
+
+	return &l
 }
 
 // Subscriptions returns the data for mapping event names with functions.
-func (l *Lights) Subscriptions() map[string][]events.Handler {
+func (l *Lights) Subscriptions() *events.Subscriptions {
 	s := events.NewSubscriptions()
 
-	namedEvents := []string{
-		"PreSunset",
-		"SolarEvent",
-		"TimerExpired",
+	eventNames := []string{
 		"NamedTimer",
+		"Click",
 	}
 
-	for _, e := range namedEvents {
-		s.Subscribe(e, l.eventHandler)
+	for _, e := range eventNames {
+		switch e {
+		case "SolarEvent":
+			s.Subscribe(e, l.solarEventHandler)
+		case "NamedTimer":
+			s.Subscribe(e, l.namedTimerHandler)
+
+			// f := &timer.TimerFilter{}
+			// f.Name = append(f.Name, iot.EventNames...)
+			// s.Filter(e, f)
+		case "Click":
+			s.Subscribe(e, l.clickHandler)
+		}
 	}
 
-	s.Subscribe("Click", l.clickHandler)
+	return s
+}
 
-	return s.Table
+func (l *Lights) solarEventHandler(name string, payload events.Payload) error {
+	var e astro.SolarEvent
+
+	err := json.Unmarshal(payload, &e)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal %T: %s", e, err)
+	}
+
+	names := l.configuredEventNames()
+
+	configuredEvent := func(name string, names []string) bool {
+		for _, n := range names {
+			if n == name {
+				return true
+			}
+		}
+		return false
+	}(name, names)
+
+	if !configuredEvent {
+		log.WithFields(log.Fields{
+			"name":            e.Name,
+			"configuredNames": names,
+		}).Debug("unhandled lighting SolarEvent name")
+
+		return nil
+	}
+
+	l.setRoomForEvent(e.Name)
+
+	return nil
 }
 
 func (l *Lights) clickHandler(name string, payload events.Payload) error {
@@ -121,9 +167,24 @@ func (l *Lights) clickHandler(name string, payload events.Payload) error {
 	return nil
 }
 
-func (l *Lights) eventHandler(name string, payload events.Payload) error {
-	log.Tracef("Lights.eventHandler: %s : %+v", name, string(payload))
+// configuredEventNames is the collection of events that are configured in the lighting config.  This results in a
+func (l *Lights) configuredEventNames() []string {
 
+	names := []string{}
+
+	for _, r := range l.config.Rooms {
+		names = append(names, r.On...)
+		names = append(names, r.Off...)
+		names = append(names, r.Alert...)
+	}
+
+	sort.Strings(names)
+	unique.Strings(&names)
+
+	return names
+}
+
+func (l *Lights) namedTimerHandler(name string, payload events.Payload) error {
 	var e timer.NamedTimer
 
 	err := json.Unmarshal(payload, &e)
@@ -131,33 +192,57 @@ func (l *Lights) eventHandler(name string, payload events.Payload) error {
 		return fmt.Errorf("failed to unmarshal %T: %s", e, err)
 	}
 
+	names := l.configuredEventNames()
+
+	configuredEvent := func(name string, names []string) bool {
+		for _, n := range names {
+			if n == name {
+				return true
+			}
+		}
+		return false
+	}(name, names)
+
+	if !configuredEvent {
+		log.WithFields(log.Fields{
+			"name":            e.Name,
+			"configuredNames": names,
+		}).Debug("unhandled lighting NamedTimer name")
+
+		return nil
+	}
+
+	l.setRoomForEvent(e.Name)
+
+	return nil
+}
+
+func (l *Lights) setRoomForEvent(name string) {
 	for _, room := range l.config.Rooms {
 		for _, o := range room.On {
-			if o == e.Name {
+			if o == name {
 				l.On(room.Name)
 			}
 		}
 
 		for _, o := range room.Off {
-			if o == e.Name {
+			if o == name {
 				l.Off(room.Name)
 			}
 		}
 
 		for _, o := range room.Dim {
-			if o == e.Name {
+			if o == name {
 				l.Dim(room.Name, 100)
 			}
 		}
 
 		for _, o := range room.Alert {
-			if o == e.Name {
+			if o == name {
 				l.Alert(room.Name)
 			}
 		}
 	}
-
-	return nil
 }
 
 // getLight calls the Hue bridge and looks for a light, that, when normalized,
@@ -207,14 +292,16 @@ func (l *Lights) Toggle(groupName string) error {
 
 	log.Debugf("toggle: %s", groupName)
 
-	result, err := l.inv.ListZigbeeDevices()
+	ctx := context.Background()
+
+	result, err := l.inventoryClient.Search(ctx, &rpc.SearchRequest{})
 	if err != nil {
 		return err
 	}
 
 	if result != nil {
-		log.Debugf("result: %s", *result)
-		for _, d := range *result {
+		log.Debugf("result: %s", result)
+		for _, d := range result.ZigbeeDevices {
 			if d.IotZone != groupName {
 				continue
 			}

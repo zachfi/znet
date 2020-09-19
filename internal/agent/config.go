@@ -19,15 +19,5 @@ type Execution struct {
 	// Events is the slice of names upon which to execute the given executions.
 	Events []string `yaml:"events"`
 
-	Filter Filter `yaml:"filter"`
-}
-
-// Filter is a way of reducing when the executions fire, in the case of many
-// repos.  This does mean the events are handed to all scubscribers, and the
-// subscriber is responsible for reducing the executions.
-type Filter struct {
-	Names       []string
-	URLs        []string
-	Branches    []string
-	Collections []string
+	Filter map[string]interface{} `yaml:"filter"`
 }

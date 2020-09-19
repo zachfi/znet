@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"reflect"
 	"text/template"
 	"time"
 
@@ -14,14 +13,17 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/xaque208/znet/internal/gitwatch"
+	"github.com/xaque208/znet/internal/timer"
 	"github.com/xaque208/znet/pkg/events"
 )
 
+// Agent is an RPC client worker bee.
 type Agent struct {
 	config Config
 	conn   *grpc.ClientConn
 }
 
+// NewAgent returns a new *Agent from the given arguments.
 func NewAgent(config Config, conn *grpc.ClientConn) *Agent {
 	return &Agent{
 		config: config,
@@ -29,24 +31,8 @@ func NewAgent(config Config, conn *grpc.ClientConn) *Agent {
 	}
 }
 
-func (a *Agent) EventNames() []string {
-	var names []string
-
-	for _, e := range a.config.Executions {
-		for _, x := range e.Events {
-			if x != "" {
-				names = append(names, x)
-			}
-		}
-	}
-
-	log.Debugf("agent responding to %d event names: %+v", len(names), names)
-
-	return names
-}
-
 // Subscriptions implements the events.Consumer interface
-func (a *Agent) Subscriptions() map[string][]events.Handler {
+func (a *Agent) Subscriptions() *events.Subscriptions {
 	s := events.NewSubscriptions()
 
 	for _, e := range a.config.Executions {
@@ -54,17 +40,79 @@ func (a *Agent) Subscriptions() map[string][]events.Handler {
 			switch x {
 			case "NewCommit":
 				s.Subscribe(x, a.newCommitHandler)
+
+				b, err := json.Marshal(e.Filter)
+				if err != nil {
+					log.Errorf("failed to marshal %s filter: %s", x, err)
+				}
+
+				f := &gitwatch.GitFilter{}
+				err = json.Unmarshal(b, &f)
+				if err != nil {
+					log.Errorf("failed to unmarshal %s filter into GitFilter: %s", x, err)
+				}
+
+				s.Filter(x, f)
 			case "NewTag":
 				s.Subscribe(x, a.newTagHandler)
+
+				b, err := json.Marshal(e.Filter)
+				if err != nil {
+					log.Errorf("failed to marshal %s filter: %s", x, err)
+				}
+
+				f := &gitwatch.GitFilter{}
+				err = json.Unmarshal(b, &f)
+				if err != nil {
+					log.Errorf("failed to unmarshal %s filter into GitFilter: %s", x, err)
+				}
+
+				s.Filter(x, f)
+			case "NamedTimer":
+				s.Subscribe(x, a.namedTimerHandler)
+
+				f := &timer.TimerFilter{}
+				// f.Name = append(f.Name, "ReportFacts")
+				s.Filter(x, f)
 			default:
-				log.Errorf("unhandled execution event %s", x)
+				log.WithFields(log.Fields{
+					"event": x,
+				}).Warn("no execution handler")
 			}
 		}
 	}
 
-	log.Debugf("event subscriptions %+v", s.Table)
+	log.WithFields(log.Fields{
+		"handlers": s.Handlers,
+		"filters":  s.Filters,
+	}).Debug("event subscriptions")
 
-	return s.Table
+	return s
+}
+
+func (a *Agent) namedTimerHandler(name string, payload events.Payload) error {
+	log.WithFields(log.Fields{
+		"name":    name,
+		"payload": string(payload),
+	}).Warn("TODO")
+
+	return nil
+}
+
+func (a *Agent) newExecRequestHandler(name string, payload events.Payload) error {
+	var x ExecRequest
+
+	err := json.Unmarshal(payload, &x)
+	if err != nil {
+		log.Errorf("failed to unmarshal %T: %s", x, err)
+	}
+
+	log.Warn("TODO newExecRequestHandler()")
+
+	// returnejnivtfgvbheljfnrilruvlldiennunvcrvbei
+	// .executeForEvent(x)
+
+	return nil
 }
 
 func (a *Agent) newTagHandler(name string, payload events.Payload) error {
@@ -75,7 +123,7 @@ func (a *Agent) newTagHandler(name string, payload events.Payload) error {
 		log.Errorf("failed to unmarshal %T: %s", x, err)
 	}
 
-	return a.executeForEvent(x)
+	return a.executeForGitEvent(x)
 }
 
 func (a *Agent) newCommitHandler(name string, payload events.Payload) error {
@@ -89,93 +137,13 @@ func (a *Agent) newCommitHandler(name string, payload events.Payload) error {
 		log.Errorf("failed to unmarshal %T: %s", x, err)
 	}
 
-	return a.executeForEvent(x)
+	return a.executeForGitEvent(x)
 }
 
-func (a *Agent) passFilter(filter Filter, x interface{}) bool {
-	var xName string
-	var xURL string
-	var xBranch string
-	var xCollection string
-
-	t := reflect.TypeOf(x).String()
-
-	switch t {
-	case "gitwatch.NewTag":
-		xName = x.(gitwatch.NewTag).Name
-		xURL = x.(gitwatch.NewTag).URL
-		xCollection = x.(gitwatch.NewTag).Collection
-	case "gitwatch.NewCommit":
-		xName = x.(gitwatch.NewCommit).Name
-		xURL = x.(gitwatch.NewCommit).URL
-		xBranch = x.(gitwatch.NewCommit).Branch
-		xCollection = x.(gitwatch.NewCommit).Collection
-	}
-
-	passName := func() bool {
-		if len(filter.Names) == 0 {
-			return true
-		}
-
-		for _, name := range filter.Names {
-			if name == xName {
-				return true
-			}
-		}
-
-		return false
-	}
-
-	passURL := func() bool {
-		if len(filter.URLs) == 0 {
-			return true
-		}
-
-		for _, url := range filter.URLs {
-			if url == xURL {
-				return true
-			}
-		}
-		return false
-	}
-
-	passBranch := func() bool {
-		if len(filter.Branches) == 0 {
-			return true
-		}
-
-		for _, branch := range filter.Branches {
-			if branch == xBranch {
-				return true
-			}
-		}
-		return false
-	}
-
-	passCollection := func() bool {
-		if len(filter.Collections) == 0 {
-			return true
-		}
-
-		for _, collection := range filter.Collections {
-			if collection == xCollection {
-				return true
-			}
-		}
-		return false
-	}
-
-	return passName() && passURL() && passBranch() && passCollection()
-}
-
-func (a *Agent) executeForEvent(x interface{}) error {
-	log.Tracef("executeForEvent %+v", x)
+func (a *Agent) executeForGitEvent(x interface{}) error {
+	log.Tracef("executeForGitEvent %+v", x)
 
 	for _, execution := range a.config.Executions {
-
-		if !a.passFilter(execution.Filter, x) {
-			return fmt.Errorf("event did not pass filter: %+v, %+v", x, execution.Filter)
-		}
 
 		for _, xx := range execution.Events {
 			if xx != "" {
@@ -206,7 +174,8 @@ func (a *Agent) executeForEvent(x interface{}) error {
 
 				var env []string
 
-				// Render the values of the environment variables as templates using the received event.
+				// Render the values of the environment variables as templates using
+				// the received event.
 				for k, v := range execution.Environment {
 
 					tmpl, err := template.New("env").Parse(v)

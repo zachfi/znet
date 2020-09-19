@@ -12,9 +12,11 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/xaque208/znet/internal/agent"
+	"github.com/xaque208/znet/internal/astro"
 	"github.com/xaque208/znet/internal/lights"
 	"github.com/xaque208/znet/pkg/eventmachine"
 	"github.com/xaque208/znet/pkg/events"
+	"github.com/xaque208/znet/pkg/iot"
 	"github.com/xaque208/znet/rpc"
 	"github.com/xaque208/znet/znet"
 )
@@ -93,10 +95,15 @@ func runAgent(cmd *cobra.Command, args []string) {
 		consumers = append(consumers, agentConsumer)
 	}
 
+	eventNames := []string{}
 	inventoryClient := rpc.NewInventoryClient(conn)
+
 	if z.Config.Lights != nil && inventoryClient != nil && mqttClient != nil {
 		lightsConsumer := lights.NewLights(*z.Config.Lights, inventoryClient, mqttClient)
 		consumers = append(consumers, lightsConsumer)
+
+		eventNames = append(eventNames, astro.EventNames...)
+		eventNames = append(eventNames, iot.EventNames...)
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -109,7 +116,6 @@ func runAgent(cmd *cobra.Command, args []string) {
 
 	client := rpc.NewEventsClient(conn)
 
-	eventNames := []string{}
 	for _, exec := range z.Config.Agent.Executions {
 		eventNames = append(eventNames, exec.Events...)
 	}
