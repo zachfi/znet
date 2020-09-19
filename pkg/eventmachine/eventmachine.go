@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"reflect"
+	"sync"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -17,8 +18,12 @@ import (
 
 // EventMachine is a system to facilitate receiving events and passing them along to a number of subscribers.
 type EventMachine struct {
-	// EventChannel is the channel to which the RPC eventServer writes events.
-	EventChannel chan events.Event
+	sync.Mutex
+
+	// eventChannel is the channel to which the RPC eventServer writes events.
+	eventChannel chan events.Event
+
+	forwardChans []chan *events.Event
 
 	subscriptions []*events.Subscriptions
 	ctx           context.Context
@@ -40,9 +45,9 @@ func New(c context.Context, consumers *[]events.Consumer) (*EventMachine, error)
 		ctx:           ctx,
 		cancel:        cancel,
 		subscriptions: subs,
+		eventChannel:  make(chan events.Event, 1000),
 	}
 
-	m.EventChannel = make(chan events.Event)
 	m.initEventConsumer(ctx)
 
 	return m, nil
@@ -51,13 +56,14 @@ func New(c context.Context, consumers *[]events.Consumer) (*EventMachine, error)
 // Stop closes the evnet channel.
 func (m *EventMachine) Stop() error {
 	log.WithFields(log.Fields{
-		"event_channel": m.EventChannel,
+		"event_channel": m.eventChannel,
 	}).Debug("eventMachine stopping")
 	m.cancel()
 	return nil
 }
 
-// Send is used to marshal an object into an events.Event and write it to the event channel.
+// Send is used to marshal an object into an events.Event and write it to the
+// event channel.
 func (m *EventMachine) Send(t interface{}) error {
 	payload, err := json.Marshal(t)
 	if err != nil {
@@ -69,9 +75,40 @@ func (m *EventMachine) Send(t interface{}) error {
 		Payload: payload,
 	}
 
-	m.EventChannel <- e
-
+	m.eventChannel <- e
 	return nil
+}
+
+// forwardChan creates a new channel to register with the eventServer before returning the channel.
+func (m *EventMachine) Receive() chan *events.Event {
+	ch := make(chan *events.Event, 100)
+
+	m.Lock()
+	m.forwardChans = append(m.forwardChans, ch)
+	m.Unlock()
+
+	log.WithFields(log.Fields{
+		"ch": ch,
+	}).Trace("commence forwarding")
+
+	return ch
+}
+
+func (m *EventMachine) ReceiveStop(ch chan *events.Event) {
+	m.Lock()
+
+	for i, q := range m.forwardChans {
+		if q == ch {
+			close(ch)
+			log.WithFields(log.Fields{
+				"ch": ch,
+			}).Trace("cease forwarding")
+
+			m.forwardChans = append(m.forwardChans[:i], m.forwardChans[i+1:]...)
+		}
+	}
+
+	m.Unlock()
 }
 
 // ReadStream will forever execute the readStreamOnce to consume events from the rpc client.
@@ -97,6 +134,10 @@ func (m *EventMachine) readStreamOnce(c context.Context, client rpc.EventsClient
 
 	ctx, cancel := context.WithCancel(c)
 	defer cancel()
+
+	log.WithFields(log.Fields{
+		"events": eventSub.EventNames,
+	}).Debug("subscribing to events")
 
 	stream, err := client.SubscribeEvents(ctx, eventSub)
 	if err != nil {
@@ -130,12 +171,12 @@ func (m *EventMachine) readStreamOnce(c context.Context, client rpc.EventsClient
 			"name":    ev.Name,
 			"payload": string(ev.Payload),
 		}).Trace("received RPC event")
-		m.EventChannel <- evE
+		m.eventChannel <- evE
 	}
 }
 
 // initEventConsumer starts a routine that never ends to read from
-// z.EventChannel and execute the loaded handlers with the event Payload.
+// z.eventChannel and execute the loaded handlers with the event Payload.
 func (m *EventMachine) initEventConsumer(ctx context.Context) {
 	go func(ch chan events.Event, ctx context.Context) {
 		// log.Debugf("total %d m.EventHandlers", len(m.EventHandlers))
@@ -145,7 +186,6 @@ func (m *EventMachine) initEventConsumer(ctx context.Context) {
 			case <-ctx.Done():
 				return
 			case ev := <-ch:
-
 				for _, sub := range m.subscriptions {
 					fail := 0
 					if filters, ok := sub.Filters[ev.Name]; ok {
@@ -174,7 +214,7 @@ func (m *EventMachine) initEventConsumer(ctx context.Context) {
 				}
 			}
 		}
-	}(m.EventChannel, ctx)
+	}(m.eventChannel, ctx)
 }
 
 func matchName(ev events.Event, name string) bool {
