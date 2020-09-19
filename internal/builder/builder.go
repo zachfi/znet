@@ -42,7 +42,7 @@ func (b *Builder) EventNames() []string {
 }
 
 // Subscriptions implements the events.Consumer interface
-func (b *Builder) Subscriptions() map[string][]events.Handler {
+func (b *Builder) Subscriptions() *events.Subscriptions {
 	s := events.NewSubscriptions()
 
 	for _, e := range b.EventNames() {
@@ -51,18 +51,17 @@ func (b *Builder) Subscriptions() map[string][]events.Handler {
 			s.Subscribe(e, b.checkoutCommitHandler)
 		case "NewTag":
 			s.Subscribe(e, b.checkoutTagHandler)
-		case "BuildTag":
-			s.Subscribe(e, b.checkoutTagHandler)
-		// case "BuildBranch":
-		// 	s.Subscribe(e, b.checkoutBranchHandler)
 		default:
 			log.Errorf("unhandled execution event %s", e)
 		}
 	}
 
-	log.Debugf("event subscriptions %+v", s.Table)
+	log.WithFields(log.Fields{
+		"handlers": s.Handlers,
+		"filters":  s.Filters,
+	}).Debug("event subscriptions")
 
-	return s.Table
+	return s
 }
 
 func (b *Builder) checkoutCommitHandler(name string, payload events.Payload) error {
