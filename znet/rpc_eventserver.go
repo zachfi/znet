@@ -10,6 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/xaque208/znet/internal/timer"
+	"github.com/xaque208/znet/pkg/eventmachine"
 	"github.com/xaque208/znet/pkg/events"
 	"github.com/xaque208/znet/rpc"
 )
@@ -27,12 +28,12 @@ var (
 )
 
 type eventServer struct {
+	sync.Mutex
 	ctx context.Context
 	// the channel on which the eventMachine is listening
-	eventMachineChannel chan events.Event
-	eventNames          []string
-	mux                 sync.Mutex
-	remoteChans         []chan *rpc.Event
+	eventMachine *eventmachine.EventMachine
+	eventNames   []string
+	remoteChans  []chan *rpc.Event
 }
 
 func (e *eventServer) Report() {
@@ -57,11 +58,13 @@ func (e *eventServer) RegisterEvents(nameSet []string) {
 		"names": nameSet,
 	}).Debug("registering event")
 
+	e.Lock()
 	if len(e.eventNames) == 0 {
 		e.eventNames = make([]string, 0)
 	}
 
 	e.eventNames = append(e.eventNames, nameSet...)
+	e.Unlock()
 }
 
 // NoticeEvent is the call when an event should be fired.
@@ -80,7 +83,7 @@ func (e *eventServer) NoticeEvent(ctx context.Context, request *rpc.Event) (*rpc
 			Payload: request.Payload,
 		}
 
-		e.eventMachineChannel <- ev
+		e.eventMachine.Send(ev)
 	} else {
 		response.Errors = true
 		response.Message = fmt.Sprintf("unknown RPC event name: %s", request.Name)
@@ -99,8 +102,20 @@ func (e *eventServer) SubscribeEvents(subs *rpc.EventSub, stream rpc.Events_Subs
 
 	ch := e.subscriberChan()
 	defer e.subscriberChanRemove(ch)
+	eventmachineCh := e.eventMachine.Receive()
+	defer e.eventMachine.ReceiveStop(eventmachineCh)
 
 	streamContext := stream.Context()
+
+	log.WithFields(log.Fields{
+		"events": subs.EventNames,
+	}).Debug("new subscriber")
+
+	defer func() {
+		log.WithFields(log.Fields{
+			"events": subs.EventNames,
+		}).Debug("subscriber lost")
+	}()
 
 	for {
 		select {
@@ -108,14 +123,35 @@ func (e *eventServer) SubscribeEvents(subs *rpc.EventSub, stream rpc.Events_Subs
 			return fmt.Errorf("eventServer done")
 		case <-streamContext.Done():
 			return fmt.Errorf("stream done")
-		case ev := <-ch:
-			eventTotal.WithLabelValues(ev.Name).Inc()
+		case machineEvent := <-eventmachineCh:
+			rpcEvent := &rpc.Event{
+				Name:    machineEvent.Name,
+				Payload: machineEvent.Payload,
+			}
 
 			for _, eventName := range subs.EventNames {
-				if matchName(ev, eventName) {
-					log.Debugf("sending remote event: %s", ev.Name)
-					if err := stream.Send(ev); err != nil {
-						eventRemoteSendErrorTotal.WithLabelValues(ev.Name).Inc()
+				if matchName(rpcEvent, eventName) {
+					log.WithFields(log.Fields{
+						"name": machineEvent.Name,
+					}).Trace("forwarding event")
+
+					if err := stream.Send(rpcEvent); err != nil {
+						eventRemoteSendErrorTotal.WithLabelValues(machineEvent.Name).Inc()
+						log.Error(err)
+					}
+				}
+			}
+		case rpcEvent := <-ch:
+			eventTotal.WithLabelValues(rpcEvent.Name).Inc()
+
+			for _, eventName := range subs.EventNames {
+				if matchName(rpcEvent, eventName) {
+					log.WithFields(log.Fields{
+						"name": rpcEvent.Name,
+					}).Trace("forwarding event")
+
+					if err := stream.Send(rpcEvent); err != nil {
+						eventRemoteSendErrorTotal.WithLabelValues(rpcEvent.Name).Inc()
 						log.Error(err)
 					}
 				}
@@ -151,28 +187,22 @@ func matchName(ev *rpc.Event, name string) bool {
 func (e *eventServer) subscriberChan() chan *rpc.Event {
 	ch := make(chan *rpc.Event)
 
-	e.mux.Lock()
+	e.Lock()
 	e.remoteChans = append(e.remoteChans, ch)
-	e.mux.Unlock()
-
-	log.Tracef("subscriberChan() e.remoteChans: %+v", e.remoteChans)
+	e.Unlock()
 
 	return ch
 }
 
 func (e *eventServer) subscriberChanRemove(ch chan *rpc.Event) {
-	e.mux.Lock()
-
-	log.Tracef("subscriberChanRemove() %+v from %v", ch, e.remoteChans)
+	e.Lock()
 
 	for i, q := range e.remoteChans {
 		if q == ch {
 			close(ch)
-			log.Tracef("subscriberChanRemove channel %+v", ch)
-
 			e.remoteChans = append(e.remoteChans[:i], e.remoteChans[i+1:]...)
 		}
 	}
 
-	e.mux.Unlock()
+	e.Unlock()
 }
