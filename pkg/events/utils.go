@@ -14,7 +14,7 @@ import (
 	"github.com/xaque208/znet/rpc"
 )
 
-func MakeEvent(t interface{}) *rpc.Event {
+func MakeRPCEvent(t interface{}) *rpc.Event {
 	payload, err := json.Marshal(t)
 	if err != nil {
 		log.Error(err)
@@ -36,7 +36,7 @@ func ProduceEvent(conn *grpc.ClientConn, ev interface{}) error {
 	ec := rpc.NewEventsClient(conn)
 	// t := reflect.TypeOf(ev).String()
 
-	req := MakeEvent(ev)
+	req := MakeRPCEvent(ev)
 
 	if req == nil {
 		return fmt.Errorf("failed to make event")
