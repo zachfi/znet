@@ -2,8 +2,6 @@ package events
 
 import (
 	"sync"
-
-	log "github.com/sirupsen/logrus"
 )
 
 // Subscriptions is a map of events to topic name for a given object.
@@ -25,10 +23,6 @@ func NewSubscriptions() *Subscriptions {
 // Subscribe updates the table for a given event name with a given handler.
 func (s *Subscriptions) Subscribe(eventName string, handler Handler) {
 	s.Lock()
-	log.WithFields(log.Fields{
-		"name": eventName,
-	}).Debug("subscribing to event")
-
 	s.Handlers[eventName] = append(s.Handlers[eventName], handler)
 	s.Unlock()
 }
@@ -36,10 +30,6 @@ func (s *Subscriptions) Subscribe(eventName string, handler Handler) {
 // Filter updates the Filters table for a given event filter.
 func (s *Subscriptions) Filter(eventName string, filter Filter) {
 	s.Lock()
-	log.WithFields(log.Fields{
-		"name": eventName,
-	}).Debug("filtering events")
-
 	s.Filters[eventName] = append(s.Filters[eventName], filter)
 	s.Unlock()
 }

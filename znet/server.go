@@ -183,8 +183,8 @@ func (s *Server) Start(z *Znet) error {
 
 		// rpcEventServer
 		rpcEventServer := &eventServer{
-			eventMachineChannel: s.eventMachine.EventChannel,
-			ctx:                 s.ctx,
+			eventMachine: s.eventMachine,
+			ctx:          s.ctx,
 		}
 
 		rpc.RegisterEventsServer(s.grpcServer, rpcEventServer)
