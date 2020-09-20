@@ -665,8 +665,6 @@ github.com/tdakkota/asciicheck
 github.com/tetafro/godot
 # github.com/timakin/bodyclose v0.0.0-20190930140734-f7f2e9bca95e
 github.com/timakin/bodyclose/passes/bodyclose
-# github.com/tj/assert v0.0.3
-github.com/tj/assert
 # github.com/tommy-muehle/go-mnd v1.3.1-0.20200224220436-e6f9a994e8fa
 github.com/tommy-muehle/go-mnd
 github.com/tommy-muehle/go-mnd/checks
