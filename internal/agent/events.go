@@ -17,3 +17,16 @@ type ExecutionResult struct {
 	ExitCode int
 	Duration time.Duration
 }
+
+type Request int
+
+const (
+	ReportFacts Request = iota
+	FreebsdUpdate
+	Reboot
+	ListJails
+)
+
+type ExecRequest struct {
+	Command Request
+}
