@@ -99,6 +99,7 @@ func runAgent(cmd *cobra.Command, args []string) {
 	inventoryClient := rpc.NewInventoryClient(conn)
 
 	if z.Config.Lights != nil && inventoryClient != nil && mqttClient != nil {
+
 		lightsConsumer := lights.NewLights(*z.Config.Lights, inventoryClient, mqttClient)
 		consumers = append(consumers, lightsConsumer)
 

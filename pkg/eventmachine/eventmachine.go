@@ -21,7 +21,7 @@ type EventMachine struct {
 	sync.Mutex
 
 	// eventChannel is the channel to which the RPC eventServer writes events.
-	eventChannel chan events.Event
+	eventChannel chan *events.Event
 
 	forwardChans []chan *events.Event
 
@@ -45,7 +45,7 @@ func New(c context.Context, consumers *[]events.Consumer) (*EventMachine, error)
 		ctx:           ctx,
 		cancel:        cancel,
 		subscriptions: subs,
-		eventChannel:  make(chan events.Event, 1000),
+		eventChannel:  make(chan *events.Event, 1000),
 	}
 
 	m.initEventConsumer(ctx)
@@ -70,7 +70,7 @@ func (m *EventMachine) Send(t interface{}) error {
 		return err
 	}
 
-	e := events.Event{
+	e := &events.Event{
 		Name:    reflect.TypeOf(t).Name(),
 		Payload: payload,
 	}
@@ -83,13 +83,13 @@ func (m *EventMachine) Send(t interface{}) error {
 func (m *EventMachine) Receive() chan *events.Event {
 	ch := make(chan *events.Event, 100)
 
+	log.WithFields(log.Fields{
+		"ch": ch,
+	}).Trace("adding forward channel")
+
 	m.Lock()
 	m.forwardChans = append(m.forwardChans, ch)
 	m.Unlock()
-
-	log.WithFields(log.Fields{
-		"ch": ch,
-	}).Trace("commence forwarding")
 
 	return ch
 }
@@ -162,7 +162,7 @@ func (m *EventMachine) readStreamOnce(c context.Context, client rpc.EventsClient
 			}
 		}
 
-		evE := events.Event{
+		evE := &events.Event{
 			Name:    ev.Name,
 			Payload: ev.Payload,
 		}
@@ -178,7 +178,7 @@ func (m *EventMachine) readStreamOnce(c context.Context, client rpc.EventsClient
 // initEventConsumer starts a routine that never ends to read from
 // z.eventChannel and execute the loaded handlers with the event Payload.
 func (m *EventMachine) initEventConsumer(ctx context.Context) {
-	go func(ch chan events.Event, ctx context.Context) {
+	go func(ctx context.Context, ch chan *events.Event) {
 		// log.Debugf("total %d m.EventHandlers", len(m.EventHandlers))
 
 		for {
@@ -186,11 +186,15 @@ func (m *EventMachine) initEventConsumer(ctx context.Context) {
 			case <-ctx.Done():
 				return
 			case ev := <-ch:
+				for _, f := range m.forwardChans {
+					f <- ev
+				}
+
 				for _, sub := range m.subscriptions {
 					fail := 0
 					if filters, ok := sub.Filters[ev.Name]; ok {
 						for _, f := range filters {
-							if ok := f.Filter(ev); !ok {
+							if ok := f.Filter(*ev); !ok {
 								fail++
 							}
 						}
@@ -214,7 +218,7 @@ func (m *EventMachine) initEventConsumer(ctx context.Context) {
 				}
 			}
 		}
-	}(m.eventChannel, ctx)
+	}(ctx, m.eventChannel)
 }
 
 func matchName(ev events.Event, name string) bool {

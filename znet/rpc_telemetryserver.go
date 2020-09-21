@@ -54,14 +54,14 @@ type thingKeeper map[string]map[string]string
 
 // newThingServer returns a new telemetryServer.
 func newTelemetryServer(inv *inventory.Inventory, eventMachine *eventmachine.EventMachine) *telemetryServer {
-	s := telemetryServer{
+	s := &telemetryServer{
 		eventMachine: eventMachine,
 		inventory:    inv,
 		keeper:       make(thingKeeper),
 		seenThings:   make(map[string]time.Time),
 	}
 
-	go func(s telemetryServer) {
+	go func(s *telemetryServer) {
 		for {
 			// Make a copy
 			tMap := make(map[string]time.Time)
@@ -90,7 +90,7 @@ func newTelemetryServer(inv *inventory.Inventory, eventMachine *eventmachine.Eve
 		}
 	}(s)
 
-	return &s
+	return s
 }
 
 // storeThingLabel records the received key/value pair for the given node ID.
@@ -416,13 +416,13 @@ func (l *telemetryServer) handleZigbeeReport(request *pb.IOTDevice) error {
 			}
 
 			if m.Click != "" {
-				t := iot.Click{
+				ev := iot.Click{
 					Count:  m.Click,
 					Device: x.Name,
 					Zone:   result.IotZone,
 				}
 
-				err = l.eventMachine.Send(t)
+				err = l.eventMachine.Send(ev)
 				if err != nil {
 					log.Error(err)
 				}
