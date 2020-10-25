@@ -84,7 +84,6 @@ func (s *Scheduler) TimesForName(n string) []time.Time {
 
 // NamesForTime returns all event names that are scheduled for a given timeSlice.
 func (s *Scheduler) NamesForTime(t time.Time) []string {
-	log.Tracef("*s.timeSlice %+v", *s.timeSlice)
 	return (*s.timeSlice)[t]
 }
 
@@ -104,8 +103,10 @@ func (s *Scheduler) WaitForNext() []string {
 	}
 
 	log.WithFields(log.Fields{
-		"next": time.Until(*next),
+		"next":  time.Until(*next),
+		"names": s.NamesForTime(*next),
 	}).Info("scheduler waiting")
+
 	ti := time.NewTimer(time.Until(*next))
 	<-ti.C
 
@@ -140,7 +141,10 @@ func (s *Scheduler) Set(t time.Time, name string) error {
 		(*s.timeSlice)[t] = make([]string, 0)
 	}
 
-	log.Debugf("scheduling future event %s for %s", name, t)
+	log.WithFields(log.Fields{
+		"name": name,
+		"time": t,
+	}).Debug("scheduler scheduling event")
 
 	timeHasName := func(names []string) bool {
 		for _, n := range names {

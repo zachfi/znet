@@ -14,6 +14,8 @@ import (
 	"github.com/xaque208/znet/rpc"
 )
 
+// MakeRPCEvent uses the received interface to create an RPC event for return,
+// using the interface's type name as the event name.
 func MakeRPCEvent(t interface{}) *rpc.Event {
 	payload, err := json.Marshal(t)
 	if err != nil {
@@ -28,13 +30,14 @@ func MakeRPCEvent(t interface{}) *rpc.Event {
 	return req
 }
 
+// ProduceEvent receives a gRPC connection and an interface to send to the
+// EventServer.
 func ProduceEvent(conn *grpc.ClientConn, ev interface{}) error {
 	if conn == nil {
 		return fmt.Errorf("unable to make use of nil grpc client")
 	}
 
 	ec := rpc.NewEventsClient(conn)
-	// t := reflect.TypeOf(ev).String()
 
 	req := MakeRPCEvent(ev)
 

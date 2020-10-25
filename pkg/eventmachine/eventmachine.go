@@ -1,3 +1,8 @@
+// eventmachine is used to receive events on a channel, and forward them to
+// other channels.  A subscriber may also choose which events it wishes to be
+// notified about, and the filter is used to determine if an event should be
+// forwarded.  Subscriptions are only useful in an RPC context, while the event
+// and forward channels are useful in a local context as well.
 package eventmachine
 
 import (
@@ -11,7 +16,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/xaque208/znet/internal/timer"
 	"github.com/xaque208/znet/pkg/events"
 	"github.com/xaque208/znet/rpc"
 )
@@ -23,11 +27,13 @@ type EventMachine struct {
 	// eventChannel is the channel to which the RPC eventServer writes events.
 	eventChannel chan *events.Event
 
+	// forwardChans is the collection of channels to forward events to when they are received by the machine.
 	forwardChans []chan *events.Event
 
 	subscriptions []*events.Subscriptions
 	ctx           context.Context
-	cancel        func()
+	// cancel is the
+	cancel func()
 }
 
 // New creates a new EventMachine using the received consumers, complete with channels and exit.
@@ -111,7 +117,8 @@ func (m *EventMachine) ReceiveStop(ch chan *events.Event) {
 	m.Unlock()
 }
 
-// ReadStream will forever execute the readStreamOnce to consume events from the rpc client.
+// ReadStream will use the received RPC events client to forever execute the
+// readStreamOnce to consume events from from the RPC server.
 func (m *EventMachine) ReadStream(client rpc.EventsClient, eventSub *rpc.EventSub) {
 	for {
 		select {
@@ -128,7 +135,7 @@ func (m *EventMachine) ReadStream(client rpc.EventsClient, eventSub *rpc.EventSu
 	}
 }
 
-// readStreamOnce will read from the RPC stream or return an error.
+// readStreamOnce will read from the RPC events stream or return an error.
 func (m *EventMachine) readStreamOnce(c context.Context, client rpc.EventsClient, eventSub *rpc.EventSub) error {
 	var err error
 
@@ -186,10 +193,13 @@ func (m *EventMachine) initEventConsumer(ctx context.Context) {
 			case <-ctx.Done():
 				return
 			case ev := <-ch:
+				// Send any recevied events to the forwardChans as well.
 				for _, f := range m.forwardChans {
 					f <- ev
 				}
 
+				// For every subscriber, determine if the event passes the filters for
+				// the specific event name.
 				for _, sub := range m.subscriptions {
 					fail := 0
 					if filters, ok := sub.Filters[ev.Name]; ok {
@@ -219,27 +229,4 @@ func (m *EventMachine) initEventConsumer(ctx context.Context) {
 			}
 		}
 	}(ctx, m.eventChannel)
-}
-
-func matchName(ev events.Event, name string) bool {
-	// Check for direct match first.
-	if name == ev.Name {
-		return true
-	}
-
-	// Also check the name of the timer, rather than the event name.
-	if ev.Name == "NamedTimer" {
-		var x timer.NamedTimer
-
-		err := json.Unmarshal(ev.Payload, &x)
-		if err != nil {
-			log.Errorf("failed to unmarshal %T: %s", x, err)
-		}
-
-		if name == x.Name {
-			return true
-		}
-	}
-
-	return false
 }
