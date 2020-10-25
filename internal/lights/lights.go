@@ -60,7 +60,7 @@ func (l *Lights) Subscriptions() *events.Subscriptions {
 		case "NamedTimer":
 			s.Subscribe(e, l.namedTimerHandler)
 
-			// f := &timer.TimerFilter{}
+			// f := &timer.EventFilter{}
 			// f.Name = append(f.Name, iot.EventNames...)
 			// s.Filter(e, f)
 		case "Click":
@@ -88,7 +88,7 @@ func (l *Lights) solarEventHandler(name string, payload events.Payload) error {
 			}
 		}
 		return false
-	}(name, names)
+	}(e.Name, names)
 
 	if !configuredEvent {
 		log.WithFields(log.Fields{
@@ -143,7 +143,10 @@ func (l *Lights) clickHandler(name string, payload events.Payload) error {
 			}
 
 			if toggle {
-				l.Toggle(room.Name)
+				err := l.Toggle(room.Name)
+				if err != nil {
+					log.Error(err)
+				}
 			}
 
 			if off {
@@ -201,7 +204,7 @@ func (l *Lights) namedTimerHandler(name string, payload events.Payload) error {
 			}
 		}
 		return false
-	}(name, names)
+	}(e.Name, names)
 
 	if !configuredEvent {
 		log.WithFields(log.Fields{
