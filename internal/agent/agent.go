@@ -71,7 +71,7 @@ func (a *Agent) Subscriptions() *events.Subscriptions {
 			case "NamedTimer":
 				s.Subscribe(x, a.namedTimerHandler)
 
-				f := &timer.TimerFilter{}
+				f := &timer.EventFilter{}
 				// f.Name = append(f.Name, "ReportFacts")
 				s.Filter(x, f)
 			default:

@@ -30,11 +30,11 @@ type NamedTimer struct {
 	Time *time.Time `json:"time,omitempty"`
 }
 
-type TimerFilter struct {
+type EventFilter struct {
 	Name []string
 }
 
-func (t *TimerFilter) Filter(ev events.Event) bool {
+func (t *EventFilter) Filter(ev events.Event) bool {
 	var namedTimer NamedTimer
 	err := json.Unmarshal(ev.Payload, &namedTimer)
 	if err != nil {
