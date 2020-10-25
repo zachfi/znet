@@ -11,15 +11,16 @@ import (
 
 	"github.com/xaque208/znet/internal/astro"
 	"github.com/xaque208/znet/internal/timer"
+	"github.com/xaque208/znet/pkg/events"
 	"github.com/xaque208/znet/znet"
 )
 
 var timerCmd = &cobra.Command{
 	Use:   "timer",
 	Short: "Run a timer",
-	Long: `Run a timer daemon to send events to the znet RPC server when the timers expire.
+	Long: `Run a timer daemon to send events to the gRPC server when the timers expire.
 
-Several flavors of timers exist.
+Several flavors of a timer are implemented.
 
 * astro timers send an AstroEvent based on data read from openweathermap_exporter
 * repeating timers send a NamedTimer event every interval
@@ -59,44 +60,35 @@ func runTimer(cmd *cobra.Command, args []string) {
 	z.Config.RPC.ServerAddress = viper.GetString("rpc.server_address")
 	z.Config.Timer.FutureLimit = viper.GetInt("timer.future_limit")
 
-	xConn := znet.NewConn(z.Config.RPC.ServerAddress, z.Config)
-
+	conn := znet.NewConn(z.Config.RPC.ServerAddress, z.Config)
 	defer func() {
-		err = xConn.Close()
-		if err != nil {
-			log.Error(err)
-		}
-	}()
-
-	yConn := znet.NewConn(z.Config.RPC.ServerAddress, z.Config)
-	if err != nil {
-		log.Error(err)
-	}
-
-	defer func() {
-		err = yConn.Close()
+		err = conn.Close()
 		if err != nil {
 			log.Error(err)
 		}
 	}()
 
 	if z.Config.Astro == nil {
-		log.Fatal("unable to create agent with nil Astro configuration")
+		log.Fatal("unable to create EventProducer with nil Astro configuration")
 	}
 
-	y := astro.NewProducer(yConn, *z.Config.Astro)
-	err = y.Start()
-	if err != nil {
-		log.Error(err)
-	}
+	producers := make([]events.Producer, 0)
+
+	y := astro.NewProducer(conn, *z.Config.Astro)
+	producers = append(producers, y)
 
 	if z.Config.Timer == nil {
-		log.Fatal("unable to create agent with nil Timer configuration")
+		log.Fatal("unable to create EventProducer with nil Timer configuration")
 	}
-	x := timer.NewProducer(xConn, *z.Config.Timer)
-	err = x.Start()
-	if err != nil {
-		log.Error(err)
+
+	x := timer.NewProducer(conn, *z.Config.Timer)
+	producers = append(producers, x)
+
+	for _, p := range producers {
+		err = p.Start()
+		if err != nil {
+			log.Error(err)
+		}
 	}
 
 	sigs := make(chan os.Signal, 1)
@@ -112,13 +104,10 @@ func runTimer(cmd *cobra.Command, args []string) {
 
 	<-done
 
-	err = y.Stop()
-	if err != nil {
-		log.Error(err)
-	}
-
-	err = x.Stop()
-	if err != nil {
-		log.Error(err)
+	for _, p := range producers {
+		err = p.Stop()
+		if err != nil {
+			log.Error(err)
+		}
 	}
 }
