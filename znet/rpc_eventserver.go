@@ -83,7 +83,10 @@ func (e *eventServer) NoticeEvent(ctx context.Context, request *rpc.Event) (*rpc
 			Payload: request.Payload,
 		}
 
-		e.eventMachine.Send(ev)
+		err := e.eventMachine.Send(ev)
+		if err != nil {
+			log.Error(err)
+		}
 	} else {
 		response.Errors = true
 		response.Message = fmt.Sprintf("unknown RPC event name: %s", request.Name)
