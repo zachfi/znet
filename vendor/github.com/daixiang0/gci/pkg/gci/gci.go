@@ -61,7 +61,8 @@ func newPkg(data [][]byte, localFlag string) *pkg {
 		}
 	}
 
-	for i := len(formatData) - 1; i >= 0; i-- {
+	n := len(formatData)
+	for i := n - 1; i >= 0; i-- {
 		line := formatData[i]
 
 		// check commentFlag:
@@ -69,6 +70,10 @@ func newPkg(data [][]byte, localFlag string) *pkg {
 		// 2. commentFlag after import path
 		commentIndex := strings.Index(line, commentFlag)
 		if commentIndex == 0 {
+			// comment in the last line is useless, ignore it
+			if i+1 >= n {
+				continue
+			}
 			pkg, _, _ := getPkgInfo(formatData[i+1], strings.Index(formatData[i+1], commentFlag) >= 0)
 			p.comment[pkg] = line
 			continue
@@ -138,9 +143,9 @@ func getPkgInfo(line string, comment bool) (string, string, string) {
 		s := strings.Split(line, commentFlag)
 		pkgArray := strings.Split(s[0], blank)
 		if len(pkgArray) > 1 {
-			return pkgArray[1], pkgArray[0], fmt.Sprintf("%s%s%s", commentFlag, blank, s[1])
+			return pkgArray[1], pkgArray[0], fmt.Sprintf("%s%s%s", commentFlag, blank, strings.TrimSpace(s[1]))
 		} else {
-			return pkgArray[0], "", fmt.Sprintf("%s%s%s", commentFlag, blank, s[1])
+			return strings.TrimSpace(pkgArray[0]), "", fmt.Sprintf("%s%s%s", commentFlag, blank, strings.TrimSpace(s[1]))
 		}
 	} else {
 		pkgArray := strings.Split(line, blank)
@@ -303,7 +308,7 @@ func processFile(filename string, out io.Writer, set *FlagSet) error {
 				return err
 			}
 		}
-		if *set.DoWrite {
+		if *set.DoDiff {
 			data, err := diff(ori, res, filename)
 			if err != nil {
 				return fmt.Errorf("failed to diff: %v", err)
@@ -323,18 +328,19 @@ func processFile(filename string, out io.Writer, set *FlagSet) error {
 	return err
 }
 
-func Run(filename string, set *FlagSet) ([]byte, error) {
+// Run return source and result in []byte if succeed
+func Run(filename string, set *FlagSet) ([]byte, []byte, error) {
 	var err error
 
 	f, err := os.Open(filename)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	defer f.Close()
 
 	src, err := ioutil.ReadAll(f)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	ori := make([]byte, len(src))
@@ -342,7 +348,7 @@ func Run(filename string, set *FlagSet) ([]byte, error) {
 	start := bytes.Index(src, importStartFlag)
 	// in case no importStartFlag or importStartFlag exist in the commentFlag
 	if start < 0 {
-		return nil, nil
+		return nil, nil, nil
 	}
 	end := bytes.Index(src[start:], importEndFlag) + start
 
@@ -353,13 +359,8 @@ func Run(filename string, set *FlagSet) ([]byte, error) {
 	res := append(src[:start+len(importStartFlag)], append(p.fmt(), src[end+1:]...)...)
 
 	if bytes.Equal(ori, res) {
-		return nil, nil
+		return ori, nil, nil
 	}
 
-	data, err := diff(ori, res, filename)
-	if err != nil {
-		return nil, fmt.Errorf("failed to diff: %v", err)
-	}
-
-	return data, nil
+	return ori, res, nil
 }

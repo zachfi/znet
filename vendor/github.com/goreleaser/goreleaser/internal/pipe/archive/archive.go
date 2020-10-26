@@ -4,6 +4,7 @@
 package archive
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -13,7 +14,6 @@ import (
 	"github.com/apex/log"
 	"github.com/campoy/unique"
 	"github.com/mattn/go-zglob"
-	"github.com/pkg/errors"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/ids"
@@ -28,6 +28,11 @@ const (
 	defaultNameTemplate       = "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
 	defaultBinaryNameTemplate = "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
 )
+
+// ErrArchiveDifferentBinaryCount happens when an archive uses several builds which have different goos/goarch/etc sets,
+// causing the archives for some platforms to have more binaries than others.
+// GoReleaser breaks in these cases as it will only cause confusion to other users.
+var ErrArchiveDifferentBinaryCount = errors.New("archive has different count of built binaries for each platform, which may cause your users confusion. Please make sure all builds used have the same set of goos/goarch/etc or split it into multiple archives")
 
 // nolint: gochecknoglobals
 var lock sync.Mutex
@@ -84,15 +89,18 @@ func (Pipe) Default(ctx *context.Context) error {
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
 	var g = semerrgroup.New(ctx.Parallelism)
-	for _, archive := range ctx.Config.Archives {
+	for i, archive := range ctx.Config.Archives {
 		archive := archive
-		var filtered = ctx.Artifacts.Filter(
+		var artifacts = ctx.Artifacts.Filter(
 			artifact.And(
 				artifact.ByType(artifact.Binary),
 				artifact.ByIDs(archive.Builds...),
 			),
-		)
-		for group, artifacts := range filtered.GroupByPlatform() {
+		).GroupByPlatform()
+		if err := checkArtifacts(artifacts); err != nil && !archive.AllowDifferentBinaryCount {
+			return fmt.Errorf("invalid archive: %d: %w", i, ErrArchiveDifferentBinaryCount)
+		}
+		for group, artifacts := range artifacts {
 			log.Debugf("group %s has %d binaries", group, len(artifacts))
 			artifacts := artifacts
 			g.Go(func() error {
@@ -104,6 +112,17 @@ func (Pipe) Run(ctx *context.Context) error {
 		}
 	}
 	return g.Wait()
+}
+
+func checkArtifacts(artifacts map[string][]*artifact.Artifact) error {
+	var lens = map[int]bool{}
+	for _, v := range artifacts {
+		lens[len(v)] = true
+	}
+	if len(lens) <= 1 {
+		return nil
+	}
+	return ErrArchiveDifferentBinaryCount
 }
 
 func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Artifact) error {
@@ -219,11 +238,11 @@ func findFiles(template *tmpl.Template, archive config.Archive) (result []string
 	for _, glob := range archive.Files {
 		replaced, err := template.Apply(glob)
 		if err != nil {
-			return result, errors.Wrapf(err, "failed to apply template %s", glob)
+			return result, fmt.Errorf("failed to apply template %s: %w", glob, err)
 		}
 		files, err := zglob.Glob(replaced)
 		if err != nil {
-			return result, errors.Wrapf(err, "globbing failed for pattern %s", glob)
+			return result, fmt.Errorf("globbing failed for pattern %s: %w", glob, err)
 		}
 		result = append(result, files...)
 	}
@@ -264,7 +283,7 @@ type EnhancedArchive struct {
 
 // Add adds a file.
 func (d EnhancedArchive) Add(name, path string) error {
-	name = strings.Replace(filepath.Join(d.wrap, name), "\\", "/", -1)
+	name = strings.ReplaceAll(filepath.Join(d.wrap, name), "\\", "/")
 	log.Debugf("adding file: %s as %s", path, name)
 	if _, ok := d.files[name]; ok {
 		return fmt.Errorf("file %s already exists in the archive", name)

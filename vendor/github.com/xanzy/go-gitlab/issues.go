@@ -113,7 +113,7 @@ type Issue struct {
 	Links                *IssueLinks      `json:"_links"`
 	IssueLinkID          int              `json:"issue_link_id"`
 	MergeRequestCount    int              `json:"merge_requests_count"`
-	EpicIssueID          int              `json:"epic_issue_id"` 
+	EpicIssueID          int              `json:"epic_issue_id"`
 	Epic                 *Epic            `json:"epic"`
 	TaskCompletionStatus struct {
 		Count          int `json:"count"`
@@ -211,6 +211,7 @@ type ListIssuesOptions struct {
 	NotAuthorID        []int      `url:"not[author_id],omitempty" json:"not[author_id],omitempty"`
 	AssigneeID         *int       `url:"assignee_id,omitempty" json:"assignee_id,omitempty"`
 	NotAssigneeID      []int      `url:"not[assignee_id],omitempty" json:"not[assignee_id],omitempty"`
+	AssigneeUsername   *string    `url:"assignee_username,omitempty" json:"assignee_username,omitempty"`
 	MyReactionEmoji    *string    `url:"my_reaction_emoji,omitempty" json:"my_reaction_emoji,omitempty"`
 	NotMyReactionEmoji []string   `url:"not[my_reaction_emoji],omitempty" json:"not[my_reaction_emoji],omitempty"`
 	IIDs               []int      `url:"iids[],omitempty" json:"iids,omitempty"`
@@ -316,6 +317,7 @@ type ListProjectIssuesOptions struct {
 	NotAuthorID        []int      `url:"not[author_id],omitempty" json:"not[author_id],omitempty"`
 	AssigneeID         *int       `url:"assignee_id,omitempty" json:"assignee_id,omitempty"`
 	NotAssigneeID      []int      `url:"not[assignee_id],omitempty" json:"not[assignee_id],omitempty"`
+	AssigneeUsername   *string    `url:"assignee_username,omitempty" json:"assignee_username,omitempty"`
 	MyReactionEmoji    *string    `url:"my_reaction_emoji,omitempty" json:"my_reaction_emoji,omitempty"`
 	NotMyReactionEmoji []string   `url:"not[my_reaction_emoji],omitempty" json:"not[my_reaction_emoji],omitempty"`
 	OrderBy            *string    `url:"order_by,omitempty" json:"order_by,omitempty"`
@@ -388,7 +390,7 @@ type CreateIssueOptions struct {
 	Confidential                       *bool      `url:"confidential,omitempty" json:"confidential,omitempty"`
 	AssigneeIDs                        []int      `url:"assignee_ids,omitempty" json:"assignee_ids,omitempty"`
 	MilestoneID                        *int       `url:"milestone_id,omitempty" json:"milestone_id,omitempty"`
-	Labels                             *Labels    `url:"labels,comma,omitempty" json:"labels,omitempty"`
+	Labels                             Labels     `url:"labels,comma,omitempty" json:"labels,omitempty"`
 	CreatedAt                          *time.Time `url:"created_at,omitempty" json:"created_at,omitempty"`
 	DueDate                            *ISOTime   `url:"due_date,omitempty" json:"due_date,omitempty"`
 	MergeRequestToResolveDiscussionsOf *int       `url:"merge_request_to_resolve_discussions_of,omitempty" json:"merge_request_to_resolve_discussions_of,omitempty"`
@@ -429,9 +431,9 @@ type UpdateIssueOptions struct {
 	Confidential     *bool      `url:"confidential,omitempty" json:"confidential,omitempty"`
 	AssigneeIDs      []int      `url:"assignee_ids,omitempty" json:"assignee_ids,omitempty"`
 	MilestoneID      *int       `url:"milestone_id,omitempty" json:"milestone_id,omitempty"`
-	Labels           *Labels    `url:"labels,comma,omitempty" json:"labels,omitempty"`
-	AddLabels        *Labels    `url:"add_labels,comma,omitempty" json:"add_labels,omitempty"`
-	RemoveLabels     *Labels    `url:"remove_labels,comma,omitempty" json:"remove_labels,omitempty"`
+	Labels           Labels     `url:"labels,comma,omitempty" json:"labels,omitempty"`
+	AddLabels        Labels     `url:"add_labels,comma,omitempty" json:"add_labels,omitempty"`
+	RemoveLabels     Labels     `url:"remove_labels,comma,omitempty" json:"remove_labels,omitempty"`
 	StateEvent       *string    `url:"state_event,omitempty" json:"state_event,omitempty"`
 	UpdatedAt        *time.Time `url:"updated_at,omitempty" json:"updated_at,omitempty"`
 	DueDate          *ISOTime   `url:"due_date,omitempty" json:"due_date,omitempty"`

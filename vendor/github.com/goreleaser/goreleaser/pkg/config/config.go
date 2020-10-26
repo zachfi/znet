@@ -95,6 +95,7 @@ type Homebrew struct {
 	Caveats          string               `yaml:",omitempty"`
 	Plist            string               `yaml:",omitempty"`
 	Install          string               `yaml:",omitempty"`
+	PostInstall      string               `yaml:"post_install,omitempty"`
 	Dependencies     []HomebrewDependency `yaml:",omitempty"`
 	Test             string               `yaml:",omitempty"`
 	Conflicts        []string             `yaml:",omitempty"`
@@ -108,7 +109,7 @@ type Homebrew struct {
 	IDs              []string             `yaml:"ids,omitempty"`
 	Goarm            string               `yaml:"goarm,omitempty"`
 
-	// Deprecated in favour of Tap
+	// Deprecated: in favour of Tap
 	GitHub Repo `yaml:",omitempty"`
 	GitLab Repo `yaml:",omitempty"`
 }
@@ -201,6 +202,7 @@ type Build struct {
 	Gcflags      StringArray    `yaml:",omitempty"`
 	ModTimestamp string         `yaml:"mod_timestamp,omitempty"`
 	Skip         bool           `yaml:",omitempty"`
+	GoBinary     string         `yaml:",omitempty"`
 }
 
 type HookConfig struct {
@@ -259,14 +261,15 @@ type FormatOverride struct {
 
 // Archive config used for the archive.
 type Archive struct {
-	ID              string            `yaml:",omitempty"`
-	Builds          []string          `yaml:",omitempty"`
-	NameTemplate    string            `yaml:"name_template,omitempty"`
-	Replacements    map[string]string `yaml:",omitempty"`
-	Format          string            `yaml:",omitempty"`
-	FormatOverrides []FormatOverride  `yaml:"format_overrides,omitempty"`
-	WrapInDirectory string            `yaml:"wrap_in_directory,omitempty"`
-	Files           []string          `yaml:",omitempty"`
+	ID                        string            `yaml:",omitempty"`
+	Builds                    []string          `yaml:",omitempty"`
+	NameTemplate              string            `yaml:"name_template,omitempty"`
+	Replacements              map[string]string `yaml:",omitempty"`
+	Format                    string            `yaml:",omitempty"`
+	FormatOverrides           []FormatOverride  `yaml:"format_overrides,omitempty"`
+	WrapInDirectory           string            `yaml:"wrap_in_directory,omitempty"`
+	Files                     []string          `yaml:",omitempty"`
+	AllowDifferentBinaryCount bool              `yaml:"allow_different_binary_count"`
 }
 
 // Release config used for the GitHub/GitLab release.
@@ -345,15 +348,18 @@ type Sign struct {
 	Signature string   `yaml:"signature,omitempty"`
 	Artifacts string   `yaml:"artifacts,omitempty"`
 	IDs       []string `yaml:"ids,omitempty"`
+	Stdin     *string  `yaml:"stdin,omitempty"`
+	StdinFile string   `yaml:"stdin_file,omitempty"`
 }
 
 // SnapcraftAppMetadata for the binaries that will be in the snap package.
 type SnapcraftAppMetadata struct {
-	Plugs     []string
-	Daemon    string
-	Args      string
-	Completer string `yaml:",omitempty"`
-	Command   string `yaml:"command"`
+	Plugs            []string
+	Daemon           string
+	Args             string
+	Completer        string `yaml:",omitempty"`
+	Command          string `yaml:"command"`
+	RestartCondition string `yaml:"restart_condition,omitempty"`
 }
 
 // Snapcraft config.

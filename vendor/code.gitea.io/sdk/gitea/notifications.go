@@ -23,22 +23,38 @@ type NotificationThread struct {
 
 // NotificationSubject contains the notification subject (Issue/Pull/Commit)
 type NotificationSubject struct {
-	Title            string `json:"title"`
-	URL              string `json:"url"`
-	LatestCommentURL string `json:"latest_comment_url"`
-	Type             string `json:"type" binding:"In(Issue,Pull,Commit)"`
+	Title            string    `json:"title"`
+	URL              string    `json:"url"`
+	LatestCommentURL string    `json:"latest_comment_url"`
+	Type             string    `json:"type"`
+	State            StateType `json:"state"`
 }
+
+// NotifyStatus notification status type
+type NotifyStatus string
+
+const (
+	// NotifyStatusUnread was not read
+	NotifyStatusUnread NotifyStatus = "unread"
+	// NotifyStatusRead was already read by user
+	NotifyStatusRead NotifyStatus = "read"
+	// NotifyStatusPinned notification is pinned by user
+	NotifyStatusPinned NotifyStatus = "pinned"
+)
 
 // ListNotificationOptions represents the filter options
 type ListNotificationOptions struct {
 	ListOptions
 	Since  time.Time
 	Before time.Time
+	Status []NotifyStatus
 }
 
-// MarkNotificationOptions represents the filter options
+// MarkNotificationOptions represents the filter & modify options
 type MarkNotificationOptions struct {
 	LastReadAt time.Time
+	Status     []NotifyStatus
+	ToStatus   NotifyStatus
 }
 
 // QueryEncode encode options to url query
@@ -50,7 +66,18 @@ func (opt *ListNotificationOptions) QueryEncode() string {
 	if !opt.Before.IsZero() {
 		query.Add("before", opt.Before.Format(time.RFC3339))
 	}
+	for _, s := range opt.Status {
+		query.Add("status-types", string(s))
+	}
 	return query.Encode()
+}
+
+// Validate the CreateUserOption struct
+func (opt ListNotificationOptions) Validate(c *Client) error {
+	if len(opt.Status) != 0 {
+		return c.CheckServerVersionConstraint(">=1.12.3")
+	}
+	return nil
 }
 
 // QueryEncode encode options to url query
@@ -59,79 +86,114 @@ func (opt *MarkNotificationOptions) QueryEncode() string {
 	if !opt.LastReadAt.IsZero() {
 		query.Add("last_read_at", opt.LastReadAt.Format(time.RFC3339))
 	}
+	for _, s := range opt.Status {
+		query.Add("status-types", string(s))
+	}
+	if len(opt.ToStatus) != 0 {
+		query.Add("to-status", string(opt.ToStatus))
+	}
 	return query.Encode()
 }
 
+// Validate the CreateUserOption struct
+func (opt MarkNotificationOptions) Validate(c *Client) error {
+	if len(opt.Status) != 0 || len(opt.ToStatus) != 0 {
+		return c.CheckServerVersionConstraint(">=1.12.3")
+	}
+	return nil
+}
+
 // CheckNotifications list users's notification threads
-func (c *Client) CheckNotifications() (int64, error) {
+func (c *Client) CheckNotifications() (int64, *Response, error) {
 	if err := c.CheckServerVersionConstraint(">=1.12.0"); err != nil {
-		return 0, err
+		return 0, nil, err
 	}
 	new := struct {
 		New int64 `json:"new"`
 	}{}
 
-	return new.New, c.getParsedResponse("GET", "/notifications/new", jsonHeader, nil, &new)
+	resp, err := c.getParsedResponse("GET", "/notifications/new", jsonHeader, nil, &new)
+	return new.New, resp, err
 }
 
 // GetNotification get notification thread by ID
-func (c *Client) GetNotification(id int64) (*NotificationThread, error) {
+func (c *Client) GetNotification(id int64) (*NotificationThread, *Response, error) {
 	if err := c.CheckServerVersionConstraint(">=1.12.0"); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	thread := new(NotificationThread)
-	return thread, c.getParsedResponse("GET", fmt.Sprintf("/notifications/threads/%d", id), nil, nil, thread)
+	resp, err := c.getParsedResponse("GET", fmt.Sprintf("/notifications/threads/%d", id), nil, nil, thread)
+	return thread, resp, err
 }
 
 // ReadNotification mark notification thread as read by ID
-func (c *Client) ReadNotification(id int64) error {
+// It optionally takes a second argument if status has to be set other than 'read'
+func (c *Client) ReadNotification(id int64, status ...NotifyStatus) (*Response, error) {
 	if err := c.CheckServerVersionConstraint(">=1.12.0"); err != nil {
-		return err
+		return nil, err
 	}
-	_, err := c.getResponse("PATCH", fmt.Sprintf("/notifications/threads/%d", id), nil, nil)
-	return err
+	link := fmt.Sprintf("/notifications/threads/%d", id)
+	if len(status) != 0 {
+		link += fmt.Sprintf("?to-status=%s", status[0])
+	}
+	_, resp, err := c.getResponse("PATCH", link, nil, nil)
+	return resp, err
 }
 
 // ListNotifications list users's notification threads
-func (c *Client) ListNotifications(opt ListNotificationOptions) ([]*NotificationThread, error) {
+func (c *Client) ListNotifications(opt ListNotificationOptions) ([]*NotificationThread, *Response, error) {
 	if err := c.CheckServerVersionConstraint(">=1.12.0"); err != nil {
-		return nil, err
+		return nil, nil, err
+	}
+	if err := opt.Validate(c); err != nil {
+		return nil, nil, err
 	}
 	link, _ := url.Parse("/notifications")
 	link.RawQuery = opt.QueryEncode()
 	threads := make([]*NotificationThread, 0, 10)
-	return threads, c.getParsedResponse("GET", link.String(), nil, nil, &threads)
+	resp, err := c.getParsedResponse("GET", link.String(), nil, nil, &threads)
+	return threads, resp, err
 }
 
 // ReadNotifications mark notification threads as read
-func (c *Client) ReadNotifications(opt MarkNotificationOptions) error {
+func (c *Client) ReadNotifications(opt MarkNotificationOptions) (*Response, error) {
 	if err := c.CheckServerVersionConstraint(">=1.12.0"); err != nil {
-		return err
+		return nil, err
+	}
+	if err := opt.Validate(c); err != nil {
+		return nil, err
 	}
 	link, _ := url.Parse("/notifications")
 	link.RawQuery = opt.QueryEncode()
-	_, err := c.getResponse("PUT", link.String(), nil, nil)
-	return err
+	_, resp, err := c.getResponse("PUT", link.String(), nil, nil)
+	return resp, err
 }
 
 // ListRepoNotifications list users's notification threads on a specific repo
-func (c *Client) ListRepoNotifications(owner, reponame string, opt ListNotificationOptions) ([]*NotificationThread, error) {
+func (c *Client) ListRepoNotifications(owner, reponame string, opt ListNotificationOptions) ([]*NotificationThread, *Response, error) {
 	if err := c.CheckServerVersionConstraint(">=1.12.0"); err != nil {
-		return nil, err
+		return nil, nil, err
+	}
+	if err := opt.Validate(c); err != nil {
+		return nil, nil, err
 	}
 	link, _ := url.Parse(fmt.Sprintf("/repos/%s/%s/notifications", owner, reponame))
 	link.RawQuery = opt.QueryEncode()
 	threads := make([]*NotificationThread, 0, 10)
-	return threads, c.getParsedResponse("GET", link.String(), nil, nil, &threads)
+	resp, err := c.getParsedResponse("GET", link.String(), nil, nil, &threads)
+	return threads, resp, err
 }
 
 // ReadRepoNotifications mark notification threads as read on a specific repo
-func (c *Client) ReadRepoNotifications(owner, reponame string, opt MarkNotificationOptions) error {
+func (c *Client) ReadRepoNotifications(owner, reponame string, opt MarkNotificationOptions) (*Response, error) {
 	if err := c.CheckServerVersionConstraint(">=1.12.0"); err != nil {
-		return err
+		return nil, err
+	}
+	if err := opt.Validate(c); err != nil {
+		return nil, err
 	}
 	link, _ := url.Parse(fmt.Sprintf("/repos/%s/%s/notifications", owner, reponame))
 	link.RawQuery = opt.QueryEncode()
-	_, err := c.getResponse("PUT", link.String(), nil, nil)
-	return err
+	_, resp, err := c.getResponse("PUT", link.String(), nil, nil)
+	return resp, err
 }
