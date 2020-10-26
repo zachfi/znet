@@ -1,3 +1,13 @@
+<a name="v0.27.1"></a>
+## [v0.27.1] - 2020-10-25
+### Bug Fixes
+- **lights:** use the NamedTimer name, not the event name
+- **timer:** use a single grpc connection
+
+### Documentation Updates
+- update docs and logs
+- update changelog
+
 <a name="v0.27.0"></a>
 ## [v0.27.0] - 2020-09-20
 ### Documentation Updates
@@ -596,7 +606,8 @@
 ## [v0.0.2] - 2018-09-03
 <a name="v0.0.1"></a>
 ## v0.0.1 - 2018-09-03
-[Unreleased]: https://github.com/xaque208/znet/compare/v0.27.0...HEAD
+[Unreleased]: https://github.com/xaque208/znet/compare/v0.27.1...HEAD
+[v0.27.1]: https://github.com/xaque208/znet/compare/v0.27.0...v0.27.1
 [v0.27.0]: https://github.com/xaque208/znet/compare/v0.26.2...v0.27.0
 [v0.26.2]: https://github.com/xaque208/znet/compare/v0.26.1...v0.26.2
 [v0.26.1]: https://github.com/xaque208/znet/compare/v0.26.0...v0.26.1
