@@ -48,7 +48,7 @@ require (
 	golang.org/x/sys v0.0.0-20200909081042-eff7692f9009 // indirect
 	golang.org/x/tools v0.0.0-20200903185744-af4cc2cd812e
 	google.golang.org/genproto v0.0.0-20200904004341-0bd0a958aa1d // indirect
-	google.golang.org/grpc v1.32.0
+	google.golang.org/grpc v1.33.1
 	google.golang.org/protobuf v1.25.0
 	gopkg.in/AlecAivazis/survey.v1 v1.8.8 // indirect
 	gopkg.in/ini.v1 v1.61.0 // indirect
