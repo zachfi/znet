@@ -127,6 +127,7 @@ func (e *eventServer) SubscribeEvents(subs *rpc.EventSub, stream rpc.Events_Subs
 	defer func() {
 		log.WithFields(log.Fields{
 			"events": subs.EventNames,
+			"cn":     subscriber,
 		}).Debug("subscriber lost")
 	}()
 
