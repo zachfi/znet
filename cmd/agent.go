@@ -58,27 +58,31 @@ func runAgent(cmd *cobra.Command, args []string) {
 		log.Fatal("no rpc.server configuration specified")
 	}
 
-	viper.SetDefault("mqtt.url", "tcp://localhost:1883")
+	var mqttClient mqtt.Client
 
-	mqttURL := viper.GetString("mqtt.url")
-	mqttUsername := viper.GetString("mqtt.username")
-	mqttPassword := viper.GetString("mqtt.password")
+	if z.Config.MQTT != nil {
+		viper.SetDefault("mqtt.url", "tcp://localhost:1883")
 
-	mqttOpts := mqtt.NewClientOptions()
-	mqttOpts.AddBroker(mqttURL)
-	mqttOpts.SetCleanSession(true)
+		mqttURL := viper.GetString("mqtt.url")
+		mqttUsername := viper.GetString("mqtt.username")
+		mqttPassword := viper.GetString("mqtt.password")
 
-	if mqttUsername != "" && mqttPassword != "" {
-		mqttOpts.Username = mqttUsername
-		mqttOpts.Password = mqttPassword
-	}
+		mqttOpts := mqtt.NewClientOptions()
+		mqttOpts.AddBroker(mqttURL)
+		mqttOpts.SetCleanSession(true)
 
-	mqttClient := mqtt.NewClient(mqttOpts)
+		if mqttUsername != "" && mqttPassword != "" {
+			mqttOpts.Username = mqttUsername
+			mqttOpts.Password = mqttPassword
+		}
 
-	if token := mqttClient.Connect(); token.Wait() && token.Error() != nil {
-		log.Error(token.Error())
-	} else {
-		log.Debugf("connected to MQTT: %s", mqttURL)
+		mqttClient = mqtt.NewClient(mqttOpts)
+
+		if token := mqttClient.Connect(); token.Wait() && token.Error() != nil {
+			log.Error(token.Error())
+		} else {
+			log.Debugf("connected to MQTT: %s", mqttURL)
+		}
 	}
 
 	conn := znet.NewConn(z.Config.RPC.ServerAddress, z.Config)
