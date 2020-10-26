@@ -1,3 +1,8 @@
+<a name="v0.27.3"></a>
+## [v0.27.3] - 2020-10-26
+### Bug Fixes
+- **server:** include client name in log message
+
 <a name="v0.27.2"></a>
 ## [v0.27.2] - 2020-10-26
 ### Bug Fixes
@@ -614,7 +619,8 @@
 ## [v0.0.2] - 2018-09-03
 <a name="v0.0.1"></a>
 ## v0.0.1 - 2018-09-03
-[Unreleased]: https://github.com/xaque208/znet/compare/v0.27.2...HEAD
+[Unreleased]: https://github.com/xaque208/znet/compare/v0.27.3...HEAD
+[v0.27.3]: https://github.com/xaque208/znet/compare/v0.27.2...v0.27.3
 [v0.27.2]: https://github.com/xaque208/znet/compare/v0.27.1...v0.27.2
 [v0.27.1]: https://github.com/xaque208/znet/compare/v0.27.0...v0.27.1
 [v0.27.0]: https://github.com/xaque208/znet/compare/v0.26.2...v0.27.0
