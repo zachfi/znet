@@ -10,7 +10,7 @@ cloud.google.com/go/internal/version
 cloud.google.com/go/kms/apiv1
 # cloud.google.com/go/storage v1.9.0
 cloud.google.com/go/storage
-# code.gitea.io/sdk/gitea v0.12.1
+# code.gitea.io/sdk/gitea v0.13.1
 code.gitea.io/sdk/gitea
 # github.com/Azure/azure-pipeline-go v0.2.2
 github.com/Azure/azure-pipeline-go/pipeline
@@ -137,7 +137,7 @@ github.com/client9/misspell
 github.com/client9/misspell/cmd/misspell
 # github.com/cpuguy83/go-md2man/v2 v2.0.0
 github.com/cpuguy83/go-md2man/v2/md2man
-# github.com/daixiang0/gci v0.0.0-20200727065011-66f1df783cb2
+# github.com/daixiang0/gci v0.2.4
 github.com/daixiang0/gci/pkg/gci
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
@@ -166,7 +166,7 @@ github.com/git-chglog/git-chglog
 github.com/git-chglog/git-chglog/cmd/git-chglog
 # github.com/go-asn1-ber/asn1-ber v1.5.1
 github.com/go-asn1-ber/asn1-ber
-# github.com/go-critic/go-critic v0.5.0
+# github.com/go-critic/go-critic v0.5.2
 github.com/go-critic/go-critic/checkers
 github.com/go-critic/go-critic/checkers/internal/astwalk
 github.com/go-critic/go-critic/checkers/internal/lintutil
@@ -258,10 +258,8 @@ github.com/gobwas/glob/syntax/ast
 github.com/gobwas/glob/syntax/lexer
 github.com/gobwas/glob/util/runes
 github.com/gobwas/glob/util/strings
-# github.com/gofrs/flock v0.7.1
+# github.com/gofrs/flock v0.8.0
 github.com/gofrs/flock
-# github.com/gogo/protobuf v1.3.1
-github.com/gogo/protobuf/proto
 # github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e
 github.com/golang/groupcache/lru
 # github.com/golang/protobuf v1.4.2
@@ -296,7 +294,7 @@ github.com/golangci/gocyclo/pkg/gocyclo
 # github.com/golangci/gofmt v0.0.0-20190930125516-244bba706f1a
 github.com/golangci/gofmt/gofmt
 github.com/golangci/gofmt/goimports
-# github.com/golangci/golangci-lint v1.30.0
+# github.com/golangci/golangci-lint v1.31.0
 github.com/golangci/golangci-lint/cmd/golangci-lint
 github.com/golangci/golangci-lint/internal/cache
 github.com/golangci/golangci-lint/internal/errorutil
@@ -321,6 +319,7 @@ github.com/golangci/golangci-lint/pkg/printers
 github.com/golangci/golangci-lint/pkg/report
 github.com/golangci/golangci-lint/pkg/result
 github.com/golangci/golangci-lint/pkg/result/processors
+github.com/golangci/golangci-lint/pkg/sliceutil
 github.com/golangci/golangci-lint/pkg/timeutils
 # github.com/golangci/ineffassign v0.0.0-20190609212857-42439a7714cc
 github.com/golangci/ineffassign
@@ -336,7 +335,7 @@ github.com/golangci/prealloc
 github.com/golangci/revgrep
 # github.com/golangci/unconvert v0.0.0-20180507085042-28b1c447d1f4
 github.com/golangci/unconvert
-# github.com/google/go-cmp v0.5.0
+# github.com/google/go-cmp v0.5.2
 github.com/google/go-cmp/cmp
 github.com/google/go-cmp/cmp/internal/diff
 github.com/google/go-cmp/cmp/internal/flags
@@ -346,7 +345,7 @@ github.com/google/go-cmp/cmp/internal/value
 github.com/google/go-github/v28/github
 # github.com/google/go-querystring v1.0.0
 github.com/google/go-querystring/query
-# github.com/google/rpmpack v0.0.0-20200731134257-3685799e8fdf
+# github.com/google/rpmpack v0.0.0-20200919095143-1c1eea455332
 github.com/google/rpmpack
 # github.com/google/uuid v1.1.1
 github.com/google/uuid
@@ -358,7 +357,7 @@ github.com/googleapis/gax-go
 github.com/googleapis/gax-go/v2
 # github.com/goreleaser/chglog v0.1.1
 github.com/goreleaser/chglog
-# github.com/goreleaser/goreleaser v0.142.0
+# github.com/goreleaser/goreleaser v0.145.0
 github.com/goreleaser/goreleaser
 github.com/goreleaser/goreleaser/cmd
 github.com/goreleaser/goreleaser/internal/artifact
@@ -414,12 +413,13 @@ github.com/goreleaser/goreleaser/pkg/build
 github.com/goreleaser/goreleaser/pkg/config
 github.com/goreleaser/goreleaser/pkg/context
 github.com/goreleaser/goreleaser/pkg/defaults
-# github.com/goreleaser/nfpm v1.7.0
+# github.com/goreleaser/nfpm v1.8.0
 github.com/goreleaser/nfpm
 github.com/goreleaser/nfpm/apk
 github.com/goreleaser/nfpm/deb
 github.com/goreleaser/nfpm/internal/files
 github.com/goreleaser/nfpm/internal/glob
+github.com/goreleaser/nfpm/internal/sign
 github.com/goreleaser/nfpm/rpm
 # github.com/gostaticanalysis/analysisutil v0.0.3
 github.com/gostaticanalysis/analysisutil
@@ -552,7 +552,7 @@ github.com/nbutton23/zxcvbn-go/match
 github.com/nbutton23/zxcvbn-go/matching
 github.com/nbutton23/zxcvbn-go/scoring
 github.com/nbutton23/zxcvbn-go/utils/math
-# github.com/nishanths/exhaustive v0.0.0-20200708172631-8866003e3856
+# github.com/nishanths/exhaustive v0.0.0-20200811152831-6cf413ae40e0
 github.com/nishanths/exhaustive
 # github.com/olekukonko/tablewriter v0.0.4
 github.com/olekukonko/tablewriter
@@ -590,7 +590,7 @@ github.com/prometheus/procfs/internal/util
 github.com/psampaz/go-mod-outdated
 github.com/psampaz/go-mod-outdated/internal/mod
 github.com/psampaz/go-mod-outdated/internal/runner
-# github.com/quasilyte/go-ruleguard v0.1.2-0.20200318202121-b00d7a75d3d8
+# github.com/quasilyte/go-ruleguard v0.2.0
 github.com/quasilyte/go-ruleguard/dslgen
 github.com/quasilyte/go-ruleguard/internal/mvdan.cc/gogrep
 github.com/quasilyte/go-ruleguard/ruleguard
@@ -627,7 +627,7 @@ github.com/sirupsen/logrus
 github.com/sonatard/noctx
 github.com/sonatard/noctx/ngfunc
 github.com/sonatard/noctx/reqwithoutctx
-# github.com/sourcegraph/go-diff v0.5.3
+# github.com/sourcegraph/go-diff v0.6.0
 github.com/sourcegraph/go-diff/diff
 # github.com/spf13/afero v1.3.5
 github.com/spf13/afero
@@ -647,7 +647,7 @@ github.com/src-d/gcfg
 github.com/src-d/gcfg/scanner
 github.com/src-d/gcfg/token
 github.com/src-d/gcfg/types
-# github.com/ssgreg/nlreturn/v2 v2.0.1
+# github.com/ssgreg/nlreturn/v2 v2.1.0
 github.com/ssgreg/nlreturn/v2/pkg/nlreturn
 # github.com/stretchr/objx v0.2.0
 github.com/stretchr/objx
@@ -676,7 +676,7 @@ github.com/ulikunitz/xz
 github.com/ulikunitz/xz/internal/hash
 github.com/ulikunitz/xz/internal/xlog
 github.com/ulikunitz/xz/lzma
-# github.com/ultraware/funlen v0.0.2
+# github.com/ultraware/funlen v0.0.3
 github.com/ultraware/funlen
 # github.com/ultraware/whitespace v0.0.4
 github.com/ultraware/whitespace
@@ -684,7 +684,7 @@ github.com/ultraware/whitespace
 github.com/urfave/cli
 # github.com/uudashr/gocognit v1.0.1
 github.com/uudashr/gocognit
-# github.com/xanzy/go-gitlab v0.36.0
+# github.com/xanzy/go-gitlab v0.38.1
 github.com/xanzy/go-gitlab
 # github.com/xanzy/ssh-agent v0.2.1
 github.com/xanzy/ssh-agent
@@ -1086,7 +1086,7 @@ gopkg.in/warnings.v0
 gopkg.in/yaml.v2
 # gopkg.in/yaml.v3 v3.0.0-20200605160147-a5ece683394c
 gopkg.in/yaml.v3
-# honnef.co/go/tools v0.0.1-2020.1.4
+# honnef.co/go/tools v0.0.1-2020.1.5
 honnef.co/go/tools/arg
 honnef.co/go/tools/cmd/staticcheck
 honnef.co/go/tools/code
@@ -1129,5 +1129,3 @@ mvdan.cc/interfacer/check
 mvdan.cc/lint
 # mvdan.cc/unparam v0.0.0-20190720180237-d51796306d8f
 mvdan.cc/unparam/check
-# sourcegraph.com/sqs/pbtypes v0.0.0-20180604144634-d3ebe8f20ae4
-sourcegraph.com/sqs/pbtypes

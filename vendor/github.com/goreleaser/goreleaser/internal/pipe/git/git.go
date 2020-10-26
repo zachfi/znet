@@ -1,6 +1,7 @@
 package git
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"strconv"
@@ -8,7 +9,6 @@ import (
 	"time"
 
 	"github.com/apex/log"
-	"github.com/pkg/errors"
 
 	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/pipe"
@@ -67,19 +67,19 @@ func getInfo(ctx *context.Context) (context.GitInfo, error) {
 func getGitInfo() (context.GitInfo, error) {
 	short, err := getShortCommit()
 	if err != nil {
-		return context.GitInfo{}, errors.Wrap(err, "couldn't get current commit")
+		return context.GitInfo{}, fmt.Errorf("couldn't get current commit: %w", err)
 	}
 	full, err := getFullCommit()
 	if err != nil {
-		return context.GitInfo{}, errors.Wrap(err, "couldn't get current commit")
+		return context.GitInfo{}, fmt.Errorf("couldn't get current commit: %w", err)
 	}
 	date, err := getCommitDate()
 	if err != nil {
-		return context.GitInfo{}, errors.Wrap(err, "couldn't get commit date")
+		return context.GitInfo{}, fmt.Errorf("couldn't get commit date: %w", err)
 	}
 	url, err := getURL()
 	if err != nil {
-		return context.GitInfo{}, errors.Wrap(err, "couldn't get remote URL")
+		return context.GitInfo{}, fmt.Errorf("couldn't get remote URL: %w", err)
 	}
 	tag, err := getTag()
 	if err != nil {
@@ -148,11 +148,26 @@ func getFullCommit() (string, error) {
 }
 
 func getTag() (string, error) {
-	if tag := os.Getenv("GORELEASER_CURRENT_TAG"); tag != "" {
-		return tag, nil
+	var tag string
+	var err error
+	for _, fn := range []func() (string, error){
+		func() (string, error) {
+			return os.Getenv("GORELEASER_CURRENT_TAG"), nil
+		},
+		func() (string, error) {
+			return git.Clean(git.Run("tag", "--points-at", "HEAD", "--sort", "-version:creatordate"))
+		},
+		func() (string, error) {
+			return git.Clean(git.Run("describe", "--tags", "--abbrev=0"))
+		},
+	} {
+		tag, err = fn()
+		if tag != "" || err != nil {
+			return tag, err
+		}
 	}
 
-	return git.Clean(git.Run("describe", "--tags", "--abbrev=0"))
+	return tag, err
 }
 
 func getURL() (string, error) {

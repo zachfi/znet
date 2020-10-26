@@ -13,10 +13,10 @@ import (
 	"time"
 
 	"github.com/google/rpmpack"
-	"github.com/pkg/errors"
 	"github.com/sassoftware/go-rpmutils/cpio"
 
 	"github.com/goreleaser/nfpm/internal/files"
+	"github.com/goreleaser/nfpm/internal/sign"
 
 	"github.com/goreleaser/chglog"
 
@@ -96,6 +96,10 @@ func (*RPM) Package(info *nfpm.Info, w io.Writer) error {
 	}
 	if rpm, err = rpmpack.NewRPM(*meta); err != nil {
 		return err
+	}
+
+	if info.RPM.Signature.KeyFile != "" {
+		rpm.SetPGPSigner(sign.PGPSigner(info.RPM.Signature.KeyFile, info.RPM.Signature.KeyPassphrase))
 	}
 
 	addEmptyDirsRPM(info, rpm)
@@ -365,7 +369,7 @@ func addSymlinksInsideRPM(info *nfpm.Info, rpm *rpmpack.RPM) {
 func copyToRPM(rpm *rpmpack.RPM, src, dst string, fileType rpmpack.FileType) error {
 	file, err := os.OpenFile(src, os.O_RDONLY, 0600) //nolint:gosec
 	if err != nil {
-		return errors.Wrap(err, "could not add file to the archive")
+		return fmt.Errorf("could not add file to the archive: %w", err)
 	}
 	// don't care if it errs while closing...
 	defer file.Close() // nolint: errcheck,gosec

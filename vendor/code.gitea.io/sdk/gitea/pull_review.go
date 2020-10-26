@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"strings"
 	"time"
 )
 
@@ -40,8 +41,7 @@ type PullReview struct {
 	Stale             bool            `json:"stale"`
 	Official          bool            `json:"official"`
 	CodeCommentsCount int             `json:"comments_count"`
-	// swagger:strfmt date-time
-	Submitted time.Time `json:"submitted_at"`
+	Submitted         time.Time       `json:"submitted_at"`
 
 	HTMLURL     string `json:"html_url"`
 	HTMLPullURL string `json:"pull_request_url"`
@@ -54,9 +54,7 @@ type PullReviewComment struct {
 	Reviewer *User  `json:"user"`
 	ReviewID int64  `json:"pull_request_review_id"`
 
-	// swagger:strfmt date-time
 	Created time.Time `json:"created_at"`
-	// swagger:strfmt date-time
 	Updated time.Time `json:"updated_at"`
 
 	Path         string `json:"path"`
@@ -100,10 +98,42 @@ type ListPullReviewsOptions struct {
 	ListOptions
 }
 
+// Validate the CreatePullReviewOptions struct
+func (opt CreatePullReviewOptions) Validate() error {
+	if opt.State != ReviewStateApproved && len(strings.TrimSpace(opt.Body)) == 0 {
+		return fmt.Errorf("body is empty")
+	}
+	for i := range opt.Comments {
+		if err := opt.Comments[i].Validate(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// Validate the SubmitPullReviewOptions struct
+func (opt SubmitPullReviewOptions) Validate() error {
+	if opt.State != ReviewStateApproved && len(strings.TrimSpace(opt.Body)) == 0 {
+		return fmt.Errorf("body is empty")
+	}
+	return nil
+}
+
+// Validate the CreatePullReviewComment struct
+func (opt CreatePullReviewComment) Validate() error {
+	if len(strings.TrimSpace(opt.Body)) == 0 {
+		return fmt.Errorf("body is empty")
+	}
+	if opt.NewLineNum != 0 && opt.OldLineNum != 0 {
+		return fmt.Errorf("old and new line num are set, cant identify the code comment position")
+	}
+	return nil
+}
+
 // ListPullReviews lists all reviews of a pull request
-func (c *Client) ListPullReviews(owner, repo string, index int64, opt ListPullReviewsOptions) ([]*PullReview, error) {
+func (c *Client) ListPullReviews(owner, repo string, index int64, opt ListPullReviewsOptions) ([]*PullReview, *Response, error) {
 	if err := c.CheckServerVersionConstraint(">=1.12.0"); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	opt.setDefaults()
 	rs := make([]*PullReview, 0, opt.PageSize)
@@ -111,74 +141,79 @@ func (c *Client) ListPullReviews(owner, repo string, index int64, opt ListPullRe
 	link, _ := url.Parse(fmt.Sprintf("/repos/%s/%s/pulls/%d/reviews", owner, repo, index))
 	link.RawQuery = opt.ListOptions.getURLQuery().Encode()
 
-	return rs, c.getParsedResponse("GET", link.String(), jsonHeader, nil, &rs)
+	resp, err := c.getParsedResponse("GET", link.String(), jsonHeader, nil, &rs)
+	return rs, resp, err
 }
 
 // GetPullReview gets a specific review of a pull request
-func (c *Client) GetPullReview(owner, repo string, index, id int64) (*PullReview, error) {
+func (c *Client) GetPullReview(owner, repo string, index, id int64) (*PullReview, *Response, error) {
 	if err := c.CheckServerVersionConstraint(">=1.12.0"); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	r := new(PullReview)
-	return r, c.getParsedResponse("GET", fmt.Sprintf("/repos/%s/%s/pulls/%d/reviews/%d", owner, repo, index, id), jsonHeader, nil, &r)
-}
-
-// ListPullReviewsCommentsOptions options for listing PullReviewsComments
-type ListPullReviewsCommentsOptions struct {
-	ListOptions
+	resp, err := c.getParsedResponse("GET", fmt.Sprintf("/repos/%s/%s/pulls/%d/reviews/%d", owner, repo, index, id), jsonHeader, nil, &r)
+	return r, resp, err
 }
 
 // ListPullReviewComments lists all comments of a pull request review
-func (c *Client) ListPullReviewComments(owner, repo string, index, id int64, opt ListPullReviewsCommentsOptions) ([]*PullReviewComment, error) {
+func (c *Client) ListPullReviewComments(owner, repo string, index, id int64) ([]*PullReviewComment, *Response, error) {
 	if err := c.CheckServerVersionConstraint(">=1.12.0"); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	opt.setDefaults()
-	rcl := make([]*PullReviewComment, 0, opt.PageSize)
-
+	rcl := make([]*PullReviewComment, 0, 4)
 	link, _ := url.Parse(fmt.Sprintf("/repos/%s/%s/pulls/%d/reviews/%d/comments", owner, repo, index, id))
-	link.RawQuery = opt.ListOptions.getURLQuery().Encode()
 
-	return rcl, c.getParsedResponse("GET", link.String(), jsonHeader, nil, &rcl)
+	resp, err := c.getParsedResponse("GET", link.String(), jsonHeader, nil, &rcl)
+	return rcl, resp, err
 }
 
 // DeletePullReview delete a specific review from a pull request
-func (c *Client) DeletePullReview(owner, repo string, index, id int64) error {
+func (c *Client) DeletePullReview(owner, repo string, index, id int64) (*Response, error) {
 	if err := c.CheckServerVersionConstraint(">=1.12.0"); err != nil {
-		return err
+		return nil, err
 	}
 
-	_, err := c.getResponse("DELETE", fmt.Sprintf("/repos/%s/%s/pulls/%d/reviews/%d", owner, repo, index, id), jsonHeader, nil)
-	return err
+	_, resp, err := c.getResponse("DELETE", fmt.Sprintf("/repos/%s/%s/pulls/%d/reviews/%d", owner, repo, index, id), jsonHeader, nil)
+	return resp, err
 }
 
 // CreatePullReview create a review to an pull request
-func (c *Client) CreatePullReview(owner, repo string, index int64, opt CreatePullReviewOptions) (*PullReview, error) {
+func (c *Client) CreatePullReview(owner, repo string, index int64, opt CreatePullReviewOptions) (*PullReview, *Response, error) {
 	if err := c.CheckServerVersionConstraint(">=1.12.0"); err != nil {
-		return nil, err
+		return nil, nil, err
+	}
+	if err := opt.Validate(); err != nil {
+		return nil, nil, err
 	}
 	body, err := json.Marshal(&opt)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	r := new(PullReview)
-	return r, c.getParsedResponse("POST", fmt.Sprintf("/repos/%s/%s/pulls/%d/reviews", owner, repo, index),
+	resp, err := c.getParsedResponse("POST",
+		fmt.Sprintf("/repos/%s/%s/pulls/%d/reviews", owner, repo, index),
 		jsonHeader, bytes.NewReader(body), r)
+	return r, resp, err
 }
 
 // SubmitPullReview submit a pending review to an pull request
-func (c *Client) SubmitPullReview(owner, repo string, index, id int64, opt SubmitPullReviewOptions) (*PullReview, error) {
+func (c *Client) SubmitPullReview(owner, repo string, index, id int64, opt SubmitPullReviewOptions) (*PullReview, *Response, error) {
 	if err := c.CheckServerVersionConstraint(">=1.12.0"); err != nil {
-		return nil, err
+		return nil, nil, err
+	}
+	if err := opt.Validate(); err != nil {
+		return nil, nil, err
 	}
 	body, err := json.Marshal(&opt)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	r := new(PullReview)
-	return r, c.getParsedResponse("POST", fmt.Sprintf("/repos/%s/%s/pulls/%d/reviews/%d", owner, repo, index, id),
+	resp, err := c.getParsedResponse("POST",
+		fmt.Sprintf("/repos/%s/%s/pulls/%d/reviews/%d", owner, repo, index, id),
 		jsonHeader, bytes.NewReader(body), r)
+	return r, resp, err
 }

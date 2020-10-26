@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-// Package apk (someday) implements nfpm.Packager providing .apk bindings.
+// Package apk implements nfpm.Packager providing .apk bindings.
 package apk
 
 // Initial implementation from https://gist.github.com/tcurdt/512beaac7e9c12dcf5b6b7603b09d0d8
@@ -30,12 +30,16 @@ import (
 	"bufio"
 	"bytes"
 	"compress/gzip"
+	"crypto/sha1" // nolint:gosec
 	"crypto/sha256"
+	"encoding/hex"
+	"errors"
 	"fmt"
 	"hash"
 	"io"
 	"io/ioutil"
 	"log"
+	"net/mail"
 	"os"
 	"path/filepath"
 	"strings"
@@ -43,11 +47,9 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/goreleaser/nfpm/internal/files"
-
-	"github.com/pkg/errors"
-
 	"github.com/goreleaser/nfpm"
+	"github.com/goreleaser/nfpm/internal/files"
+	"github.com/goreleaser/nfpm/internal/sign"
 )
 
 // nolint: gochecknoinits
@@ -109,19 +111,29 @@ func (*Apk) Package(info *nfpm.Info, apk io.Writer) (err error) {
 
 	size := int64(0)
 	// create the data tgz
-	_, err = createData(&bufData, info, &size)
+	dataDigest, err := createData(&bufData, info, &size)
 	if err != nil {
 		return err
 	}
 
 	// create the control tgz
 	var bufControl bytes.Buffer
-	if _, err = createControl(&bufControl, info, size); err != nil {
+	controlDigest, err := createControl(&bufControl, info, size, dataDigest)
+	if err != nil {
 		return err
 	}
 
-	// combine
-	return combineToApk(apk, &bufData, &bufControl)
+	if info.APK.Signature.KeyFile == "" {
+		return combineToApk(apk, &bufControl, &bufData)
+	}
+
+	// create the signature tgz
+	var bufSignature bytes.Buffer
+	if err = createSignature(&bufSignature, info, controlDigest); err != nil {
+		return err
+	}
+
+	return combineToApk(apk, &bufSignature, &bufControl, &bufData)
 }
 
 type writerCounter struct {
@@ -224,17 +236,66 @@ func createData(dataTgz io.Writer, info *nfpm.Info, sizep *int64) ([]byte, error
 	return dataDigest, nil
 }
 
-func createControl(controlTgz io.Writer, info *nfpm.Info, size int64) ([]byte, error) {
-	builderControl := createBuilderControl(info, size)
-	controlDigest, err := writeTgz(controlTgz, tarCut, builderControl, sha256.New())
+func createControl(controlTgz io.Writer, info *nfpm.Info, size int64, dataDigest []byte) ([]byte, error) {
+	builderControl := createBuilderControl(info, size, dataDigest)
+	controlDigest, err := writeTgz(controlTgz, tarCut, builderControl, sha1.New()) // nolint:gosec
 	if err != nil {
 		return nil, err
 	}
 	return controlDigest, nil
 }
 
-func combineToApk(target io.Writer, dataTgz, controlTgz io.Reader) error {
-	for _, tgz := range []io.Reader{controlTgz, dataTgz} {
+func createSignature(signatureTgz io.Writer, info *nfpm.Info, controlSHA1Digest []byte) error {
+	signatureBuilder := createSignatureBuilder(controlSHA1Digest, info)
+	// we don't actually need to produce a digest here, but writeTgz
+	// requires it so we just use SHA1 since it is already imported
+	_, err := writeTgz(signatureTgz, tarCut, signatureBuilder, sha1.New()) // nolint:gosec
+	if err != nil {
+		return &nfpm.ErrSigningFailure{Err: err}
+	}
+
+	return nil
+}
+
+var errNoKeyAddress = errors.New("key name not set and maintainer mail address empty")
+
+func createSignatureBuilder(digest []byte, info *nfpm.Info) func(*tar.Writer) error {
+	return func(tw *tar.Writer) error {
+		signature, err := sign.RSASignSHA1Digest(digest,
+			info.APK.Signature.KeyFile, info.APK.Signature.KeyPassphrase)
+		if err != nil {
+			return err
+		}
+
+		// needs to exist on the machine during installation: /etc/apk/keys/<keyname>.rsa.pub
+		keyname := info.APK.Signature.KeyName
+		if keyname == "" {
+			addr, err := mail.ParseAddress(info.Maintainer)
+			if err != nil {
+				return fmt.Errorf("key name not set and unable to parse maintainer mail address: %w", err)
+			} else if addr.Address == "" {
+				return errNoKeyAddress
+			}
+
+			keyname = addr.Address + ".rsa.pub"
+		}
+
+		// In principle apk supports RSA signatures over SHA256/512 keys, but in
+		// practice verification works but installation segfaults. If this is
+		// fixed at some point we should also upgrade the hash. In this case,
+		// the file name will have to start with .SIGN.RSA256 or .SIGN.RSA512.
+		signHeader := &tar.Header{
+			Name: fmt.Sprintf(".SIGN.RSA.%s", keyname),
+			Mode: 0600,
+			Size: int64(len(signature)),
+		}
+
+		return writeFile(tw, signHeader, bytes.NewReader(signature))
+	}
+}
+
+func combineToApk(target io.Writer, readers ...io.Reader) error {
+	for _, tgz := range readers {
 		if _, err := io.Copy(target, tgz); err != nil {
 			return err
 		}
@@ -242,12 +303,13 @@ func combineToApk(target io.Writer, dataTgz, controlTgz io.Reader) error {
 	return nil
 }
 
-func createBuilderControl(info *nfpm.Info, size int64) func(tw *tar.Writer) error {
+func createBuilderControl(info *nfpm.Info, size int64, dataDigest []byte) func(tw *tar.Writer) error {
 	return func(tw *tar.Writer) error {
 		var infoBuf bytes.Buffer
 		if err := writeControl(&infoBuf, controlData{
 			Info:          info,
 			InstalledSize: size,
+			Datahash:      hex.EncodeToString(dataDigest),
 		}); err != nil {
 			return err
 		}
@@ -307,10 +369,10 @@ func newScriptInsideTarGz(out *tar.Writer, path, dest string) error {
 
 func newItemInsideTarGz(out *tar.Writer, content []byte, header *tar.Header) error {
 	if err := out.WriteHeader(header); err != nil {
-		return errors.Wrapf(err, "cannot write header of %s file to control.tar.gz", header.Name)
+		return fmt.Errorf("cannot write header of %s file to control.tar.gz: %w", header.Name, err)
 	}
 	if _, err := out.Write(content); err != nil {
-		return errors.Wrapf(err, "cannot write %s file to control.tar.gz", header.Name)
+		return fmt.Errorf("cannot write %s file to control.tar.gz: %w", header.Name, err)
 	}
 	return nil
 }
@@ -381,7 +443,7 @@ func createSymlinksInsideTarGz(info *nfpm.Info, out *tar.Writer, created map[str
 func copyToTarAndDigest(src, dst string, tw *tar.Writer, sizep *int64, created map[string]bool) error {
 	file, err := os.OpenFile(src, os.O_RDONLY, 0600) //nolint:gosec
 	if err != nil {
-		return errors.Wrap(err, "could not add file to the archive")
+		return fmt.Errorf("could not add file to the archive: %w", err)
 	}
 	// don't care if it errs while closing...
 	defer file.Close() // nolint: errcheck
@@ -438,7 +500,7 @@ func createTree(tarw *tar.Writer, dst string, created map[string]bool) error {
 			Format:   tar.FormatGNU,
 			ModTime:  time.Now(),
 		}); err != nil {
-			return errors.Wrap(err, "failed to create folder")
+			return fmt.Errorf("failed to create folder: %w", err)
 		}
 		created[path] = true
 	}
@@ -493,11 +555,13 @@ depend = {{ $dep }}
 {{- if .Info.License}}
 license = {{.Info.License}}
 {{- end }}
+datahash = {{.Datahash}}
 `
 
 type controlData struct {
 	Info          *nfpm.Info
 	InstalledSize int64
+	Datahash      string
 }
 
 func writeControl(w io.Writer, data controlData) error {
