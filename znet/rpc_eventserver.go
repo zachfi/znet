@@ -8,6 +8,8 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/peer"
 
 	"github.com/xaque208/znet/internal/timer"
 	"github.com/xaque208/znet/pkg/eventmachine"
@@ -110,8 +112,16 @@ func (e *eventServer) SubscribeEvents(subs *rpc.EventSub, stream rpc.Events_Subs
 
 	streamContext := stream.Context()
 
+	var subscriber string
+	peer, ok := peer.FromContext(streamContext)
+	if ok {
+		tlsInfo := peer.AuthInfo.(credentials.TLSInfo)
+		subscriber = tlsInfo.State.VerifiedChains[0][0].Subject.CommonName
+	}
+
 	log.WithFields(log.Fields{
 		"events": subs.EventNames,
+		"cn":     subscriber,
 	}).Debug("new subscriber")
 
 	defer func() {
