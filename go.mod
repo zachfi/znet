@@ -13,7 +13,7 @@ require (
 	github.com/go-ldap/ldap/v3 v3.2.3
 	github.com/go-openapi/errors v0.19.6 // indirect
 	github.com/go-openapi/strfmt v0.19.5 // indirect
-	github.com/golang/protobuf v1.4.2
+	github.com/golang/protobuf v1.4.3
 	github.com/golangci/golangci-lint v1.31.0
 	github.com/goreleaser/goreleaser v0.145.0
 	github.com/hashicorp/vault/api v1.0.5-0.20200717191844-f687267c8086
