@@ -494,8 +494,6 @@ github.com/kevinburke/ssh_config
 # github.com/kisielk/gotool v1.0.0
 github.com/kisielk/gotool
 github.com/kisielk/gotool/internal/load
-# github.com/konsorten/go-windows-terminal-sequences v1.0.3
-github.com/konsorten/go-windows-terminal-sequences
 # github.com/kyoh86/exportloopref v0.1.7
 github.com/kyoh86/exportloopref
 # github.com/llorllale/go-gitlint v0.0.0-20200802191503-5984945d4b80
@@ -621,7 +619,7 @@ github.com/sergi/go-diff/diffmatchpatch
 github.com/shazow/go-diff/difflib
 # github.com/shurcooL/sanitized_anchor_name v1.0.0
 github.com/shurcooL/sanitized_anchor_name
-# github.com/sirupsen/logrus v1.6.0
+# github.com/sirupsen/logrus v1.7.0
 github.com/sirupsen/logrus
 # github.com/sonatard/noctx v0.0.1
 github.com/sonatard/noctx

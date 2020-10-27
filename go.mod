@@ -33,7 +33,7 @@ require (
 	github.com/prometheus/common v0.14.0
 	github.com/psampaz/go-mod-outdated v0.7.0
 	github.com/scottdware/go-junos v0.0.0-20200809143445-1805793fac10
-	github.com/sirupsen/logrus v1.6.0
+	github.com/sirupsen/logrus v1.7.0
 	github.com/spf13/afero v1.3.5 // indirect
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/viper v1.7.1
