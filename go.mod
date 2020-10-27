@@ -10,7 +10,7 @@ require (
 	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/git-chglog/git-chglog v0.0.0-20200414013904-db796966b373
 	github.com/go-git/go-git/v5 v5.2.0
-	github.com/go-ldap/ldap/v3 v3.2.3
+	github.com/go-ldap/ldap/v3 v3.2.4
 	github.com/go-openapi/errors v0.19.6 // indirect
 	github.com/go-openapi/strfmt v0.19.5 // indirect
 	github.com/golang/protobuf v1.4.3
