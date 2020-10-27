@@ -1,3 +1,8 @@
+<a name="v0.27.6"></a>
+## [v0.27.6] - 2020-10-26
+### Bug Fixes
+- **agent:** include timer events for lighting subscriptions
+
 <a name="v0.27.5"></a>
 ## [v0.27.5] - 2020-10-26
 ### Bug Fixes
@@ -629,7 +634,8 @@
 ## [v0.0.2] - 2018-09-03
 <a name="v0.0.1"></a>
 ## v0.0.1 - 2018-09-03
-[Unreleased]: https://github.com/xaque208/znet/compare/v0.27.5...HEAD
+[Unreleased]: https://github.com/xaque208/znet/compare/v0.27.6...HEAD
+[v0.27.6]: https://github.com/xaque208/znet/compare/v0.27.5...v0.27.6
 [v0.27.5]: https://github.com/xaque208/znet/compare/v0.27.4...v0.27.5
 [v0.27.4]: https://github.com/xaque208/znet/compare/v0.27.3...v0.27.4
 [v0.27.3]: https://github.com/xaque208/znet/compare/v0.27.2...v0.27.3
