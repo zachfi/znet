@@ -85,13 +85,6 @@ func (e *EventProducer) scheduleEvents(scheduledEvents *events.Scheduler, v Even
 
 	timeRemaining := time.Until(d)
 
-	if time.Since(d) > 0 {
-		log.WithFields(log.Fields{
-			"event": v.Produce,
-		}).Trace("skipping past event")
-		return nil
-	}
-
 	if timeRemaining > 0 {
 		err = scheduledEvents.Set(d, v.Produce)
 		if err != nil {
