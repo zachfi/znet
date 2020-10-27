@@ -14,6 +14,7 @@ import (
 	"github.com/xaque208/znet/internal/agent"
 	"github.com/xaque208/znet/internal/astro"
 	"github.com/xaque208/znet/internal/lights"
+	"github.com/xaque208/znet/internal/timer"
 	"github.com/xaque208/znet/pkg/eventmachine"
 	"github.com/xaque208/znet/pkg/events"
 	"github.com/xaque208/znet/pkg/iot"
@@ -107,6 +108,7 @@ func runAgent(cmd *cobra.Command, args []string) {
 		lightsConsumer := lights.NewLights(*z.Config.Lights, inventoryClient, mqttClient)
 		consumers = append(consumers, lightsConsumer)
 
+		eventNames = append(eventNames, timer.EventNames...)
 		eventNames = append(eventNames, astro.EventNames...)
 		eventNames = append(eventNames, iot.EventNames...)
 	}
