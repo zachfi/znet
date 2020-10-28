@@ -1,3 +1,8 @@
+<a name="v0.27.7"></a>
+## [v0.27.7] - 2020-10-27
+### Bug Fixes
+- **timer:** avoid skipping past events due to >1 ms delay
+
 <a name="v0.27.6"></a>
 ## [v0.27.6] - 2020-10-26
 ### Bug Fixes
@@ -362,16 +367,16 @@
 
 <a name="v0.12.18"></a>
 ## [v0.12.18] - 2020-04-24
+<a name="v0.12.15"></a>
+## [v0.12.15] - 2020-04-24
 <a name="v0.12.19"></a>
 ## [v0.12.19] - 2020-04-24
-<a name="v0.12.14"></a>
-## [v0.12.14] - 2020-04-24
 <a name="v0.12.22"></a>
 ## [v0.12.22] - 2020-04-24
 <a name="v0.12.16"></a>
 ## [v0.12.16] - 2020-04-24
-<a name="v0.12.15"></a>
-## [v0.12.15] - 2020-04-24
+<a name="v0.12.14"></a>
+## [v0.12.14] - 2020-04-24
 <a name="v0.12.17"></a>
 ## [v0.12.17] - 2020-04-24
 <a name="v0.12.20"></a>
@@ -392,17 +397,17 @@
 ## [v0.12.11] - 2020-04-24
 <a name="v0.12.7"></a>
 ## [v0.12.7] - 2020-04-24
-<a name="v0.12.6"></a>
-## [v0.12.6] - 2020-04-24
 <a name="v0.12.5"></a>
 ## [v0.12.5] - 2020-04-24
+<a name="v0.12.6"></a>
+## [v0.12.6] - 2020-04-24
 ### Bug Fixes
 - **agent:** better error checking
 
-<a name="v0.12.3"></a>
-## [v0.12.3] - 2020-04-24
 <a name="v0.12.4"></a>
 ## [v0.12.4] - 2020-04-24
+<a name="v0.12.3"></a>
+## [v0.12.3] - 2020-04-24
 ### Features
 - **agent:** begin command execution result response
 
@@ -634,7 +639,8 @@
 ## [v0.0.2] - 2018-09-03
 <a name="v0.0.1"></a>
 ## v0.0.1 - 2018-09-03
-[Unreleased]: https://github.com/xaque208/znet/compare/v0.27.6...HEAD
+[Unreleased]: https://github.com/xaque208/znet/compare/v0.27.7...HEAD
+[v0.27.7]: https://github.com/xaque208/znet/compare/v0.27.6...v0.27.7
 [v0.27.6]: https://github.com/xaque208/znet/compare/v0.27.5...v0.27.6
 [v0.27.5]: https://github.com/xaque208/znet/compare/v0.27.4...v0.27.5
 [v0.27.4]: https://github.com/xaque208/znet/compare/v0.27.3...v0.27.4
@@ -718,12 +724,12 @@
 [v0.13.1]: https://github.com/xaque208/znet/compare/v0.13.2...v0.13.1
 [v0.13.2]: https://github.com/xaque208/znet/compare/v0.13.0...v0.13.2
 [v0.13.0]: https://github.com/xaque208/znet/compare/v0.12.18...v0.13.0
-[v0.12.18]: https://github.com/xaque208/znet/compare/v0.12.19...v0.12.18
-[v0.12.19]: https://github.com/xaque208/znet/compare/v0.12.14...v0.12.19
-[v0.12.14]: https://github.com/xaque208/znet/compare/v0.12.22...v0.12.14
+[v0.12.18]: https://github.com/xaque208/znet/compare/v0.12.15...v0.12.18
+[v0.12.15]: https://github.com/xaque208/znet/compare/v0.12.19...v0.12.15
+[v0.12.19]: https://github.com/xaque208/znet/compare/v0.12.22...v0.12.19
 [v0.12.22]: https://github.com/xaque208/znet/compare/v0.12.16...v0.12.22
-[v0.12.16]: https://github.com/xaque208/znet/compare/v0.12.15...v0.12.16
-[v0.12.15]: https://github.com/xaque208/znet/compare/v0.12.17...v0.12.15
+[v0.12.16]: https://github.com/xaque208/znet/compare/v0.12.14...v0.12.16
+[v0.12.14]: https://github.com/xaque208/znet/compare/v0.12.17...v0.12.14
 [v0.12.17]: https://github.com/xaque208/znet/compare/v0.12.20...v0.12.17
 [v0.12.20]: https://github.com/xaque208/znet/compare/v0.12.21...v0.12.20
 [v0.12.21]: https://github.com/xaque208/znet/compare/v0.12.8...v0.12.21
@@ -733,11 +739,11 @@
 [v0.12.12]: https://github.com/xaque208/znet/compare/v0.12.13...v0.12.12
 [v0.12.13]: https://github.com/xaque208/znet/compare/v0.12.11...v0.12.13
 [v0.12.11]: https://github.com/xaque208/znet/compare/v0.12.7...v0.12.11
-[v0.12.7]: https://github.com/xaque208/znet/compare/v0.12.6...v0.12.7
-[v0.12.6]: https://github.com/xaque208/znet/compare/v0.12.5...v0.12.6
-[v0.12.5]: https://github.com/xaque208/znet/compare/v0.12.3...v0.12.5
-[v0.12.3]: https://github.com/xaque208/znet/compare/v0.12.4...v0.12.3
-[v0.12.4]: https://github.com/xaque208/znet/compare/v0.12.2...v0.12.4
+[v0.12.7]: https://github.com/xaque208/znet/compare/v0.12.5...v0.12.7
+[v0.12.5]: https://github.com/xaque208/znet/compare/v0.12.6...v0.12.5
+[v0.12.6]: https://github.com/xaque208/znet/compare/v0.12.4...v0.12.6
+[v0.12.4]: https://github.com/xaque208/znet/compare/v0.12.3...v0.12.4
+[v0.12.3]: https://github.com/xaque208/znet/compare/v0.12.2...v0.12.3
 [v0.12.2]: https://github.com/xaque208/znet/compare/v0.12.1...v0.12.2
 [v0.12.1]: https://github.com/xaque208/znet/compare/v0.12.0...v0.12.1
 [v0.12.0]: https://github.com/xaque208/znet/compare/v0.11.13...v0.12.0
