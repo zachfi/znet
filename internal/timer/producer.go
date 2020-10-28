@@ -128,10 +128,6 @@ func (e *EventProducer) scheduleRepeatEvents(scheduledEvents *events.Scheduler, 
 func (e *EventProducer) scheduler() error {
 	sch := events.NewScheduler()
 
-	log.WithFields(log.Fields{
-		"event_count": len(sch.All()),
-	}).Debug("timer scheduler started")
-
 	go func() {
 		for {
 			for _, repeatEvent := range e.config.RepeatEvents {
@@ -188,6 +184,11 @@ func (e *EventProducer) scheduler() error {
 			}
 		}
 	}()
+
+	log.WithFields(log.Fields{
+		"repeated_events": len(e.config.RepeatEvents),
+		"events":          len(e.config.Events),
+	}).Debug("timer scheduler started")
 
 	<-e.ctx.Done()
 	log.Debug("scheduler dying")
