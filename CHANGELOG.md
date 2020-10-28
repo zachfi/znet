@@ -1,3 +1,10 @@
+<a name="v0.27.10"></a>
+## [v0.27.10] - 2020-10-27
+### Bug Fixes
+- **timer:** avoid sleeping in the middle of the loop
+
+<a name="v0.27.9"></a>
+## [v0.27.9] - 2020-10-27
 <a name="v0.27.8"></a>
 ## [v0.27.8] - 2020-10-27
 <a name="v0.27.7"></a>
@@ -399,10 +406,10 @@
 ## [v0.12.11] - 2020-04-24
 <a name="v0.12.7"></a>
 ## [v0.12.7] - 2020-04-24
-<a name="v0.12.5"></a>
-## [v0.12.5] - 2020-04-24
 <a name="v0.12.6"></a>
 ## [v0.12.6] - 2020-04-24
+<a name="v0.12.5"></a>
+## [v0.12.5] - 2020-04-24
 ### Bug Fixes
 - **agent:** better error checking
 
@@ -641,7 +648,9 @@
 ## [v0.0.2] - 2018-09-03
 <a name="v0.0.1"></a>
 ## v0.0.1 - 2018-09-03
-[Unreleased]: https://github.com/xaque208/znet/compare/v0.27.8...HEAD
+[Unreleased]: https://github.com/xaque208/znet/compare/v0.27.10...HEAD
+[v0.27.10]: https://github.com/xaque208/znet/compare/v0.27.9...v0.27.10
+[v0.27.9]: https://github.com/xaque208/znet/compare/v0.27.8...v0.27.9
 [v0.27.8]: https://github.com/xaque208/znet/compare/v0.27.7...v0.27.8
 [v0.27.7]: https://github.com/xaque208/znet/compare/v0.27.6...v0.27.7
 [v0.27.6]: https://github.com/xaque208/znet/compare/v0.27.5...v0.27.6
@@ -742,9 +751,9 @@
 [v0.12.12]: https://github.com/xaque208/znet/compare/v0.12.13...v0.12.12
 [v0.12.13]: https://github.com/xaque208/znet/compare/v0.12.11...v0.12.13
 [v0.12.11]: https://github.com/xaque208/znet/compare/v0.12.7...v0.12.11
-[v0.12.7]: https://github.com/xaque208/znet/compare/v0.12.5...v0.12.7
-[v0.12.5]: https://github.com/xaque208/znet/compare/v0.12.6...v0.12.5
-[v0.12.6]: https://github.com/xaque208/znet/compare/v0.12.4...v0.12.6
+[v0.12.7]: https://github.com/xaque208/znet/compare/v0.12.6...v0.12.7
+[v0.12.6]: https://github.com/xaque208/znet/compare/v0.12.5...v0.12.6
+[v0.12.5]: https://github.com/xaque208/znet/compare/v0.12.4...v0.12.5
 [v0.12.4]: https://github.com/xaque208/znet/compare/v0.12.3...v0.12.4
 [v0.12.3]: https://github.com/xaque208/znet/compare/v0.12.2...v0.12.3
 [v0.12.2]: https://github.com/xaque208/znet/compare/v0.12.1...v0.12.2
