@@ -141,21 +141,13 @@ func (e *EventProducer) scheduler() error {
 			}
 
 			for _, event := range e.config.Events {
-				times := sch.TimesForName(event.Produce)
-				if len(times) == 0 {
+				if len(sch.TimesForName(event.Produce)) == 0 {
 					err := e.scheduleEvents(sch, event)
 					if err != nil {
-						log.Error(err)
+						log.WithFields(log.Fields{
+							"event": event.Produce,
+						}).Error(err)
 					}
-
-					if len(sch.All()) == 0 {
-						dur := 10 * time.Minute
-						log.Debugf("no timer names found after reschedule, retry in %s seconds", dur)
-						time.Sleep(dur)
-					}
-
-					// continue?
-
 				}
 			}
 
