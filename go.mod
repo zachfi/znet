@@ -14,7 +14,7 @@ require (
 	github.com/go-openapi/errors v0.19.6 // indirect
 	github.com/go-openapi/strfmt v0.19.5 // indirect
 	github.com/golang/protobuf v1.4.3
-	github.com/golangci/golangci-lint v1.31.0
+	github.com/golangci/golangci-lint v1.32.0
 	github.com/goreleaser/goreleaser v0.146.0
 	github.com/hashicorp/vault/api v1.0.5-0.20200717191844-f687267c8086
 	github.com/hashicorp/vault/sdk v0.1.14-0.20200717191844-f687267c8086
@@ -45,7 +45,7 @@ require (
 	go.mongodb.org/mongo-driver v1.4.1 // indirect
 	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a
 	golang.org/x/net v0.0.0-20200904194848-62affa334b73 // indirect
-	golang.org/x/tools v0.0.0-20200903185744-af4cc2cd812e
+	golang.org/x/tools v0.0.0-20201013201025-64a9e34f3752
 	google.golang.org/genproto v0.0.0-20200904004341-0bd0a958aa1d // indirect
 	google.golang.org/grpc v1.33.1
 	google.golang.org/protobuf v1.25.0
