@@ -159,7 +159,7 @@ github.com/emirpasic/gods/lists/arraylist
 github.com/emirpasic/gods/trees
 github.com/emirpasic/gods/trees/binaryheap
 github.com/emirpasic/gods/utils
-# github.com/fatih/color v1.9.0
+# github.com/fatih/color v1.10.0
 github.com/fatih/color
 # github.com/fsnotify/fsnotify v1.4.9
 github.com/fsnotify/fsnotify
@@ -296,7 +296,7 @@ github.com/golangci/gocyclo/pkg/gocyclo
 # github.com/golangci/gofmt v0.0.0-20190930125516-244bba706f1a
 github.com/golangci/gofmt/gofmt
 github.com/golangci/gofmt/goimports
-# github.com/golangci/golangci-lint v1.32.1
+# github.com/golangci/golangci-lint v1.32.2
 github.com/golangci/golangci-lint/cmd/golangci-lint
 github.com/golangci/golangci-lint/internal/cache
 github.com/golangci/golangci-lint/internal/errorutil
@@ -623,7 +623,7 @@ github.com/sassoftware/go-rpmutils/fileutil
 github.com/scottdware/go-junos
 # github.com/scottdware/go-rested v0.0.0-20160313143639-93e152ef32a6
 github.com/scottdware/go-rested
-# github.com/securego/gosec/v2 v2.4.0
+# github.com/securego/gosec/v2 v2.5.0
 github.com/securego/gosec/v2
 github.com/securego/gosec/v2/rules
 # github.com/sergi/go-diff v1.1.0
