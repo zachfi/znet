@@ -129,17 +129,17 @@ func (l *Lights) clickHandler(name string, payload events.Payload) error {
 
 			switch e.Count {
 			case "single":
-				off = true
+				toggle = true
 			case "double":
 				on = true
 			case "triple":
-				toggle = true
+				off = true
 			case "long":
 				dim = true
 			case "many":
 				alert = true
 			default:
-				log.Warnf("e: %+v", e)
+				log.Warnf("unknown click event: %s", e)
 			}
 
 			if toggle {
@@ -323,7 +323,6 @@ func (l *Lights) Toggle(groupName string) error {
 			}
 
 			l.mqttClient.Publish(topic, byte(0), false, string(m))
-
 		}
 	}
 
