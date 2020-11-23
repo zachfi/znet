@@ -32,7 +32,7 @@ var default{{.GetName}}Attributes = []string{
 
 // Create{{.GetName}} creates a new LDAP entry by the received name.
 func (i *Inventory) Create{{.GetName}}(x {{.GetName}}) (*{{.GetName}}, error) {
-	{{- $objectClass := .GetName | kebabcase | lowerCamelCase }}
+	{{- $objectClass := .GetName | kebabCase | lowerCamelCase }}
   if x.Name == "" {
     return nil, fmt.Errorf("unable to create a node with no Name set")
   }
@@ -66,7 +66,7 @@ func (i *Inventory) Create{{.GetName}}(x {{.GetName}}) (*{{.GetName}}, error) {
 
 // Update{{.GetName}} updates an existing LDAP entry, retrieved by name.
 func (i *Inventory) Update{{.GetName}}(x {{.GetName}}) (*{{.GetName}}, error) {
-	{{- $objectClass := .GetName | kebabcase | lowerCamelCase }}
+	{{- $objectClass := .GetName | kebabCase | lowerCamelCase }}
 	if x.Dn == "" {
 		return nil, fmt.Errorf("unable to update a node with no Dn set")
 	}
@@ -158,7 +158,7 @@ func (i *Inventory) List{{.GetName}}s() (*[]{{.GetName}}, error) {
 
   var xxx []{{.GetName}}
 
-	{{- $objectClass := .GetName | kebabcase | lowerCamelCase }}
+	{{- $objectClass := .GetName | kebabCase | lowerCamelCase }}
 	searchRequest := ldap.NewSearchRequest(
 		i.config.BaseDN,
 		ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,

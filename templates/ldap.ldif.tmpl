@@ -59,7 +59,7 @@ replace: olcObjectClasses
             {{- $typename := (.GetName|snakeCase)}}
             {{- $type := .}}
             {{- $oidNum = $oidNum | add1 }}
-olcObjectClasses:  ( 1.3.6.1.4.1.99.{{ $oidNum }} NAME '{{.GetName | kebabcase | lowerCamelCase}}'
+olcObjectClasses:  ( 1.3.6.1.4.1.99.{{ $oidNum }} NAME '{{.GetName | kebabCase | lowerCamelCase}}'
             {{- /* Should we generate a STRUCTURAL object */}}
             {{- /* handle the MAY clause */}}
             {{- range .GetField }}
