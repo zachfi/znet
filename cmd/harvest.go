@@ -13,7 +13,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/xaque208/znet/pkg/iot"
-	pb "github.com/xaque208/znet/rpc"
+	"github.com/xaque208/znet/rpc"
 	"github.com/xaque208/znet/znet"
 )
 
@@ -71,7 +71,7 @@ func runHarvest(cmd *cobra.Command, args []string) {
 		done <- true
 	}()
 
-	telemetryClient := pb.NewTelemetryClient(conn)
+	telemetryClient := rpc.NewTelemetryClient(conn)
 
 	var onMessageReceived mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 		topicPath, err := iot.ParseTopicPath(msg.Topic())
@@ -80,7 +80,7 @@ func runHarvest(cmd *cobra.Command, args []string) {
 			return
 		}
 
-		discovery := &pb.DeviceDiscovery{
+		discovery := &rpc.DeviceDiscovery{
 			Component: topicPath.Component,
 			NodeId:    topicPath.NodeID,
 			ObjectId:  topicPath.ObjectID,
@@ -88,7 +88,7 @@ func runHarvest(cmd *cobra.Command, args []string) {
 			Message:   msg.Payload(),
 		}
 
-		iotDevice := &pb.IOTDevice{
+		iotDevice := &rpc.IOTDevice{
 			DeviceDiscovery: discovery,
 		}
 
