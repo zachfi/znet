@@ -7,6 +7,7 @@ import (
 	"github.com/xaque208/znet/internal/gitwatch"
 	"github.com/xaque208/znet/internal/inventory"
 	"github.com/xaque208/znet/internal/lights"
+	"github.com/xaque208/znet/internal/network"
 	"github.com/xaque208/znet/internal/timer"
 )
 
@@ -18,10 +19,10 @@ type Config struct {
 	Environments *[]EnvironmentConfig  `yaml:"environments,omitempty"`
 	GitWatch     *gitwatch.Config      `yaml:"gitwatch,omitempty"`
 	HTTP         *HTTPConfig           `yaml:"http,omitempty"`
-	Junos        *JunosConfig          `yaml:"junos,omitempty"`
 	LDAP         *inventory.LDAPConfig `yaml:"ldap,omitempty"`
 	Lights       *lights.Config        `yaml:"lights,omitempty"`
 	MQTT         *MQTTConfig           `yaml:"mqtt,omitempty"`
+	Network      *network.Config       `yaml:"network,omitempty"`
 	Rooms        *[]lights.Room        `yaml:"rooms,omitempty"`
 	RPC          *RPCConfig            `yaml:"rpc,omitempty"`
 	Timer        *timer.Config         `yaml:"timer,omitempty"`
@@ -33,13 +34,6 @@ type Config struct {
 type EnvironmentConfig struct {
 	Name         string   `yaml:"name,omitempty"`
 	SecretValues []string `yaml:"secret_values,omitempty"`
-}
-
-// JunosConfig is the configuration for Junos devices.
-type JunosConfig struct {
-	Hosts      []string `yaml:"hosts,omitempty"`
-	Username   string   `yaml:"username,omitempty"`
-	PrivateKey string   `yaml:"private_key,omitempty"`
 }
 
 // HTTPConfig is the configuration for the listening HTTP server.
