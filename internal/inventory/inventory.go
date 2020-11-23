@@ -32,6 +32,14 @@ func NewInventory(config LDAPConfig) *Inventory {
 	}
 }
 
+func NewRPCServer(config LDAPConfig) *InventoryServer {
+	inv := NewInventory(config)
+
+	return &InventoryServer{
+		inventory: *inv,
+	}
+}
+
 // Close closes the LDAP client.
 func (i *Inventory) Close() {
 	i.conn.Close()

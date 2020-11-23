@@ -208,6 +208,7 @@ func (e *eventServer) subscriberChan() chan *rpc.Event {
 	return ch
 }
 
+// subscriberChanRemove un-registers the received channel from the eventServer.
 func (e *eventServer) subscriberChanRemove(ch chan *rpc.Event) {
 	e.Lock()
 

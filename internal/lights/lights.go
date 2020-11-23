@@ -12,6 +12,8 @@ import (
 	"github.com/mpvl/unique"
 	log "github.com/sirupsen/logrus"
 	"github.com/xaque208/rftoy/rftoy"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/xaque208/znet/internal/astro"
 	"github.com/xaque208/znet/internal/timer"
@@ -297,33 +299,47 @@ func (l *Lights) Toggle(groupName string) error {
 
 	ctx := context.Background()
 
-	result, err := l.inventoryClient.Search(ctx, &rpc.SearchRequest{})
+	stream, err := l.inventoryClient.ListZigbeeDevices(ctx, &rpc.Empty{})
 	if err != nil {
+		switch status.Code(err) {
+		case codes.Canceled:
+			return nil
+		}
+
 		return err
 	}
 
-	if result != nil {
-		log.Debugf("result: %s", result)
-		for _, d := range result.ZigbeeDevices {
-			if d.IotZone != groupName {
+	for {
+		var d *rpc.ZigbeeDevice
+
+		d, err = stream.Recv()
+		if err != nil {
+			switch status.Code(err) {
+			case codes.OK:
 				continue
+			default:
+				return err
 			}
-
-			log.Debugf("match: %s", d)
-
-			topic := fmt.Sprintf("zigbee2mqtt/%s/set", d.Name)
-			message := map[string]string{
-				"state": "TOGGLE",
-			}
-
-			m, err := json.Marshal(message)
-			if err != nil {
-				log.Error(err)
-				continue
-			}
-
-			l.mqttClient.Publish(topic, byte(0), false, string(m))
 		}
+
+		if d.IotZone != groupName {
+			continue
+		}
+
+		log.Debugf("match: %s", d)
+
+		topic := fmt.Sprintf("zigbee2mqtt/%s/set", d.Name)
+		message := map[string]string{
+			"state": "TOGGLE",
+		}
+
+		m, err := json.Marshal(message)
+		if err != nil {
+			log.Error(err)
+			continue
+		}
+
+		l.mqttClient.Publish(topic, byte(0), false, string(m))
 	}
 
 	return nil

@@ -14,6 +14,7 @@ import (
 	"github.com/xaque208/znet/internal/agent"
 	"github.com/xaque208/znet/internal/astro"
 	"github.com/xaque208/znet/internal/lights"
+	"github.com/xaque208/znet/internal/network"
 	"github.com/xaque208/znet/internal/timer"
 	"github.com/xaque208/znet/pkg/eventmachine"
 	"github.com/xaque208/znet/pkg/events"
@@ -62,28 +63,7 @@ func runAgent(cmd *cobra.Command, args []string) {
 	var mqttClient mqtt.Client
 
 	if z.Config.MQTT != nil {
-		viper.SetDefault("mqtt.url", "tcp://localhost:1883")
-
-		mqttURL := viper.GetString("mqtt.url")
-		mqttUsername := viper.GetString("mqtt.username")
-		mqttPassword := viper.GetString("mqtt.password")
-
-		mqttOpts := mqtt.NewClientOptions()
-		mqttOpts.AddBroker(mqttURL)
-		mqttOpts.SetCleanSession(true)
-
-		if mqttUsername != "" && mqttPassword != "" {
-			mqttOpts.Username = mqttUsername
-			mqttOpts.Password = mqttPassword
-		}
-
-		mqttClient = mqtt.NewClient(mqttOpts)
-
-		if token := mqttClient.Connect(); token.Wait() && token.Error() != nil {
-			log.Error(token.Error())
-		} else {
-			log.Debugf("connected to MQTT: %s", mqttURL)
-		}
+		mqttClient = mqttConnect(*z.Config.MQTT)
 	}
 
 	conn := znet.NewConn(z.Config.RPC.ServerAddress, z.Config)
@@ -103,14 +83,23 @@ func runAgent(cmd *cobra.Command, args []string) {
 	eventNames := []string{}
 	inventoryClient := rpc.NewInventoryClient(conn)
 
+	// Configure the Lights consumer if we have...
+	// mqttClient for publishing messages
+	// inventoryClient for device lookup and group selection
 	if z.Config.Lights != nil && inventoryClient != nil && mqttClient != nil {
-
 		lightsConsumer := lights.NewLights(*z.Config.Lights, inventoryClient, mqttClient)
 		consumers = append(consumers, lightsConsumer)
 
+		// The lightsConsumer responds to a bunch of events.
 		eventNames = append(eventNames, timer.EventNames...)
 		eventNames = append(eventNames, astro.EventNames...)
 		eventNames = append(eventNames, iot.EventNames...)
+	}
+
+	if z.Config.Network != nil && inventoryClient != nil {
+		networkConsumer := network.NewNetwork(*z.Config.Network, conn)
+
+		consumers = append(consumers, networkConsumer)
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())

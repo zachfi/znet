@@ -73,6 +73,8 @@ func init() {
 	} else {
 		log.SetLevel(log.InfoLevel)
 	}
+
+	rootCmd.AddCommand(inventoryCommand)
 }
 
 // initConfig reads in config file and ENV variables if set.

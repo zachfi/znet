@@ -21,9 +21,11 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/xaque208/znet/pkg/netconfig"
-	pb "github.com/xaque208/znet/rpc"
+	"github.com/xaque208/znet/rpc"
 	"github.com/xaque208/znet/znet"
 )
 
@@ -82,14 +84,34 @@ func runNetconfig(cmd *cobra.Command, args []string) {
 	// Load the network data.
 	configDir := viper.GetString("netconfig.configdir")
 
-	inventoryClient := pb.NewInventoryClient(conn)
+	inventoryClient := rpc.NewInventoryClient(conn)
 
-	resp, err := inventoryClient.ListNetworkHosts(context.Background(), &pb.Empty{})
+	ctx := context.Background()
+	stream, err := inventoryClient.ListNetworkHosts(ctx, &rpc.Empty{})
 	if err != nil {
 		log.Error(err)
 	}
 
-	if len(resp.Hosts) == 0 {
+	hosts := []*rpc.NetworkHost{}
+
+	for {
+		var d *rpc.NetworkHost
+
+		d, err = stream.Recv()
+		if err != nil {
+			switch status.Code(err) {
+			case codes.OK:
+				continue
+			default:
+				log.Error(err)
+				break
+			}
+		}
+
+		hosts = append(hosts, d)
+	}
+
+	if len(hosts) == 0 {
 		log.Fatalf("zero hosts to configure")
 	}
 
@@ -98,7 +120,7 @@ func runNetconfig(cmd *cobra.Command, args []string) {
 		PrivateKey: viper.GetString("junos.keyfile"),
 	}
 
-	nc, err := netconfig.NewNetConfig(configDir, resp.Hosts, auth, z.Environment)
+	nc, err := netconfig.NewNetConfig(configDir, hosts, auth, z.Environment)
 	if err != nil {
 		log.Fatal(err)
 	}

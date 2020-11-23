@@ -22,7 +22,7 @@ import (
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 
-	pb "github.com/xaque208/znet/rpc"
+	"github.com/xaque208/znet/rpc"
 	"github.com/xaque208/znet/znet"
 )
 
@@ -72,9 +72,9 @@ func off(cmd *cobra.Command, args []string) {
 		}
 	}()
 
-	lc := pb.NewLightsClient(conn)
+	lc := rpc.NewLightsClient(conn)
 
-	req := &pb.LightGroup{
+	req := &rpc.LightGroup{
 		Name: roomName,
 	}
 

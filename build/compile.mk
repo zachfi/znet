@@ -30,6 +30,8 @@ proto-grpc:
 	@protoc -I rpc/ rpc/rpc.proto \
 		--go_out=plugins=grpc:rpc \
 		--gotemplate_out=template_dir=templates,debug=true,single-package-mode=true,all=true:internal
+	@protoc -I rpc/ rpc/rpc.proto \
+		--gotemplate_out=template_dir=templates.cmd,debug=true,single-package-mode=true,all=true:cmd
 
 compile-all: deps-only
 	@echo "=== $(PROJECT_NAME) === [ compile          ]: building commands:"

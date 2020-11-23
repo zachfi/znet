@@ -85,7 +85,7 @@ func (m *EventMachine) Send(t interface{}) error {
 	return nil
 }
 
-// forwardChan creates a new channel to register with the eventServer before returning the channel.
+// Receive creates a new channel to register with the eventServer before returning the channel.
 func (m *EventMachine) Receive() chan *events.Event {
 	ch := make(chan *events.Event, 100)
 
@@ -100,6 +100,7 @@ func (m *EventMachine) Receive() chan *events.Event {
 	return ch
 }
 
+// ReceiveStop removes the received channel from the forwardChans table.
 func (m *EventMachine) ReceiveStop(ch chan *events.Event) {
 	m.Lock()
 
@@ -117,7 +118,7 @@ func (m *EventMachine) ReceiveStop(ch chan *events.Event) {
 	m.Unlock()
 }
 
-// ReadStream will use the received RPC events client to forever execute the
+// ReadStream will use the RPC events client to forever execute the
 // readStreamOnce to consume events from from the RPC server.
 func (m *EventMachine) ReadStream(client rpc.EventsClient, eventSub *rpc.EventSub) {
 	for {

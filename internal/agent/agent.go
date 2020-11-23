@@ -99,7 +99,7 @@ func (a *Agent) namedTimerHandler(name string, payload events.Payload) error {
 	return nil
 }
 
-func (a *Agent) newExecRequestHandler(name string, payload events.Payload) error {
+func (a *Agent) execRequestHandler(name string, payload events.Payload) error {
 	var x ExecRequest
 
 	err := json.Unmarshal(payload, &x)
@@ -108,9 +108,6 @@ func (a *Agent) newExecRequestHandler(name string, payload events.Payload) error
 	}
 
 	log.Warn("TODO newExecRequestHandler()")
-
-	// returnejnivtfgvbheljfnrilruvlldiennunvcrvbei
-	// .executeForEvent(x)
 
 	return nil
 }

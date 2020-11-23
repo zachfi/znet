@@ -23,7 +23,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	pb "github.com/xaque208/znet/rpc"
+	"github.com/xaque208/znet/rpc"
 	"github.com/xaque208/znet/znet"
 )
 
@@ -71,9 +71,9 @@ func runLights(cmd *cobra.Command, args []string) {
 		}
 	}()
 
-	lc := pb.NewLightsClient(conn)
+	lc := rpc.NewLightsClient(conn)
 
-	req := &pb.LightRequest{}
+	req := &rpc.LightRequest{}
 
 	res, err := lc.Status(context.Background(), req)
 	if err != nil {

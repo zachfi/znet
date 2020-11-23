@@ -8,7 +8,6 @@ import (
 
 	"github.com/xaque208/znet/internal/inventory"
 	"github.com/xaque208/znet/rpc"
-	pb "github.com/xaque208/znet/rpc"
 )
 
 // RPC Listener
@@ -16,8 +15,8 @@ type inventoryServer struct {
 	inventory *inventory.Inventory
 }
 
-func (r *inventoryServer) Search(ctx context.Context, request *pb.SearchRequest) (*pb.SearchResponse, error) {
-	response := &pb.SearchResponse{}
+func (r *inventoryServer) Search(ctx context.Context, request *rpc.SearchRequest) (*rpc.SearchResponse, error) {
+	response := &rpc.SearchResponse{}
 
 	hosts, err := r.inventory.ListNetworkHosts()
 	if err != nil {
@@ -56,8 +55,8 @@ func (r *inventoryServer) Stop() {
 	r.inventory.Close()
 }
 
-func (r *inventoryServer) ListNetworkHosts(ctx context.Context, request *pb.Empty) (*pb.SearchResponse, error) {
-	response := &pb.SearchResponse{}
+func (r *inventoryServer) ListNetworkHosts(ctx context.Context, request *rpc.Empty) (*rpc.SearchResponse, error) {
+	response := &rpc.SearchResponse{}
 
 	hosts, err := r.inventory.ListNetworkHosts()
 	if err != nil {
@@ -66,7 +65,7 @@ func (r *inventoryServer) ListNetworkHosts(ctx context.Context, request *pb.Empt
 
 	if hosts != nil {
 		for _, h := range *hosts {
-			host := &pb.NetworkHost{
+			host := &rpc.NetworkHost{
 				Description:     h.Description,
 				Dn:              h.Dn,
 				Domain:          h.Domain,
@@ -110,7 +109,7 @@ func getRPCHosts(hosts *[]inventory.NetworkHost) []*rpc.NetworkHost {
 	if hosts != nil {
 		for _, h := range *hosts {
 
-			host := &pb.NetworkHost{
+			host := &rpc.NetworkHost{
 				Description:     h.Description,
 				Dn:              h.Dn,
 				Domain:          h.Domain,
@@ -154,7 +153,7 @@ func getRPCNetworkIDs(networkIDs *[]inventory.NetworkID) []*rpc.NetworkID {
 
 	if networkIDs != nil {
 		for _, h := range *networkIDs {
-			host := &pb.NetworkID{
+			host := &rpc.NetworkID{
 				Dn:   h.Dn,
 				Name: h.Name,
 			}
@@ -187,7 +186,7 @@ func getRPCZigbeeDevices(zigbeeDevices *[]inventory.ZigbeeDevice) []*rpc.ZigbeeD
 
 	if zigbeeDevices != nil {
 		for _, h := range *zigbeeDevices {
-			zd := &pb.ZigbeeDevice{
+			zd := &rpc.ZigbeeDevice{
 				Dn:               h.Dn,
 				Name:             h.Name,
 				Description:      h.Description,

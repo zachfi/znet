@@ -170,12 +170,9 @@ message IOTZone {
 }
 
 service Inventory {
-  rpc Search(SearchRequest) returns (SearchResponse);
-
-  rpc ListNetworkHosts(Empty) returns (SearchResponse);
-  // rpc ListZigbeeDevices(Empty) returns (SearchResponse);
-  // rpc SearchNetworks(Empty) returns (Empty);
-  // rpc SearchZones(Empty) returns (Empty);
+  rpc ListNetworkHosts(Empty) returns (stream NetworkHost);
+  rpc ListNetworkIDs(Empty) returns (stream NetworkID);
+  rpc ListZigbeeDevices(Empty) returns (stream ZigbeeDevice);
 }
 
 service Telemetry {
