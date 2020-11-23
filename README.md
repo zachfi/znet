@@ -2,6 +2,8 @@
 
 ![Build Status](https://github.com/xaque208/znet/workflows/Compiling/badge.svg)
 
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/xaque208/znet)](https://pkg.go.dev/github.com/xaque208/znet)
+
 > It isn't the destination, but the journey.
 
     agent       Run a znet agent
