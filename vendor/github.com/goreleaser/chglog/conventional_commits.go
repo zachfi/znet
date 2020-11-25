@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// nolint: gochecknoglobals,gocritic
+// nolint:gocritic
 var expectedFormatRegex = regexp.MustCompile(`(?s)^(?P<category>\S+?)?(?P<scope>\(\S+\))?(?P<breaking>!?)?: (?P<description>[^\n\r]+)?([\n\r]{2}(?P<body>.*))?`)
 
 // ParseConventionalCommit takes a commits message and parses it into usable blocks.
@@ -15,6 +15,7 @@ func ParseConventionalCommit(message string) (commit *ConventionalCommit) {
 	if len(match) == 0 {
 		parts := strings.SplitN(message, "\n", 2)
 		parts = append(parts, "")
+
 		return &ConventionalCommit{
 			Description: parts[0],
 			Body:        processMsg(parts[1]),

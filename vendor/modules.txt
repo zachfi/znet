@@ -56,6 +56,9 @@ github.com/Masterminds/semver
 github.com/Masterminds/semver/v3
 # github.com/Masterminds/sprig v2.22.0+incompatible
 github.com/Masterminds/sprig
+# github.com/Microsoft/go-winio v0.4.15
+github.com/Microsoft/go-winio
+github.com/Microsoft/go-winio/pkg/guid
 # github.com/OpenPeeDeeP/depguard v1.0.1
 github.com/OpenPeeDeeP/depguard
 # github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
@@ -355,9 +358,11 @@ github.com/google/wire
 github.com/googleapis/gax-go
 # github.com/googleapis/gax-go/v2 v2.0.5
 github.com/googleapis/gax-go/v2
-# github.com/goreleaser/chglog v0.1.1
+# github.com/goreleaser/chglog v0.1.2
 github.com/goreleaser/chglog
-# github.com/goreleaser/goreleaser v0.146.0
+# github.com/goreleaser/fileglob v0.3.0
+github.com/goreleaser/fileglob
+# github.com/goreleaser/goreleaser v0.147.2
 github.com/goreleaser/goreleaser
 github.com/goreleaser/goreleaser/cmd
 github.com/goreleaser/goreleaser/internal/artifact
@@ -413,7 +418,7 @@ github.com/goreleaser/goreleaser/pkg/build
 github.com/goreleaser/goreleaser/pkg/config
 github.com/goreleaser/goreleaser/pkg/context
 github.com/goreleaser/goreleaser/pkg/defaults
-# github.com/goreleaser/nfpm v1.8.0
+# github.com/goreleaser/nfpm v1.10.1
 github.com/goreleaser/nfpm
 github.com/goreleaser/nfpm/apk
 github.com/goreleaser/nfpm/deb
@@ -494,7 +499,7 @@ github.com/jstemmer/go-junit-report/formatter
 github.com/jstemmer/go-junit-report/parser
 # github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 github.com/kballard/go-shellquote
-# github.com/kevinburke/ssh_config v0.0.0-20190725054713-01f96b0aa0cd
+# github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351
 github.com/kevinburke/ssh_config
 # github.com/kisielk/gotool v1.0.0
 github.com/kisielk/gotool
@@ -508,7 +513,7 @@ github.com/llorllale/go-gitlint/cmd/go-gitlint
 github.com/llorllale/go-gitlint/internal/commits
 github.com/llorllale/go-gitlint/internal/issues
 github.com/llorllale/go-gitlint/internal/repo
-# github.com/magiconair/properties v1.8.2
+# github.com/magiconair/properties v1.8.4
 github.com/magiconair/properties
 # github.com/maratori/testpackage v1.0.1
 github.com/maratori/testpackage/pkg/testpackage
@@ -524,9 +529,6 @@ github.com/mattn/go-isatty
 github.com/mattn/go-runewidth
 # github.com/mattn/go-shellwords v1.0.10
 github.com/mattn/go-shellwords
-# github.com/mattn/go-zglob v0.0.3
-github.com/mattn/go-zglob
-github.com/mattn/go-zglob/fastwalk
 # github.com/matttproud/golang_protobuf_extensions v1.0.1
 github.com/matttproud/golang_protobuf_extensions/pbutil
 # github.com/mbilski/exhaustivestruct v1.1.0
@@ -569,7 +571,7 @@ github.com/nishanths/exhaustive
 github.com/olekukonko/tablewriter
 # github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
 github.com/op/go-logging
-# github.com/pelletier/go-toml v1.8.0
+# github.com/pelletier/go-toml v1.8.1
 github.com/pelletier/go-toml
 # github.com/phayes/checkstyle v0.0.0-20170904204023-bfd46e6a821d
 github.com/phayes/checkstyle
@@ -642,7 +644,7 @@ github.com/sonatard/noctx/ngfunc
 github.com/sonatard/noctx/reqwithoutctx
 # github.com/sourcegraph/go-diff v0.6.1
 github.com/sourcegraph/go-diff/diff
-# github.com/spf13/afero v1.3.5
+# github.com/spf13/afero v1.4.1
 github.com/spf13/afero
 github.com/spf13/afero/mem
 # github.com/spf13/cast v1.3.1
@@ -699,9 +701,9 @@ github.com/ultraware/whitespace
 github.com/urfave/cli
 # github.com/uudashr/gocognit v1.0.1
 github.com/uudashr/gocognit
-# github.com/xanzy/go-gitlab v0.38.1
+# github.com/xanzy/go-gitlab v0.39.0
 github.com/xanzy/go-gitlab
-# github.com/xanzy/ssh-agent v0.2.1
+# github.com/xanzy/ssh-agent v0.3.0
 github.com/xanzy/ssh-agent
 # github.com/xaque208/rftoy v0.0.0-20191203015236-4727b87c3461
 github.com/xaque208/rftoy/rftoy
@@ -788,7 +790,7 @@ golang.org/x/mod/internal/lazyregexp
 golang.org/x/mod/modfile
 golang.org/x/mod/module
 golang.org/x/mod/semver
-# golang.org/x/net v0.0.0-20200904194848-62affa334b73
+# golang.org/x/net v0.0.0-20201031054903-ff519b6c9102
 golang.org/x/net/context
 golang.org/x/net/context/ctxhttp
 golang.org/x/net/http/httpguts
@@ -810,7 +812,7 @@ golang.org/x/oauth2/jwt
 # golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
 golang.org/x/sync/errgroup
 golang.org/x/sync/singleflight
-# golang.org/x/sys v0.0.0-20201015000850-e3ed0017c211
+# golang.org/x/sys v0.0.0-20201109165425-215b40eba54c
 golang.org/x/sys/cpu
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/plan9
@@ -820,7 +822,7 @@ golang.org/x/sys/windows/registry
 golang.org/x/sys/windows/svc/eventlog
 # golang.org/x/term v0.0.0-20201117132131-f5c789dd3221
 golang.org/x/term
-# golang.org/x/text v0.3.3
+# golang.org/x/text v0.3.4
 golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
@@ -1041,7 +1043,7 @@ gopkg.in/AlecAivazis/survey.v1/core
 gopkg.in/AlecAivazis/survey.v1/terminal
 # gopkg.in/alecthomas/kingpin.v2 v2.2.6
 gopkg.in/alecthomas/kingpin.v2
-# gopkg.in/ini.v1 v1.61.0
+# gopkg.in/ini.v1 v1.62.0
 gopkg.in/ini.v1
 # gopkg.in/kyokomi/emoji.v1 v1.5.1
 gopkg.in/kyokomi/emoji.v1

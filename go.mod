@@ -15,7 +15,7 @@ require (
 	github.com/go-openapi/strfmt v0.19.5 // indirect
 	github.com/golang/protobuf v1.4.3
 	github.com/golangci/golangci-lint v1.33.0
-	github.com/goreleaser/goreleaser v0.146.0
+	github.com/goreleaser/goreleaser v0.147.2
 	github.com/hashicorp/vault/api v1.0.5-0.20200717191844-f687267c8086
 	github.com/hashicorp/vault/sdk v0.1.14-0.20200717191844-f687267c8086
 	github.com/imdario/mergo v0.3.11
@@ -23,10 +23,8 @@ require (
 	github.com/johanbrandhorst/certify v1.8.1
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 	github.com/llorllale/go-gitlint v0.0.0-20200802191503-5984945d4b80
-	github.com/magiconair/properties v1.8.2 // indirect
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/mitchellh/mapstructure v1.3.3 // indirect
 	github.com/mpvl/unique v0.0.0-20150818121801-cbe035fff7de
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.8.0
@@ -34,7 +32,6 @@ require (
 	github.com/psampaz/go-mod-outdated v0.7.0
 	github.com/scottdware/go-junos v0.0.0-20200809143445-1805793fac10
 	github.com/sirupsen/logrus v1.7.0
-	github.com/spf13/afero v1.3.5 // indirect
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.6.1
@@ -44,13 +41,11 @@ require (
 	github.com/xaque208/rftoy v0.0.0-20191203015236-4727b87c3461
 	go.mongodb.org/mongo-driver v1.4.1 // indirect
 	golang.org/x/crypto v0.0.0-20201117144127-c1f2f97bffc9
-	golang.org/x/net v0.0.0-20200904194848-62affa334b73 // indirect
 	golang.org/x/tools v0.0.0-20201013201025-64a9e34f3752
 	google.golang.org/genproto v0.0.0-20201119123407-9b1e624d6bc4 // indirect
 	google.golang.org/grpc v1.33.2
 	google.golang.org/protobuf v1.25.0
 	gopkg.in/AlecAivazis/survey.v1 v1.8.8 // indirect
-	gopkg.in/ini.v1 v1.61.0 // indirect
 	gopkg.in/kyokomi/emoji.v1 v1.5.1 // indirect
 	gopkg.in/yaml.v2 v2.3.0
 	logur.dev/adapter/logrus v0.5.0
