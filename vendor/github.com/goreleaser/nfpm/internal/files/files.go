@@ -3,6 +3,8 @@ package files
 import (
 	"sort"
 
+	"github.com/goreleaser/fileglob"
+
 	"github.com/goreleaser/nfpm/internal/glob"
 )
 
@@ -14,11 +16,15 @@ type FileToCopy struct {
 }
 
 // Expand gathers all of the real files to be copied into the package.
-func Expand(filesSrcDstMap map[string]string) ([]FileToCopy, error) {
+func Expand(filesSrcDstMap map[string]string, disableGlobbing bool) ([]FileToCopy, error) {
 	var files []FileToCopy
 
-	for srcglob, dstroot := range filesSrcDstMap {
-		globbed, err := glob.Glob(srcglob, dstroot)
+	for srcGlob, dstRoot := range filesSrcDstMap {
+		if disableGlobbing {
+			srcGlob = fileglob.QuoteMeta(srcGlob)
+		}
+
+		globbed, err := glob.Glob(srcGlob, dstRoot)
 		if err != nil {
 			return nil, err
 		}

@@ -13,7 +13,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/campoy/unique"
-	"github.com/mattn/go-zglob"
+	"github.com/goreleaser/fileglob"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/ids"
@@ -146,7 +146,7 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 	archiveFile, err := os.Create(archivePath)
 	if err != nil {
 		lock.Unlock()
-		return fmt.Errorf("failed to create directory %s: %s", archivePath, err.Error())
+		return fmt.Errorf("failed to create directory %s: %w", archivePath, err)
 	}
 	lock.Unlock()
 	defer archiveFile.Close()
@@ -166,16 +166,16 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 
 	files, err := findFiles(template, arch)
 	if err != nil {
-		return fmt.Errorf("failed to find files to archive: %s", err.Error())
+		return fmt.Errorf("failed to find files to archive: %w", err)
 	}
 	for _, f := range files {
 		if err = a.Add(f, f); err != nil {
-			return fmt.Errorf("failed to add %s to the archive: %s", f, err.Error())
+			return fmt.Errorf("failed to add %s to the archive: %w", f, err)
 		}
 	}
 	for _, binary := range binaries {
 		if err := a.Add(binary.Name, binary.Path); err != nil {
-			return fmt.Errorf("failed to add %s -> %s to the archive: %s", binary.Path, binary.Name, err.Error())
+			return fmt.Errorf("failed to add %s -> %s to the archive: %w", binary.Path, binary.Name, err)
 		}
 	}
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -240,7 +240,7 @@ func findFiles(template *tmpl.Template, archive config.Archive) (result []string
 		if err != nil {
 			return result, fmt.Errorf("failed to apply template %s: %w", glob, err)
 		}
-		files, err := zglob.Glob(replaced)
+		files, err := fileglob.Glob(replaced)
 		if err != nil {
 			return result, fmt.Errorf("globbing failed for pattern %s: %w", glob, err)
 		}

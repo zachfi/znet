@@ -153,6 +153,7 @@ type Info struct {
 	License         string `yaml:"license,omitempty"`
 	Bindir          string `yaml:"bindir,omitempty"` // Deprecated: this does nothing. TODO: remove.
 	Changelog       string `yaml:"changelog,omitempty"`
+	DisableGlobbing bool   `yaml:"disable_globbing"`
 	Target          string `yaml:"-"`
 }
 
@@ -177,10 +178,12 @@ type Overridables struct {
 // RPM is custom configs that are only available on RPM packages.
 type RPM struct {
 	Group       string `yaml:"group,omitempty"`
+	Summary     string `yaml:"summary,omitempty"`
 	Compression string `yaml:"compression,omitempty"`
 	// https://www.cl.cam.ac.uk/~jw35/docs/rpm_config.html
 	ConfigNoReplaceFiles map[string]string `yaml:"config_noreplace_files,omitempty"`
 	Signature            RPMSignature      `yaml:"signature,omitempty"`
+	GhostFiles           []string          `yaml:"ghost_files,omitempty"`
 }
 
 type RPMSignature struct {
@@ -232,7 +235,8 @@ type DebTriggers struct {
 
 // DebScripts is scripts only available on deb packages.
 type DebScripts struct {
-	Rules string `yaml:"rules,omitempty"`
+	Rules     string `yaml:"rules,omitempty"`
+	Templates string `yaml:"templates,omitempty"`
 }
 
 // Scripts contains information about maintainer scripts for packages.
