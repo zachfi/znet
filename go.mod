@@ -47,7 +47,7 @@ require (
 	google.golang.org/protobuf v1.25.0
 	gopkg.in/AlecAivazis/survey.v1 v1.8.8 // indirect
 	gopkg.in/kyokomi/emoji.v1 v1.5.1 // indirect
-	gopkg.in/yaml.v2 v2.3.0
+	gopkg.in/yaml.v2 v2.4.0
 	logur.dev/adapter/logrus v0.5.0
 	logur.dev/logur v0.17.0 // indirect
 )
