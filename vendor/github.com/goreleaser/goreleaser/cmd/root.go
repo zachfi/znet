@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
 	"os"
 
 	"github.com/apex/log"
@@ -16,11 +15,7 @@ func Execute(version string, exit func(int), args []string) {
 	if os.Getenv("CI") != "" {
 		color.NoColor = false
 	}
-
 	log.SetHandler(cli.Default)
-
-	fmt.Println()
-	defer fmt.Println()
 	newRootCmd(version, exit).Execute(args)
 }
 
@@ -92,8 +87,9 @@ func shouldPrependRelease(cmd *cobra.Command, args []string) bool {
 		return false
 	}
 
-	// allow help and __complete commands.
-	if len(args) > 0 && (args[0] == "help" || args[0] == "__complete") {
+	// allow help and the two __complete commands.
+	if len(args) > 0 && (args[0] == "help" ||
+		args[0] == cobra.ShellCompRequestCmd || args[0] == cobra.ShellCompNoDescRequestCmd) {
 		return false
 	}
 

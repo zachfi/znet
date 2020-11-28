@@ -30,6 +30,7 @@ type GitLabURLs struct {
 // GiteaURLs holds the URLs to be used when using gitea.
 type GiteaURLs struct {
 	API           string `yaml:"api,omitempty"`
+	Download      string `yaml:"download,omitempty"`
 	SkipTLSVerify bool   `yaml:"skip_tls_verify,omitempty"`
 }
 
@@ -101,6 +102,7 @@ type Homebrew struct {
 	Conflicts        []string             `yaml:",omitempty"`
 	Description      string               `yaml:",omitempty"`
 	Homepage         string               `yaml:",omitempty"`
+	License          string               `yaml:",omitempty"`
 	SkipUpload       string               `yaml:"skip_upload,omitempty"`
 	DownloadStrategy string               `yaml:"download_strategy,omitempty"`
 	URLTemplate      string               `yaml:"url_template,omitempty"`
@@ -405,6 +407,7 @@ type NFPMOverridables struct {
 	EmptyFolders     []string          `yaml:"empty_folders,omitempty"`
 	Files            map[string]string `yaml:",omitempty"`
 	ConfigFiles      map[string]string `yaml:"config_files,omitempty"`
+	Symlinks         map[string]string `yaml:"symlinks,omitempty"`
 	Scripts          NFPMScripts       `yaml:"scripts,omitempty"`
 	RPM              NFPMRPM           `yaml:"rpm,omitempty"`
 	Deb              NFPMDeb           `yaml:"deb,omitempty"`
@@ -487,6 +490,14 @@ type Docker struct {
 	BuildFlagTemplates []string `yaml:"build_flag_templates,omitempty"`
 }
 
+// DockerManifest config.
+type DockerManifest struct {
+	NameTemplate   string   `yaml:"name_template,omitempty"`
+	ImageTemplates []string `yaml:"image_templates,omitempty"`
+	CreateFlags    []string `yaml:"create_flags,omitempty"`
+	PushFlags      []string `yaml:"push_flags,omitempty"`
+}
+
 // Filters config.
 type Filters struct {
 	Exclude []string `yaml:",omitempty"`
@@ -560,29 +571,30 @@ type Source struct {
 
 // Project includes all project configuration.
 type Project struct {
-	ProjectName   string      `yaml:"project_name,omitempty"`
-	Env           []string    `yaml:",omitempty"`
-	Release       Release     `yaml:",omitempty"`
-	Milestones    []Milestone `yaml:",omitempty"`
-	Brews         []Homebrew  `yaml:",omitempty"`
-	Scoop         Scoop       `yaml:",omitempty"`
-	Builds        []Build     `yaml:",omitempty"`
-	Archives      []Archive   `yaml:",omitempty"`
-	NFPMs         []NFPM      `yaml:"nfpms,omitempty"`
-	Snapcrafts    []Snapcraft `yaml:",omitempty"`
-	Snapshot      Snapshot    `yaml:",omitempty"`
-	Checksum      Checksum    `yaml:",omitempty"`
-	Dockers       []Docker    `yaml:",omitempty"`
-	Artifactories []Upload    `yaml:",omitempty"`
-	Uploads       []Upload    `yaml:",omitempty"`
-	Blobs         []Blob      `yaml:"blobs,omitempty"`
-	Publishers    []Publisher `yaml:"publishers,omitempty"`
-	Changelog     Changelog   `yaml:",omitempty"`
-	Dist          string      `yaml:",omitempty"`
-	Signs         []Sign      `yaml:",omitempty"`
-	EnvFiles      EnvFiles    `yaml:"env_files,omitempty"`
-	Before        Before      `yaml:",omitempty"`
-	Source        Source      `yaml:",omitempty"`
+	ProjectName     string           `yaml:"project_name,omitempty"`
+	Env             []string         `yaml:",omitempty"`
+	Release         Release          `yaml:",omitempty"`
+	Milestones      []Milestone      `yaml:",omitempty"`
+	Brews           []Homebrew       `yaml:",omitempty"`
+	Scoop           Scoop            `yaml:",omitempty"`
+	Builds          []Build          `yaml:",omitempty"`
+	Archives        []Archive        `yaml:",omitempty"`
+	NFPMs           []NFPM           `yaml:"nfpms,omitempty"`
+	Snapcrafts      []Snapcraft      `yaml:",omitempty"`
+	Snapshot        Snapshot         `yaml:",omitempty"`
+	Checksum        Checksum         `yaml:",omitempty"`
+	Dockers         []Docker         `yaml:",omitempty"`
+	DockerManifests []DockerManifest `yaml:"docker_manifests,omitempty"`
+	Artifactories   []Upload         `yaml:",omitempty"`
+	Uploads         []Upload         `yaml:",omitempty"`
+	Blobs           []Blob           `yaml:"blobs,omitempty"`
+	Publishers      []Publisher      `yaml:"publishers,omitempty"`
+	Changelog       Changelog        `yaml:",omitempty"`
+	Dist            string           `yaml:",omitempty"`
+	Signs           []Sign           `yaml:",omitempty"`
+	EnvFiles        EnvFiles         `yaml:"env_files,omitempty"`
+	Before          Before           `yaml:",omitempty"`
+	Source          Source           `yaml:",omitempty"`
 
 	// this is a hack ¯\_(ツ)_/¯
 	SingleBuild Build `yaml:"build,omitempty"`
