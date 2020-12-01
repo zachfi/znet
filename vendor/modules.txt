@@ -362,7 +362,7 @@ github.com/googleapis/gax-go/v2
 github.com/goreleaser/chglog
 # github.com/goreleaser/fileglob v0.3.0
 github.com/goreleaser/fileglob
-# github.com/goreleaser/goreleaser v0.148.0
+# github.com/goreleaser/goreleaser v0.149.0
 github.com/goreleaser/goreleaser
 github.com/goreleaser/goreleaser/cmd
 github.com/goreleaser/goreleaser/internal/artifact
