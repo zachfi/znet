@@ -76,10 +76,11 @@ func newTelemetryServer(inv *inventory.Inventory, eventMachine *eventmachine.Eve
 						"device": k,
 					}).Info("expiring")
 
-					airTemperature.Delete(prometheus.Labels{"device": k})
-					airHumidity.Delete(prometheus.Labels{"device": k})
 					airHeatindex.Delete(prometheus.Labels{"device": k})
+					airHumidity.Delete(prometheus.Labels{"device": k})
+					airTemperature.Delete(prometheus.Labels{"device": k})
 					thingWireless.Delete(prometheus.Labels{"device": k})
+					waterTemperature.Delete(prometheus.Labels{"device": k})
 
 					delete(s.seenThings, k)
 					delete(s.keeper, k)
@@ -299,6 +300,11 @@ func (l *telemetryServer) ReportIOTDevice(ctx context.Context, request *pb.IOTDe
 		if err != nil {
 			return &pb.Empty{}, err
 		}
+	case "water":
+		err = l.handleWaterReport(request)
+		if err != nil {
+			return &pb.Empty{}, err
+		}
 	case "led1", "led2":
 		err = l.handleLEDReport(request)
 		if err != nil {
@@ -435,7 +441,7 @@ func (l *telemetryServer) handleZigbeeReport(request *pb.IOTDevice) error {
 
 func (l *telemetryServer) handleLEDReport(request *pb.IOTDevice) error {
 	if request == nil {
-		return fmt.Errorf("unable to read wifi report from nil request")
+		return fmt.Errorf("unable to read led report from nil request")
 	}
 
 	discovery := request.DeviceDiscovery
@@ -458,9 +464,32 @@ func (l *telemetryServer) handleLEDReport(request *pb.IOTDevice) error {
 	return nil
 }
 
+func (l *telemetryServer) handleWaterReport(request *pb.IOTDevice) error {
+	if request == nil {
+		return fmt.Errorf("unable to read water report from nil request")
+	}
+
+	discovery := request.DeviceDiscovery
+
+	msg, err := iot.ReadMessage("water", discovery.Message, discovery.Endpoint...)
+	if err != nil {
+		return err
+	}
+
+	if msg != nil {
+		m := msg.(iot.WaterMessage)
+
+		if m.Temperature != nil {
+			waterTemperature.WithLabelValues(discovery.NodeId).Set(float64(*m.Temperature))
+		}
+	}
+
+	return nil
+}
+
 func (l *telemetryServer) handleAirReport(request *pb.IOTDevice) error {
 	if request == nil {
-		return fmt.Errorf("unable to read wifi report from nil request")
+		return fmt.Errorf("unable to read air report from nil request")
 	}
 
 	discovery := request.DeviceDiscovery

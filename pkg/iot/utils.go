@@ -131,6 +131,13 @@ func ReadMessage(objectID string, payload []byte, endpoint ...string) (interface
 			log.Error(err)
 		}
 		return m, nil
+	case "water":
+		m := WaterMessage{}
+		err := json.Unmarshal(payload, &m)
+		if err != nil {
+			log.Error(err)
+		}
+		return m, nil
 	case "led":
 		if len(endpoint) > 0 {
 			if endpoint[0] == "config" {

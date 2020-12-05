@@ -91,6 +91,11 @@ type AirMessage struct {
 	TempCoef    *float64 `json:"tempcoef,omitempty"`
 }
 
+type WaterMessage struct {
+	Temperature *float32 `json:"temperature,omitempty"`
+	TempCoef    *float64 `json:"tempcoef,omitempty"`
+}
+
 type LEDConfig struct {
 	Schema       string   `json:"schema"`
 	Brightness   bool     `json:"brightness"`

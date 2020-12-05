@@ -52,9 +52,9 @@ func init() {
 		airHumidity,
 		airTemperature,
 		tempCoef,
+		thingWireless,
 		waterTempCoef,
 		waterTemperature,
-		thingWireless,
 
 		// rpc
 		rpcEventServerEventCount,
