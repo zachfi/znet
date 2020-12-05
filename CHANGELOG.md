@@ -1,3 +1,5 @@
+<a name="v0.28.2"></a>
+## [v0.28.2] - 2020-12-04
 <a name="v0.28.1"></a>
 ## [v0.28.1] - 2020-11-27
 ### Bug Fixes
@@ -662,7 +664,8 @@
 ## [v0.0.2] - 2018-09-03
 <a name="v0.0.1"></a>
 ## v0.0.1 - 2018-09-03
-[Unreleased]: https://github.com/xaque208/znet/compare/v0.28.1...HEAD
+[Unreleased]: https://github.com/xaque208/znet/compare/v0.28.2...HEAD
+[v0.28.2]: https://github.com/xaque208/znet/compare/v0.28.1...v0.28.2
 [v0.28.1]: https://github.com/xaque208/znet/compare/v0.28.0...v0.28.1
 [v0.28.0]: https://github.com/xaque208/znet/compare/v0.27.10...v0.28.0
 [v0.27.10]: https://github.com/xaque208/znet/compare/v0.27.9...v0.27.10
