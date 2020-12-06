@@ -2,9 +2,9 @@ name: Testing
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   lint:
@@ -23,8 +23,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
-    - name: Lint
-      run: make lint
+      - name: Lint
+        run: make lint
 
   test-unit:
     needs: lint
@@ -43,6 +43,5 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
-    - name: Unit Tests
-      run: make test-unit
-
+      - name: Unit Tests
+        run: make test-unit
