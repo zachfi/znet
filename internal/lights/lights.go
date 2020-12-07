@@ -1,19 +1,15 @@
 package lights
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"sort"
-	"strings"
 
 	"github.com/amimof/huego"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/mpvl/unique"
 	log "github.com/sirupsen/logrus"
 	"github.com/xaque208/rftoy/rftoy"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	"github.com/xaque208/znet/internal/astro"
 	"github.com/xaque208/znet/internal/timer"
@@ -25,22 +21,36 @@ import (
 // Lights holds the information necessary to communicate with lighting
 // equipment, and the configuration to add a bit of context.
 type Lights struct {
-	config          Config
-	HUE             *huego.Bridge
-	inventoryClient rpc.InventoryClient
-	mqttClient      mqtt.Client
-	RFToy           *rftoy.RFToy
+	config   Config
+	Handlers []Light
 }
 
 // NewLights creates and returns a new Lights object based on the received
 // configuration.
 func NewLights(config Config, inventoryClient rpc.InventoryClient, mqttClient mqtt.Client) *Lights {
 	l := Lights{
+		config: config,
+	}
+
+	hue := hueLight{
+		config: config,
+		hue:    huego.New(config.Hue.Endpoint, config.Hue.User),
+	}
+
+	zigbee := zigbeeLight{
 		config:          config,
-		HUE:             huego.New(config.Hue.Endpoint, config.Hue.User),
 		inventoryClient: inventoryClient,
 		mqttClient:      mqttClient,
-		RFToy:           &rftoy.RFToy{Address: config.RFToy.Endpoint},
+	}
+
+	rftoy := rftoyLight{
+		endpoint: &rftoy.RFToy{Address: config.RFToy.Endpoint},
+	}
+
+	l.Handlers = []Light{
+		hue,
+		zigbee,
+		rftoy,
 	}
 
 	return &l
@@ -144,27 +154,41 @@ func (l *Lights) clickHandler(name string, payload events.Payload) error {
 				log.Warnf("unknown click event: %s", e)
 			}
 
-			if toggle {
-				err := l.Toggle(room.Name)
-				if err != nil {
-					log.Error(err)
+			for _, h := range l.Handlers {
+				if toggle {
+					err := h.Toggle(room.Name)
+					if err != nil {
+						log.Error(err)
+					}
 				}
-			}
 
-			if off {
-				l.Off(room.Name)
-			}
+				if off {
+					err := h.Off(room.Name)
+					if err != nil {
+						log.Error(err)
+					}
+				}
 
-			if on {
-				l.On(room.Name)
-			}
+				if on {
+					err := h.On(room.Name)
+					if err != nil {
+						log.Error(err)
+					}
+				}
 
-			if alert {
-				l.Alert(room.Name)
-			}
+				if alert {
+					err := h.Alert(room.Name)
+					if err != nil {
+						log.Error(err)
+					}
+				}
 
-			if dim {
-				l.Dim(room.Name, 100)
+				if dim {
+					err := h.Dim(room.Name, 100)
+					if err != nil {
+						log.Error(err)
+					}
+				}
 			}
 		}
 	}
@@ -226,286 +250,34 @@ func (l *Lights) setRoomForEvent(name string) {
 	for _, room := range l.config.Rooms {
 		for _, o := range room.On {
 			if o == name {
-				l.On(room.Name)
+				for _, h := range l.Handlers {
+					h.On(room.Name)
+				}
 			}
 		}
 
 		for _, o := range room.Off {
 			if o == name {
-				l.Off(room.Name)
+				for _, h := range l.Handlers {
+					h.Off(room.Name)
+				}
 			}
 		}
 
 		for _, o := range room.Dim {
 			if o == name {
-				l.Dim(room.Name, 100)
+				for _, h := range l.Handlers {
+					h.Dim(room.Name, 100)
+				}
 			}
 		}
 
 		for _, o := range room.Alert {
 			if o == name {
-				l.Alert(room.Name)
-			}
-		}
-	}
-}
-
-// getLight calls the Hue bridge and looks for a light, that, when normalized,
-// matches the name received.
-func (l *Lights) getLight(lightName string) (*huego.Light, error) {
-	lights, err := l.HUE.GetLights()
-	if err != nil {
-		log.Error(err)
-	}
-
-	log.Tracef("lights: %+v", lights)
-
-	for _, g := range lights {
-		flatName := strings.ToLower(strings.ReplaceAll(g.Name, " ", "_"))
-
-		if lightName == flatName {
-			return &g, nil
-		}
-
-	}
-
-	return &huego.Light{}, fmt.Errorf("light %s not found", lightName)
-}
-
-// GetGroup calls the Hue bridge and looks for a group, that, when normalized,
-// matches the name received.
-func (l *Lights) getGroup(groupName string) (*huego.Group, error) {
-	groups, err := l.HUE.GetGroups()
-	if err != nil {
-		log.Error(err)
-	}
-
-	log.Tracef("found HUE groups: %+v", groups)
-
-	for _, g := range groups {
-		flatName := strings.ToLower(strings.ReplaceAll(g.Name, " ", "_"))
-
-		if groupName == flatName {
-			return &g, nil
-		}
-	}
-
-	return &huego.Group{}, fmt.Errorf("group %s not found", groupName)
-}
-
-func (l *Lights) Toggle(groupName string) error {
-
-	log.Debugf("toggle: %s", groupName)
-
-	ctx := context.Background()
-
-	stream, err := l.inventoryClient.ListZigbeeDevices(ctx, &rpc.Empty{})
-	if err != nil {
-		switch status.Code(err) {
-		case codes.Canceled:
-			return nil
-		}
-
-		return err
-	}
-
-	for {
-		var d *rpc.ZigbeeDevice
-
-		d, err = stream.Recv()
-		if err != nil {
-			switch status.Code(err) {
-			case codes.OK:
-				continue
-			default:
-				return err
-			}
-		}
-
-		if d.IotZone != groupName {
-			continue
-		}
-
-		log.Debugf("match: %s", d)
-
-		topic := fmt.Sprintf("zigbee2mqtt/%s/set", d.Name)
-		message := map[string]string{
-			"state": "TOGGLE",
-		}
-
-		m, err := json.Marshal(message)
-		if err != nil {
-			log.Error(err)
-			continue
-		}
-
-		l.mqttClient.Publish(topic, byte(0), false, string(m))
-	}
-
-	return nil
-}
-
-// On turns off the Hue lights for a room.
-func (l *Lights) On(groupName string) {
-	room, err := l.config.Room(groupName)
-	if err != nil {
-		log.Error(err)
-	}
-
-	g, err := l.getGroup(groupName)
-	if err != nil {
-		log.Error(err)
-		var light *huego.Light
-
-		light, err = l.getLight(groupName)
-		if err != nil {
-			log.Error(err)
-		} else {
-			log.WithFields(log.Fields{
-				"name": light.Name,
-			}).Debug("turning on light")
-
-			err = light.On()
-			if err != nil {
-				log.Error(err)
-			}
-		}
-	} else {
-		log.WithFields(log.Fields{
-			"group": g.Name,
-		}).Debug("turning on light group")
-
-		err = g.On()
-		if err != nil {
-			log.Error(err)
-		}
-	}
-
-	if len(room.IDs) > 0 {
-		log.WithFields(log.Fields{
-			"ids": room.IDs,
-		}).Debug("turning on rftoy ids")
-
-		for _, i := range room.IDs {
-			err := l.RFToy.On(i)
-			if err != nil {
-				log.Error(err)
-			}
-		}
-	}
-}
-
-// Off turns off the Hue lights for a room.
-func (l *Lights) Off(groupName string) {
-	room, err := l.config.Room(groupName)
-	if err != nil {
-		log.Error(err)
-	}
-
-	// try the light by group first
-	g, err := l.getGroup(groupName)
-	if err != nil {
-		log.Error(err)
-		var light *huego.Light
-
-		// then try to get just the light
-		light, err = l.getLight(groupName)
-		if err != nil {
-			log.Error(err)
-		} else {
-			log.WithFields(log.Fields{
-				"name": light.Name,
-			}).Debug("turning off light")
-
-			err = light.Off()
-			if err != nil {
-				log.Error(err)
-			}
-		}
-
-	} else {
-		log.WithFields(log.Fields{
-			"group": g.Name,
-		}).Debug("turning off light group")
-
-		err = g.Off()
-		if err != nil {
-			log.Error(err)
-		}
-	}
-
-	if len(room.IDs) > 0 {
-		log.WithFields(log.Fields{
-			"ids": room.IDs,
-		}).Debug("turning off rftoy ids")
-
-		for _, i := range room.IDs {
-			err := l.RFToy.Off(i)
-			if err != nil {
-				log.Error(err)
-			}
-		}
-	}
-}
-
-// Dim modifies the brightness of a light group.
-func (l *Lights) Dim(groupName string, brightness int32) {
-	room, err := l.config.Room(groupName)
-	if err != nil {
-		log.Error(err)
-	}
-
-	groups, err := l.HUE.GetGroups()
-	if err != nil {
-		log.Error(err)
-	}
-
-	for _, g := range groups {
-		for _, i := range room.HueIDs {
-			if g.ID == i {
-				log.WithFields(log.Fields{
-					"name":  g.Name,
-					"state": g.State,
-				}).Debug("setting group brightness")
-
-				err := g.Bri(uint8(brightness))
-				if err != nil {
-					log.Error(err)
+				for _, h := range l.Handlers {
+					h.Alert(room.Name)
 				}
 			}
-		}
-	}
-}
-
-// Alert blinks all lights in the given light group.
-func (l *Lights) Alert(groupName string) {
-	g, err := l.getGroup(groupName)
-	if err != nil {
-		log.Error(err)
-
-		// then try to get just the light
-		light, err := l.getLight(groupName)
-		if err != nil {
-			log.Error(err)
-		} else {
-			log.WithFields(log.Fields{
-				"name": light.Name,
-			}).Debug("alerting light")
-
-			err := light.Alert("select")
-			if err != nil {
-				log.Error(err)
-			}
-		}
-
-	} else {
-		log.WithFields(log.Fields{
-			"group": g.Name,
-		}).Debug("alerting light group")
-
-		err := g.Alert("select")
-		if err != nil {
-			log.Error(err)
 		}
 	}
 }
