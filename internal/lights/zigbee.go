@@ -19,9 +19,6 @@ type zigbeeLight struct {
 }
 
 func (l zigbeeLight) Toggle(groupName string) error {
-
-	log.Debugf("toggle: %s", groupName)
-
 	ctx := context.Background()
 
 	stream, err := l.inventoryClient.ListZigbeeDevices(ctx, &rpc.Empty{})
@@ -51,8 +48,6 @@ func (l zigbeeLight) Toggle(groupName string) error {
 			continue
 		}
 
-		log.Debugf("match: %s", d)
-
 		topic := fmt.Sprintf("zigbee2mqtt/%s/set", d.Name)
 		message := map[string]string{
 			"state": "TOGGLE",
@@ -71,14 +66,185 @@ func (l zigbeeLight) Toggle(groupName string) error {
 }
 
 func (l zigbeeLight) Alert(groupName string) error {
+	ctx := context.Background()
+
+	stream, err := l.inventoryClient.ListZigbeeDevices(ctx, &rpc.Empty{})
+	if err != nil {
+		switch status.Code(err) {
+		case codes.Canceled:
+			return nil
+		}
+
+		return err
+	}
+
+	for {
+		var d *rpc.ZigbeeDevice
+
+		d, err = stream.Recv()
+		if err != nil {
+			switch status.Code(err) {
+			case codes.OK:
+				continue
+			default:
+				return err
+			}
+		}
+
+		if d.IotZone != groupName {
+			continue
+		}
+
+		topic := fmt.Sprintf("zigbee2mqtt/%s/set", d.Name)
+		message := map[string]string{
+			"effect": "blink",
+		}
+
+		m, err := json.Marshal(message)
+		if err != nil {
+			log.Error(err)
+			continue
+		}
+
+		l.mqttClient.Publish(topic, byte(0), false, string(m))
+	}
 	return nil
 }
 func (l zigbeeLight) On(groupName string) error {
+	ctx := context.Background()
+
+	stream, err := l.inventoryClient.ListZigbeeDevices(ctx, &rpc.Empty{})
+	if err != nil {
+		switch status.Code(err) {
+		case codes.Canceled:
+			return nil
+		}
+
+		return err
+	}
+
+	for {
+		var d *rpc.ZigbeeDevice
+
+		d, err = stream.Recv()
+		if err != nil {
+			switch status.Code(err) {
+			case codes.OK:
+				continue
+			default:
+				return err
+			}
+		}
+
+		if d.IotZone != groupName {
+			continue
+		}
+
+		topic := fmt.Sprintf("zigbee2mqtt/%s/set", d.Name)
+		message := map[string]string{
+			"state": "ON",
+		}
+
+		m, err := json.Marshal(message)
+		if err != nil {
+			log.Error(err)
+			continue
+		}
+
+		l.mqttClient.Publish(topic, byte(0), false, string(m))
+	}
 	return nil
 }
+
 func (l zigbeeLight) Off(groupName string) error {
+	ctx := context.Background()
+
+	stream, err := l.inventoryClient.ListZigbeeDevices(ctx, &rpc.Empty{})
+	if err != nil {
+		switch status.Code(err) {
+		case codes.Canceled:
+			return nil
+		}
+
+		return err
+	}
+
+	for {
+		var d *rpc.ZigbeeDevice
+
+		d, err = stream.Recv()
+		if err != nil {
+			switch status.Code(err) {
+			case codes.OK:
+				continue
+			default:
+				return err
+			}
+		}
+
+		if d.IotZone != groupName {
+			continue
+		}
+
+		topic := fmt.Sprintf("zigbee2mqtt/%s/set", d.Name)
+		message := map[string]string{
+			"state": "OFF",
+		}
+
+		m, err := json.Marshal(message)
+		if err != nil {
+			log.Error(err)
+			continue
+		}
+
+		l.mqttClient.Publish(topic, byte(0), false, string(m))
+	}
 	return nil
 }
+
 func (l zigbeeLight) Dim(groupName string, brightness int32) error {
+	ctx := context.Background()
+
+	stream, err := l.inventoryClient.ListZigbeeDevices(ctx, &rpc.Empty{})
+	if err != nil {
+		switch status.Code(err) {
+		case codes.Canceled:
+			return nil
+		}
+
+		return err
+	}
+
+	for {
+		var d *rpc.ZigbeeDevice
+
+		d, err = stream.Recv()
+		if err != nil {
+			switch status.Code(err) {
+			case codes.OK:
+				continue
+			default:
+				return err
+			}
+		}
+
+		if d.IotZone != groupName {
+			continue
+		}
+
+		topic := fmt.Sprintf("zigbee2mqtt/%s/set", d.Name)
+		message := map[string]int32{
+			"brightness": brightness,
+		}
+
+		m, err := json.Marshal(message)
+		if err != nil {
+			log.Error(err)
+			continue
+		}
+
+		l.mqttClient.Publish(topic, byte(0), false, string(m))
+	}
+
 	return nil
 }
