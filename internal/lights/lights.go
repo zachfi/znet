@@ -205,6 +205,8 @@ func (l *Lights) configuredEventNames() []string {
 		names = append(names, r.On...)
 		names = append(names, r.Off...)
 		names = append(names, r.Alert...)
+		names = append(names, r.Toggle...)
+		names = append(names, r.Dim...)
 	}
 
 	sort.Strings(names)
