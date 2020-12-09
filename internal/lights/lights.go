@@ -132,8 +132,10 @@ func (l *Lights) clickHandler(name string, payload events.Payload) error {
 		off := false
 		on := false
 		toggle := false
+		party := false
+		color := false
 
-		// hue := "#ffffff"
+		hex := "#ffffff"
 		var brightness int32 = 254
 
 		if room.Name == e.Zone {
@@ -148,9 +150,11 @@ func (l *Lights) clickHandler(name string, payload events.Payload) error {
 			case "double":
 				dim = true
 				on = true
+				color = true
 			case "triple":
 				off = true
 			case "quadruple":
+				party = true
 			case "long", "long_release":
 				dim = true
 				brightness = 100
@@ -194,6 +198,22 @@ func (l *Lights) clickHandler(name string, payload events.Payload) error {
 					if err != nil {
 						log.Error(err)
 					}
+				}
+
+				if color {
+					err := h.SetColor(room.Name, hex)
+					if err != nil {
+						log.Error(err)
+					}
+
+				}
+
+				if party {
+					err := h.RandomColor(room.Name, l.config.PartyColors)
+					if err != nil {
+						log.Error(err)
+					}
+
 				}
 			}
 		}

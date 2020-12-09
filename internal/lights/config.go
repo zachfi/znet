@@ -4,9 +4,10 @@ import "fmt"
 
 // Config is the configuration for Lights
 type Config struct {
-	Rooms []Room      `yaml:"rooms"`
-	Hue   HueConfig   `yaml:"hue,omitempty"`
-	RFToy RFToyConfig `yaml:"rftoy,omitempty"`
+	Rooms       []Room      `yaml:"rooms"`
+	Hue         HueConfig   `yaml:"hue,omitempty"`
+	RFToy       RFToyConfig `yaml:"rftoy,omitempty"`
+	PartyColors []string    `yaml:"party_colors,omitempty"`
 }
 
 // Room is a collection of device entries.
