@@ -133,6 +133,9 @@ func (l *Lights) clickHandler(name string, payload events.Payload) error {
 		on := false
 		toggle := false
 
+		// hue := "#ffffff"
+		var brightness int32 = 254
+
 		if room.Name == e.Zone {
 			log.WithFields(log.Fields{
 				"room_name": room.Name,
@@ -143,11 +146,14 @@ func (l *Lights) clickHandler(name string, payload events.Payload) error {
 			case "single":
 				toggle = true
 			case "double":
+				dim = true
 				on = true
 			case "triple":
 				off = true
-			case "long":
+			case "quadruple":
+			case "long", "long_release":
 				dim = true
+				brightness = 100
 			case "many":
 				alert = true
 			default:
@@ -184,7 +190,7 @@ func (l *Lights) clickHandler(name string, payload events.Payload) error {
 				}
 
 				if dim {
-					err := h.Dim(room.Name, 100)
+					err := h.Dim(room.Name, brightness)
 					if err != nil {
 						log.Error(err)
 					}
