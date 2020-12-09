@@ -187,6 +187,16 @@ func (l hueLight) Toggle(groupName string) error {
 	return nil
 }
 
+// SetColor applies the color to the light group.
+func (l hueLight) SetColor(groupName string, hex string) error {
+	return nil
+}
+
+// RandomColor applies a color selected at random to the light group.
+func (l hueLight) RandomColor(groupName string, hex []string) error {
+	return nil
+}
+
 // GetGroup calls the Hue bridge and looks for a group, that, when normalized,
 // matches the name received.
 func (l hueLight) getGroup(groupName string) (*huego.Group, error) {

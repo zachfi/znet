@@ -74,3 +74,11 @@ func (l rftoyLight) Toggle(groupName string) error {
 func (l rftoyLight) Dim(groupName string, brightness int32) error {
 	return nil
 }
+
+func (l rftoyLight) SetColor(groupName string, hex string) error {
+	return nil
+}
+
+func (l rftoyLight) RandomColor(groupName string, hex []string) error {
+	return nil
+}
