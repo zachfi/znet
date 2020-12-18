@@ -90,7 +90,7 @@ func ReadZigbeeMessage(objectID string, payload []byte, endpoint ...string) (int
 					return m, nil
 				}
 			case "config":
-				// Nothing to do with config, but
+				// do nothing for a config message
 				return nil, nil
 			}
 		}

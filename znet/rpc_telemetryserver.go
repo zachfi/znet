@@ -13,7 +13,7 @@ import (
 	"github.com/xaque208/znet/internal/inventory"
 	"github.com/xaque208/znet/pkg/eventmachine"
 	"github.com/xaque208/znet/pkg/iot"
-	pb "github.com/xaque208/znet/rpc"
+	"github.com/xaque208/znet/rpc"
 )
 
 var (
@@ -186,7 +186,7 @@ func (l *telemetryServer) findMACs(macs []string) (*[]inventory.NetworkHost, *[]
 	return &keepHosts, &keepIds, nil
 }
 
-func (l *telemetryServer) ReportNetworkID(ctx context.Context, request *pb.NetworkID) (*pb.Empty, error) {
+func (l *telemetryServer) ReportNetworkID(ctx context.Context, request *rpc.NetworkID) (*rpc.Empty, error) {
 	log.WithFields(log.Fields{
 		"name":                       request.Name,
 		"ip_address":                 request.IpAddress,
@@ -195,12 +195,12 @@ func (l *telemetryServer) ReportNetworkID(ctx context.Context, request *pb.Netwo
 	}).Trace("NetworkID report")
 
 	if request.Name == "" {
-		return &pb.Empty{}, fmt.Errorf("unable to fetch NetworkID with empty name")
+		return &rpc.Empty{}, fmt.Errorf("unable to fetch NetworkID with empty name")
 	}
 
 	hosts, ids, err := l.findMACs(request.MacAddress)
 	if err != nil {
-		return &pb.Empty{}, err
+		return &rpc.Empty{}, err
 	}
 
 	// do nothing if a host matches
@@ -212,7 +212,7 @@ func (l *telemetryServer) ReportNetworkID(ctx context.Context, request *pb.Netwo
 					log.Error(err)
 				}
 			}
-			return &pb.Empty{}, nil
+			return &rpc.Empty{}, nil
 		}
 	}
 
@@ -235,7 +235,7 @@ func (l *telemetryServer) ReportNetworkID(ctx context.Context, request *pb.Netwo
 
 					_, err = l.inventory.UpdateNetworkID(x)
 					if err != nil {
-						return &pb.Empty{}, err
+						return &rpc.Empty{}, err
 					}
 				}
 			}
@@ -257,14 +257,14 @@ func (l *telemetryServer) ReportNetworkID(ctx context.Context, request *pb.Netwo
 	if err != nil {
 		_, err = l.inventory.CreateNetworkID(x)
 		if err != nil {
-			return &pb.Empty{}, err
+			return &rpc.Empty{}, err
 		}
 	}
 
-	return &pb.Empty{}, nil
+	return &rpc.Empty{}, nil
 }
 
-func (l *telemetryServer) ReportIOTDevice(ctx context.Context, request *pb.IOTDevice) (*pb.Empty, error) {
+func (l *telemetryServer) ReportIOTDevice(ctx context.Context, request *rpc.IOTDevice) (*rpc.Empty, error) {
 	var err error
 
 	log.WithFields(log.Fields{
@@ -285,7 +285,7 @@ func (l *telemetryServer) ReportIOTDevice(ctx context.Context, request *pb.IOTDe
 	case "zigbee2mqtt":
 		err = l.handleZigbeeReport(request)
 		if err != nil {
-			return &pb.Empty{}, err
+			return &rpc.Empty{}, err
 		}
 	}
 
@@ -293,22 +293,22 @@ func (l *telemetryServer) ReportIOTDevice(ctx context.Context, request *pb.IOTDe
 	case "wifi":
 		err = l.handleWifiReport(request)
 		if err != nil {
-			return &pb.Empty{}, err
+			return &rpc.Empty{}, err
 		}
 	case "air":
 		err = l.handleAirReport(request)
 		if err != nil {
-			return &pb.Empty{}, err
+			return &rpc.Empty{}, err
 		}
 	case "water":
 		err = l.handleWaterReport(request)
 		if err != nil {
-			return &pb.Empty{}, err
+			return &rpc.Empty{}, err
 		}
 	case "led1", "led2":
 		err = l.handleLEDReport(request)
 		if err != nil {
-			return &pb.Empty{}, err
+			return &rpc.Empty{}, err
 		}
 	default:
 		telemetryIOTUnhandledReport.WithLabelValues(discovery.ObjectId, discovery.Component).Inc()
@@ -329,10 +329,10 @@ func (l *telemetryServer) ReportIOTDevice(ctx context.Context, request *pb.IOTDe
 		}
 	}
 
-	return &pb.Empty{}, nil
+	return &rpc.Empty{}, nil
 }
 
-func (l *telemetryServer) handleZigbeeReport(request *pb.IOTDevice) error {
+func (l *telemetryServer) handleZigbeeReport(request *rpc.IOTDevice) error {
 	if request == nil {
 		return fmt.Errorf("unable to read zigbee report from nil request")
 	}
@@ -439,7 +439,7 @@ func (l *telemetryServer) handleZigbeeReport(request *pb.IOTDevice) error {
 	return nil
 }
 
-func (l *telemetryServer) handleLEDReport(request *pb.IOTDevice) error {
+func (l *telemetryServer) handleLEDReport(request *rpc.IOTDevice) error {
 	if request == nil {
 		return fmt.Errorf("unable to read led report from nil request")
 	}
@@ -464,7 +464,7 @@ func (l *telemetryServer) handleLEDReport(request *pb.IOTDevice) error {
 	return nil
 }
 
-func (l *telemetryServer) handleWaterReport(request *pb.IOTDevice) error {
+func (l *telemetryServer) handleWaterReport(request *rpc.IOTDevice) error {
 	if request == nil {
 		return fmt.Errorf("unable to read water report from nil request")
 	}
@@ -487,7 +487,7 @@ func (l *telemetryServer) handleWaterReport(request *pb.IOTDevice) error {
 	return nil
 }
 
-func (l *telemetryServer) handleAirReport(request *pb.IOTDevice) error {
+func (l *telemetryServer) handleAirReport(request *rpc.IOTDevice) error {
 	if request == nil {
 		return fmt.Errorf("unable to read air report from nil request")
 	}
@@ -519,7 +519,7 @@ func (l *telemetryServer) handleAirReport(request *pb.IOTDevice) error {
 	return nil
 }
 
-func (l *telemetryServer) handleWifiReport(request *pb.IOTDevice) error {
+func (l *telemetryServer) handleWifiReport(request *rpc.IOTDevice) error {
 	if request == nil {
 		return fmt.Errorf("unable to read wifi report from nil request")
 	}
