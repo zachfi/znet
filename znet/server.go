@@ -190,6 +190,7 @@ func (s *Server) Start(z *Znet) error {
 
 	http.Handle("/metrics", promhttp.Handler())
 	http.Handle("/status/check", &statusCheckHandler{server: s})
+	http.HandleFunc("/alerts", s.alertsHandler)
 
 	if s.httpConfig.ListenAddress != "" {
 		log.WithFields(log.Fields{
@@ -248,4 +249,37 @@ func (s *Server) Stop() error {
 	}
 
 	return nil
+}
+
+func (s *Server) alertsHandler(w http.ResponseWriter, r *http.Request) {
+	dec := json.NewDecoder(r.Body)
+	defer r.Body.Close()
+
+	var m hookMessage
+	if err := dec.Decode(&m); err != nil {
+		log.Errorf("error decoding message: %v", err)
+		http.Error(w, "invalid request body", 400)
+		return
+	}
+
+	log.Debugf("webhook alert: %+v", m)
+}
+
+type hookMessage struct {
+	Version           string            `json:"version"`
+	GroupKey          string            `json:"groupKey"`
+	Status            string            `json:"status"`
+	Receiver          string            `json:"receiver"`
+	GroupLabels       map[string]string `json:"groupLabels"`
+	CommonLabels      map[string]string `json:"commonLabels"`
+	CommonAnnotations map[string]string `json:"commonAnnotations"`
+	ExternalURL       string            `json:"externalURL"`
+	Alerts            []alert           `json:"alerts"`
+}
+
+type alert struct {
+	Labels      map[string]string `json:"labels"`
+	Annotations map[string]string `json:"annotations"`
+	StartsAt    string            `json:"startsAt,omitempty"`
+	EndsAt      string            `json:"EndsAt,omitempty"`
 }
