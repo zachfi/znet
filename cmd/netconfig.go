@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"context"
+	"io"
 
 	"github.com/scottdware/go-junos"
 	log "github.com/sirupsen/logrus"
@@ -99,8 +100,13 @@ func runNetconfig(cmd *cobra.Command, args []string) {
 
 		d, err = stream.Recv()
 		if err != nil {
+			if err == io.EOF {
+				break
+			}
+
 			switch status.Code(err) {
 			case codes.OK:
+				log.Info("ok")
 				continue
 			default:
 				log.Error(err)
@@ -116,9 +122,11 @@ func runNetconfig(cmd *cobra.Command, args []string) {
 	}
 
 	auth := &junos.AuthMethod{
-		Username:   viper.GetString("junos.username"),
-		PrivateKey: viper.GetString("junos.keyfile"),
+		Username:   viper.GetString("network.junos.username"),
+		PrivateKey: viper.GetString("network.junos.keyfile"),
 	}
+
+	log.Debugf("auth: %+v", auth)
 
 	nc, err := netconfig.NewNetConfig(configDir, hosts, auth, z.Environment)
 	if err != nil {
