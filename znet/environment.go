@@ -4,34 +4,45 @@ import (
 	"fmt"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/xaque208/znet/internal/comms"
+	"github.com/xaque208/znet/internal/config"
 )
 
-// GetEnvironmentConfig receives a slice of environment configurations and returns the one that matches the given name.
-func GetEnvironmentConfig(environments []EnvironmentConfig, envName string) (EnvironmentConfig, error) {
+// getEnvironmentConfig receives a slice of environment configurations and returns the one that matches the given name.
+func getEnvironmentConfig(environments []config.EnvironmentConfig, envName string) (*config.EnvironmentConfig, error) {
 	for _, e := range environments {
 		if e.Name == envName {
-			return e, nil
+			return &e, nil
 		}
 	}
 
-	return EnvironmentConfig{}, fmt.Errorf("no environment found: %s", envName)
+	return nil, fmt.Errorf("no environment found: %s", envName)
 }
 
 // LoadEnvironment reads reads environment variables out of vault for return.
-func LoadEnvironment(config VaultConfig, e EnvironmentConfig) (map[string]string, error) {
+func LoadEnvironment(cfg *config.VaultConfig, e *config.EnvironmentConfig) (map[string]string, error) {
 
-	environment := make(map[string]string)
-	if config.Host == "" || config.SecretRoot == "" {
-		return map[string]string{}, fmt.Errorf("incomplete vault configuration, unable to load Environment")
+	if e == nil {
+		return map[string]string{}, fmt.Errorf("unable to load environment with nil EnvironmentConfig")
 	}
 
-	s, err := NewSecretClient(config)
+	if cfg.Host == "" {
+		return map[string]string{}, fmt.Errorf("a Host is required to load the environment")
+	}
+
+	if cfg.SecretRoot == "" {
+		return map[string]string{}, fmt.Errorf("a SecretRoot is required to load the environment")
+	}
+
+	environment := make(map[string]string)
+
+	s, err := comms.NewSecretClient(*cfg)
 	if err != nil {
 		return map[string]string{}, err
 	}
 
 	for _, k := range e.SecretValues {
-		path := fmt.Sprintf("%s/%s", config.SecretRoot, k)
+		path := fmt.Sprintf("%s/%s", cfg.SecretRoot, k)
 		secret, err := s.Logical().Read(path)
 		if err != nil {
 			log.Error(err)
