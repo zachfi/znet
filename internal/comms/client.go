@@ -5,21 +5,21 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/xaque208/znet/znet"
+	"github.com/xaque208/znet/internal/config"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )
 
-// NewClient implements enough to get standard gRPC client connection.
-func NewClient(serverAddress string, config znet.Config) *grpc.ClientConn {
+// StandardRPCClient implements enough to get standard gRPC client connection.
+func StandardRPCClient(serverAddress string, cfg config.Config) *grpc.ClientConn {
 	var opts []grpc.DialOption
 
-	roots, err := CABundle(config.Vault)
+	roots, err := CABundle(cfg.Vault)
 	if err != nil {
 		log.Error(err)
 	}
 
-	c, err := newCertify(config.Vault, config.TLS)
+	c, err := newCertify(cfg.Vault, cfg.TLS)
 	if err != nil {
 		log.Error(err)
 	}
