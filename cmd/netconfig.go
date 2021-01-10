@@ -17,6 +17,7 @@ package cmd
 import (
 	"context"
 	"io"
+	"time"
 
 	"github.com/scottdware/go-junos"
 	log "github.com/sirupsen/logrus"
@@ -87,10 +88,23 @@ func runNetconfig(cmd *cobra.Command, args []string) {
 
 	inventoryClient := rpc.NewInventoryClient(conn)
 
+	var stream rpc.Inventory_ListNetworkHostsClient
+
 	ctx := context.Background()
-	stream, err := inventoryClient.ListNetworkHosts(ctx, &rpc.Empty{})
-	if err != nil {
-		log.Error(err)
+
+	for {
+		stream, err = inventoryClient.ListNetworkHosts(ctx, &rpc.Empty{})
+		if err != nil {
+			switch status.Code(err) {
+			case codes.Unavailable:
+				time.Sleep(3 * time.Second)
+				continue
+			default:
+				log.Error(err)
+				break
+			}
+		}
+		break
 	}
 
 	hosts := []*rpc.NetworkHost{}
