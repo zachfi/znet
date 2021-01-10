@@ -27,18 +27,18 @@ func NewZnet(file string) (*Znet, error) {
 	var err error
 	var environment map[string]string
 
-	config, err := loadConfig(file)
+	cfg, err := loadConfig(file)
 	if err != nil {
 		return &Znet{}, fmt.Errorf("failed to load config file %s: %s", file, err)
 	}
 
-	if config.Environments != nil && config.Vault != nil {
-		e, err := GetEnvironmentConfig(*config.Environments, "common")
+	if cfg.Environments != nil && cfg.Vault != nil {
+		e, err := getEnvironmentConfig(*cfg.Environments, "common")
 		if err != nil {
 			log.Error(err)
 		}
 
-		environment, err = LoadEnvironment(*config.Vault, e)
+		environment, err = LoadEnvironment(cfg.Vault, e)
 		if err != nil {
 			log.Errorf("failed to load environment: %s", err)
 		}
@@ -47,7 +47,7 @@ func NewZnet(file string) (*Znet, error) {
 	}
 
 	z := Znet{
-		Config:      config,
+		Config:      cfg,
 		Environment: environment,
 	}
 
