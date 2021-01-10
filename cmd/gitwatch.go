@@ -9,6 +9,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/xaque208/znet/internal/comms"
+	"github.com/xaque208/znet/internal/config"
 	"github.com/xaque208/znet/internal/gitwatch"
 	"github.com/xaque208/znet/znet"
 )
@@ -46,7 +48,12 @@ func runGitwatch(cmd *cobra.Command, args []string) {
 
 	z.Config.RPC.ServerAddress = viper.GetString("rpc.server_address")
 
-	conn := znet.NewConn(z.Config.RPC.ServerAddress, z.Config)
+	cfg := &config.Config{
+		Vault: z.Config.Vault,
+		TLS:   z.Config.TLS,
+	}
+
+	conn := comms.StandardRPCClient(z.Config.RPC.ServerAddress, *cfg)
 
 	if z.Config.GitWatch == nil {
 		log.Fatal("unable to create agent with nil GitWatch configuration")

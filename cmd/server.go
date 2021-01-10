@@ -24,6 +24,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/xaque208/znet/internal/config"
 	"github.com/xaque208/znet/znet"
 )
 
@@ -80,13 +81,13 @@ func server(cmd *cobra.Command, args []string) {
 	viper.SetDefault("rpc.listen_address", rpcListenAddr)
 
 	if z.Config.RPC == nil {
-		z.Config.RPC = &znet.RPCConfig{}
+		z.Config.RPC = &config.RPCConfig{}
 	}
 
 	z.Config.RPC.ListenAddress = viper.GetString("rpc.listen_address")
 
 	if z.Config.HTTP == nil {
-		z.Config.HTTP = &znet.HTTPConfig{}
+		z.Config.HTTP = &config.HTTPConfig{}
 	}
 
 	z.Config.HTTP.ListenAddress = viper.GetString("http.listen_address")

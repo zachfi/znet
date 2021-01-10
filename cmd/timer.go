@@ -10,6 +10,8 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/xaque208/znet/internal/astro"
+	"github.com/xaque208/znet/internal/comms"
+	"github.com/xaque208/znet/internal/config"
 	"github.com/xaque208/znet/internal/timer"
 	"github.com/xaque208/znet/pkg/events"
 	"github.com/xaque208/znet/znet"
@@ -57,10 +59,15 @@ func runTimer(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 
-	z.Config.RPC.ServerAddress = viper.GetString("rpc.server_address")
 	z.Config.Timer.FutureLimit = viper.GetInt("timer.future_limit")
+	z.Config.RPC.ServerAddress = viper.GetString("rpc.server_address")
 
-	conn := znet.NewConn(z.Config.RPC.ServerAddress, z.Config)
+	cfg := &config.Config{
+		Vault: z.Config.Vault,
+		TLS:   z.Config.TLS,
+	}
+
+	conn := comms.StandardRPCClient(z.Config.RPC.ServerAddress, *cfg)
 	defer func() {
 		err = conn.Close()
 		if err != nil {

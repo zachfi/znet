@@ -26,6 +26,8 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/xaque208/znet/internal/comms"
+	"github.com/xaque208/znet/internal/config"
 	"github.com/xaque208/znet/pkg/netconfig"
 	"github.com/xaque208/znet/rpc"
 	"github.com/xaque208/znet/znet"
@@ -75,7 +77,12 @@ func runNetconfig(cmd *cobra.Command, args []string) {
 
 	z.Config.RPC.ServerAddress = viper.GetString("rpc.server_address")
 
-	conn := znet.NewConn(z.Config.RPC.ServerAddress, z.Config)
+	cfg := &config.Config{
+		Vault: z.Config.Vault,
+		TLS:   z.Config.TLS,
+	}
+
+	conn := comms.StandardRPCClient(z.Config.RPC.ServerAddress, *cfg)
 	defer func() {
 		err = conn.Close()
 		if err != nil {

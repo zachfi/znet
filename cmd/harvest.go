@@ -12,6 +12,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/xaque208/znet/internal/comms"
+	"github.com/xaque208/znet/internal/config"
 	"github.com/xaque208/znet/pkg/iot"
 	"github.com/xaque208/znet/rpc"
 	"github.com/xaque208/znet/znet"
@@ -50,7 +52,12 @@ func runHarvest(cmd *cobra.Command, args []string) {
 
 	z.Config.RPC.ServerAddress = viper.GetString("rpc.server_address")
 
-	conn := znet.NewConn(z.Config.RPC.ServerAddress, z.Config)
+	cfg := &config.Config{
+		Vault: z.Config.Vault,
+		TLS:   z.Config.TLS,
+	}
+
+	conn := comms.StandardRPCClient(z.Config.RPC.ServerAddress, *cfg)
 
 	defer func() {
 		err = conn.Close()

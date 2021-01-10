@@ -13,6 +13,8 @@ import (
 
 	"github.com/xaque208/znet/internal/agent"
 	"github.com/xaque208/znet/internal/astro"
+	"github.com/xaque208/znet/internal/comms"
+	"github.com/xaque208/znet/internal/config"
 	"github.com/xaque208/znet/internal/lights"
 	"github.com/xaque208/znet/internal/network"
 	"github.com/xaque208/znet/internal/timer"
@@ -51,7 +53,7 @@ func runAgent(cmd *cobra.Command, args []string) {
 
 	z, err := znet.NewZnet(cfgFile)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("failed to create znet: %s", err)
 	}
 
 	z.Config.RPC.ServerAddress = viper.GetString("rpc.server_address")
@@ -66,7 +68,12 @@ func runAgent(cmd *cobra.Command, args []string) {
 		mqttClient = mqttConnect(*z.Config.MQTT)
 	}
 
-	conn := znet.NewConn(z.Config.RPC.ServerAddress, z.Config)
+	cfg := &config.Config{
+		Vault: z.Config.Vault,
+		TLS:   z.Config.TLS,
+	}
+
+	conn := comms.StandardRPCClient(z.Config.RPC.ServerAddress, *cfg)
 
 	if z.Config.Agent == nil {
 		log.Fatal("unable to create agent with nil Agent configuration")
@@ -74,10 +81,10 @@ func runAgent(cmd *cobra.Command, args []string) {
 
 	consumers := []events.Consumer{}
 
-	var agentConsumer *agent.Agent
+	var agentServer *agent.Agent
 	if z.Config.Agent != nil {
-		agentConsumer = agent.NewAgent(*z.Config.Agent, conn)
-		consumers = append(consumers, agentConsumer)
+		agentServer = agent.NewAgent(*z.Config.Agent, conn)
+		consumers = append(consumers, agentServer)
 	}
 
 	eventNames := []string{}
@@ -122,6 +129,11 @@ func runAgent(cmd *cobra.Command, args []string) {
 
 	go machine.ReadStream(client, eventSub)
 
+	err = agentServer.Start()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	sigs := make(chan os.Signal, 1)
 	done := make(chan bool, 1)
 
@@ -136,7 +148,13 @@ func runAgent(cmd *cobra.Command, args []string) {
 
 	<-done
 
-	log.Debug("closing RPC connection")
+	log.Debug("terminating RPC server")
+	err = agentServer.Stop()
+	if err != nil {
+		log.Error(err)
+	}
+
+	log.Debug("closing RPC client connection")
 	err = conn.Close()
 	if err != nil {
 		log.Error(err)

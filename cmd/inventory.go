@@ -11,6 +11,8 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/xaque208/znet/internal/comms"
+	"github.com/xaque208/znet/internal/config"
 	"github.com/xaque208/znet/rpc"
 	"github.com/xaque208/znet/znet"
 )
@@ -60,7 +62,12 @@ func runNetworkHost(cmd *cobra.Command, args []string) {
 		log.Fatal("no rpc.server configuration specified")
 	}
 
-	conn := znet.NewConn(z.Config.RPC.ServerAddress, z.Config)
+	cfg := &config.Config{
+		Vault: z.Config.Vault,
+		TLS:   z.Config.TLS,
+	}
+
+	conn := comms.StandardRPCClient(z.Config.RPC.ServerAddress, *cfg)
 
 	defer func() {
 		err = conn.Close()
