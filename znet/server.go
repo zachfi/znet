@@ -2,7 +2,6 @@ package znet
 
 import (
 	"context"
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -13,10 +12,11 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
 
 	"github.com/xaque208/znet/internal/agent"
 	"github.com/xaque208/znet/internal/astro"
+	"github.com/xaque208/znet/internal/comms"
+	"github.com/xaque208/znet/internal/config"
 	"github.com/xaque208/znet/internal/gitwatch"
 	"github.com/xaque208/znet/internal/inventory"
 	"github.com/xaque208/znet/internal/timer"
@@ -32,10 +32,10 @@ type Server struct {
 	ctx          context.Context
 	eventMachine *eventmachine.EventMachine
 	grpcServer   *grpc.Server
-	httpConfig   *HTTPConfig
+	httpConfig   *config.HTTPConfig
 	httpServer   *http.Server
 	ldapConfig   *inventory.LDAPConfig
-	rpcConfig    *RPCConfig
+	rpcConfig    *config.RPCConfig
 }
 
 type statusCheckHandler struct {
@@ -83,29 +83,11 @@ func NewServer(config Config) *Server {
 		httpServer = &http.Server{Addr: config.HTTP.ListenAddress}
 	}
 
-	roots, err := CABundle(config.Vault)
-	if err != nil {
-		log.Error(err)
-	}
-
-	c, err := newCertify(config.Vault, config.TLS)
-	if err != nil {
-		log.Error(err)
-	}
-
-	tlsConfig := &tls.Config{
-		GetCertificate: c.GetCertificate,
-		ClientCAs:      roots,
-		// RootCAs:        cp,
-		ClientAuth: tls.RequireAndVerifyClientCert,
-		// ClientAuth:           tls.VerifyClientCertIfGiven,
-	}
-
 	if config.HTTP == nil || config.RPC == nil {
 		log.Errorf("unable to build znet Server with nil HTTPConfig or RPCConfig")
 	}
 
-	s := &Server{
+	return &Server{
 		ctx:          ctx,
 		cancel:       cancel,
 		eventMachine: eventMachine,
@@ -116,10 +98,8 @@ func NewServer(config Config) *Server {
 
 		httpServer: httpServer,
 
-		grpcServer: grpc.NewServer(grpc.Creds(credentials.NewTLS(tlsConfig))),
+		grpcServer: comms.StandardRPCServer(config.Vault, config.TLS),
 	}
-
-	return s
 }
 
 func (s *statusCheckHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
