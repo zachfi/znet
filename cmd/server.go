@@ -50,21 +50,7 @@ func init() {
 }
 
 func server(cmd *cobra.Command, args []string) {
-	formatter := log.TextFormatter{
-		DisableQuote:     true,
-		DisableTimestamp: true,
-	}
-
-	log.SetFormatter(&formatter)
-	if trace {
-		log.SetLevel(log.TraceLevel)
-	} else if verbose {
-		log.SetLevel(log.DebugLevel)
-	} else {
-		log.SetLevel(log.InfoLevel)
-	}
-
-	log.Infof("%s starting", Version)
+	initLogger()
 
 	// Handle environment variables
 	replacer := strings.NewReplacer(".", "_")

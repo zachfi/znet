@@ -34,7 +34,7 @@ type Server struct {
 	grpcServer   *grpc.Server
 	httpConfig   *config.HTTPConfig
 	httpServer   *http.Server
-	ldapConfig   *inventory.LDAPConfig
+	ldapConfig   *config.LDAPConfig
 	rpcConfig    *config.RPCConfig
 }
 
@@ -70,7 +70,7 @@ func init() {
 
 // NewServer creates a new Server composed of the received information.
 // func NewServer(config Config, consumers []events.Consumer) *Server {
-func NewServer(config Config) *Server {
+func NewServer(cfg *config.Config) *Server {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	eventMachine, err := eventmachine.New(ctx, nil)
@@ -79,11 +79,11 @@ func NewServer(config Config) *Server {
 	}
 
 	var httpServer *http.Server
-	if config.HTTP.ListenAddress != "" {
-		httpServer = &http.Server{Addr: config.HTTP.ListenAddress}
+	if cfg.HTTP.ListenAddress != "" {
+		httpServer = &http.Server{Addr: cfg.HTTP.ListenAddress}
 	}
 
-	if config.HTTP == nil || config.RPC == nil {
+	if cfg.HTTP == nil || cfg.RPC == nil {
 		log.Errorf("unable to build znet Server with nil HTTPConfig or RPCConfig")
 	}
 
@@ -92,13 +92,13 @@ func NewServer(config Config) *Server {
 		cancel:       cancel,
 		eventMachine: eventMachine,
 
-		httpConfig: config.HTTP,
-		rpcConfig:  config.RPC,
-		ldapConfig: config.LDAP,
+		httpConfig: cfg.HTTP,
+		rpcConfig:  cfg.RPC,
+		ldapConfig: cfg.LDAP,
 
 		httpServer: httpServer,
 
-		grpcServer: comms.StandardRPCServer(config.Vault, config.TLS),
+		grpcServer: comms.StandardRPCServer(cfg.Vault, cfg.TLS),
 	}
 }
 
@@ -119,11 +119,11 @@ func (s *statusCheckHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, string(payload))
 }
 func (s *Server) startRPCListener() error {
-	rpcInventoryServer := inventory.NewRPCServer(*s.ldapConfig)
+	rpcInventoryServer := inventory.NewRPCServer(s.ldapConfig)
 	rpc.RegisterInventoryServer(s.grpcServer, rpcInventoryServer)
 
 	// telemetryServer
-	inv := inventory.NewInventory(*s.ldapConfig)
+	inv := inventory.NewInventory(s.ldapConfig)
 	rpcTelemetryServer := newTelemetryServer(inv, s.eventMachine)
 	rpc.RegisterTelemetryServer(s.grpcServer, rpcTelemetryServer)
 

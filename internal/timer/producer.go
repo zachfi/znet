@@ -7,6 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
+	"github.com/xaque208/znet/internal/config"
 	"github.com/xaque208/znet/pkg/events"
 )
 
@@ -14,19 +15,19 @@ import (
 // and a configuration.
 type EventProducer struct {
 	conn   *grpc.ClientConn
-	config Config
+	config *config.TimerConfig
 	ctx    context.Context
 	cancel func()
 }
 
 // NewProducer creates a new EventProducer to implement events.Producer and
 // attach the received GRPC connection.
-func NewProducer(conn *grpc.ClientConn, config Config) events.Producer {
+func NewProducer(conn *grpc.ClientConn, cfg *config.TimerConfig) events.Producer {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	var producer events.Producer = &EventProducer{
 		conn:   conn,
-		config: config,
+		config: cfg,
 		ctx:    ctx,
 		cancel: cancel,
 	}
@@ -54,7 +55,7 @@ func (e *EventProducer) Stop() error {
 	return nil
 }
 
-func (e *EventProducer) scheduleEvents(scheduledEvents *events.Scheduler, v EventConfig) error {
+func (e *EventProducer) scheduleEvents(scheduledEvents *events.Scheduler, v config.EventConfig) error {
 	loc, err := time.LoadLocation(e.config.TimeZone)
 	if err != nil {
 		return err
@@ -95,7 +96,7 @@ func (e *EventProducer) scheduleEvents(scheduledEvents *events.Scheduler, v Even
 	return nil
 }
 
-func (e *EventProducer) scheduleRepeatEvents(scheduledEvents *events.Scheduler, v RepeatEventConfig) error {
+func (e *EventProducer) scheduleRepeatEvents(scheduledEvents *events.Scheduler, v config.RepeatEventConfig) error {
 
 	// Stop calculating events beyond this time.
 	end := time.Now().Add(time.Duration(e.config.FutureLimit) * time.Second)

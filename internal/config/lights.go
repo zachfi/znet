@@ -1,17 +1,17 @@
-package lights
+package config
 
 import "fmt"
 
-// Config is the configuration for Lights
-type Config struct {
-	Rooms       []Room      `yaml:"rooms"`
-	Hue         HueConfig   `yaml:"hue,omitempty"`
-	RFToy       RFToyConfig `yaml:"rftoy,omitempty"`
-	PartyColors []string    `yaml:"party_colors,omitempty"`
+// LightsConfig is the configuration for Lights
+type LightsConfig struct {
+	Rooms       []LightsRoom `yaml:"rooms"`
+	Hue         HueConfig    `yaml:"hue,omitempty"`
+	RFToy       RFToyConfig  `yaml:"rftoy,omitempty"`
+	PartyColors []string     `yaml:"party_colors,omitempty"`
 }
 
-// Room is a collection of device entries.
-type Room struct {
+// LightRoom is a collection of device entries.
+type LightsRoom struct {
 	Name   string `yaml:"name"`
 	IDs    []int  `yaml:"ids"`
 	HueIDs []int  `yaml:"hue"`
@@ -36,12 +36,12 @@ type RFToyConfig struct {
 }
 
 // Room return the Room object for a room given by name.
-func (c *Config) Room(name string) (Room, error) {
+func (c *LightsConfig) Room(name string) (LightsRoom, error) {
 	for _, room := range c.Rooms {
 		if room.Name == name {
 			return room, nil
 		}
 	}
 
-	return Room{}, fmt.Errorf("room %s not found in config", name)
+	return LightsRoom{}, fmt.Errorf("room %s not found in config", name)
 }

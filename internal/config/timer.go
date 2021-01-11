@@ -1,7 +1,7 @@
-package timer
+package config
 
-// Config is the information necessary for Timer to generate timers.
-type Config struct {
+// TimerConfig is the information necessary for Timer to generate timers.
+type TimerConfig struct {
 	TimeZone       string              `yaml:"timezone"`
 	ReloadInterval int                 `yaml:"reload_interval"`
 	FutureLimit    int                 `yaml:"future_limit"`

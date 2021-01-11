@@ -1,7 +1,7 @@
-package network
+package config
 
-// Config are the details needed for the network package.
-type Config struct {
+// NetworkConfig are the details needed for the network package.
+type NetworkConfig struct {
 	ScrapeInterval int         `yaml:"scrape_interval,omitempty"`
 	Junos          JunosConfig `yaml:"junos,omitempty"`
 }

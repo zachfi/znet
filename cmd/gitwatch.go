@@ -28,18 +28,7 @@ func init() {
 }
 
 func runGitwatch(cmd *cobra.Command, args []string) {
-	formatter := log.TextFormatter{
-		FullTimestamp: true,
-	}
-
-	log.SetFormatter(&formatter)
-	if trace {
-		log.SetLevel(log.TraceLevel)
-	} else if verbose {
-		log.SetLevel(log.DebugLevel)
-	} else {
-		log.SetLevel(log.InfoLevel)
-	}
+	initLogger()
 
 	z, err := znet.NewZnet(cfgFile)
 	if err != nil {
@@ -59,7 +48,7 @@ func runGitwatch(cmd *cobra.Command, args []string) {
 		log.Fatal("unable to create agent with nil GitWatch configuration")
 	}
 
-	x := gitwatch.NewProducer(conn, *z.Config.GitWatch)
+	x := gitwatch.NewProducer(conn, z.Config.GitWatch)
 	err = x.Start()
 	if err != nil {
 		log.Error(err)

@@ -37,20 +37,7 @@ func init() {
 }
 
 func runTimer(cmd *cobra.Command, args []string) {
-	formatter := log.TextFormatter{
-		FullTimestamp: true,
-	}
-
-	log.SetFormatter(&formatter)
-	if trace {
-		log.SetLevel(log.TraceLevel)
-	} else if verbose {
-		log.SetLevel(log.DebugLevel)
-	} else {
-		log.SetLevel(log.InfoLevel)
-	}
-
-	log.Infof("%s starting", Version)
+	initLogger()
 
 	viper.SetDefault("timer.future_limit", 1000)
 
@@ -81,14 +68,14 @@ func runTimer(cmd *cobra.Command, args []string) {
 
 	producers := make([]events.Producer, 0)
 
-	y := astro.NewProducer(conn, *z.Config.Astro)
+	y := astro.NewProducer(conn, z.Config.Astro)
 	producers = append(producers, y)
 
 	if z.Config.Timer == nil {
 		log.Fatal("unable to create EventProducer with nil Timer configuration")
 	}
 
-	x := timer.NewProducer(conn, *z.Config.Timer)
+	x := timer.NewProducer(conn, z.Config.Timer)
 	producers = append(producers, x)
 
 	for _, p := range producers {

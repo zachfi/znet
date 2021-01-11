@@ -40,7 +40,7 @@ func StandardRPCClient(serverAddress string, cfg config.Config) *grpc.ClientConn
 
 	log.WithFields(log.Fields{
 		"server_address": serverAddress,
-	}).Debug("dialing grpc")
+	}).Debug("dialing gRPC")
 
 	conn, err := grpc.Dial(serverAddress, opts...)
 	if err != nil {

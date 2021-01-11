@@ -8,6 +8,7 @@ import (
 
 	"google.golang.org/grpc"
 
+	"github.com/xaque208/znet/internal/config"
 	"github.com/xaque208/znet/pkg/continuous"
 	"github.com/xaque208/znet/pkg/events"
 
@@ -17,7 +18,7 @@ import (
 // EventProducer implements events.Producer with an attached GRPC connection
 // and a configuration.
 type EventProducer struct {
-	config Config
+	config *config.GitWatchConfig
 	conn   *grpc.ClientConn
 	ctx    context.Context
 	cancel func()
@@ -25,7 +26,7 @@ type EventProducer struct {
 
 // NewProducer creates a new EventProducer to implement events.Producer and
 // attach the received GRPC connection.
-func NewProducer(conn *grpc.ClientConn, config Config) events.Producer {
+func NewProducer(conn *grpc.ClientConn, config *config.GitWatchConfig) events.Producer {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	var producer events.Producer = &EventProducer{
@@ -68,7 +69,7 @@ func (e *EventProducer) Stop() error {
 	return nil
 }
 
-func (e *EventProducer) handleRepo(ctx context.Context, repo Repo, collection *string) error {
+func (e *EventProducer) handleRepo(ctx context.Context, repo config.GitWatchRepo, collection *string) error {
 	if repo.Name == "" {
 		return fmt.Errorf("repo name cannot be empty: %+v", repo)
 	}
@@ -171,7 +172,7 @@ func (e *EventProducer) handleRepo(ctx context.Context, repo Repo, collection *s
 	return nil
 }
 
-func (e *EventProducer) trackRepos(ctx context.Context, repos []Repo, collection *string, ticker *time.Ticker) {
+func (e *EventProducer) trackRepos(ctx context.Context, repos []config.GitWatchRepo, collection *string, ticker *time.Ticker) {
 	for {
 		select {
 		case <-ctx.Done():
@@ -212,7 +213,7 @@ func (e *EventProducer) watcher(ctx context.Context, ticker *time.Ticker) error 
 			t = ticker
 		}
 
-		go func(collection Collection) {
+		go func(collection config.GitWatchCollection) {
 			log.WithFields(log.Fields{
 				"name":       collection.Name,
 				"interval":   collection.Interval,

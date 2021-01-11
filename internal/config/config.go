@@ -1,22 +1,61 @@
 package config
 
+import (
+	"io/ioutil"
+	"path/filepath"
+
+	"github.com/apex/log"
+	"gopkg.in/yaml.v2"
+)
+
+// LoadConfig receives a file path for a configuration to load.
+func LoadConfig(file string) (*Config, error) {
+	filename, _ := filepath.Abs(file)
+
+	log.WithFields(log.Fields{
+		"filename": filename,
+	}).Debug("loading config file")
+
+	config := Config{}
+	err := loadYamlFile(filename, &config)
+	if err != nil {
+		return nil, err
+	}
+
+	return &config, nil
+}
+
+// loadYamlFile unmarshals a YAML file into the received interface{} or returns an error.
+func loadYamlFile(filename string, d interface{}) error {
+	yamlFile, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return err
+	}
+
+	err = yaml.Unmarshal(yamlFile, d)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Config stores the items that are required to configure this project.
 type Config struct {
-	// Agent        *agent.Config         `yaml:"agent,omitempty"`
-	// Astro        *astro.Config         `yaml:"astro,omitempty"`
-	// Builder      *builder.Config       `yaml:"builder,omitempty"`
+	Agent        *AgentConfig         `yaml:"agent,omitempty"`
+	Astro        *AstroConfig         `yaml:"astro,omitempty"`
+	Builder      *BuilderConfig       `yaml:"builder,omitempty"`
 	Environments *[]EnvironmentConfig `yaml:"environments,omitempty"`
-	// GitWatch     *gitwatch.Config     `yaml:"gitwatch,omitempty"`
-	HTTP *HTTPConfig `yaml:"http,omitempty"`
-	// LDAP         *inventory.LDAPConfig `yaml:"ldap,omitempty"`
-	// Lights       *lights.Config        `yaml:"lights,omitempty"`
-	MQTT *MQTTConfig `yaml:"mqtt,omitempty"`
-	// Network      *network.Config       `yaml:"network,omitempty"`
-	// Rooms        *[]lights.Room        `yaml:"rooms,omitempty"`
-	RPC *RPCConfig `yaml:"rpc,omitempty"`
-	// Timer        *timer.Config         `yaml:"timer,omitempty"`
-	TLS   *TLSConfig   `yaml:"tls,omitempty"`
-	Vault *VaultConfig `yaml:"vault,omitempty"`
+	GitWatch     *GitWatchConfig      `yaml:"gitwatch,omitempty"`
+	HTTP         *HTTPConfig          `yaml:"http,omitempty"`
+	LDAP         *LDAPConfig          `yaml:"ldap,omitempty"`
+	Lights       *LightsConfig        `yaml:"lights,omitempty"`
+	MQTT         *MQTTConfig          `yaml:"mqtt,omitempty"`
+	Network      *NetworkConfig       `yaml:"network,omitempty"`
+	RPC          *RPCConfig           `yaml:"rpc,omitempty"`
+	Timer        *TimerConfig         `yaml:"timer,omitempty"`
+	TLS          *TLSConfig           `yaml:"tls,omitempty"`
+	Vault        *VaultConfig         `yaml:"vault,omitempty"`
 }
 
 // EnvironmentConfig is the environment configuration.
@@ -29,11 +68,6 @@ type EnvironmentConfig struct {
 type RPCConfig struct {
 	ListenAddress string `yaml:"listen_address,omitempty"`
 	ServerAddress string `yaml:"server_address,omitempty"`
-}
-
-// HTTPConfig is the configuration for the listening HTTP server.
-type HTTPConfig struct {
-	ListenAddress string `yaml:"listen_address,omitempty"`
 }
 
 // TLSConfig is the configuration for an RPC TLS client and server.

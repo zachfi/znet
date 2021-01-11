@@ -3,12 +3,12 @@ package znet
 import (
 	"encoding/json"
 	"fmt"
-	"path/filepath"
 
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/xaque208/znet/internal/agent"
+	"github.com/xaque208/znet/internal/config"
 	"github.com/xaque208/znet/pkg/events"
 	"github.com/xaque208/znet/pkg/netconfig"
 )
@@ -17,7 +17,7 @@ import (
 // configuration and flow control for starting the server process.
 type Znet struct {
 	ConfigDir   string
-	Config      Config
+	Config      *config.Config
 	Data        netconfig.Data
 	Environment map[string]string
 }
@@ -27,7 +27,7 @@ func NewZnet(file string) (*Znet, error) {
 	var err error
 	var environment map[string]string
 
-	cfg, err := loadConfig(file)
+	cfg, err := config.LoadConfig(file)
 	if err != nil {
 		return &Znet{}, fmt.Errorf("failed to load config file %s: %s", file, err)
 	}
@@ -52,19 +52,6 @@ func NewZnet(file string) (*Znet, error) {
 	}
 
 	return &z, nil
-}
-
-// LoadConfig receives a file path for a configuration to load.
-func loadConfig(file string) (Config, error) {
-	filename, _ := filepath.Abs(file)
-	log.Debugf("loading config from: %s", filename)
-	config := Config{}
-	err := loadYamlFile(filename, &config)
-	if err != nil {
-		return Config{}, err
-	}
-
-	return config, nil
 }
 
 // Stop the znet connections

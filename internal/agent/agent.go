@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"net"
 	"os"
 	"os/exec"
 	"text/template"
@@ -12,6 +13,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
+	"github.com/xaque208/znet/internal/comms"
+	"github.com/xaque208/znet/internal/config"
 	"github.com/xaque208/znet/internal/gitwatch"
 	"github.com/xaque208/znet/internal/timer"
 	"github.com/xaque208/znet/pkg/events"
@@ -19,23 +22,47 @@ import (
 
 // Agent is an RPC client worker bee.
 type Agent struct {
-	config Config
-	conn   *grpc.ClientConn
+	config     *config.Config
+	conn       *grpc.ClientConn
+	grpcServer *grpc.Server
 }
 
 // NewAgent returns a new *Agent from the given arguments.
-func NewAgent(config Config, conn *grpc.ClientConn) *Agent {
-	return &Agent{
-		config: config,
+func NewAgent(cfg *config.Config, conn *grpc.ClientConn) *Agent {
+
+	if cfg.TLS == nil {
+		log.Warn("nil TLS config")
+	}
+
+	if cfg.Vault == nil {
+		log.Warn("nil Vault config")
+	}
+
+	if cfg.RPC == nil {
+		log.Warn("nil RPC config")
+	}
+
+	if cfg.Agent == nil {
+		log.Warn("nil Agent config")
+	}
+
+	a := &Agent{
+		config: cfg,
 		conn:   conn,
 	}
+
+	if cfg.RPC != nil {
+		a.grpcServer = comms.StandardRPCServer(cfg.Vault, cfg.TLS)
+	}
+
+	return a
 }
 
-// Subscriptions implements the events.Consumer interface
+// Subscriptions implements the events.Consumer interface.
 func (a *Agent) Subscriptions() *events.Subscriptions {
 	s := events.NewSubscriptions()
 
-	for _, e := range a.config.Executions {
+	for _, e := range a.config.Agent.Executions {
 		for _, x := range e.Events {
 			switch x {
 			case "NewCommit":
@@ -140,7 +167,7 @@ func (a *Agent) newCommitHandler(name string, payload events.Payload) error {
 func (a *Agent) executeForGitEvent(x interface{}) error {
 	log.Tracef("executeForGitEvent %+v", x)
 
-	for _, execution := range a.config.Executions {
+	for _, execution := range a.config.Agent.Executions {
 
 		for _, xx := range execution.Events {
 			if xx != "" {
@@ -222,6 +249,44 @@ func (a *Agent) executeForGitEvent(x interface{}) error {
 			}
 		}
 	}
+
+	return nil
+}
+
+func (a *Agent) Start() error {
+	if a.config.RPC == nil {
+		log.Warnf("config: %+v", a.config)
+		return fmt.Errorf("unable to start agent with nil RPC config")
+	}
+
+	if a.config.RPC.ListenAddress != "" {
+		log.WithFields(log.Fields{
+			"rpc_listen": a.config.RPC.ListenAddress,
+		}).Debug("starting RPC listener")
+
+		a.startRPCListener()
+	}
+
+	return nil
+}
+
+func (a *Agent) Stop() error {
+	return nil
+}
+
+func (a *Agent) startRPCListener() error {
+
+	go func() {
+		lis, err := net.Listen("tcp", a.config.RPC.ListenAddress)
+		if err != nil {
+			log.Errorf("rpc failed to listen: %s", err)
+		}
+
+		err = a.grpcServer.Serve(lis)
+		if err != nil {
+			log.Error(err)
+		}
+	}()
 
 	return nil
 }

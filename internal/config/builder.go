@@ -1,6 +1,6 @@
-package builder
+package config
 
-type Config struct {
+type BuilderConfig struct {
 	CacheDir   string `yaml:"cache_dir"`
 	SSHKeyPath string `yaml:"ssh_key_path"`
 }

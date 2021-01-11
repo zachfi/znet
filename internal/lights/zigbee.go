@@ -9,13 +9,14 @@ import (
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	log "github.com/sirupsen/logrus"
+	"github.com/xaque208/znet/internal/config"
 	"github.com/xaque208/znet/rpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 type zigbeeLight struct {
-	config          Config
+	config          *config.LightsConfig
 	inventoryClient rpc.InventoryClient
 	mqttClient      mqtt.Client
 }

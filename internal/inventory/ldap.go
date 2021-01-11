@@ -8,18 +8,19 @@ import (
 
 	ldap "github.com/go-ldap/ldap/v3"
 	log "github.com/sirupsen/logrus"
+	"github.com/xaque208/znet/internal/config"
 )
 
 // NewLDAPClient constructs an LDAP client to return.
-func NewLDAPClient(config LDAPConfig) (*ldap.Conn, error) {
+func NewLDAPClient(cfg *config.LDAPConfig) (*ldap.Conn, error) {
 
-	if config.BindDN == "" || config.BindPW == "" || config.BaseDN == "" {
+	if cfg.BindDN == "" || cfg.BindPW == "" || cfg.BaseDN == "" {
 		return nil, fmt.Errorf("incomplete LDAP credentials, need [BindDN, BindPW, BaseDN]")
 	}
 
 	l, err := ldap.DialTLS(
 		"tcp",
-		fmt.Sprintf("%s:%d", config.Host, 636),
+		fmt.Sprintf("%s:%d", cfg.Host, 636),
 		&tls.Config{InsecureSkipVerify: true},
 	)
 	if err != nil {
@@ -29,7 +30,7 @@ func NewLDAPClient(config LDAPConfig) (*ldap.Conn, error) {
 	l.SetTimeout(15 * time.Second)
 
 	// First bind with a read only user
-	err = l.Bind(config.BindDN, config.BindPW)
+	err = l.Bind(cfg.BindDN, cfg.BindPW)
 	if err != nil {
 		return nil, err
 	}
@@ -47,14 +48,14 @@ func NewLDAPClient(config LDAPConfig) (*ldap.Conn, error) {
 
 				l, err = ldap.DialTLS(
 					"tcp",
-					fmt.Sprintf("%s:%d", config.Host, 636),
+					fmt.Sprintf("%s:%d", cfg.Host, 636),
 					&tls.Config{InsecureSkipVerify: true},
 				)
 				if err != nil {
 					log.Error(err)
 				}
 
-				err = l.Bind(config.BindDN, config.BindPW)
+				err = l.Bind(cfg.BindDN, cfg.BindPW)
 				if err != nil {
 					log.Error(err)
 				}

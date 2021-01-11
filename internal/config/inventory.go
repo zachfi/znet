@@ -1,4 +1,4 @@
-package inventory
+package config
 
 // LDAPConfig is the client configuration for LDAP.
 type LDAPConfig struct {

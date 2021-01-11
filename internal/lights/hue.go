@@ -6,10 +6,11 @@ import (
 
 	"github.com/amimof/huego"
 	log "github.com/sirupsen/logrus"
+	"github.com/xaque208/znet/internal/config"
 )
 
 type hueLight struct {
-	config Config
+	config *config.LightsConfig
 	hue    *huego.Bridge
 }
 

@@ -37,19 +37,7 @@ var networkhostCmd = &cobra.Command{
 }
 
 func runNetworkHost(cmd *cobra.Command, args []string) {
-	formatter := log.TextFormatter{
-		DisableQuote:     true,
-		DisableTimestamp: true,
-	}
-
-	log.SetFormatter(&formatter)
-	if trace {
-		log.SetLevel(log.TraceLevel)
-	} else if verbose {
-		log.SetLevel(log.DebugLevel)
-	} else {
-		log.SetLevel(log.InfoLevel)
-	}
+	initLogger()
 
 	z, err := znet.NewZnet(cfgFile)
 	if err != nil {

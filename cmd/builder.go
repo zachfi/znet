@@ -32,18 +32,7 @@ func init() {
 }
 
 func runBuilder(cmd *cobra.Command, args []string) {
-	formatter := log.TextFormatter{
-		FullTimestamp: true,
-	}
-
-	log.SetFormatter(&formatter)
-	if trace {
-		log.SetLevel(log.TraceLevel)
-	} else if verbose {
-		log.SetLevel(log.DebugLevel)
-	} else {
-		log.SetLevel(log.InfoLevel)
-	}
+	initLogger()
 
 	z, err := znet.NewZnet(cfgFile)
 	if err != nil {
@@ -63,7 +52,7 @@ func runBuilder(cmd *cobra.Command, args []string) {
 		log.Fatal("unable to create agent with nil Builder configuration")
 	}
 
-	x := builder.NewBuilder(conn, *z.Config.Builder)
+	x := builder.NewBuilder(conn, z.Config.Builder)
 
 	consumers := []events.Consumer{
 		x,

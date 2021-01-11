@@ -12,6 +12,7 @@ import (
 	"github.com/xaque208/rftoy/rftoy"
 
 	"github.com/xaque208/znet/internal/astro"
+	"github.com/xaque208/znet/internal/config"
 	"github.com/xaque208/znet/internal/timer"
 	"github.com/xaque208/znet/pkg/events"
 	"github.com/xaque208/znet/pkg/iot"
@@ -21,30 +22,30 @@ import (
 // Lights holds the information necessary to communicate with lighting
 // equipment, and the configuration to add a bit of context.
 type Lights struct {
-	config   Config
+	config   *config.LightsConfig
 	Handlers []Light
 }
 
 // NewLights creates and returns a new Lights object based on the received
 // configuration.
-func NewLights(config Config, inventoryClient rpc.InventoryClient, mqttClient mqtt.Client) *Lights {
+func NewLights(cfg *config.LightsConfig, inventoryClient rpc.InventoryClient, mqttClient mqtt.Client) *Lights {
 	l := Lights{
-		config: config,
+		config: cfg,
 	}
 
 	hue := hueLight{
-		config: config,
-		hue:    huego.New(config.Hue.Endpoint, config.Hue.User),
+		config: cfg,
+		hue:    huego.New(cfg.Hue.Endpoint, cfg.Hue.User),
 	}
 
 	zigbee := zigbeeLight{
-		config:          config,
+		config:          cfg,
 		inventoryClient: inventoryClient,
 		mqttClient:      mqttClient,
 	}
 
 	rftoy := rftoyLight{
-		endpoint: &rftoy.RFToy{Address: config.RFToy.Endpoint},
+		endpoint: &rftoy.RFToy{Address: cfg.RFToy.Endpoint},
 	}
 
 	l.Handlers = []Light{

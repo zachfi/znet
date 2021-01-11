@@ -51,11 +51,7 @@ func init() {
 }
 
 func runLights(cmd *cobra.Command, args []string) {
-	if verbose {
-		log.SetLevel(log.DebugLevel)
-	} else {
-		log.SetLevel(log.InfoLevel)
-	}
+	initLogger()
 
 	z, err := znet.NewZnet(cfgFile)
 	if err != nil {

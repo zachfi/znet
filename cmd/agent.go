@@ -38,18 +38,7 @@ func init() {
 }
 
 func runAgent(cmd *cobra.Command, args []string) {
-	formatter := log.TextFormatter{
-		FullTimestamp: true,
-	}
-
-	log.SetFormatter(&formatter)
-	if trace {
-		log.SetLevel(log.TraceLevel)
-	} else if verbose {
-		log.SetLevel(log.DebugLevel)
-	} else {
-		log.SetLevel(log.InfoLevel)
-	}
+	initLogger()
 
 	z, err := znet.NewZnet(cfgFile)
 	if err != nil {
@@ -83,7 +72,7 @@ func runAgent(cmd *cobra.Command, args []string) {
 
 	var agentServer *agent.Agent
 	if z.Config.Agent != nil {
-		agentServer = agent.NewAgent(*z.Config.Agent, conn)
+		agentServer = agent.NewAgent(z.Config, conn)
 		consumers = append(consumers, agentServer)
 	}
 
@@ -94,7 +83,7 @@ func runAgent(cmd *cobra.Command, args []string) {
 	// mqttClient for publishing messages
 	// inventoryClient for device lookup and group selection
 	if z.Config.Lights != nil && inventoryClient != nil && mqttClient != nil {
-		lightsConsumer := lights.NewLights(*z.Config.Lights, inventoryClient, mqttClient)
+		lightsConsumer := lights.NewLights(z.Config.Lights, inventoryClient, mqttClient)
 		consumers = append(consumers, lightsConsumer)
 
 		// The lightsConsumer responds to a bunch of events.
@@ -104,7 +93,7 @@ func runAgent(cmd *cobra.Command, args []string) {
 	}
 
 	if z.Config.Network != nil && inventoryClient != nil {
-		networkConsumer := network.NewNetwork(*z.Config.Network, conn)
+		networkConsumer := network.NewNetwork(z.Config.Network, conn)
 
 		consumers = append(consumers, networkConsumer)
 	}

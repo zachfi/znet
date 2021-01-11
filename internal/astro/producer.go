@@ -12,25 +12,26 @@ import (
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
+	"github.com/xaque208/znet/internal/config"
 	"github.com/xaque208/znet/pkg/events"
 )
 
 // EventProducer implements events.Producer with an attached GRPC connection.
 type EventProducer struct {
 	conn   *grpc.ClientConn
-	config Config
+	config *config.AstroConfig
 	ctx    context.Context
 	cancel func()
 }
 
 // NewProducer creates a new EventProducer to implement events.Producer and
 // attach the received GRPC connection.
-func NewProducer(conn *grpc.ClientConn, config Config) events.Producer {
+func NewProducer(conn *grpc.ClientConn, cfg *config.AstroConfig) events.Producer {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	var producer events.Producer = &EventProducer{
 		conn:   conn,
-		config: config,
+		config: cfg,
 		ctx:    ctx,
 		cancel: cancel,
 	}

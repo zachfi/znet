@@ -57,18 +57,7 @@ func init() {
 }
 
 func runNetconfig(cmd *cobra.Command, args []string) {
-	formatter := log.TextFormatter{
-		FullTimestamp: true,
-	}
-
-	log.SetFormatter(&formatter)
-	if trace {
-		log.SetLevel(log.TraceLevel)
-	} else if verbose {
-		log.SetLevel(log.DebugLevel)
-	} else {
-		log.SetLevel(log.InfoLevel)
-	}
+	initLogger()
 
 	z, err := znet.NewZnet(cfgFile)
 	if err != nil {

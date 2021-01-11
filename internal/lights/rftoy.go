@@ -6,10 +6,11 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/xaque208/rftoy/rftoy"
+	"github.com/xaque208/znet/internal/config"
 )
 
 type rftoyLight struct {
-	config   Config
+	config   *config.LightsConfig
 	endpoint *rftoy.RFToy
 }
 
