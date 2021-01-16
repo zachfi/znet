@@ -9,7 +9,7 @@ import (
 )
 
 func TestAgent_Basic(t *testing.T) {
-	config := config.Config{}
+	config := &config.Config{}
 	ag := NewAgent(config, nil)
 	require.NotNil(t, ag)
 }
