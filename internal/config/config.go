@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 	"path/filepath"
 
-	"github.com/apex/log"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )
 
@@ -66,8 +66,9 @@ type EnvironmentConfig struct {
 
 // RPCConfig is the configuration for the RPC client and server.
 type RPCConfig struct {
-	ListenAddress string `yaml:"listen_address,omitempty"`
-	ServerAddress string `yaml:"server_address,omitempty"`
+	AgentListenAddress string `yaml:"agent_listen_address,omitempty"`
+	ListenAddress      string `yaml:"listen_address,omitempty"`
+	ServerAddress      string `yaml:"server_address,omitempty"`
 }
 
 // TLSConfig is the configuration for an RPC TLS client and server.
