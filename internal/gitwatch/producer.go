@@ -20,27 +20,33 @@ import (
 type EventProducer struct {
 	config *config.GitWatchConfig
 	conn   *grpc.ClientConn
-	ctx    context.Context
-	cancel func()
 }
 
-// NewProducer creates a new EventProducer to implement events.Producer and
-// attach the received GRPC connection.
-func NewProducer(conn *grpc.ClientConn, config *config.GitWatchConfig) events.Producer {
-	ctx, cancel := context.WithCancel(context.Background())
+// NewProducer receives a config to build a new EventProducer.
+func NewProducer(cfg *config.GitWatchConfig) events.Producer {
+	if cfg == nil {
+		log.Error("")
+	}
 
 	var producer events.Producer = &EventProducer{
-		conn:   conn,
-		config: config,
-		ctx:    ctx,
-		cancel: cancel,
+		config: cfg,
 	}
 
 	return producer
 }
 
-// Start initializes the producer.
-func (e *EventProducer) Start() error {
+// Connect initializes the producer.
+func (e *EventProducer) Connect(ctx context.Context, conn *grpc.ClientConn) error {
+	if conn == nil {
+		return fmt.Errorf("unable to connext with nil gRPC connection")
+	}
+
+	if e.conn != nil {
+		log.Warnf("replacing non-nil gRPC client connection")
+	}
+
+	e.conn = conn
+
 	var interval int = 600
 
 	if e.config.Interval > 0 {
@@ -58,14 +64,8 @@ func (e *EventProducer) Start() error {
 		if err != nil {
 			log.Error(err)
 		}
-	}(e.ctx, interval)
+	}(ctx, interval)
 
-	return nil
-}
-
-// Stop shuts down the producer.
-func (e *EventProducer) Stop() error {
-	e.cancel()
 	return nil
 }
 

@@ -20,31 +20,36 @@ import (
 type EventProducer struct {
 	conn   *grpc.ClientConn
 	config *config.AstroConfig
-	ctx    context.Context
-	cancel func()
 }
 
-// NewProducer creates a new EventProducer to implement events.Producer and
-// attach the received GRPC connection.
-func NewProducer(conn *grpc.ClientConn, cfg *config.AstroConfig) events.Producer {
-	ctx, cancel := context.WithCancel(context.Background())
+// NewProducer receives a config to build a new EventProducer.
+func NewProducer(cfg *config.AstroConfig) events.Producer {
+	if cfg == nil {
+		log.Error("")
+	}
 
 	var producer events.Producer = &EventProducer{
-		conn:   conn,
 		config: cfg,
-		ctx:    ctx,
-		cancel: cancel,
 	}
 
 	return producer
 }
 
-// Start initializes the producer.
-func (e *EventProducer) Start() error {
+// Connect starts the producer
+func (e *EventProducer) Connect(ctx context.Context, conn *grpc.ClientConn) error {
+	if conn == nil {
+		return fmt.Errorf("unable to connext with nil gRPC connection")
+	}
+
+	if e.conn != nil {
+		log.Warnf("replacing non-nil gRPC client connection")
+	}
+	e.conn = conn
+
 	log.Info("starting astro eventProducer")
 
 	go func() {
-		err := e.scheduler()
+		err := e.scheduler(ctx)
 		if err != nil {
 			log.Error(err)
 		}
@@ -53,13 +58,7 @@ func (e *EventProducer) Start() error {
 	return nil
 }
 
-// Stop shuts down the producer.
-func (e *EventProducer) Stop() error {
-	e.cancel()
-	return nil
-}
-
-func (e *EventProducer) scheduleEvents(sch *events.Scheduler) error {
+func (e *EventProducer) scheduleEvents(ctx context.Context, sch *events.Scheduler) error {
 	clientConf := api.Config{
 		Address: e.config.MetricsURL,
 	}
@@ -70,8 +69,8 @@ func (e *EventProducer) scheduleEvents(sch *events.Scheduler) error {
 	}
 
 	for _, l := range e.config.Locations {
-		sunriseTime := queryForTime(e.ctx, client, fmt.Sprintf("owm_sunrise_time{location=\"%s\"}", l))
-		sunsetTime := queryForTime(e.ctx, client, fmt.Sprintf("owm_sunset_time{location=\"%s\"}", l))
+		sunriseTime := queryForTime(ctx, client, fmt.Sprintf("owm_sunrise_time{location=\"%s\"}", l))
+		sunsetTime := queryForTime(ctx, client, fmt.Sprintf("owm_sunset_time{location=\"%s\"}", l))
 
 		log.Tracef("astro found sunriseTime: %+v", sunriseTime)
 		log.Tracef("astro found sunsetTime: %+v", sunsetTime)
@@ -107,10 +106,10 @@ func (e *EventProducer) scheduleEvents(sch *events.Scheduler) error {
 	return nil
 }
 
-func (e *EventProducer) scheduler() error {
+func (e *EventProducer) scheduler(ctx context.Context) error {
 	sch := events.NewScheduler()
 
-	err := e.scheduleEvents(sch)
+	err := e.scheduleEvents(ctx, sch)
 	if err != nil {
 		log.Error(err)
 	}
@@ -149,7 +148,7 @@ func (e *EventProducer) scheduler() error {
 		}
 	}()
 
-	<-e.ctx.Done()
+	<-ctx.Done()
 	log.Debugf("scheduler dying")
 
 	return nil

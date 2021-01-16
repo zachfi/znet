@@ -2,6 +2,7 @@ package timer
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -16,42 +17,41 @@ import (
 type EventProducer struct {
 	conn   *grpc.ClientConn
 	config *config.TimerConfig
-	ctx    context.Context
-	cancel func()
 }
 
-// NewProducer creates a new EventProducer to implement events.Producer and
-// attach the received GRPC connection.
-func NewProducer(conn *grpc.ClientConn, cfg *config.TimerConfig) events.Producer {
-	ctx, cancel := context.WithCancel(context.Background())
+// NewProducer receives a config to build a new EventProducer.
+func NewProducer(cfg *config.TimerConfig) events.Producer {
+	if cfg == nil {
+		log.Error("")
+	}
 
 	var producer events.Producer = &EventProducer{
-		conn:   conn,
 		config: cfg,
-		ctx:    ctx,
-		cancel: cancel,
 	}
 
 	return producer
 }
 
-// Start initializes the producer.
-func (e *EventProducer) Start() error {
+// Connect starts the producer.
+func (e *EventProducer) Connect(ctx context.Context, conn *grpc.ClientConn) error {
+	if conn == nil {
+		return fmt.Errorf("unable to connext with nil gRPC connection")
+	}
+
+	if e.conn != nil {
+		log.Warnf("replacing non-nil gRPC client connection")
+	}
+	e.conn = conn
+
 	log.Info("starting timer eventProducer")
 
 	go func() {
-		err := e.scheduler()
+		err := e.scheduler(ctx)
 		if err != nil {
 			log.Error(err)
 		}
 	}()
 
-	return nil
-}
-
-// Stop shuts down the producer.
-func (e *EventProducer) Stop() error {
-	e.cancel()
 	return nil
 }
 
@@ -126,7 +126,7 @@ func (e *EventProducer) scheduleRepeatEvents(scheduledEvents *events.Scheduler, 
 	return nil
 }
 
-func (e *EventProducer) scheduler() error {
+func (e *EventProducer) scheduler(ctx context.Context) error {
 	sch := events.NewScheduler()
 
 	go func() {
@@ -183,7 +183,7 @@ func (e *EventProducer) scheduler() error {
 		"events":          len(e.config.Events),
 	}).Debug("timer scheduler started")
 
-	<-e.ctx.Done()
+	<-ctx.Done()
 	log.Debug("scheduler dying")
 
 	return nil

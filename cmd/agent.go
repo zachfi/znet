@@ -137,6 +137,12 @@ func runAgent(cmd *cobra.Command, args []string) {
 
 	<-done
 
+	log.Debug("stopping event machine")
+	err = machine.Stop()
+	if err != nil {
+		log.Error(err)
+	}
+
 	log.Debug("terminating RPC server")
 	err = agentServer.Stop()
 	if err != nil {
@@ -149,9 +155,4 @@ func runAgent(cmd *cobra.Command, args []string) {
 		log.Error(err)
 	}
 
-	log.Debug("stopping event machine")
-	err = machine.Stop()
-	if err != nil {
-		log.Error(err)
-	}
 }

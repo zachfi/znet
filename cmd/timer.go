@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"os"
 	"os/signal"
 	"syscall"
@@ -54,13 +55,9 @@ func runTimer(cmd *cobra.Command, args []string) {
 		TLS:   z.Config.TLS,
 	}
 
+	ctx, cancel := context.WithCancel(context.Background())
+
 	conn := comms.StandardRPCClient(z.Config.RPC.ServerAddress, *cfg)
-	defer func() {
-		err = conn.Close()
-		if err != nil {
-			log.Error(err)
-		}
-	}()
 
 	if z.Config.Astro == nil {
 		log.Fatal("unable to create EventProducer with nil Astro configuration")
@@ -68,18 +65,23 @@ func runTimer(cmd *cobra.Command, args []string) {
 
 	producers := make([]events.Producer, 0)
 
-	y := astro.NewProducer(conn, z.Config.Astro)
+	y := astro.NewProducer(cfg.Astro)
 	producers = append(producers, y)
 
 	if z.Config.Timer == nil {
 		log.Fatal("unable to create EventProducer with nil Timer configuration")
 	}
 
-	x := timer.NewProducer(conn, z.Config.Timer)
+	x := timer.NewProducer(cfg.Timer)
+
 	producers = append(producers, x)
 
+	log.WithFields(log.Fields{
+		"count": len(producers),
+	}).Debug("starting producers")
+
 	for _, p := range producers {
-		err = p.Start()
+		err = p.Connect(ctx, conn)
 		if err != nil {
 			log.Error(err)
 		}
@@ -98,10 +100,11 @@ func runTimer(cmd *cobra.Command, args []string) {
 
 	<-done
 
-	for _, p := range producers {
-		err = p.Stop()
-		if err != nil {
-			log.Error(err)
-		}
+	cancel()
+
+	log.Debug("closing RPC connection")
+	err = conn.Close()
+	if err != nil {
+		log.Error(err)
 	}
 }

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"os"
 	"os/signal"
 	"syscall"
@@ -42,14 +43,17 @@ func runGitwatch(cmd *cobra.Command, args []string) {
 		TLS:   z.Config.TLS,
 	}
 
+	ctx, cancel := context.WithCancel(context.Background())
+
 	conn := comms.StandardRPCClient(z.Config.RPC.ServerAddress, *cfg)
 
 	if z.Config.GitWatch == nil {
 		log.Fatal("unable to create agent with nil GitWatch configuration")
 	}
 
-	x := gitwatch.NewProducer(conn, z.Config.GitWatch)
-	err = x.Start()
+	x := gitwatch.NewProducer(z.Config.GitWatch)
+
+	err = x.Connect(ctx, conn)
 	if err != nil {
 		log.Error(err)
 	}
@@ -67,10 +71,7 @@ func runGitwatch(cmd *cobra.Command, args []string) {
 
 	<-done
 
-	err = x.Stop()
-	if err != nil {
-		log.Error(err)
-	}
+	cancel()
 
 	log.Debug("closing RPC connection")
 	err = conn.Close()
