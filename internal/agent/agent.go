@@ -18,6 +18,7 @@ import (
 	"github.com/xaque208/znet/internal/gitwatch"
 	"github.com/xaque208/znet/internal/timer"
 	"github.com/xaque208/znet/pkg/events"
+	"github.com/xaque208/znet/rpc"
 )
 
 // Agent is an RPC client worker bee.
@@ -255,7 +256,6 @@ func (a *Agent) executeForGitEvent(x interface{}) error {
 
 func (a *Agent) Start() error {
 	if a.config.RPC == nil {
-		log.Warnf("config: %+v", a.config)
 		return fmt.Errorf("unable to start agent with nil RPC config")
 	}
 
@@ -275,6 +275,22 @@ func (a *Agent) Stop() error {
 }
 
 func (a *Agent) startRPCListener() error {
+	info, err := readOSRelease()
+	if err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"id": info.ID,
+	}).Debug("os-release")
+
+	switch info.ID {
+	case "freebsd":
+		rpc.RegisterJailHostServer(a.grpcServer, &jailServer{})
+		rpc.RegisterNodeServer(a.grpcServer, &nodeServer{})
+	case "arch":
+		rpc.RegisterNodeServer(a.grpcServer, &nodeServer{})
+	}
 
 	go func() {
 		lis, err := net.Listen("tcp", a.config.RPC.AgentListenAddress)
