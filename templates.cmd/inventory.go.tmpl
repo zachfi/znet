@@ -14,6 +14,8 @@ import (
 
 	"github.com/xaque208/znet/rpc"
 	"github.com/xaque208/znet/znet"
+	"github.com/xaque208/znet/internal/comms"
+	"github.com/xaque208/znet/internal/config"
 )
 
 var inventoryCommand = &cobra.Command{
@@ -41,19 +43,7 @@ var {{$commandName|lowerCamelCase}}Cmd = &cobra.Command{
 }
 
 func run{{$commandName}}(cmd *cobra.Command, args []string) {
-	formatter := log.TextFormatter{
-		DisableQuote:     true,
-		DisableTimestamp: true,
-	}
-
-	log.SetFormatter(&formatter)
-	if trace {
-		log.SetLevel(log.TraceLevel)
-	} else if verbose {
-		log.SetLevel(log.DebugLevel)
-	} else {
-		log.SetLevel(log.InfoLevel)
-	}
+	initLogger()
 
 	z, err := znet.NewZnet(cfgFile)
 	if err != nil {
@@ -66,7 +56,12 @@ func run{{$commandName}}(cmd *cobra.Command, args []string) {
 		log.Fatal("no rpc.server configuration specified")
 	}
 
-	conn := znet.NewConn(z.Config.RPC.ServerAddress, z.Config)
+	cfg := &config.Config{
+		Vault: z.Config.Vault,
+		TLS:   z.Config.TLS,
+	}
+
+	conn := comms.StandardRPCClient(z.Config.RPC.ServerAddress, *cfg)
 
 	defer func() {
 		err = conn.Close()
