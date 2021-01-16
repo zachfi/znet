@@ -259,9 +259,9 @@ func (a *Agent) Start() error {
 		return fmt.Errorf("unable to start agent with nil RPC config")
 	}
 
-	if a.config.RPC.ListenAddress != "" {
+	if a.config.RPC.AgentListenAddress != "" {
 		log.WithFields(log.Fields{
-			"rpc_listen": a.config.RPC.ListenAddress,
+			"rpc_listen": a.config.RPC.AgentListenAddress,
 		}).Debug("starting RPC listener")
 
 		a.startRPCListener()
@@ -277,7 +277,7 @@ func (a *Agent) Stop() error {
 func (a *Agent) startRPCListener() error {
 
 	go func() {
-		lis, err := net.Listen("tcp", a.config.RPC.ListenAddress)
+		lis, err := net.Listen("tcp", a.config.RPC.AgentListenAddress)
 		if err != nil {
 			log.Errorf("rpc failed to listen: %s", err)
 		}
