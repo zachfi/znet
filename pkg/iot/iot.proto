@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package iot;
+
+option go_package = ".;iot";
+
+message Empty {}
+
+message Click {
+  string count = 1;
+  string device = 2;
+  string zone = 3;
+}
+
+service IOT {
+  rpc ClickEvent(Click) returns (Empty);
+}
+

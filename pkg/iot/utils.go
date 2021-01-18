@@ -6,7 +6,9 @@ import (
 	"regexp"
 	"strings"
 
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 	log "github.com/sirupsen/logrus"
+	"github.com/xaque208/znet/internal/config"
 )
 
 type TopicPath struct {
@@ -159,4 +161,33 @@ func ReadMessage(objectID string, payload []byte, endpoint ...string) (interface
 	}
 
 	return nil, nil
+}
+
+func NewMQTTClient(cfg *config.MQTTConfig) (mqtt.Client, error) {
+	if cfg == nil {
+		return nil, fmt.Errorf("unable to new MQTT client with nil config")
+	}
+
+	var mqttClient mqtt.Client
+
+	mqttOpts := mqtt.NewClientOptions()
+	mqttOpts.AddBroker(cfg.URL)
+	mqttOpts.SetCleanSession(true)
+
+	if cfg.Username != "" && cfg.Password != "" {
+		mqttOpts.Username = cfg.Username
+		mqttOpts.Password = cfg.Password
+	}
+
+	mqttClient = mqtt.NewClient(mqttOpts)
+
+	if token := mqttClient.Connect(); token.Wait() && token.Error() != nil {
+		log.Error(token.Error())
+	} else {
+		log.WithFields(log.Fields{
+			"url": cfg.URL,
+		}).Debug("connected to MQTT")
+	}
+
+	return mqttClient, nil
 }
