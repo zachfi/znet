@@ -106,33 +106,6 @@ message MACObservation {
 
 message Empty {}
 
-message Light {
-  string type = 1;
-  int32 id = 2;
-  string name = 3;
-  State state = 4;
-}
-
-message LightGroup {
-  string type = 1;
-  int32 id = 2;
-  string name = 3;
-  State state = 4;
-  repeated int32 lights = 5;
-}
-
-message State {
-  bool on = 1;
-  int32 brightness = 2;
-}
-
-message LightRequest {}
-
-message LightResponse {
-  repeated Light lights = 1;
-  repeated LightGroup groups = 2;
-}
-
 message Event {
   string name = 1;
   bytes payload = 2;
@@ -178,15 +151,6 @@ service Inventory {
 service Telemetry {
   rpc ReportIOTDevice(IOTDevice) returns (Empty);
   rpc ReportNetworkID(NetworkID) returns (Empty);
-}
-
-service Lights {
-  rpc Off(LightGroup) returns (LightResponse);
-  rpc On(LightGroup) returns (LightResponse);
-  rpc Status(LightRequest) returns (LightResponse);
-
-  rpc Brightness(LightGroup) returns (LightResponse);
-  rpc Alert(LightGroup) returns (LightResponse);
 }
 
 service Events {

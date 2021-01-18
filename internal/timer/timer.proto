@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package timer;
+
+option go_package = ".;timer";
+
+message Empty {}
+
+message NamedTimeStamp {
+  string name = 1;
+  google.protobuf.Timestamp time = 2;
+}
+
+service Timer {
+  rpc TimerExpired(NamedTimeStamp) returns (Empty);
+  rpc NamedTimer(NamedTimeStamp) returns (Empty);
+}
+

@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package agent;
+
+option go_package = ".;agent";
+
+message Empty {}
+
+message Jails {
+  repeated Jail jails = 1;
+}
+
+message Jail {
+  string name = 1;
+  string hostname = 2;
+  string path = 3;
+}
+
+message CommandResult {
+  bytes output = 1;
+  bytes error = 2;
+  int32 exit_code = 3;
+}
+
+service JailHost {
+  rpc List(Empty) returns (Jails);
+
+  rpc Restart(Jail) returns (CommandResult);
+  rpc Start(Jail) returns (CommandResult);
+  rpc Stop(Jail) returns (CommandResult);
+}
+
+// A standard operating system node.
+service Node {
+  rpc RunPuppetAgent(Empty) returns (CommandResult);
+  rpc PackageUpgrade(Empty) returns (CommandResult);
+}
