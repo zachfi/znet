@@ -1,60 +1,50 @@
 package lights
 
 import (
+	context "context"
 	"encoding/json"
 	"fmt"
 	"sort"
 
-	"github.com/amimof/huego"
-	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/mpvl/unique"
 	log "github.com/sirupsen/logrus"
-	"github.com/xaque208/rftoy/rftoy"
 
-	"github.com/xaque208/znet/internal/astro"
 	"github.com/xaque208/znet/internal/config"
 	"github.com/xaque208/znet/internal/timer"
 	"github.com/xaque208/znet/pkg/events"
 	"github.com/xaque208/znet/pkg/iot"
-	"github.com/xaque208/znet/rpc"
 )
 
 // Lights holds the information necessary to communicate with lighting
 // equipment, and the configuration to add a bit of context.
 type Lights struct {
 	config   *config.LightsConfig
-	Handlers []Light
+	handlers []Handler
 }
 
 // NewLights creates and returns a new Lights object based on the received
 // configuration.
-func NewLights(cfg *config.LightsConfig, inventoryClient rpc.InventoryClient, mqttClient mqtt.Client) *Lights {
-	l := Lights{
-		config: cfg,
+// func NewLights(cfg *config.LightsConfig, inventoryClient rpc.InventoryClient, mqttClient mqtt.Client) *Lights {
+func NewLights(cfg *config.Config) (*Lights, error) {
+	hue, err := NewHueLight(cfg.Lights)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create new hue light: %s", err)
 	}
 
-	hue := hueLight{
-		config: cfg,
-		hue:    huego.New(cfg.Hue.Endpoint, cfg.Hue.User),
+	zigbee, err := NewZigbeeLight(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create new zigbee light: %s", err)
 	}
 
-	zigbee := zigbeeLight{
-		config:          cfg,
-		inventoryClient: inventoryClient,
-		mqttClient:      mqttClient,
+	rftoy, err := NewRFToyLight(cfg.Lights)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create new rftoy light: %s", err)
 	}
 
-	rftoy := rftoyLight{
-		endpoint: &rftoy.RFToy{Address: cfg.RFToy.Endpoint},
-	}
-
-	l.Handlers = []Light{
-		hue,
-		zigbee,
-		rftoy,
-	}
-
-	return &l
+	return &Lights{
+		config:   cfg.Lights,
+		handlers: []Handler{hue, zigbee, rftoy},
+	}, nil
 }
 
 // Subscriptions returns the data for mapping event names with functions.
@@ -68,8 +58,6 @@ func (l *Lights) Subscriptions() *events.Subscriptions {
 
 	for _, e := range eventNames {
 		switch e {
-		case "SolarEvent":
-			s.Subscribe(e, l.solarEventHandler)
 		case "NamedTimer":
 			s.Subscribe(e, l.namedTimerHandler)
 
@@ -82,39 +70,6 @@ func (l *Lights) Subscriptions() *events.Subscriptions {
 	}
 
 	return s
-}
-
-func (l *Lights) solarEventHandler(name string, payload events.Payload) error {
-	var e astro.SolarEvent
-
-	err := json.Unmarshal(payload, &e)
-	if err != nil {
-		return fmt.Errorf("failed to unmarshal %T: %s", e, err)
-	}
-
-	names := l.configuredEventNames()
-
-	configuredEvent := func(name string, names []string) bool {
-		for _, n := range names {
-			if n == name {
-				return true
-			}
-		}
-		return false
-	}(e.Name, names)
-
-	if !configuredEvent {
-		log.WithFields(log.Fields{
-			"name":            e.Name,
-			"configuredNames": names,
-		}).Debug("unhandled lighting SolarEvent name")
-
-		return nil
-	}
-
-	l.setRoomForEvent(e.Name)
-
-	return nil
 }
 
 func (l *Lights) clickHandler(name string, payload events.Payload) error {
@@ -165,7 +120,7 @@ func (l *Lights) clickHandler(name string, payload events.Payload) error {
 				log.Warnf("unknown click event: %s", e)
 			}
 
-			for _, h := range l.Handlers {
+			for _, h := range l.handlers {
 				if toggle {
 					err := h.Toggle(room.Name)
 					if err != nil {
@@ -270,16 +225,16 @@ func (l *Lights) namedTimerHandler(name string, payload events.Payload) error {
 		return nil
 	}
 
-	l.setRoomForEvent(e.Name)
+	l.SetRoomForEvent(e.Name)
 
 	return nil
 }
 
-func (l *Lights) setRoomForEvent(name string) {
+func (l *Lights) SetRoomForEvent(name string) {
 	for _, room := range l.config.Rooms {
 		for _, o := range room.On {
 			if o == name {
-				for _, h := range l.Handlers {
+				for _, h := range l.handlers {
 					h.On(room.Name)
 				}
 			}
@@ -287,7 +242,7 @@ func (l *Lights) setRoomForEvent(name string) {
 
 		for _, o := range room.Off {
 			if o == name {
-				for _, h := range l.Handlers {
+				for _, h := range l.handlers {
 					h.Off(room.Name)
 				}
 			}
@@ -295,18 +250,38 @@ func (l *Lights) setRoomForEvent(name string) {
 
 		for _, o := range room.Dim {
 			if o == name {
-				for _, h := range l.Handlers {
-					h.Dim(room.Name, 100)
+				for _, h := range l.handlers {
+					h.Dim(room.Name, 110)
 				}
 			}
 		}
 
 		for _, o := range room.Alert {
 			if o == name {
-				for _, h := range l.Handlers {
+				for _, h := range l.handlers {
 					h.Alert(room.Name)
 				}
 			}
 		}
 	}
+}
+
+func (l *Lights) Off(ctx context.Context, req *LightGroup) (*LightResponse, error) {
+	return nil, nil
+}
+
+func (l *Lights) On(ctx context.Context, req *LightGroup) (*LightResponse, error) {
+	return nil, nil
+}
+
+func (l *Lights) Status(ctx context.Context, req *LightRequest) (*LightResponse, error) {
+	return nil, nil
+}
+
+func (l *Lights) Brightness(ctx context.Context, req *LightGroup) (*LightResponse, error) {
+	return nil, nil
+}
+
+func (l *Lights) Alert(ctx context.Context, req *LightGroup) (*LightResponse, error) {
+	return nil, nil
 }

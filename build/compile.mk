@@ -33,6 +33,8 @@ proto-grpc:
 	@protoc -I rpc/ rpc/rpc.proto \
 		--gotemplate_out=template_dir=templates.cmd,debug=true,single-package-mode=true,all=true:cmd
 	@protoc -I internal/astro internal/astro/rpc.proto --go_out=plugins=grpc:internal/astro
+	@protoc -I internal/lights internal/lights/rpc.proto --go_out=plugins=grpc:internal/lights
+	@protoc -I pkg/iot pkg/iot/rpc.proto --go_out=plugins=grpc:pkg/iot
 
 compile-all: deps-only
 	@echo "=== $(PROJECT_NAME) === [ compile          ]: building commands:"

@@ -1,52 +1,48 @@
 package lights
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"math/rand"
-	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	log "github.com/sirupsen/logrus"
 	"github.com/xaque208/znet/internal/config"
-	"github.com/xaque208/znet/rpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	"github.com/xaque208/znet/internal/inventory"
+	"github.com/xaque208/znet/pkg/iot"
 )
 
 type zigbeeLight struct {
-	config          *config.LightsConfig
-	inventoryClient rpc.InventoryClient
-	mqttClient      mqtt.Client
+	config     *config.LightsConfig
+	inv        *inventory.Inventory
+	mqttClient mqtt.Client
+}
+
+func NewZigbeeLight(cfg *config.Config) (Handler, error) {
+	inv, err := inventory.NewInventory(cfg.LDAP)
+	if err != nil {
+		return nil, err
+	}
+
+	mqttClient, err := iot.NewMQTTClient(cfg.MQTT)
+	if err != nil {
+		return nil, err
+	}
+
+	return &zigbeeLight{
+		config:     cfg.Lights,
+		inv:        inv,
+		mqttClient: mqttClient,
+	}, nil
 }
 
 func (l zigbeeLight) Toggle(groupName string) error {
-	ctx := context.Background()
-
-	stream, err := l.inventoryClient.ListZigbeeDevices(ctx, &rpc.Empty{})
+	devices, err := l.inv.ListZigbeeDevices()
 	if err != nil {
-		switch status.Code(err) {
-		case codes.Canceled:
-			return nil
-		}
-
 		return err
 	}
 
-	for {
-		var d *rpc.ZigbeeDevice
-
-		d, err = stream.Recv()
-		if err != nil {
-			switch status.Code(err) {
-			case codes.OK:
-				continue
-			default:
-				return err
-			}
-		}
-
+	for _, d := range *devices {
 		if d.IotZone != groupName {
 			continue
 		}
@@ -70,31 +66,12 @@ func (l zigbeeLight) Toggle(groupName string) error {
 }
 
 func (l zigbeeLight) Alert(groupName string) error {
-	ctx := context.Background()
-
-	stream, err := l.inventoryClient.ListZigbeeDevices(ctx, &rpc.Empty{})
+	devices, err := l.inv.ListZigbeeDevices()
 	if err != nil {
-		switch status.Code(err) {
-		case codes.Canceled:
-			return nil
-		}
-
 		return err
 	}
 
-	for {
-		var d *rpc.ZigbeeDevice
-
-		d, err = stream.Recv()
-		if err != nil {
-			switch status.Code(err) {
-			case codes.OK:
-				continue
-			default:
-				return err
-			}
-		}
-
+	for _, d := range *devices {
 		if d.IotZone != groupName {
 			continue
 		}
@@ -116,31 +93,12 @@ func (l zigbeeLight) Alert(groupName string) error {
 	return nil
 }
 func (l zigbeeLight) On(groupName string) error {
-	ctx := context.Background()
-
-	stream, err := l.inventoryClient.ListZigbeeDevices(ctx, &rpc.Empty{})
+	devices, err := l.inv.ListZigbeeDevices()
 	if err != nil {
-		switch status.Code(err) {
-		case codes.Canceled:
-			return nil
-		}
-
 		return err
 	}
 
-	for {
-		var d *rpc.ZigbeeDevice
-
-		d, err = stream.Recv()
-		if err != nil {
-			switch status.Code(err) {
-			case codes.OK:
-				continue
-			default:
-				return err
-			}
-		}
-
+	for _, d := range *devices {
 		if d.IotZone != groupName {
 			continue
 		}
@@ -163,31 +121,12 @@ func (l zigbeeLight) On(groupName string) error {
 }
 
 func (l zigbeeLight) Off(groupName string) error {
-	ctx := context.Background()
-
-	stream, err := l.inventoryClient.ListZigbeeDevices(ctx, &rpc.Empty{})
+	devices, err := l.inv.ListZigbeeDevices()
 	if err != nil {
-		switch status.Code(err) {
-		case codes.Canceled:
-			return nil
-		}
-
 		return err
 	}
 
-	for {
-		var d *rpc.ZigbeeDevice
-
-		d, err = stream.Recv()
-		if err != nil {
-			switch status.Code(err) {
-			case codes.OK:
-				continue
-			default:
-				return err
-			}
-		}
-
+	for _, d := range *devices {
 		if d.IotZone != groupName {
 			continue
 		}
@@ -210,31 +149,12 @@ func (l zigbeeLight) Off(groupName string) error {
 }
 
 func (l zigbeeLight) Dim(groupName string, brightness int32) error {
-	ctx := context.Background()
-
-	stream, err := l.inventoryClient.ListZigbeeDevices(ctx, &rpc.Empty{})
+	devices, err := l.inv.ListZigbeeDevices()
 	if err != nil {
-		switch status.Code(err) {
-		case codes.Canceled:
-			return nil
-		}
-
 		return err
 	}
 
-	for {
-		var d *rpc.ZigbeeDevice
-
-		d, err = stream.Recv()
-		if err != nil {
-			switch status.Code(err) {
-			case codes.OK:
-				continue
-			default:
-				return err
-			}
-		}
-
+	for _, d := range *devices {
 		if d.IotZone != groupName {
 			continue
 		}
@@ -258,31 +178,12 @@ func (l zigbeeLight) Dim(groupName string, brightness int32) error {
 }
 
 func (l zigbeeLight) SetColor(groupName string, hex string) error {
-	ctx := context.Background()
-
-	stream, err := l.inventoryClient.ListZigbeeDevices(ctx, &rpc.Empty{})
+	devices, err := l.inv.ListZigbeeDevices()
 	if err != nil {
-		switch status.Code(err) {
-		case codes.Canceled:
-			return nil
-		}
-
 		return err
 	}
 
-	for {
-		var d *rpc.ZigbeeDevice
-
-		d, err = stream.Recv()
-		if err != nil {
-			switch status.Code(err) {
-			case codes.OK:
-				continue
-			default:
-				return err
-			}
-		}
-
+	for _, d := range *devices {
 		if d.IotZone != groupName {
 			continue
 		}
@@ -308,33 +209,12 @@ func (l zigbeeLight) SetColor(groupName string, hex string) error {
 }
 
 func (l zigbeeLight) RandomColor(groupName string, hex []string) error {
-	ctx := context.Background()
-
-	rand.Seed(time.Now().Unix())
-
-	stream, err := l.inventoryClient.ListZigbeeDevices(ctx, &rpc.Empty{})
+	devices, err := l.inv.ListZigbeeDevices()
 	if err != nil {
-		switch status.Code(err) {
-		case codes.Canceled:
-			return nil
-		}
-
 		return err
 	}
 
-	for {
-		var d *rpc.ZigbeeDevice
-
-		d, err = stream.Recv()
-		if err != nil {
-			switch status.Code(err) {
-			case codes.OK:
-				continue
-			default:
-				return err
-			}
-		}
-
+	for _, d := range *devices {
 		if d.IotZone != groupName {
 			continue
 		}

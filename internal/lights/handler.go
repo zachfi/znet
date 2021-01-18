@@ -1,6 +1,6 @@
 package lights
 
-type Light interface {
+type Handler interface {
 	Alert(string) error
 	Dim(string, int32) error
 	Off(string) error

@@ -14,6 +14,19 @@ type hueLight struct {
 	hue    *huego.Bridge
 }
 
+func NewHueLight(cfg *config.LightsConfig) (Handler, error) {
+	if cfg.Hue == nil {
+		return nil, fmt.Errorf("unable to create new hue light with nil config")
+	}
+
+	h := hueLight{
+		config: cfg,
+		hue:    huego.New(cfg.Hue.Endpoint, cfg.Hue.User),
+	}
+
+	return h, nil
+}
+
 // On turns off the Hue Light for a room.
 func (l hueLight) On(groupName string) error {
 	g, err := l.getGroup(groupName)

@@ -25,7 +25,7 @@ import (
 
 	"github.com/xaque208/znet/internal/comms"
 	"github.com/xaque208/znet/internal/config"
-	"github.com/xaque208/znet/rpc"
+	"github.com/xaque208/znet/internal/lights"
 	"github.com/xaque208/znet/znet"
 )
 
@@ -74,9 +74,9 @@ func runLights(cmd *cobra.Command, args []string) {
 		}
 	}()
 
-	lc := rpc.NewLightsClient(conn)
+	lc := lights.NewLightsClient(conn)
 
-	req := &rpc.LightRequest{}
+	req := &lights.LightRequest{}
 
 	res, err := lc.Status(context.Background(), req)
 	if err != nil {

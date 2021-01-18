@@ -14,6 +14,16 @@ type rftoyLight struct {
 	endpoint *rftoy.RFToy
 }
 
+func NewRFToyLight(cfg *config.LightsConfig) (Handler, error) {
+	if cfg.RFToy == nil {
+		return nil, fmt.Errorf("unable to create new rftoy light with nil config")
+	}
+
+	return rftoyLight{
+		endpoint: &rftoy.RFToy{Address: cfg.RFToy.Endpoint},
+	}, nil
+}
+
 func (l rftoyLight) Off(groupName string) error {
 	room, err := l.config.Room(groupName)
 	if err != nil {
