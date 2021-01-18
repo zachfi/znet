@@ -12,7 +12,7 @@ import (
 
 // RPC Listener
 type InventoryServer struct {
-	inventory Inventory
+	inventory *Inventory
 }
 
 // .File.Service Inventory

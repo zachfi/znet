@@ -68,8 +68,6 @@ func run{{$commandName}}(cmd *cobra.Command, args []string) {
 		if err != nil {
 			log.Error(err)
 		}
-
-		z.Stop()
 	}()
 
 	ctx, cancel := context.WithCancel(context.Background())

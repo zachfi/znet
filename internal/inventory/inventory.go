@@ -7,7 +7,6 @@ import (
 	"time"
 
 	ldap "github.com/go-ldap/ldap/v3"
-	log "github.com/sirupsen/logrus"
 	"github.com/xaque208/znet/internal/config"
 )
 
@@ -19,26 +18,16 @@ type Inventory struct {
 }
 
 // NewInventory returns a new Inventory object from the received config.
-func NewInventory(cfg *config.LDAPConfig) *Inventory {
-	var err error
-
+func NewInventory(cfg *config.LDAPConfig) (*Inventory, error) {
 	conn, err := NewLDAPClient(cfg)
 	if err != nil {
-		log.Errorf("failed LDAP connection: %s", err)
+		return nil, fmt.Errorf("failed LDAP connection: %s", err)
 	}
 
 	return &Inventory{
 		config: cfg,
 		conn:   conn,
-	}
-}
-
-func NewRPCServer(cfg *config.LDAPConfig) *InventoryServer {
-	inv := NewInventory(cfg)
-
-	return &InventoryServer{
-		inventory: *inv,
-	}
+	}, nil
 }
 
 // Close closes the LDAP client.
