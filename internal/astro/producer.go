@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/prometheus/client_golang/api"
@@ -18,6 +19,7 @@ import (
 
 // EventProducer implements events.Producer with an attached GRPC connection.
 type EventProducer struct {
+	sync.Mutex
 	conn   *grpc.ClientConn
 	config *config.AstroConfig
 }
@@ -41,9 +43,19 @@ func (e *EventProducer) Connect(ctx context.Context, conn *grpc.ClientConn) erro
 		return fmt.Errorf("unable to connext with nil gRPC connection")
 	}
 
+	e.Lock()
+	defer e.Unlock()
+
 	if e.conn != nil {
 		log.Warnf("replacing non-nil gRPC client connection")
+		log.Debug("closing old connection")
+
+		err := e.conn.Close()
+		if err != nil {
+			log.Error(err)
+		}
 	}
+
 	e.conn = conn
 
 	log.Info("starting astro eventProducer")
@@ -130,16 +142,26 @@ func (e *EventProducer) scheduler(ctx context.Context) error {
 			}
 
 			for _, n := range names {
-				now := time.Now()
+				astroClient := NewAstroClient(e.conn)
 
-				ev := SolarEvent{
-					Name: n,
-					Time: &now,
-				}
-
-				err := events.ProduceEvent(e.conn, ev)
-				if err != nil {
-					log.Error(err)
+				switch n {
+				case "Sunrise":
+					_, err := astroClient.Sunrise(ctx, &Empty{})
+					if err != nil {
+						log.Error(err)
+					}
+				case "Sunset":
+					_, err := astroClient.Sunset(ctx, &Empty{})
+					if err != nil {
+						log.Error(err)
+					}
+				case "PreSunset":
+					_, err := astroClient.PreSunset(ctx, &Empty{})
+					if err != nil {
+						log.Error(err)
+					}
+				default:
+					log.Warnf("unknown astro event name: %s", n)
 				}
 
 				sch.Step()
