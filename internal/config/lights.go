@@ -5,8 +5,8 @@ import "fmt"
 // LightsConfig is the configuration for Lights
 type LightsConfig struct {
 	Rooms       []LightsRoom `yaml:"rooms"`
-	Hue         HueConfig    `yaml:"hue,omitempty"`
-	RFToy       RFToyConfig  `yaml:"rftoy,omitempty"`
+	Hue         *HueConfig   `yaml:"hue,omitempty"`
+	RFToy       *RFToyConfig `yaml:"rftoy,omitempty"`
 	PartyColors []string     `yaml:"party_colors,omitempty"`
 }
 
