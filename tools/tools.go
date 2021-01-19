@@ -17,6 +17,9 @@ import (
 	_ "github.com/git-chglog/git-chglog/cmd/git-chglog"
 	_ "golang.org/x/tools/cmd/godoc"
 
+	// build/test.mk
+	_ "gotest.tools/gotestsum"
+
 	// build/release.mk
 	_ "github.com/goreleaser/goreleaser"
 )
