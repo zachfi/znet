@@ -14,8 +14,9 @@ import (
 
 	"github.com/xaque208/znet/internal/comms"
 	"github.com/xaque208/znet/internal/config"
+	"github.com/xaque208/znet/internal/inventory"
+	"github.com/xaque208/znet/internal/telemetry"
 	"github.com/xaque208/znet/pkg/iot"
-	"github.com/xaque208/znet/rpc"
 	"github.com/xaque208/znet/znet"
 )
 
@@ -67,7 +68,7 @@ func runHarvest(cmd *cobra.Command, args []string) {
 		done <- true
 	}()
 
-	telemetryClient := rpc.NewTelemetryClient(conn)
+	telemetryClient := telemetry.NewTelemetryClient(conn)
 
 	var onMessageReceived mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 		topicPath, err := iot.ParseTopicPath(msg.Topic())
@@ -76,7 +77,7 @@ func runHarvest(cmd *cobra.Command, args []string) {
 			return
 		}
 
-		discovery := &rpc.DeviceDiscovery{
+		discovery := &iot.DeviceDiscovery{
 			Component: topicPath.Component,
 			NodeId:    topicPath.NodeID,
 			ObjectId:  topicPath.ObjectID,
@@ -84,7 +85,7 @@ func runHarvest(cmd *cobra.Command, args []string) {
 			Message:   msg.Payload(),
 		}
 
-		iotDevice := &rpc.IOTDevice{
+		iotDevice := &inventory.IOTDevice{
 			DeviceDiscovery: discovery,
 		}
 
@@ -132,14 +133,14 @@ func runHarvest(cmd *cobra.Command, args []string) {
 		sig := <-sigs
 		log.Warnf("caught signal: %s", sig.String())
 
-		if token := mqttClient.Unsubscribe(mqttTopic); token.Wait() && token.Error() != nil {
-			log.Error(token.Error())
-		}
-
-		mqttClient.Disconnect(250)
-
 		done <- true
 	}()
 
 	<-done
+
+	if token := mqttClient.Unsubscribe(mqttTopic); token.Wait() && token.Error() != nil {
+		log.Error(token.Error())
+	}
+
+	mqttClient.Disconnect(250)
 }
