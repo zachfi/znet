@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.25.0
 // 	protoc        v3.12.4
-// source: lights.proto
+// source: internal/lights/lights.proto
 
 package lights
 
@@ -41,7 +41,7 @@ type State struct {
 func (x *State) Reset() {
 	*x = State{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_lights_proto_msgTypes[0]
+		mi := &file_internal_lights_lights_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -54,7 +54,7 @@ func (x *State) String() string {
 func (*State) ProtoMessage() {}
 
 func (x *State) ProtoReflect() protoreflect.Message {
-	mi := &file_lights_proto_msgTypes[0]
+	mi := &file_internal_lights_lights_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -67,7 +67,7 @@ func (x *State) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use State.ProtoReflect.Descriptor instead.
 func (*State) Descriptor() ([]byte, []int) {
-	return file_lights_proto_rawDescGZIP(), []int{0}
+	return file_internal_lights_lights_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *State) GetOn() bool {
@@ -99,7 +99,7 @@ type LightGroup struct {
 func (x *LightGroup) Reset() {
 	*x = LightGroup{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_lights_proto_msgTypes[1]
+		mi := &file_internal_lights_lights_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -112,7 +112,7 @@ func (x *LightGroup) String() string {
 func (*LightGroup) ProtoMessage() {}
 
 func (x *LightGroup) ProtoReflect() protoreflect.Message {
-	mi := &file_lights_proto_msgTypes[1]
+	mi := &file_internal_lights_lights_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -125,7 +125,7 @@ func (x *LightGroup) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LightGroup.ProtoReflect.Descriptor instead.
 func (*LightGroup) Descriptor() ([]byte, []int) {
-	return file_lights_proto_rawDescGZIP(), []int{1}
+	return file_internal_lights_lights_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *LightGroup) GetType() string {
@@ -177,7 +177,7 @@ type Light struct {
 func (x *Light) Reset() {
 	*x = Light{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_lights_proto_msgTypes[2]
+		mi := &file_internal_lights_lights_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -190,7 +190,7 @@ func (x *Light) String() string {
 func (*Light) ProtoMessage() {}
 
 func (x *Light) ProtoReflect() protoreflect.Message {
-	mi := &file_lights_proto_msgTypes[2]
+	mi := &file_internal_lights_lights_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -203,7 +203,7 @@ func (x *Light) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Light.ProtoReflect.Descriptor instead.
 func (*Light) Descriptor() ([]byte, []int) {
-	return file_lights_proto_rawDescGZIP(), []int{2}
+	return file_internal_lights_lights_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *Light) GetType() string {
@@ -243,7 +243,7 @@ type LightRequest struct {
 func (x *LightRequest) Reset() {
 	*x = LightRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_lights_proto_msgTypes[3]
+		mi := &file_internal_lights_lights_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -256,7 +256,7 @@ func (x *LightRequest) String() string {
 func (*LightRequest) ProtoMessage() {}
 
 func (x *LightRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_lights_proto_msgTypes[3]
+	mi := &file_internal_lights_lights_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -269,7 +269,7 @@ func (x *LightRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LightRequest.ProtoReflect.Descriptor instead.
 func (*LightRequest) Descriptor() ([]byte, []int) {
-	return file_lights_proto_rawDescGZIP(), []int{3}
+	return file_internal_lights_lights_proto_rawDescGZIP(), []int{3}
 }
 
 type LightResponse struct {
@@ -284,7 +284,7 @@ type LightResponse struct {
 func (x *LightResponse) Reset() {
 	*x = LightResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_lights_proto_msgTypes[4]
+		mi := &file_internal_lights_lights_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -297,7 +297,7 @@ func (x *LightResponse) String() string {
 func (*LightResponse) ProtoMessage() {}
 
 func (x *LightResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_lights_proto_msgTypes[4]
+	mi := &file_internal_lights_lights_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -310,7 +310,7 @@ func (x *LightResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LightResponse.ProtoReflect.Descriptor instead.
 func (*LightResponse) Descriptor() ([]byte, []int) {
-	return file_lights_proto_rawDescGZIP(), []int{4}
+	return file_internal_lights_lights_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *LightResponse) GetLights() []*Light {
@@ -327,10 +327,11 @@ func (x *LightResponse) GetGroups() []*LightGroup {
 	return nil
 }
 
-var File_lights_proto protoreflect.FileDescriptor
+var File_internal_lights_lights_proto protoreflect.FileDescriptor
 
-var file_lights_proto_rawDesc = []byte{
-	0x0a, 0x0c, 0x6c, 0x69, 0x67, 0x68, 0x74, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x06,
+var file_internal_lights_lights_proto_rawDesc = []byte{
+	0x0a, 0x1c, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x2f, 0x6c, 0x69, 0x67, 0x68, 0x74,
+	0x73, 0x2f, 0x6c, 0x69, 0x67, 0x68, 0x74, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x06,
 	0x6c, 0x69, 0x67, 0x68, 0x74, 0x73, 0x22, 0x37, 0x0a, 0x05, 0x53, 0x74, 0x61, 0x74, 0x65, 0x12,
 	0x0e, 0x0a, 0x02, 0x6f, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x02, 0x6f, 0x6e, 0x12,
 	0x1e, 0x0a, 0x0a, 0x62, 0x72, 0x69, 0x67, 0x68, 0x74, 0x6e, 0x65, 0x73, 0x73, 0x18, 0x02, 0x20,
@@ -374,31 +375,31 @@ var file_lights_proto_rawDesc = []byte{
 	0x75, 0x73, 0x12, 0x14, 0x2e, 0x6c, 0x69, 0x67, 0x68, 0x74, 0x73, 0x2e, 0x4c, 0x69, 0x67, 0x68,
 	0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x15, 0x2e, 0x6c, 0x69, 0x67, 0x68, 0x74,
 	0x73, 0x2e, 0x4c, 0x69, 0x67, 0x68, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42,
-	0x0a, 0x5a, 0x08, 0x2e, 0x3b, 0x6c, 0x69, 0x67, 0x68, 0x74, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x33,
+	0x11, 0x5a, 0x0f, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x2f, 0x6c, 0x69, 0x67, 0x68,
+	0x74, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
-	file_lights_proto_rawDescOnce sync.Once
-	file_lights_proto_rawDescData = file_lights_proto_rawDesc
+	file_internal_lights_lights_proto_rawDescOnce sync.Once
+	file_internal_lights_lights_proto_rawDescData = file_internal_lights_lights_proto_rawDesc
 )
 
-func file_lights_proto_rawDescGZIP() []byte {
-	file_lights_proto_rawDescOnce.Do(func() {
-		file_lights_proto_rawDescData = protoimpl.X.CompressGZIP(file_lights_proto_rawDescData)
+func file_internal_lights_lights_proto_rawDescGZIP() []byte {
+	file_internal_lights_lights_proto_rawDescOnce.Do(func() {
+		file_internal_lights_lights_proto_rawDescData = protoimpl.X.CompressGZIP(file_internal_lights_lights_proto_rawDescData)
 	})
-	return file_lights_proto_rawDescData
+	return file_internal_lights_lights_proto_rawDescData
 }
 
-var file_lights_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
-var file_lights_proto_goTypes = []interface{}{
+var file_internal_lights_lights_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_internal_lights_lights_proto_goTypes = []interface{}{
 	(*State)(nil),         // 0: lights.State
 	(*LightGroup)(nil),    // 1: lights.LightGroup
 	(*Light)(nil),         // 2: lights.Light
 	(*LightRequest)(nil),  // 3: lights.LightRequest
 	(*LightResponse)(nil), // 4: lights.LightResponse
 }
-var file_lights_proto_depIdxs = []int32{
+var file_internal_lights_lights_proto_depIdxs = []int32{
 	0, // 0: lights.LightGroup.state:type_name -> lights.State
 	0, // 1: lights.Light.state:type_name -> lights.State
 	2, // 2: lights.LightResponse.lights:type_name -> lights.Light
@@ -420,13 +421,13 @@ var file_lights_proto_depIdxs = []int32{
 	0, // [0:4] is the sub-list for field type_name
 }
 
-func init() { file_lights_proto_init() }
-func file_lights_proto_init() {
-	if File_lights_proto != nil {
+func init() { file_internal_lights_lights_proto_init() }
+func file_internal_lights_lights_proto_init() {
+	if File_internal_lights_lights_proto != nil {
 		return
 	}
 	if !protoimpl.UnsafeEnabled {
-		file_lights_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
+		file_internal_lights_lights_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*State); i {
 			case 0:
 				return &v.state
@@ -438,7 +439,7 @@ func file_lights_proto_init() {
 				return nil
 			}
 		}
-		file_lights_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
+		file_internal_lights_lights_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*LightGroup); i {
 			case 0:
 				return &v.state
@@ -450,7 +451,7 @@ func file_lights_proto_init() {
 				return nil
 			}
 		}
-		file_lights_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+		file_internal_lights_lights_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Light); i {
 			case 0:
 				return &v.state
@@ -462,7 +463,7 @@ func file_lights_proto_init() {
 				return nil
 			}
 		}
-		file_lights_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+		file_internal_lights_lights_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*LightRequest); i {
 			case 0:
 				return &v.state
@@ -474,7 +475,7 @@ func file_lights_proto_init() {
 				return nil
 			}
 		}
-		file_lights_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+		file_internal_lights_lights_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*LightResponse); i {
 			case 0:
 				return &v.state
@@ -491,20 +492,20 @@ func file_lights_proto_init() {
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: file_lights_proto_rawDesc,
+			RawDescriptor: file_internal_lights_lights_proto_rawDesc,
 			NumEnums:      0,
 			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_lights_proto_goTypes,
-		DependencyIndexes: file_lights_proto_depIdxs,
-		MessageInfos:      file_lights_proto_msgTypes,
+		GoTypes:           file_internal_lights_lights_proto_goTypes,
+		DependencyIndexes: file_internal_lights_lights_proto_depIdxs,
+		MessageInfos:      file_internal_lights_lights_proto_msgTypes,
 	}.Build()
-	File_lights_proto = out.File
-	file_lights_proto_rawDesc = nil
-	file_lights_proto_goTypes = nil
-	file_lights_proto_depIdxs = nil
+	File_internal_lights_lights_proto = out.File
+	file_internal_lights_lights_proto_rawDesc = nil
+	file_internal_lights_lights_proto_goTypes = nil
+	file_internal_lights_lights_proto_depIdxs = nil
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -728,5 +729,5 @@ var _Lights_serviceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "lights.proto",
+	Metadata: "internal/lights/lights.proto",
 }
