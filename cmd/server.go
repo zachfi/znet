@@ -90,18 +90,16 @@ func server(cmd *cobra.Command, args []string) {
 		done <- true
 	}()
 
-	znetServer := znet.NewServer(z.Config)
-	err = znetServer.Start(z)
+	server := znet.NewServer(z.Config)
+	err = server.Start(z)
 	if err != nil {
 		log.Error(err)
 	}
 
 	<-done
 
-	err = znetServer.Stop()
+	err = server.Stop()
 	if err != nil {
 		log.Error(err)
 	}
-
-	z.Stop()
 }
