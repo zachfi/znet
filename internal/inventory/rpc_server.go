@@ -2,34 +2,41 @@
 package inventory
 
 import (
-	"context"
-
-	"github.com/golang/protobuf/ptypes"
-	log "github.com/sirupsen/logrus"
-
-	"github.com/xaque208/znet/rpc"
+	"github.com/xaque208/znet/internal/config"
 )
 
-// RPC Listener
-type InventoryServer struct {
+// Server
+type Server struct {
 	inventory *Inventory
 }
 
+// NewServer is used to return a new Server, which implements the inventory RPC server.
+func NewServer(cfg *config.LDAPConfig) (*Server, error) {
+	inv, err := NewInventory(cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Server{
+		inventory: inv,
+	}, nil
+}
+
 // .File.Service Inventory
-func (e *InventoryServer) ListNetworkHosts(req *rpc.Empty, stream rpc.Inventory_ListNetworkHostsServer) error {
+func (e *Server) ListNetworkHosts(req *Empty, stream Inventory_ListNetworkHostsServer) error {
 	// .Method.Name ListNetworkHosts
-	// .Method.InputType .rpc.Empty
-	// .Method.OutputType .rpc.NetworkHost
+	// .Method.InputType .inventory.Empty
+	// .Method.OutputType .inventory.NetworkHost
 
 	results, err := e.inventory.ListNetworkHosts()
 	if err != nil {
 		return err
 	}
 
-	// outputType: rpc.NetworkHost
+	// outputType: NetworkHost
 	if results != nil {
 		for _, r := range *results {
-			xxx := &rpc.NetworkHost{}
+			xxx := &NetworkHost{}
 			xxx.Role = r.Role                       // TYPE_STRING
 			xxx.Group = r.Group                     // TYPE_STRING
 			xxx.Name = r.Name                       // TYPE_STRING
@@ -43,13 +50,13 @@ func (e *InventoryServer) ListNetworkHosts(req *rpc.Empty, stream rpc.Inventory_
 			// type: TYPE_BOOL
 			// label: LABEL_OPTIONAL
 			if r.InetAddress != nil {
-				xxx.InetAddress = *r.InetAddress // TYPE_STRING
+				xxx.InetAddress = r.InetAddress // TYPE_STRING
 			}
 			if r.Inet6Address != nil {
-				xxx.Inet6Address = *r.Inet6Address // TYPE_STRING
+				xxx.Inet6Address = r.Inet6Address // TYPE_STRING
 			}
 			if r.MacAddress != nil {
-				xxx.MacAddress = *r.MacAddress // TYPE_STRING
+				xxx.MacAddress = r.MacAddress // TYPE_STRING
 			}
 			// Unhandled Type
 			// name: last_seen
@@ -66,32 +73,32 @@ func (e *InventoryServer) ListNetworkHosts(req *rpc.Empty, stream rpc.Inventory_
 	return nil
 }
 
-func (e *InventoryServer) ListNetworkIDs(req *rpc.Empty, stream rpc.Inventory_ListNetworkIDsServer) error {
+func (e *Server) ListNetworkIDs(req *Empty, stream Inventory_ListNetworkIDsServer) error {
 	// .Method.Name ListNetworkIDs
-	// .Method.InputType .rpc.Empty
-	// .Method.OutputType .rpc.NetworkID
+	// .Method.InputType .inventory.Empty
+	// .Method.OutputType .inventory.NetworkID
 
 	results, err := e.inventory.ListNetworkIDs()
 	if err != nil {
 		return err
 	}
 
-	// outputType: rpc.NetworkID
+	// outputType: NetworkID
 	if results != nil {
 		for _, r := range *results {
-			xxx := &rpc.NetworkID{}
+			xxx := &NetworkID{}
 			xxx.Name = r.Name // TYPE_STRING
 			if r.MacAddress != nil {
-				xxx.MacAddress = *r.MacAddress // TYPE_STRING
+				xxx.MacAddress = r.MacAddress // TYPE_STRING
 			}
 			if r.IpAddress != nil {
-				xxx.IpAddress = *r.IpAddress // TYPE_STRING
+				xxx.IpAddress = r.IpAddress // TYPE_STRING
 			}
 			if r.ReportingSource != nil {
-				xxx.ReportingSource = *r.ReportingSource // TYPE_STRING
+				xxx.ReportingSource = r.ReportingSource // TYPE_STRING
 			}
 			if r.ReportingSourceInterface != nil {
-				xxx.ReportingSourceInterface = *r.ReportingSourceInterface // TYPE_STRING
+				xxx.ReportingSourceInterface = r.ReportingSourceInterface // TYPE_STRING
 			}
 			// Unhandled Type
 			// name: last_seen
@@ -108,20 +115,20 @@ func (e *InventoryServer) ListNetworkIDs(req *rpc.Empty, stream rpc.Inventory_Li
 	return nil
 }
 
-func (e *InventoryServer) ListZigbeeDevices(req *rpc.Empty, stream rpc.Inventory_ListZigbeeDevicesServer) error {
+func (e *Server) ListZigbeeDevices(req *Empty, stream Inventory_ListZigbeeDevicesServer) error {
 	// .Method.Name ListZigbeeDevices
-	// .Method.InputType .rpc.Empty
-	// .Method.OutputType .rpc.ZigbeeDevice
+	// .Method.InputType .inventory.Empty
+	// .Method.OutputType .inventory.ZigbeeDevice
 
 	results, err := e.inventory.ListZigbeeDevices()
 	if err != nil {
 		return err
 	}
 
-	// outputType: rpc.ZigbeeDevice
+	// outputType: ZigbeeDevice
 	if results != nil {
 		for _, r := range *results {
-			xxx := &rpc.ZigbeeDevice{}
+			xxx := &ZigbeeDevice{}
 			xxx.Name = r.Name               // TYPE_STRING
 			xxx.Description = r.Description // TYPE_STRING
 			xxx.Dn = r.Dn                   // TYPE_STRING
@@ -148,50 +155,50 @@ func (e *InventoryServer) ListZigbeeDevices(req *rpc.Empty, stream rpc.Inventory
 	return nil
 }
 
-func (r *InventoryServer) ListNetworkHosts_example(ctx context.Context, request *rpc.Empty) (*rpc.SearchResponse, error) {
-	response := &rpc.SearchResponse{}
-
-	hosts, err := r.inventory.ListNetworkHosts()
-	if err != nil {
-		return response, err
-	}
-
-	if hosts != nil {
-		for _, h := range *hosts {
-			host := &rpc.NetworkHost{
-				Description:     h.Description,
-				Dn:              h.Dn,
-				Domain:          h.Domain,
-				Group:           h.Group,
-				Name:            h.Name,
-				OperatingSystem: h.OperatingSystem,
-				Platform:        h.Platform,
-				Role:            h.Role,
-				Type:            h.Type,
-			}
-
-			if h.InetAddress != nil {
-				host.InetAddress = *h.InetAddress
-			}
-
-			if h.Inet6Address != nil {
-				host.Inet6Address = *h.Inet6Address
-			}
-
-			if h.MacAddress != nil {
-				host.MacAddress = *h.MacAddress
-			}
-			if h.LastSeen != nil {
-				lastSeen, err := ptypes.TimestampProto(*h.LastSeen)
-				if err != nil {
-					log.Error(err)
-				}
-				host.LastSeen = lastSeen
-			}
-
-			response.Hosts = append(response.Hosts, host)
-		}
-	}
-
-	return response, nil
-}
+// func (r *Server) ListNetworkHosts_example(ctx context.Context, request *Empty) (*SearchResponse, error) {
+// 	response := &SearchResponse{}
+//
+// 	hosts, err := r.inventory.ListNetworkHosts()
+// 	if err != nil {
+// 		return response, err
+// 	}
+//
+// 	if hosts != nil {
+// 		for _, h := range *hosts {
+// 			host := &NetworkHost{
+// 				Description:     h.Description,
+// 				Dn:              h.Dn,
+// 				Domain:          h.Domain,
+// 				Group:           h.Group,
+// 				Name:            h.Name,
+// 				OperatingSystem: h.OperatingSystem,
+// 				Platform:        h.Platform,
+// 				Role:            h.Role,
+// 				Type:            h.Type,
+// 			}
+//
+// 			if h.InetAddress != nil {
+// 				host.InetAddress = h.InetAddress
+// 			}
+//
+// 			if h.Inet6Address != nil {
+// 				host.Inet6Address = h.Inet6Address
+// 			}
+//
+// 			if h.MacAddress != nil {
+// 				host.MacAddress = h.MacAddress
+// 			}
+// 			if h.LastSeen != nil {
+// 				lastSeen, err := ptypes.TimestampProto(h.LastSeen)
+// 				if err != nil {
+// 					log.Error(err)
+// 				}
+// 				host.LastSeen = lastSeen
+// 			}
+//
+// 			response.Hosts = append(response.Hosts, host)
+// 		}
+// 	}
+//
+// 	return response, nil
+// }
