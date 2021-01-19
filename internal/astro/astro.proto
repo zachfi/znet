@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package astro;
 
-option go_package = ".;astro";
+option go_package = "internal/astro";
 
 message Empty {}
 

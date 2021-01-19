@@ -27,20 +27,20 @@ proto: proto-grpc gofmt-fix
 
 proto-grpc:
 	@echo "=== $(PROJECT_NAME) === [ proto compile    ]: compiling protobufs:"
+	@protoc -I ./ \
+		rpc/rpc.proto \
+		pkg/iot/iot.proto \
+		internal/astro/astro.proto \
+		internal/agent/agent.proto \
+		internal/lights/lights.proto \
+		internal/inventory/inventory.proto \
+		internal/telemetry/telemetry.proto \
+		--go_out=plugins=grpc:./ \
+		--go_opt=paths=source_relative
 	@protoc -I internal/inventory/ -I ./ internal/inventory/inventory.proto \
-		--go_out=plugins=grpc:internal/inventory \
-		--gotemplate_out=template_dir=internal/inventory/templates,debug=true,single-package-mode=true,all=true:internal/inventory
+		--gotemplate_out=template_dir=internal/inventory/templates,debug=false,single-package-mode=true,all=true:internal/inventory
 	@protoc -I internal/inventory/ -I ./ internal/inventory/inventory.proto \
-		--gotemplate_out=template_dir=cmd/templates,debug=true,single-package-mode=true,all=true:cmd
-	@protoc -I internal/astro internal/astro/astro.proto \
-		--go_out=plugins=grpc:internal/astro
-	@protoc -I internal/lights internal/lights/lights.proto \
-		--go_out=plugins=grpc:internal/lights
-	@protoc -I internal/agent internal/agent/agent.proto \
-		--go_out=plugins=grpc:internal/agent
-	@#pkg/
-	@protoc -I pkg/iot pkg/iot/iot.proto \
-		--go_out=plugins=grpc:pkg/iot
+		--gotemplate_out=template_dir=cmd/templates,false=true,single-package-mode=true,all=true:cmd
 
 compile-all: deps-only
 	@echo "=== $(PROJECT_NAME) === [ compile          ]: building commands:"

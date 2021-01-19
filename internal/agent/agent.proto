@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package agent;
 
-option go_package = ".;agent";
+option go_package = "internal/agent";
 
 message Empty {}
 

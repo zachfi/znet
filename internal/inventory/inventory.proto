@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package inventory;
 
-option go_package = "inventory";
+option go_package = "github.com/xaque208/znet/internal/inventory";
 
 import "google/protobuf/timestamp.proto";
 import "pkg/iot/iot.proto";
@@ -99,11 +99,5 @@ service Inventory {
   rpc ListNetworkHosts(Empty) returns (stream NetworkHost);
   rpc ListNetworkIDs(Empty) returns (stream NetworkID);
   rpc ListZigbeeDevices(Empty) returns (stream ZigbeeDevice);
-}
-
-service Telemetry {
-  rpc ReportIOTDevice(IOTDevice) returns (Empty);
-  rpc ReportNetworkID(NetworkID) returns (Empty);
-  // rpc ReportNetworkHos(NetworkHost) returns (Empty);
 }
 

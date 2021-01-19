@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package lights;
 
-option go_package = ".;lights";
+option go_package = "internal/lights";
 
 message State {
   bool on = 1;
