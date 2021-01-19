@@ -28,8 +28,8 @@ import (
 
 	"github.com/xaque208/znet/internal/comms"
 	"github.com/xaque208/znet/internal/config"
+	"github.com/xaque208/znet/internal/inventory"
 	"github.com/xaque208/znet/pkg/netconfig"
-	"github.com/xaque208/znet/rpc"
 	"github.com/xaque208/znet/znet"
 )
 
@@ -82,14 +82,14 @@ func runNetconfig(cmd *cobra.Command, args []string) {
 	// Load the network data.
 	configDir := viper.GetString("netconfig.configdir")
 
-	inventoryClient := rpc.NewInventoryClient(conn)
+	inventoryClient := inventory.NewInventoryClient(conn)
 
-	var stream rpc.Inventory_ListNetworkHostsClient
+	var stream inventory.Inventory_ListNetworkHostsClient
 
 	ctx := context.Background()
 
 	for {
-		stream, err = inventoryClient.ListNetworkHosts(ctx, &rpc.Empty{})
+		stream, err = inventoryClient.ListNetworkHosts(ctx, &inventory.Empty{})
 		if err != nil {
 			switch status.Code(err) {
 			case codes.Unavailable:
@@ -103,10 +103,10 @@ func runNetconfig(cmd *cobra.Command, args []string) {
 		break
 	}
 
-	hosts := []*rpc.NetworkHost{}
+	hosts := []*inventory.NetworkHost{}
 
 	for {
-		var d *rpc.NetworkHost
+		var d *inventory.NetworkHost
 
 		d, err = stream.Recv()
 		if err != nil {

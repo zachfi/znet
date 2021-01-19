@@ -13,14 +13,13 @@ import (
 	"github.com/imdario/mergo"
 	"github.com/scottdware/go-junos"
 	log "github.com/sirupsen/logrus"
-
-	pb "github.com/xaque208/znet/rpc"
+	"github.com/xaque208/znet/internal/inventory"
 )
 
 // Host is a single configurable host.
 type Host struct {
 	HostName    string
-	NetworkHost *pb.NetworkHost
+	NetworkHost *inventory.NetworkHost
 	Data        HostData
 	Environment map[string]string
 }
@@ -34,7 +33,7 @@ type NetConfig struct {
 }
 
 // NewNetConfig is used to build a new *NetConfig.
-func NewNetConfig(configDir string, hosts []*pb.NetworkHost, auth *junos.AuthMethod, env map[string]string) (*NetConfig, error) {
+func NewNetConfig(configDir string, hosts []*inventory.NetworkHost, auth *junos.AuthMethod, env map[string]string) (*NetConfig, error) {
 	data, err := loadData(configDir)
 	if err != nil {
 		return nil, err
