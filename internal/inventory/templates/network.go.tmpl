@@ -1,4 +1,4 @@
-{{- if eq .File.GetName "rpc.proto"}}
+{{- if eq .File.GetName "inventory.proto"}}
 // Code generated, do not edit
 package inventory
 
@@ -9,6 +9,7 @@ import (
 
 	ldap "github.com/go-ldap/ldap/v3"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 {{/* The resulting Go code, not the template here */}}
@@ -85,10 +86,10 @@ func (i *Inventory) Update{{.GetName}}(x {{.GetName}}) (*{{.GetName}}, error) {
 			{{- $method = "Replace" }}
 		{{- end }}
 		{{- if eq .GetType.String "TYPE_BOOL" }}
-
-    if x.{{.GetName | camelCase}} != nil {
-      a.{{$method}}("{{.GetJsonName}}", []string{strconv.FormatBool(*x.{{.GetName | camelCase}})})
-    }
+    // TODO figure out the how we can avoid replacing the bool...
+    // in case its not set on the update.
+    // Replace the bool
+    a.{{$method}}("{{.GetJsonName}}", []string{strconv.FormatBool(x.{{.GetName | camelCase}})})
 
     {{- else if eq .GetType.String "TYPE_STRING" }}
       {{- if has .GetName (list "name" "dn") }}
@@ -97,9 +98,9 @@ func (i *Inventory) Update{{.GetName}}(x {{.GetName}}) (*{{.GetName}}, error) {
         {{- if eq .GetLabel.String "LABEL_REPEATED" }}
     if x.{{.GetName | camelCase}} != nil {
           {{- if has .GetJsonName (list "macAddress")}}
-      a.{{$method}}("{{.GetJsonName}}", *x.{{.GetName | camelCase}})
+      a.{{$method}}("{{.GetJsonName}}", x.{{.GetName | camelCase}})
           {{- else }}
-      a.{{$method}}("{{$attr}}", *x.{{.GetName | camelCase}})
+      a.{{$method}}("{{$attr}}", x.{{.GetName | camelCase}})
           {{- end }}
     }
         {{- else }}
@@ -111,7 +112,7 @@ func (i *Inventory) Update{{.GetName}}(x {{.GetName}}) (*{{.GetName}}, error) {
 		{{- else if eq .GetType.String "TYPE_MESSAGE" }}
 			{{- if eq .GetTypeName ".google.protobuf.Timestamp" }}
     if x.{{.GetName | camelCase}} != nil {
-      a.{{$method}}("{{$attr}}", []string{x.LastSeen.Format(time.RFC3339)})
+      a.{{$method}}("{{$attr}}", []string{x.LastSeen.AsTime().Format(time.RFC3339)})
     }
 			{{- end }}
 		{{- else }}
@@ -213,7 +214,7 @@ func (i *Inventory) List{{.GetName}}s() (*[]{{.GetName}}, error) {
         {{- if eq .GetLabel.String "LABEL_REPEATED" }}
 					attrs := []string{}
 					attrs = append(attrs, stringValues(a)...)
-					h.{{.GetName | camelCase}} = &attrs
+					h.{{.GetName | camelCase}} = attrs
         {{- else }}
 					h.{{.GetName | camelCase}} = stringValues(a)[0]
         {{- end }}
@@ -221,10 +222,10 @@ func (i *Inventory) List{{.GetName}}s() (*[]{{.GetName}}, error) {
         {{- if eq .GetLabel.String "LABEL_REPEATED" }}
 					attrs := []string{}
 					attrs = append(attrs, boolValues(a)...)
-					h.{{.GetName | camelCase}} = &attrs
+					h.{{.GetName | camelCase}} = attrs
         {{- else }}
           v := boolValues(a)[0]
-          h.{{.GetName | camelCase}} = &v
+          h.{{.GetName | camelCase}} = v
         {{- end }}
 		{{- else if eq .GetType.String "TYPE_MESSAGE" }}
 			{{- if eq .GetTypeName ".google.protobuf.Timestamp" }}
@@ -240,7 +241,7 @@ func (i *Inventory) List{{.GetName}}s() (*[]{{.GetName}}, error) {
             attrs = append(attrs, t)
           }
 
-					h.{{.GetName | camelCase}} = &attrs[0]
+					h.{{.GetName | camelCase}} = timestamppb.New(attrs[0])
 			{{- end }}
 		{{- else }}
           // unknown attribute type: {{.GetType}}

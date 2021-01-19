@@ -1,4 +1,4 @@
-{{- if eq .File.GetName "rpc.proto"}}
+{{- if eq .File.GetName "inventory.proto"}}
 // Code generated, do not edit
 package cmd
 
@@ -12,10 +12,10 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/xaque208/znet/rpc"
 	"github.com/xaque208/znet/znet"
 	"github.com/xaque208/znet/internal/comms"
 	"github.com/xaque208/znet/internal/config"
+	"github.com/xaque208/znet/internal/inventory"
 )
 
 var inventoryCommand = &cobra.Command{
@@ -73,15 +73,15 @@ func run{{$commandName}}(cmd *cobra.Command, args []string) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	inventoryClient := rpc.NewInventoryClient(conn)
+	inventoryClient := inventory.NewInventoryClient(conn)
 
-	stream, err := inventoryClient.List{{$commandName}}s(ctx, &rpc.Empty{})
+	stream, err := inventoryClient.List{{$commandName}}s(ctx, &inventory.Empty{})
 	if err != nil {
     log.Errorf("stream error: %s", err)
 	}
 
 	for {
-		var d *rpc.{{$commandName}}
+		var d *inventory.{{$commandName}}
 
 		d, err = stream.Recv()
 		if err != nil {
