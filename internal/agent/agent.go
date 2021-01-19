@@ -18,7 +18,6 @@ import (
 	"github.com/xaque208/znet/internal/gitwatch"
 	"github.com/xaque208/znet/internal/timer"
 	"github.com/xaque208/znet/pkg/events"
-	"github.com/xaque208/znet/rpc"
 )
 
 // Agent is an RPC client worker bee.
@@ -271,6 +270,10 @@ func (a *Agent) Start() error {
 }
 
 func (a *Agent) Stop() error {
+	if a.grpcServer != nil {
+		log.Debug("stopping RPC listener")
+		a.grpcServer.Stop()
+	}
 	return nil
 }
 
@@ -286,10 +289,10 @@ func (a *Agent) startRPCListener() error {
 
 	switch info.ID {
 	case "freebsd":
-		rpc.RegisterJailHostServer(a.grpcServer, &jailServer{})
-		rpc.RegisterNodeServer(a.grpcServer, &nodeServer{})
+		RegisterJailHostServer(a.grpcServer, &jailServer{})
+		RegisterNodeServer(a.grpcServer, &nodeServer{})
 	case "arch":
-		rpc.RegisterNodeServer(a.grpcServer, &nodeServer{})
+		RegisterNodeServer(a.grpcServer, &nodeServer{})
 	}
 
 	go func() {

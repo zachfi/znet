@@ -2,25 +2,42 @@ package agent
 
 import (
 	"context"
-	"os/exec"
+	"fmt"
 	"sync"
 
-	"github.com/xaque208/znet/rpc"
+	log "github.com/sirupsen/logrus"
 )
 
 type nodeServer struct {
 	sync.Mutex
+
+	// ID is the os-release ID
+	ID string
 }
 
-func (n *nodeServer) RunPuppetAgent(ctx context.Context, req *rpc.Empty) (*rpc.CommandResult, error) {
+// RunPuppetAgent will perform a Puppet Run.
+func (n *nodeServer) RunPuppetAgent(ctx context.Context, req *Empty) (*CommandResult, error) {
 	n.Lock()
 	defer n.Unlock()
 
-	cmd := exec.Command("sudo", "puppet", "agent", "-t")
-	err := cmd.Start()
-	if err != nil {
-		return nil, err
+	log.Debugf("running puppet agent")
+
+	return runCommand("sudo", "puppet", "agent", "-t")
+}
+
+// PackageUpgrade will upgrade the system packages.
+func (n *nodeServer) PackageUpgrade(ctx context.Context, req *Empty) (*CommandResult, error) {
+	n.Lock()
+	defer n.Unlock()
+
+	log.Debugf("running pacakge upgrade")
+
+	switch n.ID {
+	case "freebsd":
+		return runCommand("sudo", "pkg", "upgrade", "-y")
+	case "arch":
+		return runCommand("yay", "-Syu")
 	}
 
-	return nil, nil
+	return nil, fmt.Errorf("unknown n.ID: %+s", n.ID)
 }

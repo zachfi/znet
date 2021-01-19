@@ -1,6 +1,9 @@
 package agent
 
 import (
+	"io/ioutil"
+	"os/exec"
+
 	"gopkg.in/ini.v1"
 )
 
@@ -20,4 +23,37 @@ func readOSRelease() (*osRelease, error) {
 	info.ID = cfg.Section("").Key("ID").String()
 
 	return info, nil
+}
+
+func runCommand(name string, arg ...string) (*CommandResult, error) {
+	cmd := exec.Command(name, arg...)
+
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return nil, err
+	}
+
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		return nil, err
+	}
+
+	if err := cmd.Start(); err != nil {
+		return nil, err
+	}
+
+	outResult, _ := ioutil.ReadAll(stdout)
+	errResult, _ := ioutil.ReadAll(stderr)
+
+	if err := cmd.Wait(); err != nil {
+		return nil, err
+	}
+
+	result := &CommandResult{
+		Output:   outResult,
+		Error:    errResult,
+		ExitCode: int32(cmd.ProcessState.ExitCode()),
+	}
+
+	return result, nil
 }
