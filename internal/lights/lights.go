@@ -117,7 +117,7 @@ func (l *Lights) clickHandler(name string, payload events.Payload) error {
 			case "many":
 				alert = true
 			default:
-				log.Warnf("unknown click event: %s", e)
+				log.Warnf("unknown click event: %s", e.Count)
 			}
 
 			for _, h := range l.handlers {

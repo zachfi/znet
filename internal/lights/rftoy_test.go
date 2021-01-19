@@ -5,6 +5,6 @@ package lights
 import "testing"
 
 func TestRftoyLight_interface(t *testing.T) {
-	var l Light = rftoyLight{}
+	var l Handler = rftoyLight{}
 	t.Log(l)
 }
