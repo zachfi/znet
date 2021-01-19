@@ -23,26 +23,6 @@ var (
 		Help: "The total number of that returned an error when sent",
 	}, []string{"event_name"})
 
-	airTemperature = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "thing_air_temperature",
-		Help: "Temperature",
-	}, []string{"device"})
-
-	airHumidity = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "thing_air_humidity",
-		Help: "humidity",
-	}, []string{"device"})
-
-	airHeatindex = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "thing_air_heatindex",
-		Help: "computed heat index",
-	}, []string{"device"})
-
-	waterTemperature = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "thing_water_temperature",
-		Help: "Water Temperature",
-	}, []string{"device"})
-
 	tempCoef = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "thing_air_temperature_coef",
 		Help: "Air Temperature Coefficient",
@@ -52,9 +32,4 @@ var (
 		Name: "thing_water_temperature_coef",
 		Help: "Water Temperature Coefficient",
 	}, []string{"device"})
-
-	thingWireless = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "thing_wireless",
-		Help: "wireless information",
-	}, []string{"device", "ssid", "bssid", "ip"})
 )
