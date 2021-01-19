@@ -13,13 +13,18 @@ import (
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
+	"github.com/xaque208/znet/internal/agent"
 	"github.com/xaque208/znet/internal/astro"
 	"github.com/xaque208/znet/internal/comms"
 	"github.com/xaque208/znet/internal/config"
+	"github.com/xaque208/znet/internal/gitwatch"
 	"github.com/xaque208/znet/internal/inventory"
 	"github.com/xaque208/znet/internal/lights"
 	"github.com/xaque208/znet/internal/telemetry"
+	"github.com/xaque208/znet/internal/timer"
+	"github.com/xaque208/znet/pkg/continuous"
 	"github.com/xaque208/znet/pkg/eventmachine"
+	"github.com/xaque208/znet/rpc"
 )
 
 // Server is a znet Server.
@@ -154,10 +159,8 @@ func (s *Server) startRPCListener() error {
 
 	rpc.RegisterEventsServer(s.grpcServer, rpcEventServer)
 	rpcEventServer.RegisterEvents(agent.EventNames)
-	rpcEventServer.RegisterEvents(astro.EventNames)
 	rpcEventServer.RegisterEvents(continuous.EventNames)
 	rpcEventServer.RegisterEvents(gitwatch.EventNames)
-	rpcEventServer.RegisterEvents(iot.EventNames)
 	rpcEventServer.RegisterEvents(timer.EventNames)
 
 	go func() {
