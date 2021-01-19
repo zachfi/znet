@@ -12,15 +12,14 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/xaque208/znet/internal/agent"
-	"github.com/xaque208/znet/internal/astro"
 	"github.com/xaque208/znet/internal/comms"
 	"github.com/xaque208/znet/internal/config"
+	"github.com/xaque208/znet/internal/inventory"
 	"github.com/xaque208/znet/internal/lights"
 	"github.com/xaque208/znet/internal/network"
 	"github.com/xaque208/znet/internal/timer"
 	"github.com/xaque208/znet/pkg/eventmachine"
 	"github.com/xaque208/znet/pkg/events"
-	"github.com/xaque208/znet/pkg/iot"
 	"github.com/xaque208/znet/rpc"
 	"github.com/xaque208/znet/znet"
 )
@@ -77,19 +76,22 @@ func runAgent(cmd *cobra.Command, args []string) {
 	}
 
 	eventNames := []string{}
-	inventoryClient := rpc.NewInventoryClient(conn)
+	inventoryClient := inventory.NewInventoryClient(conn)
 
 	// Configure the Lights consumer if we have...
 	// mqttClient for publishing messages
 	// inventoryClient for device lookup and group selection
 	if z.Config.Lights != nil && inventoryClient != nil && mqttClient != nil {
-		lightsConsumer := lights.NewLights(z.Config.Lights, inventoryClient, mqttClient)
+		lightsConsumer, err := lights.NewLights(z.Config)
+		if err != nil {
+			log.Fatal(err)
+		}
 		consumers = append(consumers, lightsConsumer)
 
 		// The lightsConsumer responds to a bunch of events.
 		eventNames = append(eventNames, timer.EventNames...)
-		eventNames = append(eventNames, astro.EventNames...)
-		eventNames = append(eventNames, iot.EventNames...)
+		// eventNames = append(eventNames, astro.EventNames...)
+		// eventNames = append(eventNames, iot.EventNames...)
 	}
 
 	if z.Config.Network != nil && inventoryClient != nil {
