@@ -13,17 +13,13 @@ import (
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
-	"github.com/xaque208/znet/internal/agent"
 	"github.com/xaque208/znet/internal/astro"
 	"github.com/xaque208/znet/internal/comms"
 	"github.com/xaque208/znet/internal/config"
-	"github.com/xaque208/znet/internal/gitwatch"
 	"github.com/xaque208/znet/internal/inventory"
-	"github.com/xaque208/znet/internal/timer"
-	"github.com/xaque208/znet/pkg/continuous"
+	"github.com/xaque208/znet/internal/lights"
+	"github.com/xaque208/znet/internal/telemetry"
 	"github.com/xaque208/znet/pkg/eventmachine"
-	"github.com/xaque208/znet/pkg/iot"
-	"github.com/xaque208/znet/rpc"
 )
 
 // Server is a znet Server.
@@ -36,6 +32,7 @@ type Server struct {
 	httpServer   *http.Server
 	ldapConfig   *config.LDAPConfig
 	rpcConfig    *config.RPCConfig
+	config       *config.Config
 }
 
 type statusCheckHandler struct {
@@ -48,23 +45,12 @@ func init() {
 		executionDuration,
 		executionExitStatus,
 
-		airHeatindex,
-		airHumidity,
-		airTemperature,
 		tempCoef,
-		thingWireless,
 		waterTempCoef,
-		waterTemperature,
 
 		// rpc
 		rpcEventServerEventCount,
 		rpcEventServerSubscriberCount,
-
-		telemetryIOTUnhandledReport,
-		telemetryIOTReport,
-		telemetryIOTBatteryPercent,
-		telemetryIOTLinkQuality,
-		telemetryIOTBridgeState,
 	)
 }
 
@@ -92,6 +78,7 @@ func NewServer(cfg *config.Config) *Server {
 		cancel:       cancel,
 		eventMachine: eventMachine,
 
+		config:     cfg,
 		httpConfig: cfg.HTTP,
 		rpcConfig:  cfg.RPC,
 		ldapConfig: cfg.LDAP,
@@ -118,14 +105,49 @@ func (s *statusCheckHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Fprint(w, string(payload))
 }
-func (s *Server) startRPCListener() error {
-	rpcInventoryServer := inventory.NewRPCServer(s.ldapConfig)
-	rpc.RegisterInventoryServer(s.grpcServer, rpcInventoryServer)
 
+func (s *Server) startRPCListener() error {
+	//
+	// inventoryServer
+	rpcInventoryServer, err := inventory.NewServer(s.ldapConfig)
+	if err != nil {
+		return err
+	}
+
+	inventory.RegisterInventoryServer(s.grpcServer, rpcInventoryServer)
+
+	//
+	// astroServer
+	astroServer, err := astro.NewAstro(s.config)
+	if err != nil {
+		return err
+	}
+
+	astro.RegisterAstroServer(s.grpcServer, astroServer)
+
+	//
+	// lightsServer
+	lightsServer, err := lights.NewLights(s.config)
+	if err != nil {
+		return err
+	}
+
+	lights.RegisterLightsServer(s.grpcServer, lightsServer)
+
+	//
 	// telemetryServer
-	inv := inventory.NewInventory(s.ldapConfig)
-	rpcTelemetryServer := newTelemetryServer(inv, s.eventMachine)
-	rpc.RegisterTelemetryServer(s.grpcServer, rpcTelemetryServer)
+	inv, err := inventory.NewInventory(s.ldapConfig)
+	if err != nil {
+		return err
+	}
+
+	rpcTelemetryServer, err := telemetry.NewServer(inv, s.eventMachine)
+	if err != nil {
+		return err
+	}
+	// rpcTelemetryServer.SetClickHandler(lightsServer.ClickHandler)
+
+	telemetry.RegisterTelemetryServer(s.grpcServer, rpcTelemetryServer)
 
 	// rpcEventServer
 	rpcEventServer := &eventServer{eventMachine: s.eventMachine, ctx: s.ctx}
@@ -218,6 +240,7 @@ func (s *Server) Stop() error {
 	}
 
 	s.grpcServer.Stop()
+
 	err = s.eventMachine.Stop()
 	if err != nil {
 		errs = append(errs, err)

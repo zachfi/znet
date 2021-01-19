@@ -2,14 +2,13 @@
 // versions:
 // 	protoc-gen-go v1.25.0
 // 	protoc        v3.12.4
-// source: rpc.proto
+// source: rpc/rpc.proto
 
 package rpc
 
 import (
 	context "context"
 	proto "github.com/golang/protobuf/proto"
-	timestamp "github.com/golang/protobuf/ptypes/timestamp"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -30,840 +29,6 @@ const (
 // of the legacy proto package is being used.
 const _ = proto.ProtoPackageIsVersion4
 
-type SearchRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Name        string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Domain      string `protobuf:"bytes,2,opt,name=domain,proto3" json:"domain,omitempty"`
-	Kernel      string `protobuf:"bytes,3,opt,name=kernel,proto3" json:"kernel,omitempty"`
-	Platform    string `protobuf:"bytes,4,opt,name=platform,proto3" json:"platform,omitempty"`
-	Role        string `protobuf:"bytes,5,opt,name=role,proto3" json:"role,omitempty"`
-	HostGroup   string `protobuf:"bytes,6,opt,name=host_group,json=hostGroup,proto3" json:"host_group,omitempty"`
-	Type        string `protobuf:"bytes,7,opt,name=type,proto3" json:"type,omitempty"`
-	MacAddress  string `protobuf:"bytes,8,opt,name=mac_address,json=macAddress,proto3" json:"mac_address,omitempty"`
-	Ipv4Address string `protobuf:"bytes,9,opt,name=ipv4_address,json=ipv4Address,proto3" json:"ipv4_address,omitempty"`
-	Ipv6Address string `protobuf:"bytes,10,opt,name=ipv6_address,json=ipv6Address,proto3" json:"ipv6_address,omitempty"`
-}
-
-func (x *SearchRequest) Reset() {
-	*x = SearchRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_rpc_proto_msgTypes[0]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *SearchRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*SearchRequest) ProtoMessage() {}
-
-func (x *SearchRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_rpc_proto_msgTypes[0]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use SearchRequest.ProtoReflect.Descriptor instead.
-func (*SearchRequest) Descriptor() ([]byte, []int) {
-	return file_rpc_proto_rawDescGZIP(), []int{0}
-}
-
-func (x *SearchRequest) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *SearchRequest) GetDomain() string {
-	if x != nil {
-		return x.Domain
-	}
-	return ""
-}
-
-func (x *SearchRequest) GetKernel() string {
-	if x != nil {
-		return x.Kernel
-	}
-	return ""
-}
-
-func (x *SearchRequest) GetPlatform() string {
-	if x != nil {
-		return x.Platform
-	}
-	return ""
-}
-
-func (x *SearchRequest) GetRole() string {
-	if x != nil {
-		return x.Role
-	}
-	return ""
-}
-
-func (x *SearchRequest) GetHostGroup() string {
-	if x != nil {
-		return x.HostGroup
-	}
-	return ""
-}
-
-func (x *SearchRequest) GetType() string {
-	if x != nil {
-		return x.Type
-	}
-	return ""
-}
-
-func (x *SearchRequest) GetMacAddress() string {
-	if x != nil {
-		return x.MacAddress
-	}
-	return ""
-}
-
-func (x *SearchRequest) GetIpv4Address() string {
-	if x != nil {
-		return x.Ipv4Address
-	}
-	return ""
-}
-
-func (x *SearchRequest) GetIpv6Address() string {
-	if x != nil {
-		return x.Ipv6Address
-	}
-	return ""
-}
-
-type SearchResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Hosts         []*NetworkHost  `protobuf:"bytes,1,rep,name=hosts,proto3" json:"hosts,omitempty"`
-	NetworkIds    []*NetworkID    `protobuf:"bytes,2,rep,name=network_ids,json=networkIds,proto3" json:"network_ids,omitempty"`
-	ZigbeeDevices []*ZigbeeDevice `protobuf:"bytes,3,rep,name=zigbee_devices,json=zigbeeDevices,proto3" json:"zigbee_devices,omitempty"`
-}
-
-func (x *SearchResponse) Reset() {
-	*x = SearchResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_rpc_proto_msgTypes[1]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *SearchResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*SearchResponse) ProtoMessage() {}
-
-func (x *SearchResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_rpc_proto_msgTypes[1]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use SearchResponse.ProtoReflect.Descriptor instead.
-func (*SearchResponse) Descriptor() ([]byte, []int) {
-	return file_rpc_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *SearchResponse) GetHosts() []*NetworkHost {
-	if x != nil {
-		return x.Hosts
-	}
-	return nil
-}
-
-func (x *SearchResponse) GetNetworkIds() []*NetworkID {
-	if x != nil {
-		return x.NetworkIds
-	}
-	return nil
-}
-
-func (x *SearchResponse) GetZigbeeDevices() []*ZigbeeDevice {
-	if x != nil {
-		return x.ZigbeeDevices
-	}
-	return nil
-}
-
-type IOTDevice struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Name            string           `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	DeviceDiscovery *DeviceDiscovery `protobuf:"bytes,2,opt,name=device_discovery,json=deviceDiscovery,proto3" json:"device_discovery,omitempty"`
-	NetworkId       *NetworkID       `protobuf:"bytes,3,opt,name=network_id,json=networkId,proto3" json:"network_id,omitempty"`
-}
-
-func (x *IOTDevice) Reset() {
-	*x = IOTDevice{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_rpc_proto_msgTypes[2]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *IOTDevice) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*IOTDevice) ProtoMessage() {}
-
-func (x *IOTDevice) ProtoReflect() protoreflect.Message {
-	mi := &file_rpc_proto_msgTypes[2]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use IOTDevice.ProtoReflect.Descriptor instead.
-func (*IOTDevice) Descriptor() ([]byte, []int) {
-	return file_rpc_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *IOTDevice) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *IOTDevice) GetDeviceDiscovery() *DeviceDiscovery {
-	if x != nil {
-		return x.DeviceDiscovery
-	}
-	return nil
-}
-
-func (x *IOTDevice) GetNetworkId() *NetworkID {
-	if x != nil {
-		return x.NetworkId
-	}
-	return nil
-}
-
-// NetworkHost is the information about any host that is attached to the
-// network.
-type NetworkHost struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Role            string               `protobuf:"bytes,1,opt,name=role,proto3" json:"role,omitempty"`
-	Group           string               `protobuf:"bytes,2,opt,name=group,proto3" json:"group,omitempty"`
-	Name            string               `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	OperatingSystem string               `protobuf:"bytes,4,opt,name=operating_system,json=operatingSystem,proto3" json:"operating_system,omitempty"`
-	Platform        string               `protobuf:"bytes,5,opt,name=platform,proto3" json:"platform,omitempty"`
-	Type            string               `protobuf:"bytes,6,opt,name=type,proto3" json:"type,omitempty"`
-	Domain          string               `protobuf:"bytes,7,opt,name=domain,proto3" json:"domain,omitempty"`
-	Description     string               `protobuf:"bytes,8,opt,name=description,proto3" json:"description,omitempty"`
-	Watch           bool                 `protobuf:"varint,9,opt,name=watch,proto3" json:"watch,omitempty"`
-	InetAddress     []string             `protobuf:"bytes,10,rep,name=inet_address,json=inetAddress,proto3" json:"inet_address,omitempty"`
-	Inet6Address    []string             `protobuf:"bytes,11,rep,name=inet6_address,json=inet6Address,proto3" json:"inet6_address,omitempty"`
-	MacAddress      []string             `protobuf:"bytes,12,rep,name=mac_address,json=macAddress,proto3" json:"mac_address,omitempty"`
-	LastSeen        *timestamp.Timestamp `protobuf:"bytes,13,opt,name=last_seen,json=lastSeen,proto3" json:"last_seen,omitempty"`
-	Dn              string               `protobuf:"bytes,14,opt,name=dn,proto3" json:"dn,omitempty"`
-}
-
-func (x *NetworkHost) Reset() {
-	*x = NetworkHost{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_rpc_proto_msgTypes[3]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *NetworkHost) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*NetworkHost) ProtoMessage() {}
-
-func (x *NetworkHost) ProtoReflect() protoreflect.Message {
-	mi := &file_rpc_proto_msgTypes[3]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use NetworkHost.ProtoReflect.Descriptor instead.
-func (*NetworkHost) Descriptor() ([]byte, []int) {
-	return file_rpc_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *NetworkHost) GetRole() string {
-	if x != nil {
-		return x.Role
-	}
-	return ""
-}
-
-func (x *NetworkHost) GetGroup() string {
-	if x != nil {
-		return x.Group
-	}
-	return ""
-}
-
-func (x *NetworkHost) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *NetworkHost) GetOperatingSystem() string {
-	if x != nil {
-		return x.OperatingSystem
-	}
-	return ""
-}
-
-func (x *NetworkHost) GetPlatform() string {
-	if x != nil {
-		return x.Platform
-	}
-	return ""
-}
-
-func (x *NetworkHost) GetType() string {
-	if x != nil {
-		return x.Type
-	}
-	return ""
-}
-
-func (x *NetworkHost) GetDomain() string {
-	if x != nil {
-		return x.Domain
-	}
-	return ""
-}
-
-func (x *NetworkHost) GetDescription() string {
-	if x != nil {
-		return x.Description
-	}
-	return ""
-}
-
-func (x *NetworkHost) GetWatch() bool {
-	if x != nil {
-		return x.Watch
-	}
-	return false
-}
-
-func (x *NetworkHost) GetInetAddress() []string {
-	if x != nil {
-		return x.InetAddress
-	}
-	return nil
-}
-
-func (x *NetworkHost) GetInet6Address() []string {
-	if x != nil {
-		return x.Inet6Address
-	}
-	return nil
-}
-
-func (x *NetworkHost) GetMacAddress() []string {
-	if x != nil {
-		return x.MacAddress
-	}
-	return nil
-}
-
-func (x *NetworkHost) GetLastSeen() *timestamp.Timestamp {
-	if x != nil {
-		return x.LastSeen
-	}
-	return nil
-}
-
-func (x *NetworkHost) GetDn() string {
-	if x != nil {
-		return x.Dn
-	}
-	return ""
-}
-
-type NetworkID struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Name                     string               `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	MacAddress               []string             `protobuf:"bytes,2,rep,name=mac_address,json=macAddress,proto3" json:"mac_address,omitempty"`
-	IpAddress                []string             `protobuf:"bytes,3,rep,name=ip_address,json=ipAddress,proto3" json:"ip_address,omitempty"`
-	ReportingSource          []string             `protobuf:"bytes,4,rep,name=reporting_source,json=reportingSource,proto3" json:"reporting_source,omitempty"`
-	ReportingSourceInterface []string             `protobuf:"bytes,5,rep,name=reporting_source_interface,json=reportingSourceInterface,proto3" json:"reporting_source_interface,omitempty"`
-	LastSeen                 *timestamp.Timestamp `protobuf:"bytes,6,opt,name=last_seen,json=lastSeen,proto3" json:"last_seen,omitempty"`
-	Dn                       string               `protobuf:"bytes,7,opt,name=dn,proto3" json:"dn,omitempty"`
-}
-
-func (x *NetworkID) Reset() {
-	*x = NetworkID{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_rpc_proto_msgTypes[4]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *NetworkID) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*NetworkID) ProtoMessage() {}
-
-func (x *NetworkID) ProtoReflect() protoreflect.Message {
-	mi := &file_rpc_proto_msgTypes[4]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use NetworkID.ProtoReflect.Descriptor instead.
-func (*NetworkID) Descriptor() ([]byte, []int) {
-	return file_rpc_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *NetworkID) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *NetworkID) GetMacAddress() []string {
-	if x != nil {
-		return x.MacAddress
-	}
-	return nil
-}
-
-func (x *NetworkID) GetIpAddress() []string {
-	if x != nil {
-		return x.IpAddress
-	}
-	return nil
-}
-
-func (x *NetworkID) GetReportingSource() []string {
-	if x != nil {
-		return x.ReportingSource
-	}
-	return nil
-}
-
-func (x *NetworkID) GetReportingSourceInterface() []string {
-	if x != nil {
-		return x.ReportingSourceInterface
-	}
-	return nil
-}
-
-func (x *NetworkID) GetLastSeen() *timestamp.Timestamp {
-	if x != nil {
-		return x.LastSeen
-	}
-	return nil
-}
-
-func (x *NetworkID) GetDn() string {
-	if x != nil {
-		return x.Dn
-	}
-	return ""
-}
-
-type L3Network struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Name         string          `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Soa          string          `protobuf:"bytes,2,opt,name=soa,proto3" json:"soa,omitempty"`
-	Domain       string          `protobuf:"bytes,3,opt,name=domain,proto3" json:"domain,omitempty"`
-	NtpServers   []string        `protobuf:"bytes,4,rep,name=ntp_servers,json=ntpServers,proto3" json:"ntp_servers,omitempty"`
-	InetNetwork  []*InetNetwork  `protobuf:"bytes,5,rep,name=inet_network,json=inetNetwork,proto3" json:"inet_network,omitempty"`
-	Inet6Network []*Inet6Network `protobuf:"bytes,6,rep,name=inet6_network,json=inet6Network,proto3" json:"inet6_network,omitempty"`
-	Dn           string          `protobuf:"bytes,7,opt,name=dn,proto3" json:"dn,omitempty"`
-	Description  string          `protobuf:"bytes,8,opt,name=description,proto3" json:"description,omitempty"`
-}
-
-func (x *L3Network) Reset() {
-	*x = L3Network{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_rpc_proto_msgTypes[5]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *L3Network) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*L3Network) ProtoMessage() {}
-
-func (x *L3Network) ProtoReflect() protoreflect.Message {
-	mi := &file_rpc_proto_msgTypes[5]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use L3Network.ProtoReflect.Descriptor instead.
-func (*L3Network) Descriptor() ([]byte, []int) {
-	return file_rpc_proto_rawDescGZIP(), []int{5}
-}
-
-func (x *L3Network) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *L3Network) GetSoa() string {
-	if x != nil {
-		return x.Soa
-	}
-	return ""
-}
-
-func (x *L3Network) GetDomain() string {
-	if x != nil {
-		return x.Domain
-	}
-	return ""
-}
-
-func (x *L3Network) GetNtpServers() []string {
-	if x != nil {
-		return x.NtpServers
-	}
-	return nil
-}
-
-func (x *L3Network) GetInetNetwork() []*InetNetwork {
-	if x != nil {
-		return x.InetNetwork
-	}
-	return nil
-}
-
-func (x *L3Network) GetInet6Network() []*Inet6Network {
-	if x != nil {
-		return x.Inet6Network
-	}
-	return nil
-}
-
-func (x *L3Network) GetDn() string {
-	if x != nil {
-		return x.Dn
-	}
-	return ""
-}
-
-func (x *L3Network) GetDescription() string {
-	if x != nil {
-		return x.Description
-	}
-	return ""
-}
-
-type InetNetwork struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Name         string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Prefix       string `protobuf:"bytes,2,opt,name=prefix,proto3" json:"prefix,omitempty"`
-	Gateway      string `protobuf:"bytes,3,opt,name=gateway,proto3" json:"gateway,omitempty"`
-	DynamicRange string `protobuf:"bytes,4,opt,name=dynamic_range,json=dynamicRange,proto3" json:"dynamic_range,omitempty"`
-	Dn           string `protobuf:"bytes,5,opt,name=dn,proto3" json:"dn,omitempty"`
-}
-
-func (x *InetNetwork) Reset() {
-	*x = InetNetwork{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_rpc_proto_msgTypes[6]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *InetNetwork) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*InetNetwork) ProtoMessage() {}
-
-func (x *InetNetwork) ProtoReflect() protoreflect.Message {
-	mi := &file_rpc_proto_msgTypes[6]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use InetNetwork.ProtoReflect.Descriptor instead.
-func (*InetNetwork) Descriptor() ([]byte, []int) {
-	return file_rpc_proto_rawDescGZIP(), []int{6}
-}
-
-func (x *InetNetwork) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *InetNetwork) GetPrefix() string {
-	if x != nil {
-		return x.Prefix
-	}
-	return ""
-}
-
-func (x *InetNetwork) GetGateway() string {
-	if x != nil {
-		return x.Gateway
-	}
-	return ""
-}
-
-func (x *InetNetwork) GetDynamicRange() string {
-	if x != nil {
-		return x.DynamicRange
-	}
-	return ""
-}
-
-func (x *InetNetwork) GetDn() string {
-	if x != nil {
-		return x.Dn
-	}
-	return ""
-}
-
-type Inet6Network struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Name    string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Prefix  string `protobuf:"bytes,2,opt,name=prefix,proto3" json:"prefix,omitempty"`
-	Gateway string `protobuf:"bytes,3,opt,name=gateway,proto3" json:"gateway,omitempty"`
-	Dn      string `protobuf:"bytes,4,opt,name=dn,proto3" json:"dn,omitempty"`
-}
-
-func (x *Inet6Network) Reset() {
-	*x = Inet6Network{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_rpc_proto_msgTypes[7]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Inet6Network) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Inet6Network) ProtoMessage() {}
-
-func (x *Inet6Network) ProtoReflect() protoreflect.Message {
-	mi := &file_rpc_proto_msgTypes[7]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Inet6Network.ProtoReflect.Descriptor instead.
-func (*Inet6Network) Descriptor() ([]byte, []int) {
-	return file_rpc_proto_rawDescGZIP(), []int{7}
-}
-
-func (x *Inet6Network) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *Inet6Network) GetPrefix() string {
-	if x != nil {
-		return x.Prefix
-	}
-	return ""
-}
-
-func (x *Inet6Network) GetGateway() string {
-	if x != nil {
-		return x.Gateway
-	}
-	return ""
-}
-
-func (x *Inet6Network) GetDn() string {
-	if x != nil {
-		return x.Dn
-	}
-	return ""
-}
-
-// <discovery_prefix>/<component>/[<node_id>/]<object_id>/config
-type DeviceDiscovery struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	DiscoveryPrefix string   `protobuf:"bytes,1,opt,name=discovery_prefix,json=discoveryPrefix,proto3" json:"discovery_prefix,omitempty"`
-	Component       string   `protobuf:"bytes,2,opt,name=component,proto3" json:"component,omitempty"`
-	NodeId          string   `protobuf:"bytes,3,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
-	ObjectId        string   `protobuf:"bytes,4,opt,name=object_id,json=objectId,proto3" json:"object_id,omitempty"`
-	Endpoint        []string `protobuf:"bytes,5,rep,name=endpoint,proto3" json:"endpoint,omitempty"`
-	Message         []byte   `protobuf:"bytes,6,opt,name=message,proto3" json:"message,omitempty"`
-}
-
-func (x *DeviceDiscovery) Reset() {
-	*x = DeviceDiscovery{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_rpc_proto_msgTypes[8]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *DeviceDiscovery) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeviceDiscovery) ProtoMessage() {}
-
-func (x *DeviceDiscovery) ProtoReflect() protoreflect.Message {
-	mi := &file_rpc_proto_msgTypes[8]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeviceDiscovery.ProtoReflect.Descriptor instead.
-func (*DeviceDiscovery) Descriptor() ([]byte, []int) {
-	return file_rpc_proto_rawDescGZIP(), []int{8}
-}
-
-func (x *DeviceDiscovery) GetDiscoveryPrefix() string {
-	if x != nil {
-		return x.DiscoveryPrefix
-	}
-	return ""
-}
-
-func (x *DeviceDiscovery) GetComponent() string {
-	if x != nil {
-		return x.Component
-	}
-	return ""
-}
-
-func (x *DeviceDiscovery) GetNodeId() string {
-	if x != nil {
-		return x.NodeId
-	}
-	return ""
-}
-
-func (x *DeviceDiscovery) GetObjectId() string {
-	if x != nil {
-		return x.ObjectId
-	}
-	return ""
-}
-
-func (x *DeviceDiscovery) GetEndpoint() []string {
-	if x != nil {
-		return x.Endpoint
-	}
-	return nil
-}
-
-func (x *DeviceDiscovery) GetMessage() []byte {
-	if x != nil {
-		return x.Message
-	}
-	return nil
-}
-
 type MACObservation struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -877,7 +42,7 @@ type MACObservation struct {
 func (x *MACObservation) Reset() {
 	*x = MACObservation{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_rpc_proto_msgTypes[9]
+		mi := &file_rpc_rpc_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -890,7 +55,7 @@ func (x *MACObservation) String() string {
 func (*MACObservation) ProtoMessage() {}
 
 func (x *MACObservation) ProtoReflect() protoreflect.Message {
-	mi := &file_rpc_proto_msgTypes[9]
+	mi := &file_rpc_rpc_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -903,7 +68,7 @@ func (x *MACObservation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MACObservation.ProtoReflect.Descriptor instead.
 func (*MACObservation) Descriptor() ([]byte, []int) {
-	return file_rpc_proto_rawDescGZIP(), []int{9}
+	return file_rpc_rpc_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *MACObservation) GetMac() string {
@@ -936,7 +101,7 @@ type Empty struct {
 func (x *Empty) Reset() {
 	*x = Empty{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_rpc_proto_msgTypes[10]
+		mi := &file_rpc_rpc_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -949,7 +114,7 @@ func (x *Empty) String() string {
 func (*Empty) ProtoMessage() {}
 
 func (x *Empty) ProtoReflect() protoreflect.Message {
-	mi := &file_rpc_proto_msgTypes[10]
+	mi := &file_rpc_rpc_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -962,7 +127,7 @@ func (x *Empty) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Empty.ProtoReflect.Descriptor instead.
 func (*Empty) Descriptor() ([]byte, []int) {
-	return file_rpc_proto_rawDescGZIP(), []int{10}
+	return file_rpc_rpc_proto_rawDescGZIP(), []int{1}
 }
 
 type Event struct {
@@ -977,7 +142,7 @@ type Event struct {
 func (x *Event) Reset() {
 	*x = Event{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_rpc_proto_msgTypes[11]
+		mi := &file_rpc_rpc_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -990,7 +155,7 @@ func (x *Event) String() string {
 func (*Event) ProtoMessage() {}
 
 func (x *Event) ProtoReflect() protoreflect.Message {
-	mi := &file_rpc_proto_msgTypes[11]
+	mi := &file_rpc_rpc_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1003,7 +168,7 @@ func (x *Event) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Event.ProtoReflect.Descriptor instead.
 func (*Event) Descriptor() ([]byte, []int) {
-	return file_rpc_proto_rawDescGZIP(), []int{11}
+	return file_rpc_rpc_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *Event) GetName() string {
@@ -1032,7 +197,7 @@ type EventResponse struct {
 func (x *EventResponse) Reset() {
 	*x = EventResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_rpc_proto_msgTypes[12]
+		mi := &file_rpc_rpc_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1045,7 +210,7 @@ func (x *EventResponse) String() string {
 func (*EventResponse) ProtoMessage() {}
 
 func (x *EventResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_rpc_proto_msgTypes[12]
+	mi := &file_rpc_rpc_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1058,7 +223,7 @@ func (x *EventResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EventResponse.ProtoReflect.Descriptor instead.
 func (*EventResponse) Descriptor() ([]byte, []int) {
-	return file_rpc_proto_rawDescGZIP(), []int{12}
+	return file_rpc_rpc_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *EventResponse) GetErrors() bool {
@@ -1086,7 +251,7 @@ type EventSub struct {
 func (x *EventSub) Reset() {
 	*x = EventSub{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_rpc_proto_msgTypes[13]
+		mi := &file_rpc_rpc_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1099,7 +264,7 @@ func (x *EventSub) String() string {
 func (*EventSub) ProtoMessage() {}
 
 func (x *EventSub) ProtoReflect() protoreflect.Message {
-	mi := &file_rpc_proto_msgTypes[13]
+	mi := &file_rpc_rpc_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1112,7 +277,7 @@ func (x *EventSub) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EventSub.ProtoReflect.Descriptor instead.
 func (*EventSub) Descriptor() ([]byte, []int) {
-	return file_rpc_proto_rawDescGZIP(), []int{13}
+	return file_rpc_rpc_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *EventSub) GetEventNames() []string {
@@ -1122,598 +287,76 @@ func (x *EventSub) GetEventNames() []string {
 	return nil
 }
 
-type ZigbeeDevice struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
+var File_rpc_rpc_proto protoreflect.FileDescriptor
 
-	Name             string               `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Description      string               `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
-	Dn               string               `protobuf:"bytes,3,opt,name=dn,proto3" json:"dn,omitempty"`
-	LastSeen         *timestamp.Timestamp `protobuf:"bytes,4,opt,name=last_seen,json=lastSeen,proto3" json:"last_seen,omitempty"`
-	IotZone          string               `protobuf:"bytes,5,opt,name=iot_zone,json=iotZone,proto3" json:"iot_zone,omitempty"`
-	Type             string               `protobuf:"bytes,6,opt,name=type,proto3" json:"type,omitempty"`
-	SoftwareBuildId  string               `protobuf:"bytes,7,opt,name=software_build_id,json=softwareBuildId,proto3" json:"software_build_id,omitempty"`
-	DateCode         string               `protobuf:"bytes,8,opt,name=date_code,json=dateCode,proto3" json:"date_code,omitempty"`
-	Model            string               `protobuf:"bytes,9,opt,name=model,proto3" json:"model,omitempty"`
-	Vendor           string               `protobuf:"bytes,10,opt,name=vendor,proto3" json:"vendor,omitempty"`
-	ManufacturerName string               `protobuf:"bytes,11,opt,name=manufacturer_name,json=manufacturerName,proto3" json:"manufacturer_name,omitempty"`
-	PowerSource      string               `protobuf:"bytes,12,opt,name=power_source,json=powerSource,proto3" json:"power_source,omitempty"`
-	ModelId          string               `protobuf:"bytes,13,opt,name=model_id,json=modelId,proto3" json:"model_id,omitempty"`
-}
-
-func (x *ZigbeeDevice) Reset() {
-	*x = ZigbeeDevice{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_rpc_proto_msgTypes[14]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *ZigbeeDevice) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ZigbeeDevice) ProtoMessage() {}
-
-func (x *ZigbeeDevice) ProtoReflect() protoreflect.Message {
-	mi := &file_rpc_proto_msgTypes[14]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ZigbeeDevice.ProtoReflect.Descriptor instead.
-func (*ZigbeeDevice) Descriptor() ([]byte, []int) {
-	return file_rpc_proto_rawDescGZIP(), []int{14}
-}
-
-func (x *ZigbeeDevice) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *ZigbeeDevice) GetDescription() string {
-	if x != nil {
-		return x.Description
-	}
-	return ""
-}
-
-func (x *ZigbeeDevice) GetDn() string {
-	if x != nil {
-		return x.Dn
-	}
-	return ""
-}
-
-func (x *ZigbeeDevice) GetLastSeen() *timestamp.Timestamp {
-	if x != nil {
-		return x.LastSeen
-	}
-	return nil
-}
-
-func (x *ZigbeeDevice) GetIotZone() string {
-	if x != nil {
-		return x.IotZone
-	}
-	return ""
-}
-
-func (x *ZigbeeDevice) GetType() string {
-	if x != nil {
-		return x.Type
-	}
-	return ""
-}
-
-func (x *ZigbeeDevice) GetSoftwareBuildId() string {
-	if x != nil {
-		return x.SoftwareBuildId
-	}
-	return ""
-}
-
-func (x *ZigbeeDevice) GetDateCode() string {
-	if x != nil {
-		return x.DateCode
-	}
-	return ""
-}
-
-func (x *ZigbeeDevice) GetModel() string {
-	if x != nil {
-		return x.Model
-	}
-	return ""
-}
-
-func (x *ZigbeeDevice) GetVendor() string {
-	if x != nil {
-		return x.Vendor
-	}
-	return ""
-}
-
-func (x *ZigbeeDevice) GetManufacturerName() string {
-	if x != nil {
-		return x.ManufacturerName
-	}
-	return ""
-}
-
-func (x *ZigbeeDevice) GetPowerSource() string {
-	if x != nil {
-		return x.PowerSource
-	}
-	return ""
-}
-
-func (x *ZigbeeDevice) GetModelId() string {
-	if x != nil {
-		return x.ModelId
-	}
-	return ""
-}
-
-type IOTZone struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Name        string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Description string `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
-	Dn          string `protobuf:"bytes,3,opt,name=dn,proto3" json:"dn,omitempty"`
-}
-
-func (x *IOTZone) Reset() {
-	*x = IOTZone{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_rpc_proto_msgTypes[15]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *IOTZone) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*IOTZone) ProtoMessage() {}
-
-func (x *IOTZone) ProtoReflect() protoreflect.Message {
-	mi := &file_rpc_proto_msgTypes[15]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use IOTZone.ProtoReflect.Descriptor instead.
-func (*IOTZone) Descriptor() ([]byte, []int) {
-	return file_rpc_proto_rawDescGZIP(), []int{15}
-}
-
-func (x *IOTZone) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *IOTZone) GetDescription() string {
-	if x != nil {
-		return x.Description
-	}
-	return ""
-}
-
-func (x *IOTZone) GetDn() string {
-	if x != nil {
-		return x.Dn
-	}
-	return ""
-}
-
-var File_rpc_proto protoreflect.FileDescriptor
-
-var file_rpc_proto_rawDesc = []byte{
-	0x0a, 0x09, 0x72, 0x70, 0x63, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x03, 0x72, 0x70, 0x63,
-	0x1a, 0x1f, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75,
-	0x66, 0x2f, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x2e, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x22, 0x9d, 0x02, 0x0a, 0x0d, 0x53, 0x65, 0x61, 0x72, 0x63, 0x68, 0x52, 0x65, 0x71, 0x75,
-	0x65, 0x73, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x64, 0x6f, 0x6d, 0x61, 0x69,
-	0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x64, 0x6f, 0x6d, 0x61, 0x69, 0x6e, 0x12,
-	0x16, 0x0a, 0x06, 0x6b, 0x65, 0x72, 0x6e, 0x65, 0x6c, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x06, 0x6b, 0x65, 0x72, 0x6e, 0x65, 0x6c, 0x12, 0x1a, 0x0a, 0x08, 0x70, 0x6c, 0x61, 0x74, 0x66,
-	0x6f, 0x72, 0x6d, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x70, 0x6c, 0x61, 0x74, 0x66,
-	0x6f, 0x72, 0x6d, 0x12, 0x12, 0x0a, 0x04, 0x72, 0x6f, 0x6c, 0x65, 0x18, 0x05, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x04, 0x72, 0x6f, 0x6c, 0x65, 0x12, 0x1d, 0x0a, 0x0a, 0x68, 0x6f, 0x73, 0x74, 0x5f,
-	0x67, 0x72, 0x6f, 0x75, 0x70, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x68, 0x6f, 0x73,
-	0x74, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x12, 0x12, 0x0a, 0x04, 0x74, 0x79, 0x70, 0x65, 0x18, 0x07,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x74, 0x79, 0x70, 0x65, 0x12, 0x1f, 0x0a, 0x0b, 0x6d, 0x61,
-	0x63, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x08, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x0a, 0x6d, 0x61, 0x63, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x21, 0x0a, 0x0c, 0x69,
-	0x70, 0x76, 0x34, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x09, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x0b, 0x69, 0x70, 0x76, 0x34, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x21,
-	0x0a, 0x0c, 0x69, 0x70, 0x76, 0x36, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x0a,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x69, 0x70, 0x76, 0x36, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73,
-	0x73, 0x22, 0xa3, 0x01, 0x0a, 0x0e, 0x53, 0x65, 0x61, 0x72, 0x63, 0x68, 0x52, 0x65, 0x73, 0x70,
-	0x6f, 0x6e, 0x73, 0x65, 0x12, 0x26, 0x0a, 0x05, 0x68, 0x6f, 0x73, 0x74, 0x73, 0x18, 0x01, 0x20,
-	0x03, 0x28, 0x0b, 0x32, 0x10, 0x2e, 0x72, 0x70, 0x63, 0x2e, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72,
-	0x6b, 0x48, 0x6f, 0x73, 0x74, 0x52, 0x05, 0x68, 0x6f, 0x73, 0x74, 0x73, 0x12, 0x2f, 0x0a, 0x0b,
-	0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x5f, 0x69, 0x64, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28,
-	0x0b, 0x32, 0x0e, 0x2e, 0x72, 0x70, 0x63, 0x2e, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x49,
-	0x44, 0x52, 0x0a, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x49, 0x64, 0x73, 0x12, 0x38, 0x0a,
-	0x0e, 0x7a, 0x69, 0x67, 0x62, 0x65, 0x65, 0x5f, 0x64, 0x65, 0x76, 0x69, 0x63, 0x65, 0x73, 0x18,
-	0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x11, 0x2e, 0x72, 0x70, 0x63, 0x2e, 0x5a, 0x69, 0x67, 0x62,
-	0x65, 0x65, 0x44, 0x65, 0x76, 0x69, 0x63, 0x65, 0x52, 0x0d, 0x7a, 0x69, 0x67, 0x62, 0x65, 0x65,
-	0x44, 0x65, 0x76, 0x69, 0x63, 0x65, 0x73, 0x22, 0x8f, 0x01, 0x0a, 0x09, 0x49, 0x4f, 0x54, 0x44,
-	0x65, 0x76, 0x69, 0x63, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x3f, 0x0a, 0x10, 0x64, 0x65, 0x76,
-	0x69, 0x63, 0x65, 0x5f, 0x64, 0x69, 0x73, 0x63, 0x6f, 0x76, 0x65, 0x72, 0x79, 0x18, 0x02, 0x20,
-	0x01, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x72, 0x70, 0x63, 0x2e, 0x44, 0x65, 0x76, 0x69, 0x63, 0x65,
-	0x44, 0x69, 0x73, 0x63, 0x6f, 0x76, 0x65, 0x72, 0x79, 0x52, 0x0f, 0x64, 0x65, 0x76, 0x69, 0x63,
-	0x65, 0x44, 0x69, 0x73, 0x63, 0x6f, 0x76, 0x65, 0x72, 0x79, 0x12, 0x2d, 0x0a, 0x0a, 0x6e, 0x65,
-	0x74, 0x77, 0x6f, 0x72, 0x6b, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0e,
-	0x2e, 0x72, 0x70, 0x63, 0x2e, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x49, 0x44, 0x52, 0x09,
-	0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x49, 0x64, 0x22, 0xa8, 0x03, 0x0a, 0x0b, 0x4e, 0x65,
-	0x74, 0x77, 0x6f, 0x72, 0x6b, 0x48, 0x6f, 0x73, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x72, 0x6f, 0x6c,
-	0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x72, 0x6f, 0x6c, 0x65, 0x12, 0x14, 0x0a,
-	0x05, 0x67, 0x72, 0x6f, 0x75, 0x70, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x67, 0x72,
-	0x6f, 0x75, 0x70, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x29, 0x0a, 0x10, 0x6f, 0x70, 0x65, 0x72, 0x61,
-	0x74, 0x69, 0x6e, 0x67, 0x5f, 0x73, 0x79, 0x73, 0x74, 0x65, 0x6d, 0x18, 0x04, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x0f, 0x6f, 0x70, 0x65, 0x72, 0x61, 0x74, 0x69, 0x6e, 0x67, 0x53, 0x79, 0x73, 0x74,
-	0x65, 0x6d, 0x12, 0x1a, 0x0a, 0x08, 0x70, 0x6c, 0x61, 0x74, 0x66, 0x6f, 0x72, 0x6d, 0x18, 0x05,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x70, 0x6c, 0x61, 0x74, 0x66, 0x6f, 0x72, 0x6d, 0x12, 0x12,
-	0x0a, 0x04, 0x74, 0x79, 0x70, 0x65, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x74, 0x79,
-	0x70, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x64, 0x6f, 0x6d, 0x61, 0x69, 0x6e, 0x18, 0x07, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x06, 0x64, 0x6f, 0x6d, 0x61, 0x69, 0x6e, 0x12, 0x20, 0x0a, 0x0b, 0x64, 0x65,
-	0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x08, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x0b, 0x64, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x14, 0x0a, 0x05,
-	0x77, 0x61, 0x74, 0x63, 0x68, 0x18, 0x09, 0x20, 0x01, 0x28, 0x08, 0x52, 0x05, 0x77, 0x61, 0x74,
-	0x63, 0x68, 0x12, 0x21, 0x0a, 0x0c, 0x69, 0x6e, 0x65, 0x74, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65,
-	0x73, 0x73, 0x18, 0x0a, 0x20, 0x03, 0x28, 0x09, 0x52, 0x0b, 0x69, 0x6e, 0x65, 0x74, 0x41, 0x64,
-	0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x23, 0x0a, 0x0d, 0x69, 0x6e, 0x65, 0x74, 0x36, 0x5f, 0x61,
-	0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x0b, 0x20, 0x03, 0x28, 0x09, 0x52, 0x0c, 0x69, 0x6e,
-	0x65, 0x74, 0x36, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x1f, 0x0a, 0x0b, 0x6d, 0x61,
-	0x63, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x0c, 0x20, 0x03, 0x28, 0x09, 0x52,
-	0x0a, 0x6d, 0x61, 0x63, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x37, 0x0a, 0x09, 0x6c,
-	0x61, 0x73, 0x74, 0x5f, 0x73, 0x65, 0x65, 0x6e, 0x18, 0x0d, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a,
-	0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66,
-	0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x08, 0x6c, 0x61, 0x73, 0x74,
-	0x53, 0x65, 0x65, 0x6e, 0x12, 0x0e, 0x0a, 0x02, 0x64, 0x6e, 0x18, 0x0e, 0x20, 0x01, 0x28, 0x09,
-	0x52, 0x02, 0x64, 0x6e, 0x22, 0x91, 0x02, 0x0a, 0x09, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b,
-	0x49, 0x44, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
-	0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x1f, 0x0a, 0x0b, 0x6d, 0x61, 0x63, 0x5f, 0x61, 0x64,
-	0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x09, 0x52, 0x0a, 0x6d, 0x61, 0x63,
-	0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x1d, 0x0a, 0x0a, 0x69, 0x70, 0x5f, 0x61, 0x64,
-	0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x09, 0x52, 0x09, 0x69, 0x70, 0x41,
-	0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x29, 0x0a, 0x10, 0x72, 0x65, 0x70, 0x6f, 0x72, 0x74,
-	0x69, 0x6e, 0x67, 0x5f, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x18, 0x04, 0x20, 0x03, 0x28, 0x09,
-	0x52, 0x0f, 0x72, 0x65, 0x70, 0x6f, 0x72, 0x74, 0x69, 0x6e, 0x67, 0x53, 0x6f, 0x75, 0x72, 0x63,
-	0x65, 0x12, 0x3c, 0x0a, 0x1a, 0x72, 0x65, 0x70, 0x6f, 0x72, 0x74, 0x69, 0x6e, 0x67, 0x5f, 0x73,
-	0x6f, 0x75, 0x72, 0x63, 0x65, 0x5f, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x66, 0x61, 0x63, 0x65, 0x18,
-	0x05, 0x20, 0x03, 0x28, 0x09, 0x52, 0x18, 0x72, 0x65, 0x70, 0x6f, 0x72, 0x74, 0x69, 0x6e, 0x67,
-	0x53, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x66, 0x61, 0x63, 0x65, 0x12,
-	0x37, 0x0a, 0x09, 0x6c, 0x61, 0x73, 0x74, 0x5f, 0x73, 0x65, 0x65, 0x6e, 0x18, 0x06, 0x20, 0x01,
-	0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x08,
-	0x6c, 0x61, 0x73, 0x74, 0x53, 0x65, 0x65, 0x6e, 0x12, 0x0e, 0x0a, 0x02, 0x64, 0x6e, 0x18, 0x07,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x64, 0x6e, 0x22, 0x89, 0x02, 0x0a, 0x09, 0x4c, 0x33, 0x4e,
-	0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x10, 0x0a, 0x03, 0x73, 0x6f,
-	0x61, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x73, 0x6f, 0x61, 0x12, 0x16, 0x0a, 0x06,
-	0x64, 0x6f, 0x6d, 0x61, 0x69, 0x6e, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x64, 0x6f,
-	0x6d, 0x61, 0x69, 0x6e, 0x12, 0x1f, 0x0a, 0x0b, 0x6e, 0x74, 0x70, 0x5f, 0x73, 0x65, 0x72, 0x76,
-	0x65, 0x72, 0x73, 0x18, 0x04, 0x20, 0x03, 0x28, 0x09, 0x52, 0x0a, 0x6e, 0x74, 0x70, 0x53, 0x65,
-	0x72, 0x76, 0x65, 0x72, 0x73, 0x12, 0x33, 0x0a, 0x0c, 0x69, 0x6e, 0x65, 0x74, 0x5f, 0x6e, 0x65,
-	0x74, 0x77, 0x6f, 0x72, 0x6b, 0x18, 0x05, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x10, 0x2e, 0x72, 0x70,
-	0x63, 0x2e, 0x49, 0x6e, 0x65, 0x74, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x52, 0x0b, 0x69,
-	0x6e, 0x65, 0x74, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x12, 0x36, 0x0a, 0x0d, 0x69, 0x6e,
-	0x65, 0x74, 0x36, 0x5f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x18, 0x06, 0x20, 0x03, 0x28,
-	0x0b, 0x32, 0x11, 0x2e, 0x72, 0x70, 0x63, 0x2e, 0x49, 0x6e, 0x65, 0x74, 0x36, 0x4e, 0x65, 0x74,
-	0x77, 0x6f, 0x72, 0x6b, 0x52, 0x0c, 0x69, 0x6e, 0x65, 0x74, 0x36, 0x4e, 0x65, 0x74, 0x77, 0x6f,
-	0x72, 0x6b, 0x12, 0x0e, 0x0a, 0x02, 0x64, 0x6e, 0x18, 0x07, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02,
-	0x64, 0x6e, 0x12, 0x20, 0x0a, 0x0b, 0x64, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f,
-	0x6e, 0x18, 0x08, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x64, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70,
-	0x74, 0x69, 0x6f, 0x6e, 0x22, 0x88, 0x01, 0x0a, 0x0b, 0x49, 0x6e, 0x65, 0x74, 0x4e, 0x65, 0x74,
-	0x77, 0x6f, 0x72, 0x6b, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x70, 0x72, 0x65, 0x66,
-	0x69, 0x78, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x70, 0x72, 0x65, 0x66, 0x69, 0x78,
-	0x12, 0x18, 0x0a, 0x07, 0x67, 0x61, 0x74, 0x65, 0x77, 0x61, 0x79, 0x18, 0x03, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x07, 0x67, 0x61, 0x74, 0x65, 0x77, 0x61, 0x79, 0x12, 0x23, 0x0a, 0x0d, 0x64, 0x79,
-	0x6e, 0x61, 0x6d, 0x69, 0x63, 0x5f, 0x72, 0x61, 0x6e, 0x67, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x0c, 0x64, 0x79, 0x6e, 0x61, 0x6d, 0x69, 0x63, 0x52, 0x61, 0x6e, 0x67, 0x65, 0x12,
-	0x0e, 0x0a, 0x02, 0x64, 0x6e, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x64, 0x6e, 0x22,
-	0x64, 0x0a, 0x0c, 0x49, 0x6e, 0x65, 0x74, 0x36, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x12,
-	0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e,
-	0x61, 0x6d, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x70, 0x72, 0x65, 0x66, 0x69, 0x78, 0x18, 0x02, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x06, 0x70, 0x72, 0x65, 0x66, 0x69, 0x78, 0x12, 0x18, 0x0a, 0x07, 0x67,
-	0x61, 0x74, 0x65, 0x77, 0x61, 0x79, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x67, 0x61,
-	0x74, 0x65, 0x77, 0x61, 0x79, 0x12, 0x0e, 0x0a, 0x02, 0x64, 0x6e, 0x18, 0x04, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x02, 0x64, 0x6e, 0x22, 0xc6, 0x01, 0x0a, 0x0f, 0x44, 0x65, 0x76, 0x69, 0x63, 0x65,
-	0x44, 0x69, 0x73, 0x63, 0x6f, 0x76, 0x65, 0x72, 0x79, 0x12, 0x29, 0x0a, 0x10, 0x64, 0x69, 0x73,
-	0x63, 0x6f, 0x76, 0x65, 0x72, 0x79, 0x5f, 0x70, 0x72, 0x65, 0x66, 0x69, 0x78, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x0f, 0x64, 0x69, 0x73, 0x63, 0x6f, 0x76, 0x65, 0x72, 0x79, 0x50, 0x72,
-	0x65, 0x66, 0x69, 0x78, 0x12, 0x1c, 0x0a, 0x09, 0x63, 0x6f, 0x6d, 0x70, 0x6f, 0x6e, 0x65, 0x6e,
-	0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x63, 0x6f, 0x6d, 0x70, 0x6f, 0x6e, 0x65,
-	0x6e, 0x74, 0x12, 0x17, 0x0a, 0x07, 0x6e, 0x6f, 0x64, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x06, 0x6e, 0x6f, 0x64, 0x65, 0x49, 0x64, 0x12, 0x1b, 0x0a, 0x09, 0x6f,
-	0x62, 0x6a, 0x65, 0x63, 0x74, 0x5f, 0x69, 0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08,
-	0x6f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x49, 0x64, 0x12, 0x1a, 0x0a, 0x08, 0x65, 0x6e, 0x64, 0x70,
-	0x6f, 0x69, 0x6e, 0x74, 0x18, 0x05, 0x20, 0x03, 0x28, 0x09, 0x52, 0x08, 0x65, 0x6e, 0x64, 0x70,
-	0x6f, 0x69, 0x6e, 0x74, 0x12, 0x18, 0x0a, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x18,
-	0x06, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x22, 0x53,
-	0x0a, 0x0e, 0x4d, 0x41, 0x43, 0x4f, 0x62, 0x73, 0x65, 0x72, 0x76, 0x61, 0x74, 0x69, 0x6f, 0x6e,
-	0x12, 0x10, 0x0a, 0x03, 0x6d, 0x61, 0x63, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6d,
-	0x61, 0x63, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x70, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02,
-	0x69, 0x70, 0x12, 0x1f, 0x0a, 0x0b, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x5f, 0x68, 0x6f, 0x73,
-	0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x48,
-	0x6f, 0x73, 0x74, 0x22, 0x07, 0x0a, 0x05, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x22, 0x35, 0x0a, 0x05,
-	0x45, 0x76, 0x65, 0x6e, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x70, 0x61, 0x79,
-	0x6c, 0x6f, 0x61, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x07, 0x70, 0x61, 0x79, 0x6c,
-	0x6f, 0x61, 0x64, 0x22, 0x41, 0x0a, 0x0d, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x52, 0x65, 0x73, 0x70,
-	0x6f, 0x6e, 0x73, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x73, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x08, 0x52, 0x06, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x73, 0x12, 0x18, 0x0a, 0x07,
-	0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x6d,
-	0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x22, 0x2b, 0x0a, 0x08, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x53,
-	0x75, 0x62, 0x12, 0x1f, 0x0a, 0x0b, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x5f, 0x6e, 0x61, 0x6d, 0x65,
-	0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x09, 0x52, 0x0a, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x4e, 0x61,
-	0x6d, 0x65, 0x73, 0x22, 0x9e, 0x03, 0x0a, 0x0c, 0x5a, 0x69, 0x67, 0x62, 0x65, 0x65, 0x44, 0x65,
-	0x76, 0x69, 0x63, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x20, 0x0a, 0x0b, 0x64, 0x65, 0x73, 0x63,
-	0x72, 0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x64,
-	0x65, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x0e, 0x0a, 0x02, 0x64, 0x6e,
-	0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x64, 0x6e, 0x12, 0x37, 0x0a, 0x09, 0x6c, 0x61,
-	0x73, 0x74, 0x5f, 0x73, 0x65, 0x65, 0x6e, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e,
-	0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e,
-	0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x08, 0x6c, 0x61, 0x73, 0x74, 0x53,
-	0x65, 0x65, 0x6e, 0x12, 0x19, 0x0a, 0x08, 0x69, 0x6f, 0x74, 0x5f, 0x7a, 0x6f, 0x6e, 0x65, 0x18,
-	0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x69, 0x6f, 0x74, 0x5a, 0x6f, 0x6e, 0x65, 0x12, 0x12,
-	0x0a, 0x04, 0x74, 0x79, 0x70, 0x65, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x74, 0x79,
-	0x70, 0x65, 0x12, 0x2a, 0x0a, 0x11, 0x73, 0x6f, 0x66, 0x74, 0x77, 0x61, 0x72, 0x65, 0x5f, 0x62,
-	0x75, 0x69, 0x6c, 0x64, 0x5f, 0x69, 0x64, 0x18, 0x07, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0f, 0x73,
-	0x6f, 0x66, 0x74, 0x77, 0x61, 0x72, 0x65, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x49, 0x64, 0x12, 0x1b,
-	0x0a, 0x09, 0x64, 0x61, 0x74, 0x65, 0x5f, 0x63, 0x6f, 0x64, 0x65, 0x18, 0x08, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x08, 0x64, 0x61, 0x74, 0x65, 0x43, 0x6f, 0x64, 0x65, 0x12, 0x14, 0x0a, 0x05, 0x6d,
-	0x6f, 0x64, 0x65, 0x6c, 0x18, 0x09, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x6d, 0x6f, 0x64, 0x65,
-	0x6c, 0x12, 0x16, 0x0a, 0x06, 0x76, 0x65, 0x6e, 0x64, 0x6f, 0x72, 0x18, 0x0a, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x06, 0x76, 0x65, 0x6e, 0x64, 0x6f, 0x72, 0x12, 0x2b, 0x0a, 0x11, 0x6d, 0x61, 0x6e,
-	0x75, 0x66, 0x61, 0x63, 0x74, 0x75, 0x72, 0x65, 0x72, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x0b,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x10, 0x6d, 0x61, 0x6e, 0x75, 0x66, 0x61, 0x63, 0x74, 0x75, 0x72,
-	0x65, 0x72, 0x4e, 0x61, 0x6d, 0x65, 0x12, 0x21, 0x0a, 0x0c, 0x70, 0x6f, 0x77, 0x65, 0x72, 0x5f,
-	0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x18, 0x0c, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x70, 0x6f,
-	0x77, 0x65, 0x72, 0x53, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x12, 0x19, 0x0a, 0x08, 0x6d, 0x6f, 0x64,
-	0x65, 0x6c, 0x5f, 0x69, 0x64, 0x18, 0x0d, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x6d, 0x6f, 0x64,
-	0x65, 0x6c, 0x49, 0x64, 0x22, 0x4f, 0x0a, 0x07, 0x49, 0x4f, 0x54, 0x5a, 0x6f, 0x6e, 0x65, 0x12,
-	0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e,
-	0x61, 0x6d, 0x65, 0x12, 0x20, 0x0a, 0x0b, 0x64, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69,
-	0x6f, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x64, 0x65, 0x73, 0x63, 0x72, 0x69,
-	0x70, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x0e, 0x0a, 0x02, 0x64, 0x6e, 0x18, 0x03, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x02, 0x64, 0x6e, 0x32, 0xa5, 0x01, 0x0a, 0x09, 0x49, 0x6e, 0x76, 0x65, 0x6e, 0x74,
-	0x6f, 0x72, 0x79, 0x12, 0x32, 0x0a, 0x10, 0x4c, 0x69, 0x73, 0x74, 0x4e, 0x65, 0x74, 0x77, 0x6f,
-	0x72, 0x6b, 0x48, 0x6f, 0x73, 0x74, 0x73, 0x12, 0x0a, 0x2e, 0x72, 0x70, 0x63, 0x2e, 0x45, 0x6d,
-	0x70, 0x74, 0x79, 0x1a, 0x10, 0x2e, 0x72, 0x70, 0x63, 0x2e, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72,
-	0x6b, 0x48, 0x6f, 0x73, 0x74, 0x30, 0x01, 0x12, 0x2e, 0x0a, 0x0e, 0x4c, 0x69, 0x73, 0x74, 0x4e,
-	0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x49, 0x44, 0x73, 0x12, 0x0a, 0x2e, 0x72, 0x70, 0x63, 0x2e,
-	0x45, 0x6d, 0x70, 0x74, 0x79, 0x1a, 0x0e, 0x2e, 0x72, 0x70, 0x63, 0x2e, 0x4e, 0x65, 0x74, 0x77,
-	0x6f, 0x72, 0x6b, 0x49, 0x44, 0x30, 0x01, 0x12, 0x34, 0x0a, 0x11, 0x4c, 0x69, 0x73, 0x74, 0x5a,
-	0x69, 0x67, 0x62, 0x65, 0x65, 0x44, 0x65, 0x76, 0x69, 0x63, 0x65, 0x73, 0x12, 0x0a, 0x2e, 0x72,
-	0x70, 0x63, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x1a, 0x11, 0x2e, 0x72, 0x70, 0x63, 0x2e, 0x5a,
-	0x69, 0x67, 0x62, 0x65, 0x65, 0x44, 0x65, 0x76, 0x69, 0x63, 0x65, 0x30, 0x01, 0x32, 0x69, 0x0a,
-	0x09, 0x54, 0x65, 0x6c, 0x65, 0x6d, 0x65, 0x74, 0x72, 0x79, 0x12, 0x2d, 0x0a, 0x0f, 0x52, 0x65,
-	0x70, 0x6f, 0x72, 0x74, 0x49, 0x4f, 0x54, 0x44, 0x65, 0x76, 0x69, 0x63, 0x65, 0x12, 0x0e, 0x2e,
-	0x72, 0x70, 0x63, 0x2e, 0x49, 0x4f, 0x54, 0x44, 0x65, 0x76, 0x69, 0x63, 0x65, 0x1a, 0x0a, 0x2e,
-	0x72, 0x70, 0x63, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x12, 0x2d, 0x0a, 0x0f, 0x52, 0x65, 0x70,
-	0x6f, 0x72, 0x74, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x49, 0x44, 0x12, 0x0e, 0x2e, 0x72,
-	0x70, 0x63, 0x2e, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x49, 0x44, 0x1a, 0x0a, 0x2e, 0x72,
-	0x70, 0x63, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x32, 0x67, 0x0a, 0x06, 0x45, 0x76, 0x65, 0x6e,
-	0x74, 0x73, 0x12, 0x2d, 0x0a, 0x0b, 0x4e, 0x6f, 0x74, 0x69, 0x63, 0x65, 0x45, 0x76, 0x65, 0x6e,
-	0x74, 0x12, 0x0a, 0x2e, 0x72, 0x70, 0x63, 0x2e, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x1a, 0x12, 0x2e,
-	0x72, 0x70, 0x63, 0x2e, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
-	0x65, 0x12, 0x2e, 0x0a, 0x0f, 0x53, 0x75, 0x62, 0x73, 0x63, 0x72, 0x69, 0x62, 0x65, 0x45, 0x76,
-	0x65, 0x6e, 0x74, 0x73, 0x12, 0x0d, 0x2e, 0x72, 0x70, 0x63, 0x2e, 0x45, 0x76, 0x65, 0x6e, 0x74,
-	0x53, 0x75, 0x62, 0x1a, 0x0a, 0x2e, 0x72, 0x70, 0x63, 0x2e, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x30,
-	0x01, 0x42, 0x07, 0x5a, 0x05, 0x2e, 0x3b, 0x72, 0x70, 0x63, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x33,
+var file_rpc_rpc_proto_rawDesc = []byte{
+	0x0a, 0x0d, 0x72, 0x70, 0x63, 0x2f, 0x72, 0x70, 0x63, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12,
+	0x03, 0x72, 0x70, 0x63, 0x22, 0x53, 0x0a, 0x0e, 0x4d, 0x41, 0x43, 0x4f, 0x62, 0x73, 0x65, 0x72,
+	0x76, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x10, 0x0a, 0x03, 0x6d, 0x61, 0x63, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x03, 0x6d, 0x61, 0x63, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x70, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x70, 0x12, 0x1f, 0x0a, 0x0b, 0x73, 0x6f, 0x75, 0x72,
+	0x63, 0x65, 0x5f, 0x68, 0x6f, 0x73, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x73,
+	0x6f, 0x75, 0x72, 0x63, 0x65, 0x48, 0x6f, 0x73, 0x74, 0x22, 0x07, 0x0a, 0x05, 0x45, 0x6d, 0x70,
+	0x74, 0x79, 0x22, 0x35, 0x0a, 0x05, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x6e,
+	0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12,
+	0x18, 0x0a, 0x07, 0x70, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0c,
+	0x52, 0x07, 0x70, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x22, 0x41, 0x0a, 0x0d, 0x45, 0x76, 0x65,
+	0x6e, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x65, 0x72,
+	0x72, 0x6f, 0x72, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x06, 0x65, 0x72, 0x72, 0x6f,
+	0x72, 0x73, 0x12, 0x18, 0x0a, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x18, 0x02, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x22, 0x2b, 0x0a, 0x08,
+	0x45, 0x76, 0x65, 0x6e, 0x74, 0x53, 0x75, 0x62, 0x12, 0x1f, 0x0a, 0x0b, 0x65, 0x76, 0x65, 0x6e,
+	0x74, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x09, 0x52, 0x0a, 0x65,
+	0x76, 0x65, 0x6e, 0x74, 0x4e, 0x61, 0x6d, 0x65, 0x73, 0x32, 0x67, 0x0a, 0x06, 0x45, 0x76, 0x65,
+	0x6e, 0x74, 0x73, 0x12, 0x2d, 0x0a, 0x0b, 0x4e, 0x6f, 0x74, 0x69, 0x63, 0x65, 0x45, 0x76, 0x65,
+	0x6e, 0x74, 0x12, 0x0a, 0x2e, 0x72, 0x70, 0x63, 0x2e, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x1a, 0x12,
+	0x2e, 0x72, 0x70, 0x63, 0x2e, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
+	0x73, 0x65, 0x12, 0x2e, 0x0a, 0x0f, 0x53, 0x75, 0x62, 0x73, 0x63, 0x72, 0x69, 0x62, 0x65, 0x45,
+	0x76, 0x65, 0x6e, 0x74, 0x73, 0x12, 0x0d, 0x2e, 0x72, 0x70, 0x63, 0x2e, 0x45, 0x76, 0x65, 0x6e,
+	0x74, 0x53, 0x75, 0x62, 0x1a, 0x0a, 0x2e, 0x72, 0x70, 0x63, 0x2e, 0x45, 0x76, 0x65, 0x6e, 0x74,
+	0x30, 0x01, 0x42, 0x05, 0x5a, 0x03, 0x72, 0x70, 0x63, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x33,
 }
 
 var (
-	file_rpc_proto_rawDescOnce sync.Once
-	file_rpc_proto_rawDescData = file_rpc_proto_rawDesc
+	file_rpc_rpc_proto_rawDescOnce sync.Once
+	file_rpc_rpc_proto_rawDescData = file_rpc_rpc_proto_rawDesc
 )
 
-func file_rpc_proto_rawDescGZIP() []byte {
-	file_rpc_proto_rawDescOnce.Do(func() {
-		file_rpc_proto_rawDescData = protoimpl.X.CompressGZIP(file_rpc_proto_rawDescData)
+func file_rpc_rpc_proto_rawDescGZIP() []byte {
+	file_rpc_rpc_proto_rawDescOnce.Do(func() {
+		file_rpc_rpc_proto_rawDescData = protoimpl.X.CompressGZIP(file_rpc_rpc_proto_rawDescData)
 	})
-	return file_rpc_proto_rawDescData
+	return file_rpc_rpc_proto_rawDescData
 }
 
-var file_rpc_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
-var file_rpc_proto_goTypes = []interface{}{
-	(*SearchRequest)(nil),       // 0: rpc.SearchRequest
-	(*SearchResponse)(nil),      // 1: rpc.SearchResponse
-	(*IOTDevice)(nil),           // 2: rpc.IOTDevice
-	(*NetworkHost)(nil),         // 3: rpc.NetworkHost
-	(*NetworkID)(nil),           // 4: rpc.NetworkID
-	(*L3Network)(nil),           // 5: rpc.L3Network
-	(*InetNetwork)(nil),         // 6: rpc.InetNetwork
-	(*Inet6Network)(nil),        // 7: rpc.Inet6Network
-	(*DeviceDiscovery)(nil),     // 8: rpc.DeviceDiscovery
-	(*MACObservation)(nil),      // 9: rpc.MACObservation
-	(*Empty)(nil),               // 10: rpc.Empty
-	(*Event)(nil),               // 11: rpc.Event
-	(*EventResponse)(nil),       // 12: rpc.EventResponse
-	(*EventSub)(nil),            // 13: rpc.EventSub
-	(*ZigbeeDevice)(nil),        // 14: rpc.ZigbeeDevice
-	(*IOTZone)(nil),             // 15: rpc.IOTZone
-	(*timestamp.Timestamp)(nil), // 16: google.protobuf.Timestamp
+var file_rpc_rpc_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_rpc_rpc_proto_goTypes = []interface{}{
+	(*MACObservation)(nil), // 0: rpc.MACObservation
+	(*Empty)(nil),          // 1: rpc.Empty
+	(*Event)(nil),          // 2: rpc.Event
+	(*EventResponse)(nil),  // 3: rpc.EventResponse
+	(*EventSub)(nil),       // 4: rpc.EventSub
 }
-var file_rpc_proto_depIdxs = []int32{
-	3,  // 0: rpc.SearchResponse.hosts:type_name -> rpc.NetworkHost
-	4,  // 1: rpc.SearchResponse.network_ids:type_name -> rpc.NetworkID
-	14, // 2: rpc.SearchResponse.zigbee_devices:type_name -> rpc.ZigbeeDevice
-	8,  // 3: rpc.IOTDevice.device_discovery:type_name -> rpc.DeviceDiscovery
-	4,  // 4: rpc.IOTDevice.network_id:type_name -> rpc.NetworkID
-	16, // 5: rpc.NetworkHost.last_seen:type_name -> google.protobuf.Timestamp
-	16, // 6: rpc.NetworkID.last_seen:type_name -> google.protobuf.Timestamp
-	6,  // 7: rpc.L3Network.inet_network:type_name -> rpc.InetNetwork
-	7,  // 8: rpc.L3Network.inet6_network:type_name -> rpc.Inet6Network
-	16, // 9: rpc.ZigbeeDevice.last_seen:type_name -> google.protobuf.Timestamp
-	10, // 10: rpc.Inventory.ListNetworkHosts:input_type -> rpc.Empty
-	10, // 11: rpc.Inventory.ListNetworkIDs:input_type -> rpc.Empty
-	10, // 12: rpc.Inventory.ListZigbeeDevices:input_type -> rpc.Empty
-	2,  // 13: rpc.Telemetry.ReportIOTDevice:input_type -> rpc.IOTDevice
-	4,  // 14: rpc.Telemetry.ReportNetworkID:input_type -> rpc.NetworkID
-	11, // 15: rpc.Events.NoticeEvent:input_type -> rpc.Event
-	13, // 16: rpc.Events.SubscribeEvents:input_type -> rpc.EventSub
-	3,  // 17: rpc.Inventory.ListNetworkHosts:output_type -> rpc.NetworkHost
-	4,  // 18: rpc.Inventory.ListNetworkIDs:output_type -> rpc.NetworkID
-	14, // 19: rpc.Inventory.ListZigbeeDevices:output_type -> rpc.ZigbeeDevice
-	10, // 20: rpc.Telemetry.ReportIOTDevice:output_type -> rpc.Empty
-	10, // 21: rpc.Telemetry.ReportNetworkID:output_type -> rpc.Empty
-	12, // 22: rpc.Events.NoticeEvent:output_type -> rpc.EventResponse
-	11, // 23: rpc.Events.SubscribeEvents:output_type -> rpc.Event
-	17, // [17:24] is the sub-list for method output_type
-	10, // [10:17] is the sub-list for method input_type
-	10, // [10:10] is the sub-list for extension type_name
-	10, // [10:10] is the sub-list for extension extendee
-	0,  // [0:10] is the sub-list for field type_name
+var file_rpc_rpc_proto_depIdxs = []int32{
+	2, // 0: rpc.Events.NoticeEvent:input_type -> rpc.Event
+	4, // 1: rpc.Events.SubscribeEvents:input_type -> rpc.EventSub
+	3, // 2: rpc.Events.NoticeEvent:output_type -> rpc.EventResponse
+	2, // 3: rpc.Events.SubscribeEvents:output_type -> rpc.Event
+	2, // [2:4] is the sub-list for method output_type
+	0, // [0:2] is the sub-list for method input_type
+	0, // [0:0] is the sub-list for extension type_name
+	0, // [0:0] is the sub-list for extension extendee
+	0, // [0:0] is the sub-list for field type_name
 }
 
-func init() { file_rpc_proto_init() }
-func file_rpc_proto_init() {
-	if File_rpc_proto != nil {
+func init() { file_rpc_rpc_proto_init() }
+func file_rpc_rpc_proto_init() {
+	if File_rpc_rpc_proto != nil {
 		return
 	}
 	if !protoimpl.UnsafeEnabled {
-		file_rpc_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SearchRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_rpc_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SearchResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_rpc_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*IOTDevice); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_rpc_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*NetworkHost); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_rpc_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*NetworkID); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_rpc_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*L3Network); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_rpc_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*InetNetwork); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_rpc_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Inet6Network); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_rpc_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeviceDiscovery); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_rpc_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+		file_rpc_rpc_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MACObservation); i {
 			case 0:
 				return &v.state
@@ -1725,7 +368,7 @@ func file_rpc_proto_init() {
 				return nil
 			}
 		}
-		file_rpc_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
+		file_rpc_rpc_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Empty); i {
 			case 0:
 				return &v.state
@@ -1737,7 +380,7 @@ func file_rpc_proto_init() {
 				return nil
 			}
 		}
-		file_rpc_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
+		file_rpc_rpc_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Event); i {
 			case 0:
 				return &v.state
@@ -1749,7 +392,7 @@ func file_rpc_proto_init() {
 				return nil
 			}
 		}
-		file_rpc_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
+		file_rpc_rpc_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*EventResponse); i {
 			case 0:
 				return &v.state
@@ -1761,32 +404,8 @@ func file_rpc_proto_init() {
 				return nil
 			}
 		}
-		file_rpc_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
+		file_rpc_rpc_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*EventSub); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_rpc_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ZigbeeDevice); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_rpc_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*IOTZone); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1802,20 +421,20 @@ func file_rpc_proto_init() {
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: file_rpc_proto_rawDesc,
+			RawDescriptor: file_rpc_rpc_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   16,
+			NumMessages:   5,
 			NumExtensions: 0,
-			NumServices:   3,
+			NumServices:   1,
 		},
-		GoTypes:           file_rpc_proto_goTypes,
-		DependencyIndexes: file_rpc_proto_depIdxs,
-		MessageInfos:      file_rpc_proto_msgTypes,
+		GoTypes:           file_rpc_rpc_proto_goTypes,
+		DependencyIndexes: file_rpc_rpc_proto_depIdxs,
+		MessageInfos:      file_rpc_rpc_proto_msgTypes,
 	}.Build()
-	File_rpc_proto = out.File
-	file_rpc_proto_rawDesc = nil
-	file_rpc_proto_goTypes = nil
-	file_rpc_proto_depIdxs = nil
+	File_rpc_rpc_proto = out.File
+	file_rpc_rpc_proto_rawDesc = nil
+	file_rpc_rpc_proto_goTypes = nil
+	file_rpc_rpc_proto_depIdxs = nil
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -1825,339 +444,6 @@ var _ grpc.ClientConnInterface
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
 const _ = grpc.SupportPackageIsVersion6
-
-// InventoryClient is the client API for Inventory service.
-//
-// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
-type InventoryClient interface {
-	ListNetworkHosts(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Inventory_ListNetworkHostsClient, error)
-	ListNetworkIDs(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Inventory_ListNetworkIDsClient, error)
-	ListZigbeeDevices(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Inventory_ListZigbeeDevicesClient, error)
-}
-
-type inventoryClient struct {
-	cc grpc.ClientConnInterface
-}
-
-func NewInventoryClient(cc grpc.ClientConnInterface) InventoryClient {
-	return &inventoryClient{cc}
-}
-
-func (c *inventoryClient) ListNetworkHosts(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Inventory_ListNetworkHostsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_Inventory_serviceDesc.Streams[0], "/rpc.Inventory/ListNetworkHosts", opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &inventoryListNetworkHostsClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type Inventory_ListNetworkHostsClient interface {
-	Recv() (*NetworkHost, error)
-	grpc.ClientStream
-}
-
-type inventoryListNetworkHostsClient struct {
-	grpc.ClientStream
-}
-
-func (x *inventoryListNetworkHostsClient) Recv() (*NetworkHost, error) {
-	m := new(NetworkHost)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *inventoryClient) ListNetworkIDs(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Inventory_ListNetworkIDsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_Inventory_serviceDesc.Streams[1], "/rpc.Inventory/ListNetworkIDs", opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &inventoryListNetworkIDsClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type Inventory_ListNetworkIDsClient interface {
-	Recv() (*NetworkID, error)
-	grpc.ClientStream
-}
-
-type inventoryListNetworkIDsClient struct {
-	grpc.ClientStream
-}
-
-func (x *inventoryListNetworkIDsClient) Recv() (*NetworkID, error) {
-	m := new(NetworkID)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *inventoryClient) ListZigbeeDevices(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Inventory_ListZigbeeDevicesClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_Inventory_serviceDesc.Streams[2], "/rpc.Inventory/ListZigbeeDevices", opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &inventoryListZigbeeDevicesClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type Inventory_ListZigbeeDevicesClient interface {
-	Recv() (*ZigbeeDevice, error)
-	grpc.ClientStream
-}
-
-type inventoryListZigbeeDevicesClient struct {
-	grpc.ClientStream
-}
-
-func (x *inventoryListZigbeeDevicesClient) Recv() (*ZigbeeDevice, error) {
-	m := new(ZigbeeDevice)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-// InventoryServer is the server API for Inventory service.
-type InventoryServer interface {
-	ListNetworkHosts(*Empty, Inventory_ListNetworkHostsServer) error
-	ListNetworkIDs(*Empty, Inventory_ListNetworkIDsServer) error
-	ListZigbeeDevices(*Empty, Inventory_ListZigbeeDevicesServer) error
-}
-
-// UnimplementedInventoryServer can be embedded to have forward compatible implementations.
-type UnimplementedInventoryServer struct {
-}
-
-func (*UnimplementedInventoryServer) ListNetworkHosts(*Empty, Inventory_ListNetworkHostsServer) error {
-	return status.Errorf(codes.Unimplemented, "method ListNetworkHosts not implemented")
-}
-func (*UnimplementedInventoryServer) ListNetworkIDs(*Empty, Inventory_ListNetworkIDsServer) error {
-	return status.Errorf(codes.Unimplemented, "method ListNetworkIDs not implemented")
-}
-func (*UnimplementedInventoryServer) ListZigbeeDevices(*Empty, Inventory_ListZigbeeDevicesServer) error {
-	return status.Errorf(codes.Unimplemented, "method ListZigbeeDevices not implemented")
-}
-
-func RegisterInventoryServer(s *grpc.Server, srv InventoryServer) {
-	s.RegisterService(&_Inventory_serviceDesc, srv)
-}
-
-func _Inventory_ListNetworkHosts_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(Empty)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(InventoryServer).ListNetworkHosts(m, &inventoryListNetworkHostsServer{stream})
-}
-
-type Inventory_ListNetworkHostsServer interface {
-	Send(*NetworkHost) error
-	grpc.ServerStream
-}
-
-type inventoryListNetworkHostsServer struct {
-	grpc.ServerStream
-}
-
-func (x *inventoryListNetworkHostsServer) Send(m *NetworkHost) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func _Inventory_ListNetworkIDs_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(Empty)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(InventoryServer).ListNetworkIDs(m, &inventoryListNetworkIDsServer{stream})
-}
-
-type Inventory_ListNetworkIDsServer interface {
-	Send(*NetworkID) error
-	grpc.ServerStream
-}
-
-type inventoryListNetworkIDsServer struct {
-	grpc.ServerStream
-}
-
-func (x *inventoryListNetworkIDsServer) Send(m *NetworkID) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func _Inventory_ListZigbeeDevices_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(Empty)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(InventoryServer).ListZigbeeDevices(m, &inventoryListZigbeeDevicesServer{stream})
-}
-
-type Inventory_ListZigbeeDevicesServer interface {
-	Send(*ZigbeeDevice) error
-	grpc.ServerStream
-}
-
-type inventoryListZigbeeDevicesServer struct {
-	grpc.ServerStream
-}
-
-func (x *inventoryListZigbeeDevicesServer) Send(m *ZigbeeDevice) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-var _Inventory_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "rpc.Inventory",
-	HandlerType: (*InventoryServer)(nil),
-	Methods:     []grpc.MethodDesc{},
-	Streams: []grpc.StreamDesc{
-		{
-			StreamName:    "ListNetworkHosts",
-			Handler:       _Inventory_ListNetworkHosts_Handler,
-			ServerStreams: true,
-		},
-		{
-			StreamName:    "ListNetworkIDs",
-			Handler:       _Inventory_ListNetworkIDs_Handler,
-			ServerStreams: true,
-		},
-		{
-			StreamName:    "ListZigbeeDevices",
-			Handler:       _Inventory_ListZigbeeDevices_Handler,
-			ServerStreams: true,
-		},
-	},
-	Metadata: "rpc.proto",
-}
-
-// TelemetryClient is the client API for Telemetry service.
-//
-// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
-type TelemetryClient interface {
-	ReportIOTDevice(ctx context.Context, in *IOTDevice, opts ...grpc.CallOption) (*Empty, error)
-	ReportNetworkID(ctx context.Context, in *NetworkID, opts ...grpc.CallOption) (*Empty, error)
-}
-
-type telemetryClient struct {
-	cc grpc.ClientConnInterface
-}
-
-func NewTelemetryClient(cc grpc.ClientConnInterface) TelemetryClient {
-	return &telemetryClient{cc}
-}
-
-func (c *telemetryClient) ReportIOTDevice(ctx context.Context, in *IOTDevice, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
-	err := c.cc.Invoke(ctx, "/rpc.Telemetry/ReportIOTDevice", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *telemetryClient) ReportNetworkID(ctx context.Context, in *NetworkID, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
-	err := c.cc.Invoke(ctx, "/rpc.Telemetry/ReportNetworkID", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-// TelemetryServer is the server API for Telemetry service.
-type TelemetryServer interface {
-	ReportIOTDevice(context.Context, *IOTDevice) (*Empty, error)
-	ReportNetworkID(context.Context, *NetworkID) (*Empty, error)
-}
-
-// UnimplementedTelemetryServer can be embedded to have forward compatible implementations.
-type UnimplementedTelemetryServer struct {
-}
-
-func (*UnimplementedTelemetryServer) ReportIOTDevice(context.Context, *IOTDevice) (*Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ReportIOTDevice not implemented")
-}
-func (*UnimplementedTelemetryServer) ReportNetworkID(context.Context, *NetworkID) (*Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ReportNetworkID not implemented")
-}
-
-func RegisterTelemetryServer(s *grpc.Server, srv TelemetryServer) {
-	s.RegisterService(&_Telemetry_serviceDesc, srv)
-}
-
-func _Telemetry_ReportIOTDevice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(IOTDevice)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(TelemetryServer).ReportIOTDevice(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/rpc.Telemetry/ReportIOTDevice",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TelemetryServer).ReportIOTDevice(ctx, req.(*IOTDevice))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Telemetry_ReportNetworkID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(NetworkID)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(TelemetryServer).ReportNetworkID(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/rpc.Telemetry/ReportNetworkID",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TelemetryServer).ReportNetworkID(ctx, req.(*NetworkID))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-var _Telemetry_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "rpc.Telemetry",
-	HandlerType: (*TelemetryServer)(nil),
-	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "ReportIOTDevice",
-			Handler:    _Telemetry_ReportIOTDevice_Handler,
-		},
-		{
-			MethodName: "ReportNetworkID",
-			Handler:    _Telemetry_ReportNetworkID_Handler,
-		},
-	},
-	Streams:  []grpc.StreamDesc{},
-	Metadata: "rpc.proto",
-}
 
 // EventsClient is the client API for Events service.
 //
@@ -2292,5 +578,5 @@ var _Events_serviceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
-	Metadata: "rpc.proto",
+	Metadata: "rpc/rpc.proto",
 }

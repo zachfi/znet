@@ -13,7 +13,7 @@ import (
 
 	"github.com/xaque208/znet/internal/comms"
 	"github.com/xaque208/znet/internal/config"
-	"github.com/xaque208/znet/rpc"
+	"github.com/xaque208/znet/internal/inventory"
 	"github.com/xaque208/znet/znet"
 )
 
@@ -62,22 +62,20 @@ func runNetworkHost(cmd *cobra.Command, args []string) {
 		if err != nil {
 			log.Error(err)
 		}
-
-		z.Stop()
 	}()
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	inventoryClient := rpc.NewInventoryClient(conn)
+	inventoryClient := inventory.NewInventoryClient(conn)
 
-	stream, err := inventoryClient.ListNetworkHosts(ctx, &rpc.Empty{})
+	stream, err := inventoryClient.ListNetworkHosts(ctx, &inventory.Empty{})
 	if err != nil {
 		log.Errorf("stream error: %s", err)
 	}
 
 	for {
-		var d *rpc.NetworkHost
+		var d *inventory.NetworkHost
 
 		d, err = stream.Recv()
 		if err != nil {

@@ -54,10 +54,6 @@ func NewZnet(file string) (*Znet, error) {
 	return &z, nil
 }
 
-// Stop the znet connections
-func (z *Znet) Stop() {
-}
-
 func (z *Znet) executionResultHandler(name string, payload events.Payload) error {
 	var x agent.ExecutionResult
 
