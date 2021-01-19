@@ -8,8 +8,6 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
-	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/peer"
 
 	"github.com/xaque208/znet/internal/timer"
 	"github.com/xaque208/znet/pkg/eventmachine"
@@ -110,14 +108,7 @@ func (e *eventServer) SubscribeEvents(subs *rpc.EventSub, stream rpc.Events_Subs
 	eventmachineCh := e.eventMachine.Receive()
 	defer e.eventMachine.ReceiveStop(eventmachineCh)
 
-	streamContext := stream.Context()
-
-	var subscriber string
-	peer, ok := peer.FromContext(streamContext)
-	if ok {
-		tlsInfo := peer.AuthInfo.(credentials.TLSInfo)
-		subscriber = tlsInfo.State.VerifiedChains[0][0].Subject.CommonName
-	}
+	subscriber := peerCN(stream.Context())
 
 	log.WithFields(log.Fields{
 		"events": subs.EventNames,
@@ -135,7 +126,7 @@ func (e *eventServer) SubscribeEvents(subs *rpc.EventSub, stream rpc.Events_Subs
 		select {
 		case <-e.ctx.Done():
 			return fmt.Errorf("eventServer done")
-		case <-streamContext.Done():
+		case <-stream.Context().Done():
 			return fmt.Errorf("stream done")
 		case machineEvent := <-eventmachineCh:
 			rpcEvent := &rpc.Event{
