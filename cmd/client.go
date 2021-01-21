@@ -29,10 +29,11 @@ import (
 
 // clientCmd represents the on command
 var clientCmd = &cobra.Command{
-	Use:   "client",
-	Short: "Issue calls to the RPC agent for testing and manual triggering.",
-	Long:  "",
-	Run:   client,
+	Use:     "client",
+	Short:   "Issue calls to the RPC agent for testing and manual triggering.",
+	Long:    "A test client for getting the agent RPC up and running",
+	Example: "znet client",
+	Run:     client,
 }
 
 func init() {
