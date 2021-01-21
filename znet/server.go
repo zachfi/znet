@@ -146,7 +146,7 @@ func (s *Server) startRPCListener() error {
 		return err
 	}
 
-	rpcTelemetryServer, err := telemetry.NewServer(inv, s.eventMachine)
+	rpcTelemetryServer, err := telemetry.NewServer(inv, lightsServer)
 	if err != nil {
 		return err
 	}
@@ -202,7 +202,10 @@ func (s *Server) Start(z *Znet) error {
 			"http_listen": s.httpConfig.ListenAddress,
 		}).Info("starting HTTP listener")
 
-		s.startHTTPListener()
+		err := s.startHTTPListener()
+		if err != nil {
+			return err
+		}
 	}
 
 	if s.rpcConfig.ListenAddress != "" {
@@ -210,7 +213,10 @@ func (s *Server) Start(z *Znet) error {
 			"rpc_listen": s.rpcConfig.ListenAddress,
 		}).Debug("starting RPC listener")
 
-		s.startRPCListener()
+		err := s.startRPCListener()
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

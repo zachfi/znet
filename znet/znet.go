@@ -1,15 +1,11 @@
 package znet
 
 import (
-	"encoding/json"
 	"fmt"
 
-	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/xaque208/znet/internal/agent"
 	"github.com/xaque208/znet/internal/config"
-	"github.com/xaque208/znet/pkg/events"
 	"github.com/xaque208/znet/pkg/netconfig"
 )
 
@@ -52,23 +48,4 @@ func NewZnet(file string) (*Znet, error) {
 	}
 
 	return &z, nil
-}
-
-func (z *Znet) executionResultHandler(name string, payload events.Payload) error {
-	var x agent.ExecutionResult
-
-	err := json.Unmarshal(payload, &x)
-	if err != nil {
-		return fmt.Errorf("failed to unmarshal %T: %s", x, err)
-	}
-
-	executionExitStatus.With(prometheus.Labels{
-		"command": x.Command,
-	}).Set(float64(x.ExitCode))
-
-	executionDuration.With(prometheus.Labels{
-		"command": x.Command,
-	}).Set(float64(x.Duration))
-
-	return nil
 }
