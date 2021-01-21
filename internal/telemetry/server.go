@@ -12,29 +12,29 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/xaque208/znet/internal/inventory"
-	"github.com/xaque208/znet/pkg/eventmachine"
+	"github.com/xaque208/znet/internal/lights"
 	"github.com/xaque208/znet/pkg/iot"
 )
 
-type telemetryServer struct {
-	eventMachine *eventmachine.EventMachine
-	inventory    *inventory.Inventory
-	keeper       thingKeeper
-	seenThings   map[string]time.Time
+type Server struct {
+	lights     *lights.Lights
+	inventory  *inventory.Inventory
+	keeper     thingKeeper
+	seenThings map[string]time.Time
 }
 
 type thingKeeper map[string]map[string]string
 
-// NewServer returns a new telemetryServer.
-func NewServer(inv *inventory.Inventory, eventMachine *eventmachine.EventMachine) (*telemetryServer, error) {
-	s := &telemetryServer{
-		eventMachine: eventMachine,
-		inventory:    inv,
-		keeper:       make(thingKeeper),
-		seenThings:   make(map[string]time.Time),
+// NewServer returns a new Server.
+func NewServer(inv *inventory.Inventory, lig *lights.Lights) (*Server, error) {
+	s := &Server{
+		lights:     lig,
+		inventory:  inv,
+		keeper:     make(thingKeeper),
+		seenThings: make(map[string]time.Time),
 	}
 
-	go func(s *telemetryServer) {
+	go func(s *Server) {
 		for {
 			// Make a copy
 			tMap := make(map[string]time.Time)
@@ -68,7 +68,7 @@ func NewServer(inv *inventory.Inventory, eventMachine *eventmachine.EventMachine
 }
 
 // storeThingLabel records the received key/value pair for the given node ID.
-func (l *telemetryServer) storeThingLabel(nodeID string, key, value string) {
+func (l *Server) storeThingLabel(nodeID string, key, value string) {
 	if len(l.keeper) == 0 {
 		l.keeper = make(thingKeeper)
 	}
@@ -82,7 +82,7 @@ func (l *telemetryServer) storeThingLabel(nodeID string, key, value string) {
 	}
 }
 
-func (l *telemetryServer) nodeLabels(nodeID string) map[string]string {
+func (l *Server) nodeLabels(nodeID string) map[string]string {
 	if nodeLabelMap, ok := l.keeper[nodeID]; ok {
 		return nodeLabelMap
 	}
@@ -91,7 +91,7 @@ func (l *telemetryServer) nodeLabels(nodeID string) map[string]string {
 }
 
 // hasLabels checks to see if the keeper has all of the received labels for the given node ID.
-func (l *telemetryServer) hasLabels(nodeID string, labels []string) bool {
+func (l *Server) hasLabels(nodeID string, labels []string) bool {
 	nodeLabels := l.nodeLabels(nodeID)
 
 	nodeHasLabel := func(nodeLabels map[string]string, label string) bool {
@@ -114,7 +114,7 @@ func (l *telemetryServer) hasLabels(nodeID string, labels []string) bool {
 	return true
 }
 
-func (l *telemetryServer) findMACs(macs []string) (*[]inventory.NetworkHost, *[]inventory.NetworkID, error) {
+func (l *Server) findMACs(macs []string) (*[]inventory.NetworkHost, *[]inventory.NetworkID, error) {
 	var keepHosts []inventory.NetworkHost
 	var keepIds []inventory.NetworkID
 
@@ -159,7 +159,7 @@ func (l *telemetryServer) findMACs(macs []string) (*[]inventory.NetworkHost, *[]
 	return &keepHosts, &keepIds, nil
 }
 
-func (l *telemetryServer) ReportNetworkID(ctx context.Context, request *inventory.NetworkID) (*inventory.Empty, error) {
+func (l *Server) ReportNetworkID(ctx context.Context, request *inventory.NetworkID) (*inventory.Empty, error) {
 	log.WithFields(log.Fields{
 		"name":                       request.Name,
 		"ip_address":                 request.IpAddress,
@@ -237,7 +237,7 @@ func (l *telemetryServer) ReportNetworkID(ctx context.Context, request *inventor
 	return &inventory.Empty{}, nil
 }
 
-func (l *telemetryServer) ReportIOTDevice(ctx context.Context, request *inventory.IOTDevice) (*inventory.Empty, error) {
+func (l *Server) ReportIOTDevice(ctx context.Context, request *inventory.IOTDevice) (*inventory.Empty, error) {
 
 	var err error
 
@@ -306,7 +306,7 @@ func (l *telemetryServer) ReportIOTDevice(ctx context.Context, request *inventor
 	return &inventory.Empty{}, nil
 }
 
-func (l *telemetryServer) handleZigbeeReport(request *inventory.IOTDevice) error {
+func (l *Server) handleZigbeeReport(request *inventory.IOTDevice) error {
 	if request == nil {
 		return fmt.Errorf("unable to read zigbee report from nil request")
 	}
@@ -396,13 +396,13 @@ func (l *telemetryServer) handleZigbeeReport(request *inventory.IOTDevice) error
 			}
 
 			if m.Click != "" {
-				ev := iot.Click{
+				click := &iot.Click{
 					Count:  m.Click,
 					Device: x.Name,
 					Zone:   result.IotZone,
 				}
 
-				err = l.eventMachine.Send(ev)
+				err = l.lights.ClickHandler(click)
 				if err != nil {
 					log.Error(err)
 				}
@@ -413,7 +413,7 @@ func (l *telemetryServer) handleZigbeeReport(request *inventory.IOTDevice) error
 	return nil
 }
 
-func (l *telemetryServer) handleLEDReport(request *inventory.IOTDevice) error {
+func (l *Server) handleLEDReport(request *inventory.IOTDevice) error {
 	if request == nil {
 		return fmt.Errorf("unable to read led report from nil request")
 	}
@@ -438,7 +438,7 @@ func (l *telemetryServer) handleLEDReport(request *inventory.IOTDevice) error {
 	return nil
 }
 
-func (l *telemetryServer) handleWaterReport(request *inventory.IOTDevice) error {
+func (l *Server) handleWaterReport(request *inventory.IOTDevice) error {
 	if request == nil {
 		return fmt.Errorf("unable to read water report from nil request")
 	}
@@ -461,7 +461,7 @@ func (l *telemetryServer) handleWaterReport(request *inventory.IOTDevice) error 
 	return nil
 }
 
-func (l *telemetryServer) handleAirReport(request *inventory.IOTDevice) error {
+func (l *Server) handleAirReport(request *inventory.IOTDevice) error {
 	if request == nil {
 		return fmt.Errorf("unable to read air report from nil request")
 	}
@@ -493,7 +493,7 @@ func (l *telemetryServer) handleAirReport(request *inventory.IOTDevice) error {
 	return nil
 }
 
-func (l *telemetryServer) handleWifiReport(request *inventory.IOTDevice) error {
+func (l *Server) handleWifiReport(request *inventory.IOTDevice) error {
 	if request == nil {
 		return fmt.Errorf("unable to read wifi report from nil request")
 	}
