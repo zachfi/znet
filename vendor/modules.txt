@@ -12,8 +12,6 @@ github.com/alecthomas/template/parse
 github.com/alecthomas/units
 # github.com/amimof/huego v1.1.0
 github.com/amimof/huego
-# github.com/asaskevich/govalidator v0.0.0-20200907205600-7a23bdc65eef
-github.com/asaskevich/govalidator
 # github.com/beorn7/perks v1.0.1
 github.com/beorn7/perks/quantile
 # github.com/blang/semver/v4 v4.0.0
@@ -92,12 +90,6 @@ github.com/go-git/go-git/v5/utils/merkletrie/internal/frame
 github.com/go-git/go-git/v5/utils/merkletrie/noder
 # github.com/go-ldap/ldap/v3 v3.2.4
 github.com/go-ldap/ldap/v3
-# github.com/go-openapi/errors v0.19.6
-github.com/go-openapi/errors
-# github.com/go-openapi/strfmt v0.19.5
-github.com/go-openapi/strfmt
-# github.com/go-stack/stack v1.8.0
-github.com/go-stack/stack
 # github.com/golang/protobuf v1.4.3
 github.com/golang/protobuf/proto
 github.com/golang/protobuf/ptypes
@@ -146,9 +138,6 @@ github.com/imdario/mergo
 github.com/inconshreveable/mousetrap
 # github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99
 github.com/jbenet/go-context/io
-# github.com/jedib0t/go-pretty v4.3.0+incompatible
-github.com/jedib0t/go-pretty/table
-github.com/jedib0t/go-pretty/text
 # github.com/johanbrandhorst/certify v1.8.1
 github.com/johanbrandhorst/certify
 github.com/johanbrandhorst/certify/internal/csr
@@ -162,8 +151,6 @@ github.com/kballard/go-shellquote
 github.com/kevinburke/ssh_config
 # github.com/magiconair/properties v1.8.4
 github.com/magiconair/properties
-# github.com/mattn/go-runewidth v0.0.9
-github.com/mattn/go-runewidth
 # github.com/matttproud/golang_protobuf_extensions v1.0.1
 github.com/matttproud/golang_protobuf_extensions/pbutil
 # github.com/mitchellh/go-homedir v1.1.0
@@ -238,14 +225,6 @@ github.com/xanzy/ssh-agent
 github.com/xaque208/rftoy/rftoy
 # github.com/ziutek/telnet v0.0.0-20180329124119-c3b780dc415b
 github.com/ziutek/telnet
-# go.mongodb.org/mongo-driver v1.4.2
-go.mongodb.org/mongo-driver/bson
-go.mongodb.org/mongo-driver/bson/bsoncodec
-go.mongodb.org/mongo-driver/bson/bsonoptions
-go.mongodb.org/mongo-driver/bson/bsonrw
-go.mongodb.org/mongo-driver/bson/bsontype
-go.mongodb.org/mongo-driver/bson/primitive
-go.mongodb.org/mongo-driver/x/bsonx/bsoncore
 # golang.org/x/crypto v0.0.0-20201117144127-c1f2f97bffc9
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/cast5
