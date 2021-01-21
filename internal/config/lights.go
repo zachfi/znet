@@ -10,7 +10,7 @@ type LightsConfig struct {
 	PartyColors []string     `yaml:"party_colors,omitempty"`
 }
 
-// LightRoom is a collection of device entries.
+// LightsRoom is a collection of device entries.
 type LightsRoom struct {
 	Name   string `yaml:"name"`
 	IDs    []int  `yaml:"ids"`
