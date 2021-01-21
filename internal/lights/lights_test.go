@@ -15,29 +15,44 @@ func TestAlert(t *testing.T) {
 		handlers: []Handler{h},
 	}
 
-	groupName := &LightGroup{
+	groupName := &LightGroupRequest{
 		Name: "dungeon",
 	}
 	ctx := context.Background()
 
-	l.On(ctx, groupName)
+	_, err := l.On(ctx, groupName)
+	require.NoError(t, err)
 	require.Equal(t, 1, h.onCalls)
 
-	l.Off(ctx, groupName)
+	_, err = l.Off(ctx, groupName)
+	require.NoError(t, err)
 	require.Equal(t, 1, h.offCalls)
 
-	l.Alert(ctx, groupName)
+	_, err = l.Alert(ctx, groupName)
+	require.NoError(t, err)
 	require.Equal(t, 1, h.alertCalls)
 
-	l.Dim(ctx, groupName)
+	_, err = l.Dim(ctx, groupName)
+	require.NoError(t, err)
 	require.Equal(t, 1, h.dimCalls)
 
-	l.SetColor(ctx, groupName)
+	_, err = l.SetColor(ctx, groupName)
+	require.Error(t, err)
+	require.Equal(t, 0, h.setColorCalls)
+	groupName.Color = "#ffffff"
+	_, err = l.SetColor(ctx, groupName)
+	require.NoError(t, err)
 	require.Equal(t, 1, h.setColorCalls)
 
-	l.Toggle(ctx, groupName)
+	_, err = l.Toggle(ctx, groupName)
+	require.NoError(t, err)
 	require.Equal(t, 1, h.toggleCalls)
 
-	l.RandomColor(ctx, groupName)
-	require.Equal(t, 1, h.randomColorCalls)
+	_, err = l.RandomColor(ctx, groupName)
+	require.Error(t, err)
+	require.Equal(t, 0, h.randomColorCalls)
+	groupName.Colors = []string{"#ffffff"}
+	_, err = l.RandomColor(ctx, groupName)
+	require.NoError(t, err)
+	require.Equal(t, 1, h.setColorCalls)
 }
