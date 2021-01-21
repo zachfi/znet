@@ -24,19 +24,24 @@ message Light {
   State state = 4;
 }
 
-message LightRequest {}
+message LightGroupRequest {
+  string name = 1;
+  string color = 2;
+  repeated string colors = 3;
+}
 
 message LightResponse {
   repeated Light lights = 1;
   repeated LightGroup groups = 2;
 }
 
-
 service Lights {
-  rpc Alert(LightGroup) returns (LightResponse);
-  rpc Brightness(LightGroup) returns (LightResponse);
-  rpc Off(LightGroup) returns (LightResponse);
-  rpc On(LightGroup) returns (LightResponse);
-  rpc Status(LightRequest) returns (LightResponse);
+  rpc Alert(LightGroupRequest) returns (LightResponse);
+  rpc Dim(LightGroupRequest) returns (LightResponse);
+  rpc Off(LightGroupRequest) returns (LightResponse);
+  rpc On(LightGroupRequest) returns (LightResponse);
+  rpc RandomColor(LightGroupRequest) returns (LightResponse);
+  rpc SetColor(LightGroupRequest) returns (LightResponse);
+  rpc Toggle(LightGroupRequest) returns (LightResponse);
 }
 

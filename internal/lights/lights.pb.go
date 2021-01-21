@@ -234,14 +234,18 @@ func (x *Light) GetState() *State {
 	return nil
 }
 
-type LightRequest struct {
+type LightGroupRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
+
+	Name   string   `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Color  string   `protobuf:"bytes,2,opt,name=color,proto3" json:"color,omitempty"`
+	Colors []string `protobuf:"bytes,3,rep,name=colors,proto3" json:"colors,omitempty"`
 }
 
-func (x *LightRequest) Reset() {
-	*x = LightRequest{}
+func (x *LightGroupRequest) Reset() {
+	*x = LightGroupRequest{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_internal_lights_lights_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -249,13 +253,13 @@ func (x *LightRequest) Reset() {
 	}
 }
 
-func (x *LightRequest) String() string {
+func (x *LightGroupRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*LightRequest) ProtoMessage() {}
+func (*LightGroupRequest) ProtoMessage() {}
 
-func (x *LightRequest) ProtoReflect() protoreflect.Message {
+func (x *LightGroupRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_internal_lights_lights_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -267,9 +271,30 @@ func (x *LightRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use LightRequest.ProtoReflect.Descriptor instead.
-func (*LightRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use LightGroupRequest.ProtoReflect.Descriptor instead.
+func (*LightGroupRequest) Descriptor() ([]byte, []int) {
 	return file_internal_lights_lights_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *LightGroupRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *LightGroupRequest) GetColor() string {
+	if x != nil {
+		return x.Color
+	}
+	return ""
+}
+
+func (x *LightGroupRequest) GetColors() []string {
+	if x != nil {
+		return x.Colors
+	}
+	return nil
 }
 
 type LightResponse struct {
@@ -350,30 +375,44 @@ var file_internal_lights_lights_proto_rawDesc = []byte{
 	0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04,
 	0x6e, 0x61, 0x6d, 0x65, 0x12, 0x23, 0x0a, 0x05, 0x73, 0x74, 0x61, 0x74, 0x65, 0x18, 0x04, 0x20,
 	0x01, 0x28, 0x0b, 0x32, 0x0d, 0x2e, 0x6c, 0x69, 0x67, 0x68, 0x74, 0x73, 0x2e, 0x53, 0x74, 0x61,
-	0x74, 0x65, 0x52, 0x05, 0x73, 0x74, 0x61, 0x74, 0x65, 0x22, 0x0e, 0x0a, 0x0c, 0x4c, 0x69, 0x67,
-	0x68, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x22, 0x62, 0x0a, 0x0d, 0x4c, 0x69, 0x67,
-	0x68, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x25, 0x0a, 0x06, 0x6c, 0x69,
-	0x67, 0x68, 0x74, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x0d, 0x2e, 0x6c, 0x69, 0x67,
-	0x68, 0x74, 0x73, 0x2e, 0x4c, 0x69, 0x67, 0x68, 0x74, 0x52, 0x06, 0x6c, 0x69, 0x67, 0x68, 0x74,
-	0x73, 0x12, 0x2a, 0x0a, 0x06, 0x67, 0x72, 0x6f, 0x75, 0x70, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28,
-	0x0b, 0x32, 0x12, 0x2e, 0x6c, 0x69, 0x67, 0x68, 0x74, 0x73, 0x2e, 0x4c, 0x69, 0x67, 0x68, 0x74,
-	0x47, 0x72, 0x6f, 0x75, 0x70, 0x52, 0x06, 0x67, 0x72, 0x6f, 0x75, 0x70, 0x73, 0x32, 0x8f, 0x02,
-	0x0a, 0x06, 0x4c, 0x69, 0x67, 0x68, 0x74, 0x73, 0x12, 0x32, 0x0a, 0x05, 0x41, 0x6c, 0x65, 0x72,
-	0x74, 0x12, 0x12, 0x2e, 0x6c, 0x69, 0x67, 0x68, 0x74, 0x73, 0x2e, 0x4c, 0x69, 0x67, 0x68, 0x74,
-	0x47, 0x72, 0x6f, 0x75, 0x70, 0x1a, 0x15, 0x2e, 0x6c, 0x69, 0x67, 0x68, 0x74, 0x73, 0x2e, 0x4c,
-	0x69, 0x67, 0x68, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x37, 0x0a, 0x0a,
-	0x42, 0x72, 0x69, 0x67, 0x68, 0x74, 0x6e, 0x65, 0x73, 0x73, 0x12, 0x12, 0x2e, 0x6c, 0x69, 0x67,
-	0x68, 0x74, 0x73, 0x2e, 0x4c, 0x69, 0x67, 0x68, 0x74, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x1a, 0x15,
+	0x74, 0x65, 0x52, 0x05, 0x73, 0x74, 0x61, 0x74, 0x65, 0x22, 0x55, 0x0a, 0x11, 0x4c, 0x69, 0x67,
+	0x68, 0x74, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x12,
+	0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61,
+	0x6d, 0x65, 0x12, 0x14, 0x0a, 0x05, 0x63, 0x6f, 0x6c, 0x6f, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x05, 0x63, 0x6f, 0x6c, 0x6f, 0x72, 0x12, 0x16, 0x0a, 0x06, 0x63, 0x6f, 0x6c, 0x6f,
+	0x72, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x09, 0x52, 0x06, 0x63, 0x6f, 0x6c, 0x6f, 0x72, 0x73,
+	0x22, 0x62, 0x0a, 0x0d, 0x4c, 0x69, 0x67, 0x68, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x12, 0x25, 0x0a, 0x06, 0x6c, 0x69, 0x67, 0x68, 0x74, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28,
+	0x0b, 0x32, 0x0d, 0x2e, 0x6c, 0x69, 0x67, 0x68, 0x74, 0x73, 0x2e, 0x4c, 0x69, 0x67, 0x68, 0x74,
+	0x52, 0x06, 0x6c, 0x69, 0x67, 0x68, 0x74, 0x73, 0x12, 0x2a, 0x0a, 0x06, 0x67, 0x72, 0x6f, 0x75,
+	0x70, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x12, 0x2e, 0x6c, 0x69, 0x67, 0x68, 0x74,
+	0x73, 0x2e, 0x4c, 0x69, 0x67, 0x68, 0x74, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x52, 0x06, 0x67, 0x72,
+	0x6f, 0x75, 0x70, 0x73, 0x32, 0xa8, 0x03, 0x0a, 0x06, 0x4c, 0x69, 0x67, 0x68, 0x74, 0x73, 0x12,
+	0x39, 0x0a, 0x05, 0x41, 0x6c, 0x65, 0x72, 0x74, 0x12, 0x19, 0x2e, 0x6c, 0x69, 0x67, 0x68, 0x74,
+	0x73, 0x2e, 0x4c, 0x69, 0x67, 0x68, 0x74, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x52, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x1a, 0x15, 0x2e, 0x6c, 0x69, 0x67, 0x68, 0x74, 0x73, 0x2e, 0x4c, 0x69, 0x67,
+	0x68, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x37, 0x0a, 0x03, 0x44, 0x69,
+	0x6d, 0x12, 0x19, 0x2e, 0x6c, 0x69, 0x67, 0x68, 0x74, 0x73, 0x2e, 0x4c, 0x69, 0x67, 0x68, 0x74,
+	0x47, 0x72, 0x6f, 0x75, 0x70, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x15, 0x2e, 0x6c,
+	0x69, 0x67, 0x68, 0x74, 0x73, 0x2e, 0x4c, 0x69, 0x67, 0x68, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f,
+	0x6e, 0x73, 0x65, 0x12, 0x37, 0x0a, 0x03, 0x4f, 0x66, 0x66, 0x12, 0x19, 0x2e, 0x6c, 0x69, 0x67,
+	0x68, 0x74, 0x73, 0x2e, 0x4c, 0x69, 0x67, 0x68, 0x74, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x52, 0x65,
+	0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x15, 0x2e, 0x6c, 0x69, 0x67, 0x68, 0x74, 0x73, 0x2e, 0x4c,
+	0x69, 0x67, 0x68, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x36, 0x0a, 0x02,
+	0x4f, 0x6e, 0x12, 0x19, 0x2e, 0x6c, 0x69, 0x67, 0x68, 0x74, 0x73, 0x2e, 0x4c, 0x69, 0x67, 0x68,
+	0x74, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x15, 0x2e,
+	0x6c, 0x69, 0x67, 0x68, 0x74, 0x73, 0x2e, 0x4c, 0x69, 0x67, 0x68, 0x74, 0x52, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x12, 0x3f, 0x0a, 0x0b, 0x52, 0x61, 0x6e, 0x64, 0x6f, 0x6d, 0x43, 0x6f,
+	0x6c, 0x6f, 0x72, 0x12, 0x19, 0x2e, 0x6c, 0x69, 0x67, 0x68, 0x74, 0x73, 0x2e, 0x4c, 0x69, 0x67,
+	0x68, 0x74, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x15,
 	0x2e, 0x6c, 0x69, 0x67, 0x68, 0x74, 0x73, 0x2e, 0x4c, 0x69, 0x67, 0x68, 0x74, 0x52, 0x65, 0x73,
-	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x30, 0x0a, 0x03, 0x4f, 0x66, 0x66, 0x12, 0x12, 0x2e, 0x6c,
-	0x69, 0x67, 0x68, 0x74, 0x73, 0x2e, 0x4c, 0x69, 0x67, 0x68, 0x74, 0x47, 0x72, 0x6f, 0x75, 0x70,
-	0x1a, 0x15, 0x2e, 0x6c, 0x69, 0x67, 0x68, 0x74, 0x73, 0x2e, 0x4c, 0x69, 0x67, 0x68, 0x74, 0x52,
-	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2f, 0x0a, 0x02, 0x4f, 0x6e, 0x12, 0x12, 0x2e,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x3c, 0x0a, 0x08, 0x53, 0x65, 0x74, 0x43, 0x6f, 0x6c, 0x6f,
+	0x72, 0x12, 0x19, 0x2e, 0x6c, 0x69, 0x67, 0x68, 0x74, 0x73, 0x2e, 0x4c, 0x69, 0x67, 0x68, 0x74,
+	0x47, 0x72, 0x6f, 0x75, 0x70, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x15, 0x2e, 0x6c,
+	0x69, 0x67, 0x68, 0x74, 0x73, 0x2e, 0x4c, 0x69, 0x67, 0x68, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f,
+	0x6e, 0x73, 0x65, 0x12, 0x3a, 0x0a, 0x06, 0x54, 0x6f, 0x67, 0x67, 0x6c, 0x65, 0x12, 0x19, 0x2e,
 	0x6c, 0x69, 0x67, 0x68, 0x74, 0x73, 0x2e, 0x4c, 0x69, 0x67, 0x68, 0x74, 0x47, 0x72, 0x6f, 0x75,
-	0x70, 0x1a, 0x15, 0x2e, 0x6c, 0x69, 0x67, 0x68, 0x74, 0x73, 0x2e, 0x4c, 0x69, 0x67, 0x68, 0x74,
-	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x35, 0x0a, 0x06, 0x53, 0x74, 0x61, 0x74,
-	0x75, 0x73, 0x12, 0x14, 0x2e, 0x6c, 0x69, 0x67, 0x68, 0x74, 0x73, 0x2e, 0x4c, 0x69, 0x67, 0x68,
-	0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x15, 0x2e, 0x6c, 0x69, 0x67, 0x68, 0x74,
+	0x70, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x15, 0x2e, 0x6c, 0x69, 0x67, 0x68, 0x74,
 	0x73, 0x2e, 0x4c, 0x69, 0x67, 0x68, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42,
 	0x11, 0x5a, 0x0f, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x2f, 0x6c, 0x69, 0x67, 0x68,
 	0x74, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
@@ -393,32 +432,36 @@ func file_internal_lights_lights_proto_rawDescGZIP() []byte {
 
 var file_internal_lights_lights_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_internal_lights_lights_proto_goTypes = []interface{}{
-	(*State)(nil),         // 0: lights.State
-	(*LightGroup)(nil),    // 1: lights.LightGroup
-	(*Light)(nil),         // 2: lights.Light
-	(*LightRequest)(nil),  // 3: lights.LightRequest
-	(*LightResponse)(nil), // 4: lights.LightResponse
+	(*State)(nil),             // 0: lights.State
+	(*LightGroup)(nil),        // 1: lights.LightGroup
+	(*Light)(nil),             // 2: lights.Light
+	(*LightGroupRequest)(nil), // 3: lights.LightGroupRequest
+	(*LightResponse)(nil),     // 4: lights.LightResponse
 }
 var file_internal_lights_lights_proto_depIdxs = []int32{
-	0, // 0: lights.LightGroup.state:type_name -> lights.State
-	0, // 1: lights.Light.state:type_name -> lights.State
-	2, // 2: lights.LightResponse.lights:type_name -> lights.Light
-	1, // 3: lights.LightResponse.groups:type_name -> lights.LightGroup
-	1, // 4: lights.Lights.Alert:input_type -> lights.LightGroup
-	1, // 5: lights.Lights.Brightness:input_type -> lights.LightGroup
-	1, // 6: lights.Lights.Off:input_type -> lights.LightGroup
-	1, // 7: lights.Lights.On:input_type -> lights.LightGroup
-	3, // 8: lights.Lights.Status:input_type -> lights.LightRequest
-	4, // 9: lights.Lights.Alert:output_type -> lights.LightResponse
-	4, // 10: lights.Lights.Brightness:output_type -> lights.LightResponse
-	4, // 11: lights.Lights.Off:output_type -> lights.LightResponse
-	4, // 12: lights.Lights.On:output_type -> lights.LightResponse
-	4, // 13: lights.Lights.Status:output_type -> lights.LightResponse
-	9, // [9:14] is the sub-list for method output_type
-	4, // [4:9] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	0,  // 0: lights.LightGroup.state:type_name -> lights.State
+	0,  // 1: lights.Light.state:type_name -> lights.State
+	2,  // 2: lights.LightResponse.lights:type_name -> lights.Light
+	1,  // 3: lights.LightResponse.groups:type_name -> lights.LightGroup
+	3,  // 4: lights.Lights.Alert:input_type -> lights.LightGroupRequest
+	3,  // 5: lights.Lights.Dim:input_type -> lights.LightGroupRequest
+	3,  // 6: lights.Lights.Off:input_type -> lights.LightGroupRequest
+	3,  // 7: lights.Lights.On:input_type -> lights.LightGroupRequest
+	3,  // 8: lights.Lights.RandomColor:input_type -> lights.LightGroupRequest
+	3,  // 9: lights.Lights.SetColor:input_type -> lights.LightGroupRequest
+	3,  // 10: lights.Lights.Toggle:input_type -> lights.LightGroupRequest
+	4,  // 11: lights.Lights.Alert:output_type -> lights.LightResponse
+	4,  // 12: lights.Lights.Dim:output_type -> lights.LightResponse
+	4,  // 13: lights.Lights.Off:output_type -> lights.LightResponse
+	4,  // 14: lights.Lights.On:output_type -> lights.LightResponse
+	4,  // 15: lights.Lights.RandomColor:output_type -> lights.LightResponse
+	4,  // 16: lights.Lights.SetColor:output_type -> lights.LightResponse
+	4,  // 17: lights.Lights.Toggle:output_type -> lights.LightResponse
+	11, // [11:18] is the sub-list for method output_type
+	4,  // [4:11] is the sub-list for method input_type
+	4,  // [4:4] is the sub-list for extension type_name
+	4,  // [4:4] is the sub-list for extension extendee
+	0,  // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_internal_lights_lights_proto_init() }
@@ -464,7 +507,7 @@ func file_internal_lights_lights_proto_init() {
 			}
 		}
 		file_internal_lights_lights_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*LightRequest); i {
+			switch v := v.(*LightGroupRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -520,11 +563,13 @@ const _ = grpc.SupportPackageIsVersion6
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type LightsClient interface {
-	Alert(ctx context.Context, in *LightGroup, opts ...grpc.CallOption) (*LightResponse, error)
-	Brightness(ctx context.Context, in *LightGroup, opts ...grpc.CallOption) (*LightResponse, error)
-	Off(ctx context.Context, in *LightGroup, opts ...grpc.CallOption) (*LightResponse, error)
-	On(ctx context.Context, in *LightGroup, opts ...grpc.CallOption) (*LightResponse, error)
-	Status(ctx context.Context, in *LightRequest, opts ...grpc.CallOption) (*LightResponse, error)
+	Alert(ctx context.Context, in *LightGroupRequest, opts ...grpc.CallOption) (*LightResponse, error)
+	Dim(ctx context.Context, in *LightGroupRequest, opts ...grpc.CallOption) (*LightResponse, error)
+	Off(ctx context.Context, in *LightGroupRequest, opts ...grpc.CallOption) (*LightResponse, error)
+	On(ctx context.Context, in *LightGroupRequest, opts ...grpc.CallOption) (*LightResponse, error)
+	RandomColor(ctx context.Context, in *LightGroupRequest, opts ...grpc.CallOption) (*LightResponse, error)
+	SetColor(ctx context.Context, in *LightGroupRequest, opts ...grpc.CallOption) (*LightResponse, error)
+	Toggle(ctx context.Context, in *LightGroupRequest, opts ...grpc.CallOption) (*LightResponse, error)
 }
 
 type lightsClient struct {
@@ -535,7 +580,7 @@ func NewLightsClient(cc grpc.ClientConnInterface) LightsClient {
 	return &lightsClient{cc}
 }
 
-func (c *lightsClient) Alert(ctx context.Context, in *LightGroup, opts ...grpc.CallOption) (*LightResponse, error) {
+func (c *lightsClient) Alert(ctx context.Context, in *LightGroupRequest, opts ...grpc.CallOption) (*LightResponse, error) {
 	out := new(LightResponse)
 	err := c.cc.Invoke(ctx, "/lights.Lights/Alert", in, out, opts...)
 	if err != nil {
@@ -544,16 +589,16 @@ func (c *lightsClient) Alert(ctx context.Context, in *LightGroup, opts ...grpc.C
 	return out, nil
 }
 
-func (c *lightsClient) Brightness(ctx context.Context, in *LightGroup, opts ...grpc.CallOption) (*LightResponse, error) {
+func (c *lightsClient) Dim(ctx context.Context, in *LightGroupRequest, opts ...grpc.CallOption) (*LightResponse, error) {
 	out := new(LightResponse)
-	err := c.cc.Invoke(ctx, "/lights.Lights/Brightness", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/lights.Lights/Dim", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *lightsClient) Off(ctx context.Context, in *LightGroup, opts ...grpc.CallOption) (*LightResponse, error) {
+func (c *lightsClient) Off(ctx context.Context, in *LightGroupRequest, opts ...grpc.CallOption) (*LightResponse, error) {
 	out := new(LightResponse)
 	err := c.cc.Invoke(ctx, "/lights.Lights/Off", in, out, opts...)
 	if err != nil {
@@ -562,7 +607,7 @@ func (c *lightsClient) Off(ctx context.Context, in *LightGroup, opts ...grpc.Cal
 	return out, nil
 }
 
-func (c *lightsClient) On(ctx context.Context, in *LightGroup, opts ...grpc.CallOption) (*LightResponse, error) {
+func (c *lightsClient) On(ctx context.Context, in *LightGroupRequest, opts ...grpc.CallOption) (*LightResponse, error) {
 	out := new(LightResponse)
 	err := c.cc.Invoke(ctx, "/lights.Lights/On", in, out, opts...)
 	if err != nil {
@@ -571,9 +616,27 @@ func (c *lightsClient) On(ctx context.Context, in *LightGroup, opts ...grpc.Call
 	return out, nil
 }
 
-func (c *lightsClient) Status(ctx context.Context, in *LightRequest, opts ...grpc.CallOption) (*LightResponse, error) {
+func (c *lightsClient) RandomColor(ctx context.Context, in *LightGroupRequest, opts ...grpc.CallOption) (*LightResponse, error) {
 	out := new(LightResponse)
-	err := c.cc.Invoke(ctx, "/lights.Lights/Status", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/lights.Lights/RandomColor", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *lightsClient) SetColor(ctx context.Context, in *LightGroupRequest, opts ...grpc.CallOption) (*LightResponse, error) {
+	out := new(LightResponse)
+	err := c.cc.Invoke(ctx, "/lights.Lights/SetColor", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *lightsClient) Toggle(ctx context.Context, in *LightGroupRequest, opts ...grpc.CallOption) (*LightResponse, error) {
+	out := new(LightResponse)
+	err := c.cc.Invoke(ctx, "/lights.Lights/Toggle", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -582,31 +645,39 @@ func (c *lightsClient) Status(ctx context.Context, in *LightRequest, opts ...grp
 
 // LightsServer is the server API for Lights service.
 type LightsServer interface {
-	Alert(context.Context, *LightGroup) (*LightResponse, error)
-	Brightness(context.Context, *LightGroup) (*LightResponse, error)
-	Off(context.Context, *LightGroup) (*LightResponse, error)
-	On(context.Context, *LightGroup) (*LightResponse, error)
-	Status(context.Context, *LightRequest) (*LightResponse, error)
+	Alert(context.Context, *LightGroupRequest) (*LightResponse, error)
+	Dim(context.Context, *LightGroupRequest) (*LightResponse, error)
+	Off(context.Context, *LightGroupRequest) (*LightResponse, error)
+	On(context.Context, *LightGroupRequest) (*LightResponse, error)
+	RandomColor(context.Context, *LightGroupRequest) (*LightResponse, error)
+	SetColor(context.Context, *LightGroupRequest) (*LightResponse, error)
+	Toggle(context.Context, *LightGroupRequest) (*LightResponse, error)
 }
 
 // UnimplementedLightsServer can be embedded to have forward compatible implementations.
 type UnimplementedLightsServer struct {
 }
 
-func (*UnimplementedLightsServer) Alert(context.Context, *LightGroup) (*LightResponse, error) {
+func (*UnimplementedLightsServer) Alert(context.Context, *LightGroupRequest) (*LightResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Alert not implemented")
 }
-func (*UnimplementedLightsServer) Brightness(context.Context, *LightGroup) (*LightResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Brightness not implemented")
+func (*UnimplementedLightsServer) Dim(context.Context, *LightGroupRequest) (*LightResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Dim not implemented")
 }
-func (*UnimplementedLightsServer) Off(context.Context, *LightGroup) (*LightResponse, error) {
+func (*UnimplementedLightsServer) Off(context.Context, *LightGroupRequest) (*LightResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Off not implemented")
 }
-func (*UnimplementedLightsServer) On(context.Context, *LightGroup) (*LightResponse, error) {
+func (*UnimplementedLightsServer) On(context.Context, *LightGroupRequest) (*LightResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method On not implemented")
 }
-func (*UnimplementedLightsServer) Status(context.Context, *LightRequest) (*LightResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Status not implemented")
+func (*UnimplementedLightsServer) RandomColor(context.Context, *LightGroupRequest) (*LightResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RandomColor not implemented")
+}
+func (*UnimplementedLightsServer) SetColor(context.Context, *LightGroupRequest) (*LightResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetColor not implemented")
+}
+func (*UnimplementedLightsServer) Toggle(context.Context, *LightGroupRequest) (*LightResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Toggle not implemented")
 }
 
 func RegisterLightsServer(s *grpc.Server, srv LightsServer) {
@@ -614,7 +685,7 @@ func RegisterLightsServer(s *grpc.Server, srv LightsServer) {
 }
 
 func _Lights_Alert_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LightGroup)
+	in := new(LightGroupRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -626,31 +697,31 @@ func _Lights_Alert_Handler(srv interface{}, ctx context.Context, dec func(interf
 		FullMethod: "/lights.Lights/Alert",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LightsServer).Alert(ctx, req.(*LightGroup))
+		return srv.(LightsServer).Alert(ctx, req.(*LightGroupRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Lights_Brightness_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LightGroup)
+func _Lights_Dim_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LightGroupRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(LightsServer).Brightness(ctx, in)
+		return srv.(LightsServer).Dim(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/lights.Lights/Brightness",
+		FullMethod: "/lights.Lights/Dim",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LightsServer).Brightness(ctx, req.(*LightGroup))
+		return srv.(LightsServer).Dim(ctx, req.(*LightGroupRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Lights_Off_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LightGroup)
+	in := new(LightGroupRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -662,13 +733,13 @@ func _Lights_Off_Handler(srv interface{}, ctx context.Context, dec func(interfac
 		FullMethod: "/lights.Lights/Off",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LightsServer).Off(ctx, req.(*LightGroup))
+		return srv.(LightsServer).Off(ctx, req.(*LightGroupRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Lights_On_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LightGroup)
+	in := new(LightGroupRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -680,25 +751,61 @@ func _Lights_On_Handler(srv interface{}, ctx context.Context, dec func(interface
 		FullMethod: "/lights.Lights/On",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LightsServer).On(ctx, req.(*LightGroup))
+		return srv.(LightsServer).On(ctx, req.(*LightGroupRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Lights_Status_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LightRequest)
+func _Lights_RandomColor_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LightGroupRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(LightsServer).Status(ctx, in)
+		return srv.(LightsServer).RandomColor(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/lights.Lights/Status",
+		FullMethod: "/lights.Lights/RandomColor",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LightsServer).Status(ctx, req.(*LightRequest))
+		return srv.(LightsServer).RandomColor(ctx, req.(*LightGroupRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Lights_SetColor_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LightGroupRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LightsServer).SetColor(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/lights.Lights/SetColor",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LightsServer).SetColor(ctx, req.(*LightGroupRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Lights_Toggle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LightGroupRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LightsServer).Toggle(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/lights.Lights/Toggle",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LightsServer).Toggle(ctx, req.(*LightGroupRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -712,8 +819,8 @@ var _Lights_serviceDesc = grpc.ServiceDesc{
 			Handler:    _Lights_Alert_Handler,
 		},
 		{
-			MethodName: "Brightness",
-			Handler:    _Lights_Brightness_Handler,
+			MethodName: "Dim",
+			Handler:    _Lights_Dim_Handler,
 		},
 		{
 			MethodName: "Off",
@@ -724,8 +831,16 @@ var _Lights_serviceDesc = grpc.ServiceDesc{
 			Handler:    _Lights_On_Handler,
 		},
 		{
-			MethodName: "Status",
-			Handler:    _Lights_Status_Handler,
+			MethodName: "RandomColor",
+			Handler:    _Lights_RandomColor_Handler,
+		},
+		{
+			MethodName: "SetColor",
+			Handler:    _Lights_SetColor_Handler,
+		},
+		{
+			MethodName: "Toggle",
+			Handler:    _Lights_Toggle_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -74,7 +74,7 @@ func off(cmd *cobra.Command, args []string) {
 
 	lc := lights.NewLightsClient(conn)
 
-	req := &lights.LightGroup{
+	req := &lights.LightGroupRequest{
 		Name: roomName,
 	}
 

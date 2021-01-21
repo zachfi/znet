@@ -2,7 +2,6 @@ package lights
 
 import (
 	context "context"
-	"encoding/json"
 	"fmt"
 	"sort"
 
@@ -10,8 +9,6 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/xaque208/znet/internal/config"
-	"github.com/xaque208/znet/internal/timer"
-	"github.com/xaque208/znet/pkg/events"
 	"github.com/xaque208/znet/pkg/iot"
 )
 
@@ -47,40 +44,9 @@ func NewLights(cfg *config.Config) (*Lights, error) {
 	}, nil
 }
 
-// Subscriptions returns the data for mapping event names with functions.
-func (l *Lights) Subscriptions() *events.Subscriptions {
-	s := events.NewSubscriptions()
-
-	eventNames := []string{
-		"NamedTimer",
-		"Click",
-	}
-
-	for _, e := range eventNames {
-		switch e {
-		case "NamedTimer":
-			s.Subscribe(e, l.namedTimerHandler)
-
-			// f := &timer.EventFilter{}
-			// f.Name = append(f.Name, iot.EventNames...)
-			// s.Filter(e, f)
-		case "Click":
-			s.Subscribe(e, l.clickHandler)
-		}
-	}
-
-	return s
-}
-
-func (l *Lights) clickHandler(name string, payload events.Payload) error {
-	log.Tracef("Lights.clickHandler: %s : %+v", name, string(payload))
-
-	var e iot.Click
-
-	err := json.Unmarshal(payload, &e)
-	if err != nil {
-		return fmt.Errorf("failed to unmarshal %T: %s", e, err)
-	}
+func (l *Lights) ClickHandler(click *iot.Click) error {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	for _, room := range l.config.Rooms {
 		alert := false
@@ -94,13 +60,15 @@ func (l *Lights) clickHandler(name string, payload events.Payload) error {
 		hex := "#ffffff"
 		var brightness int32 = 254
 
-		if room.Name == e.Zone {
+		if room.Name == click.Zone {
 			log.WithFields(log.Fields{
 				"room_name": room.Name,
-				"name":      e.Zone,
-			}).Trace("using room")
+				"zone":      click.Zone,
+				"device":    click.Device,
+				"count":     click.Count,
+			}).Trace("clicking room")
 
-			switch e.Count {
+			switch click.Count {
 			case "single":
 				toggle = true
 			case "double":
@@ -117,38 +85,42 @@ func (l *Lights) clickHandler(name string, payload events.Payload) error {
 			case "many":
 				alert = true
 			default:
-				log.Warnf("unknown click event: %s", e.Count)
+				log.Debugf("unknown click event: %s", click.Count)
+			}
+
+			room := &LightGroupRequest{
+				Name: room.Name,
+			}
+
+			if toggle {
+				_, err := l.Toggle(ctx, room)
+				if err != nil {
+					log.Error(err)
+				}
+			}
+
+			if off {
+				_, err := l.Off(ctx, room)
+				if err != nil {
+					log.Error(err)
+				}
+			}
+
+			if on {
+				_, err := l.On(ctx, room)
+				if err != nil {
+					log.Error(err)
+				}
+			}
+
+			if alert {
+				_, err := l.Alert(ctx, room)
+				if err != nil {
+					log.Error(err)
+				}
 			}
 
 			for _, h := range l.handlers {
-				if toggle {
-					err := h.Toggle(room.Name)
-					if err != nil {
-						log.Error(err)
-					}
-				}
-
-				if off {
-					err := h.Off(room.Name)
-					if err != nil {
-						log.Error(err)
-					}
-				}
-
-				if on {
-					err := h.On(room.Name)
-					if err != nil {
-						log.Error(err)
-					}
-				}
-
-				if alert {
-					err := h.Alert(room.Name)
-					if err != nil {
-						log.Error(err)
-					}
-				}
-
 				if dim {
 					err := h.Dim(room.Name, brightness)
 					if err != nil {
@@ -161,7 +133,6 @@ func (l *Lights) clickHandler(name string, payload events.Payload) error {
 					if err != nil {
 						log.Error(err)
 					}
-
 				}
 
 				if party {
@@ -169,7 +140,6 @@ func (l *Lights) clickHandler(name string, payload events.Payload) error {
 					if err != nil {
 						log.Error(err)
 					}
-
 				}
 			}
 		}
@@ -178,7 +148,9 @@ func (l *Lights) clickHandler(name string, payload events.Payload) error {
 	return nil
 }
 
-// configuredEventNames is the collection of events that are configured in the lighting config.  This results in a
+// configuredEventNames is a collection of events that are configured in the
+// lighting config.  These event names determin all th epossible event names
+// that will be responded to.
 func (l *Lights) configuredEventNames() []string {
 
 	names := []string{}
@@ -197,14 +169,7 @@ func (l *Lights) configuredEventNames() []string {
 	return names
 }
 
-func (l *Lights) namedTimerHandler(name string, payload events.Payload) error {
-	var e timer.NamedTimer
-
-	err := json.Unmarshal(payload, &e)
-	if err != nil {
-		return fmt.Errorf("failed to unmarshal %T: %s", e, err)
-	}
-
+func (l *Lights) NamedTimerHandler(e string) error {
 	names := l.configuredEventNames()
 
 	configuredEvent := func(name string, names []string) bool {
@@ -214,18 +179,18 @@ func (l *Lights) namedTimerHandler(name string, payload events.Payload) error {
 			}
 		}
 		return false
-	}(e.Name, names)
+	}(e, names)
 
 	if !configuredEvent {
 		log.WithFields(log.Fields{
-			"name":            e.Name,
+			"name":            e,
 			"configuredNames": names,
 		}).Debug("unhandled lighting NamedTimer name")
 
 		return nil
 	}
 
-	l.SetRoomForEvent(e.Name)
+	l.SetRoomForEvent(e)
 
 	return nil
 }
@@ -266,22 +231,90 @@ func (l *Lights) SetRoomForEvent(name string) {
 	}
 }
 
-func (l *Lights) Off(ctx context.Context, req *LightGroup) (*LightResponse, error) {
-	return nil, nil
+// Alert calls Alert() on each handler.
+func (l *Lights) Alert(ctx context.Context, req *LightGroupRequest) (*LightResponse, error) {
+	for _, h := range l.handlers {
+		err := h.Alert(req.Name)
+		if err != nil {
+			log.Error(err)
+		}
+	}
+
+	return &LightResponse{}, nil
 }
 
-func (l *Lights) On(ctx context.Context, req *LightGroup) (*LightResponse, error) {
-	return nil, nil
+// Dim calls Dim() on each handler.
+func (l *Lights) Dim(ctx context.Context, req *LightGroupRequest) (*LightResponse, error) {
+	for _, h := range l.handlers {
+		err := h.Dim(req.Name, 110)
+		if err != nil {
+			log.Error(err)
+		}
+	}
+
+	return &LightResponse{}, nil
 }
 
-func (l *Lights) Status(ctx context.Context, req *LightRequest) (*LightResponse, error) {
-	return nil, nil
+// Off calls Off() on each handler.
+func (l *Lights) Off(ctx context.Context, req *LightGroupRequest) (*LightResponse, error) {
+	for _, h := range l.handlers {
+		err := h.Off(req.Name)
+		if err != nil {
+			log.Error(err)
+		}
+	}
+
+	return &LightResponse{}, nil
 }
 
-func (l *Lights) Brightness(ctx context.Context, req *LightGroup) (*LightResponse, error) {
-	return nil, nil
+// On calls On() on each handler.
+func (l *Lights) On(ctx context.Context, req *LightGroupRequest) (*LightResponse, error) {
+	for _, h := range l.handlers {
+		err := h.On(req.Name)
+		if err != nil {
+			log.Error(err)
+		}
+	}
+
+	return &LightResponse{}, nil
 }
 
-func (l *Lights) Alert(ctx context.Context, req *LightGroup) (*LightResponse, error) {
-	return nil, nil
+func (l *Lights) RandomColor(ctx context.Context, req *LightGroupRequest) (*LightResponse, error) {
+	if len(req.Colors) == 0 {
+		return nil, fmt.Errorf("request contained no colors to select from")
+	}
+	for _, h := range l.handlers {
+		err := h.On(req.Name)
+		if err != nil {
+			log.Error(err)
+		}
+	}
+
+	return &LightResponse{}, nil
+}
+
+func (l *Lights) SetColor(ctx context.Context, req *LightGroupRequest) (*LightResponse, error) {
+	if req.Color == "" {
+		return nil, fmt.Errorf("request missing color spec")
+	}
+
+	for _, h := range l.handlers {
+		err := h.SetColor(req.Name, req.Color)
+		if err != nil {
+			log.Error(err)
+		}
+	}
+
+	return &LightResponse{}, nil
+}
+
+func (l *Lights) Toggle(ctx context.Context, req *LightGroupRequest) (*LightResponse, error) {
+	for _, h := range l.handlers {
+		err := h.Toggle(req.Name)
+		if err != nil {
+			log.Error(err)
+		}
+	}
+
+	return &LightResponse{}, nil
 }

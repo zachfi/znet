@@ -42,12 +42,12 @@ func (l zigbeeLight) Toggle(groupName string) error {
 		return err
 	}
 
-	for _, d := range *devices {
-		if d.IotZone != groupName {
+	for i := range *devices {
+		if (*devices)[i].IotZone != groupName {
 			continue
 		}
 
-		topic := fmt.Sprintf("zigbee2mqtt/%s/set", d.Name)
+		topic := fmt.Sprintf("zigbee2mqtt/%s/set", (*devices)[i].Name)
 		message := map[string]interface{}{
 			"state":      "TOGGLE",
 			"transition": 0.5,
@@ -71,12 +71,12 @@ func (l zigbeeLight) Alert(groupName string) error {
 		return err
 	}
 
-	for _, d := range *devices {
-		if d.IotZone != groupName {
+	for i := range *devices {
+		if (*devices)[i].IotZone != groupName {
 			continue
 		}
 
-		topic := fmt.Sprintf("zigbee2mqtt/%s/set", d.Name)
+		topic := fmt.Sprintf("zigbee2mqtt/%s/set", (*devices)[i].Name)
 		message := map[string]interface{}{
 			"effect":     "blink",
 			"transition": 0.1,
@@ -98,12 +98,12 @@ func (l zigbeeLight) On(groupName string) error {
 		return err
 	}
 
-	for _, d := range *devices {
-		if d.IotZone != groupName {
+	for i := range *devices {
+		if (*devices)[i].IotZone != groupName {
 			continue
 		}
 
-		topic := fmt.Sprintf("zigbee2mqtt/%s/set", d.Name)
+		topic := fmt.Sprintf("zigbee2mqtt/%s/set", (*devices)[i].Name)
 		message := map[string]interface{}{
 			"state":      "ON",
 			"transition": 0.5,
@@ -126,12 +126,12 @@ func (l zigbeeLight) Off(groupName string) error {
 		return err
 	}
 
-	for _, d := range *devices {
-		if d.IotZone != groupName {
+	for i := range *devices {
+		if (*devices)[i].IotZone != groupName {
 			continue
 		}
 
-		topic := fmt.Sprintf("zigbee2mqtt/%s/set", d.Name)
+		topic := fmt.Sprintf("zigbee2mqtt/%s/set", (*devices)[i].Name)
 		message := map[string]interface{}{
 			"state":      "OFF",
 			"transition": 0.5,
@@ -154,12 +154,12 @@ func (l zigbeeLight) Dim(groupName string, brightness int32) error {
 		return err
 	}
 
-	for _, d := range *devices {
-		if d.IotZone != groupName {
+	for i := range *devices {
+		if (*devices)[i].IotZone != groupName {
 			continue
 		}
 
-		topic := fmt.Sprintf("zigbee2mqtt/%s/set", d.Name)
+		topic := fmt.Sprintf("zigbee2mqtt/%s/set", (*devices)[i].Name)
 		message := map[string]interface{}{
 			"brightness": brightness,
 			"transition": 0.5,
@@ -183,12 +183,12 @@ func (l zigbeeLight) SetColor(groupName string, hex string) error {
 		return err
 	}
 
-	for _, d := range *devices {
-		if d.IotZone != groupName {
+	for i := range *devices {
+		if (*devices)[i].IotZone != groupName {
 			continue
 		}
 
-		topic := fmt.Sprintf("zigbee2mqtt/%s/set", d.Name)
+		topic := fmt.Sprintf("zigbee2mqtt/%s/set", (*devices)[i].Name)
 		message := map[string]interface{}{
 			"transition": 0.5,
 			"color": map[string]string{
@@ -214,12 +214,12 @@ func (l zigbeeLight) RandomColor(groupName string, hex []string) error {
 		return err
 	}
 
-	for _, d := range *devices {
-		if d.IotZone != groupName {
+	for i := range *devices {
+		if (*devices)[i].IotZone != groupName {
 			continue
 		}
 
-		topic := fmt.Sprintf("zigbee2mqtt/%s/set", d.Name)
+		topic := fmt.Sprintf("zigbee2mqtt/%s/set", (*devices)[i].Name)
 		message := map[string]interface{}{
 			"transition": 0.5,
 			"color": map[string]string{

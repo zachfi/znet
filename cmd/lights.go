@@ -15,18 +15,7 @@
 package cmd
 
 import (
-	"context"
-	"os"
-
-	"github.com/jedib0t/go-pretty/table"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-
-	"github.com/xaque208/znet/internal/comms"
-	"github.com/xaque208/znet/internal/config"
-	"github.com/xaque208/znet/internal/lights"
-	"github.com/xaque208/znet/znet"
 )
 
 // lightsCmd represents the lights command
@@ -36,7 +25,6 @@ var lightsCmd = &cobra.Command{
 	Long: `The lights collects the current state of the lights and light groups from the HUE bridge.
 For on/off/dim commands, use the subcommands.`,
 	Example: "znet lights -v --config ~/.timer.yaml",
-	Run:     runLights,
 }
 
 var roomName string
@@ -48,70 +36,4 @@ func init() {
 	lightsCmd.PersistentFlags().StringVarP(&roomName, "room", "r", "", "Specify a configured room")
 	lightsCmd.PersistentFlags().Uint8VarP(&roomBrightness, "brightness", "b", 254, "Set the brightness of the room")
 	lightsCmd.Flags().BoolP("verbose", "v", false, "Raise verbosity")
-}
-
-func runLights(cmd *cobra.Command, args []string) {
-	initLogger()
-
-	z, err := znet.NewZnet(cfgFile)
-	if err != nil {
-		log.Error(err)
-	}
-
-	z.Config.RPC.ServerAddress = viper.GetString("rpc.server_address")
-
-	cfg := &config.Config{
-		Vault: z.Config.Vault,
-		TLS:   z.Config.TLS,
-	}
-
-	conn := comms.StandardRPCClient(z.Config.RPC.ServerAddress, *cfg)
-
-	defer func() {
-		err = conn.Close()
-		if err != nil {
-			log.Error(err)
-		}
-	}()
-
-	lc := lights.NewLightsClient(conn)
-
-	req := &lights.LightRequest{}
-
-	res, err := lc.Status(context.Background(), req)
-	if err != nil {
-		log.Errorf("RPC Error: %s Response: %+v", err, res)
-		return
-	}
-
-	t := table.NewWriter()
-	t.SetOutputMirror(os.Stdout)
-	t.AppendHeader(table.Row{"Name", "Id", "Type", "Brightness", "On", "Lights"})
-
-	for _, g := range res.Groups {
-
-		t.AppendRow([]interface{}{
-			g.Name,
-			g.Id,
-			g.Type,
-			g.State.Brightness,
-			g.State.On,
-			g.Lights,
-		})
-	}
-
-	for _, l := range res.Lights {
-
-		t.AppendRow([]interface{}{
-			l.Name,
-			l.Id,
-			l.Type,
-			l.State.Brightness,
-			l.State.On,
-		})
-	}
-
-	// t.AppendFooter(table.Row{"", "", "Total", 10000})
-	t.Render()
-
 }

@@ -181,9 +181,9 @@ func (l hueLight) Toggle(groupName string) error {
 
 			if light.IsOn() {
 				return light.Off()
-			} else {
-				return light.On()
 			}
+
+			return light.On()
 		}
 
 	} else {
@@ -193,9 +193,8 @@ func (l hueLight) Toggle(groupName string) error {
 
 		if g.IsOn() {
 			return g.Off()
-		} else {
-			return g.On()
 		}
+		return g.On()
 	}
 
 	return nil
