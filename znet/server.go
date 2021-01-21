@@ -114,12 +114,12 @@ func (s *statusCheckHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (s *Server) startRPCListener() error {
 	//
 	// inventoryServer
-	rpcInventoryServer, err := inventory.NewServer(s.ldapConfig)
+	inventoryServer, err := inventory.NewServer(s.ldapConfig)
 	if err != nil {
 		return err
 	}
 
-	inventory.RegisterInventoryServer(s.grpcServer, rpcInventoryServer)
+	inventory.RegisterInventoryServer(s.grpcServer, inventoryServer)
 
 	//
 	// astroServer
@@ -146,13 +146,12 @@ func (s *Server) startRPCListener() error {
 		return err
 	}
 
-	rpcTelemetryServer, err := telemetry.NewServer(inv, lightsServer)
+	telemetryServer, err := telemetry.NewServer(inv, lightsServer)
 	if err != nil {
 		return err
 	}
-	// rpcTelemetryServer.SetClickHandler(lightsServer.ClickHandler)
 
-	telemetry.RegisterTelemetryServer(s.grpcServer, rpcTelemetryServer)
+	telemetry.RegisterTelemetryServer(s.grpcServer, telemetryServer)
 
 	// rpcEventServer
 	rpcEventServer := &eventServer{eventMachine: s.eventMachine, ctx: s.ctx}
@@ -162,6 +161,15 @@ func (s *Server) startRPCListener() error {
 	rpcEventServer.RegisterEvents(continuous.EventNames)
 	rpcEventServer.RegisterEvents(gitwatch.EventNames)
 	rpcEventServer.RegisterEvents(timer.EventNames)
+
+	//
+	// timerServer
+	timerServer, err := timer.NewServer(lightsServer)
+	if err != nil {
+		return err
+	}
+
+	timer.RegisterTimerServer(s.grpcServer, timerServer)
 
 	go func() {
 		lis, err := net.Listen("tcp", s.rpcConfig.ListenAddress)

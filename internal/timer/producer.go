@@ -9,12 +9,14 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/xaque208/znet/internal/config"
+	"github.com/xaque208/znet/internal/lights"
 	"github.com/xaque208/znet/pkg/events"
 )
 
 // EventProducer implements events.Producer with an attached GRPC connection
 // and a configuration.
 type EventProducer struct {
+	lights *lights.Lights
 	conn   *grpc.ClientConn
 	config *config.TimerConfig
 }
@@ -161,14 +163,7 @@ func (e *EventProducer) scheduler(ctx context.Context) error {
 			}
 
 			for _, n := range names {
-				now := time.Now()
-
-				ev := NamedTimer{
-					Name: n,
-					Time: &now,
-				}
-
-				err := events.ProduceEvent(e.conn, ev)
+				err := e.lights.NamedTimerHandler(n)
 				if err != nil {
 					log.Error(err)
 				}

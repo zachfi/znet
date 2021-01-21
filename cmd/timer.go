@@ -72,6 +72,10 @@ func runTimer(cmd *cobra.Command, args []string) {
 		log.Fatal("unable to create EventProducer with nil Timer configuration")
 	}
 
+	if z.Config.Lights == nil {
+		log.Fatal("unable to create EventProducer with nil Lights configuration")
+	}
+
 	x := timer.NewProducer(cfg.Timer)
 
 	producers = append(producers, x)

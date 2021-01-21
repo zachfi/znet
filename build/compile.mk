@@ -33,6 +33,7 @@ proto-grpc:
 		internal/astro/astro.proto \
 		internal/agent/agent.proto \
 		internal/lights/lights.proto \
+		internal/timer/timer.proto \
 		internal/inventory/inventory.proto \
 		internal/telemetry/telemetry.proto \
 		--go_out=plugins=grpc:./ \
