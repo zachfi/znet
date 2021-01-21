@@ -126,19 +126,6 @@ func (a *Agent) namedTimerHandler(name string, payload events.Payload) error {
 	return nil
 }
 
-func (a *Agent) execRequestHandler(name string, payload events.Payload) error {
-	var x ExecRequest
-
-	err := json.Unmarshal(payload, &x)
-	if err != nil {
-		log.Errorf("failed to unmarshal %T: %s", x, err)
-	}
-
-	log.Warn("TODO newExecRequestHandler()")
-
-	return nil
-}
-
 func (a *Agent) newTagHandler(name string, payload events.Payload) error {
 	var x gitwatch.NewTag
 
@@ -253,6 +240,7 @@ func (a *Agent) executeForGitEvent(x interface{}) error {
 	return nil
 }
 
+// Start calls start on the agent gRPC server.
 func (a *Agent) Start() error {
 	if a.config.RPC == nil {
 		return fmt.Errorf("unable to start agent with nil RPC config")
@@ -263,12 +251,16 @@ func (a *Agent) Start() error {
 			"rpc_listen": a.config.RPC.AgentListenAddress,
 		}).Debug("starting RPC listener")
 
-		a.startRPCListener()
+		err := a.startRPCListener()
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
+// Stop calls stop on the agent gRPC server.
 func (a *Agent) Stop() error {
 	if a.grpcServer != nil {
 		log.Debug("stopping RPC listener")
@@ -292,6 +284,7 @@ func (a *Agent) startRPCListener() error {
 		RegisterJailHostServer(a.grpcServer, &jailServer{})
 		RegisterNodeServer(a.grpcServer, &nodeServer{})
 	case "arch":
+		RegisterJailHostServer(a.grpcServer, &notImplementedJailServer{})
 		RegisterNodeServer(a.grpcServer, &nodeServer{})
 	}
 

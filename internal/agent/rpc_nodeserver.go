@@ -30,7 +30,7 @@ func (n *nodeServer) PackageUpgrade(ctx context.Context, req *Empty) (*CommandRe
 	n.Lock()
 	defer n.Unlock()
 
-	log.Debugf("running pacakge upgrade")
+	log.Debugf("running package upgrade")
 
 	switch n.ID {
 	case "freebsd":

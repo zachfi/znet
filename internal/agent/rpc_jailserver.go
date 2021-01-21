@@ -28,7 +28,7 @@ func (j *jailServer) Stop(ctx context.Context, req *Jail) (*CommandResult, error
 
 type notImplementedJailServer struct{}
 
-func (j *notImplementedJailServer) List(ctx context.Context, req *Empty) (*Jail, error) {
+func (j *notImplementedJailServer) List(ctx context.Context, req *Empty) (*Jails, error) {
 	return nil, fmt.Errorf("jail server not implemented on this platform")
 }
 
