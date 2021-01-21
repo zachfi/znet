@@ -40,7 +40,7 @@ proto-grpc:
 	@protoc -I internal/inventory/ -I ./ internal/inventory/inventory.proto \
 		--gotemplate_out=template_dir=internal/inventory/templates,debug=false,single-package-mode=true,all=true:internal/inventory
 	@protoc -I internal/inventory/ -I ./ internal/inventory/inventory.proto \
-		--gotemplate_out=template_dir=cmd/templates,false=true,single-package-mode=true,all=true:cmd
+		--gotemplate_out=template_dir=cmd/templates,debug=false,single-package-mode=true,all=true:cmd
 
 compile-all: deps-only
 	@echo "=== $(PROJECT_NAME) === [ compile          ]: building commands:"
