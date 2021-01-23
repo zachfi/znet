@@ -124,10 +124,14 @@ func runHarvest(cmd *cobra.Command, args []string) {
 	if token := mqttClient.Connect(); token.Wait() && token.Error() != nil {
 		log.Error(token.Error())
 	} else {
-		log.Debugf("connected to MQTT: %s", mqttURL)
+		log.WithFields(log.Fields{
+			"url": mqttURL,
+		}).Debug("mqtt connected")
 	}
 
-	log.Debugf("HTTP listening: %s", listenAddr)
+	log.WithFields(log.Fields{
+		"http": listenAddr,
+	}).Debug("listening")
 
 	go func() {
 		sig := <-sigs
