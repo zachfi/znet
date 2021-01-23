@@ -25,16 +25,16 @@ type EventProducer struct {
 }
 
 // NewProducer receives a config to build a new EventProducer.
-func NewProducer(cfg *config.AstroConfig) events.Producer {
+func NewProducer(cfg *config.AstroConfig) (events.Producer, error) {
 	if cfg == nil {
-		log.Error("")
+		return nil, fmt.Errorf("unable to create new astro producer from nil config")
 	}
 
 	var producer events.Producer = &EventProducer{
 		config: cfg,
 	}
 
-	return producer
+	return producer, nil
 }
 
 // Connect starts the producer

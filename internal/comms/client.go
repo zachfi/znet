@@ -45,7 +45,7 @@ func StandardRPCClient(serverAddress string, cfg config.Config) *grpc.ClientConn
 
 	conn, err := grpc.Dial(serverAddress, opts...)
 	if err != nil {
-		log.Error(err)
+		log.Errorf("failed dialing gRPC: %s", err)
 	}
 
 	return conn

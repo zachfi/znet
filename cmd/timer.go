@@ -65,8 +65,12 @@ func runTimer(cmd *cobra.Command, args []string) {
 
 	producers := make([]events.Producer, 0)
 
-	y := astro.NewProducer(cfg.Astro)
-	producers = append(producers, y)
+	y, err := astro.NewProducer(z.Config.Astro)
+	if err != nil {
+		log.Error(err)
+	} else {
+		producers = append(producers, y)
+	}
 
 	if z.Config.Timer == nil {
 		log.Fatal("unable to create EventProducer with nil Timer configuration")
@@ -76,9 +80,12 @@ func runTimer(cmd *cobra.Command, args []string) {
 		log.Fatal("unable to create EventProducer with nil Lights configuration")
 	}
 
-	x := timer.NewProducer(cfg.Timer)
-
-	producers = append(producers, x)
+	x, err := timer.NewProducer(z.Config.Timer)
+	if err != nil {
+		log.Error(err)
+	} else {
+		producers = append(producers, x)
+	}
 
 	log.WithFields(log.Fields{
 		"count": len(producers),
