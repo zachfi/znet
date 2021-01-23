@@ -16,7 +16,6 @@ import (
 	"github.com/xaque208/znet/internal/comms"
 	"github.com/xaque208/znet/internal/config"
 	"github.com/xaque208/znet/internal/gitwatch"
-	"github.com/xaque208/znet/internal/timer"
 	"github.com/xaque208/znet/pkg/events"
 )
 
@@ -56,65 +55,6 @@ func NewAgent(cfg *config.Config, conn *grpc.ClientConn) *Agent {
 	}
 
 	return a
-}
-
-// Subscriptions implements the events.Consumer interface.
-func (a *Agent) Subscriptions() *events.Subscriptions {
-	s := events.NewSubscriptions()
-
-	for _, e := range a.config.Agent.Executions {
-		for _, x := range e.Events {
-			switch x {
-			case "NewCommit":
-				s.Subscribe(x, a.newCommitHandler)
-
-				b, err := json.Marshal(e.Filter)
-				if err != nil {
-					log.Errorf("failed to marshal %s filter: %s", x, err)
-				}
-
-				f := &gitwatch.GitFilter{}
-				err = json.Unmarshal(b, &f)
-				if err != nil {
-					log.Errorf("failed to unmarshal %s filter into GitFilter: %s", x, err)
-				}
-
-				s.Filter(x, f)
-			case "NewTag":
-				s.Subscribe(x, a.newTagHandler)
-
-				b, err := json.Marshal(e.Filter)
-				if err != nil {
-					log.Errorf("failed to marshal %s filter: %s", x, err)
-				}
-
-				f := &gitwatch.GitFilter{}
-				err = json.Unmarshal(b, &f)
-				if err != nil {
-					log.Errorf("failed to unmarshal %s filter into GitFilter: %s", x, err)
-				}
-
-				s.Filter(x, f)
-			case "NamedTimer":
-				s.Subscribe(x, a.namedTimerHandler)
-
-				f := &timer.EventFilter{}
-				// f.Name = append(f.Name, "ReportFacts")
-				s.Filter(x, f)
-			default:
-				log.WithFields(log.Fields{
-					"event": x,
-				}).Warn("no execution handler")
-			}
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"handlers": s.Handlers,
-		"filters":  s.Filters,
-	}).Debug("event subscriptions")
-
-	return s
 }
 
 func (a *Agent) namedTimerHandler(name string, payload events.Payload) error {
