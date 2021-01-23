@@ -18,7 +18,7 @@ func NewSecretClient(config config.VaultConfig) (*api.Client, error) {
 	var token string
 
 	apiConfig := &api.Config{
-		Address: fmt.Sprintf("https://%s:8200", config.Host),
+		Address: config.Host,
 	}
 
 	if config.ClientKey != "" && config.ClientCert != "" {
