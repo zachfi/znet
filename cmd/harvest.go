@@ -12,8 +12,11 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/xaque208/znet/internal/comms"
+	"github.com/xaque208/znet/internal/config"
+	"github.com/xaque208/znet/internal/inventory"
+	"github.com/xaque208/znet/internal/telemetry"
 	"github.com/xaque208/znet/pkg/iot"
-	"github.com/xaque208/znet/rpc"
 	"github.com/xaque208/znet/znet"
 )
 
@@ -30,18 +33,7 @@ func init() {
 }
 
 func runHarvest(cmd *cobra.Command, args []string) {
-	formatter := log.TextFormatter{
-		FullTimestamp: true,
-	}
-
-	log.SetFormatter(&formatter)
-	if trace {
-		log.SetLevel(log.TraceLevel)
-	} else if verbose {
-		log.SetLevel(log.DebugLevel)
-	} else {
-		log.SetLevel(log.InfoLevel)
-	}
+	initLogger()
 
 	z, err := znet.NewZnet(cfgFile)
 	if err != nil {
@@ -50,7 +42,12 @@ func runHarvest(cmd *cobra.Command, args []string) {
 
 	z.Config.RPC.ServerAddress = viper.GetString("rpc.server_address")
 
-	conn := znet.NewConn(z.Config.RPC.ServerAddress, z.Config)
+	cfg := &config.Config{
+		Vault: z.Config.Vault,
+		TLS:   z.Config.TLS,
+	}
+
+	conn := comms.StandardRPCClient(z.Config.RPC.ServerAddress, *cfg)
 
 	defer func() {
 		err = conn.Close()
@@ -71,7 +68,7 @@ func runHarvest(cmd *cobra.Command, args []string) {
 		done <- true
 	}()
 
-	telemetryClient := rpc.NewTelemetryClient(conn)
+	telemetryClient := telemetry.NewTelemetryClient(conn)
 
 	var onMessageReceived mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 		topicPath, err := iot.ParseTopicPath(msg.Topic())
@@ -80,7 +77,7 @@ func runHarvest(cmd *cobra.Command, args []string) {
 			return
 		}
 
-		discovery := &rpc.DeviceDiscovery{
+		discovery := &iot.DeviceDiscovery{
 			Component: topicPath.Component,
 			NodeId:    topicPath.NodeID,
 			ObjectId:  topicPath.ObjectID,
@@ -88,7 +85,7 @@ func runHarvest(cmd *cobra.Command, args []string) {
 			Message:   msg.Payload(),
 		}
 
-		iotDevice := &rpc.IOTDevice{
+		iotDevice := &inventory.IOTDevice{
 			DeviceDiscovery: discovery,
 		}
 
@@ -127,23 +124,27 @@ func runHarvest(cmd *cobra.Command, args []string) {
 	if token := mqttClient.Connect(); token.Wait() && token.Error() != nil {
 		log.Error(token.Error())
 	} else {
-		log.Debugf("connected to MQTT: %s", mqttURL)
+		log.WithFields(log.Fields{
+			"url": mqttURL,
+		}).Debug("mqtt connected")
 	}
 
-	log.Debugf("HTTP listening: %s", listenAddr)
+	log.WithFields(log.Fields{
+		"http": listenAddr,
+	}).Debug("listening")
 
 	go func() {
 		sig := <-sigs
 		log.Warnf("caught signal: %s", sig.String())
 
-		if token := mqttClient.Unsubscribe(mqttTopic); token.Wait() && token.Error() != nil {
-			log.Error(token.Error())
-		}
-
-		mqttClient.Disconnect(250)
-
 		done <- true
 	}()
 
 	<-done
+
+	if token := mqttClient.Unsubscribe(mqttTopic); token.Wait() && token.Error() != nil {
+		log.Error(token.Error())
+	}
+
+	mqttClient.Disconnect(250)
 }

@@ -1,0 +1,262 @@
+
+
+
+dn: cn={7}network,cn=schema,cn=config
+changetype: modify
+replace: olcAttributeTypes
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2101 NAME ( 'networkHostRole' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2102 NAME ( 'networkHostGroup' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2103 NAME ( 'networkHostOperatingSystem' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2104 NAME ( 'networkHostPlatform' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2105 NAME ( 'networkHostType' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2106 NAME ( 'networkHostDomain' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2107 NAME ( 'networkHostDescription' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2108 NAME ( 'networkHostWatch' )
+    SINGLE-VALUE
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2109 NAME ( 'networkHostInetAddress' )
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2110 NAME ( 'networkHostInet6Address' )
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2111 NAME ( 'networkHostLastSeen' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2201 NAME ( 'networkIdIpAddress' )
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2202 NAME ( 'networkIdReportingSource' )
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2203 NAME ( 'networkIdReportingSourceInterface' )
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2204 NAME ( 'networkIdLastSeen' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2301 NAME ( 'l3NetworkSoa' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2302 NAME ( 'l3NetworkDomain' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2303 NAME ( 'l3NetworkNtpServers' )
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2304 NAME ( 'l3NetworkInetNetwork' )
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2305 NAME ( 'l3NetworkInet6Network' )
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2306 NAME ( 'l3NetworkDescription' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2401 NAME ( 'inetNetworkPrefix' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2402 NAME ( 'inetNetworkGateway' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2403 NAME ( 'inetNetworkDynamicRange' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2501 NAME ( 'inet6NetworkPrefix' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2502 NAME ( 'inet6NetworkGateway' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2601 NAME ( 'zigbeeDeviceDescription' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2602 NAME ( 'zigbeeDeviceLastSeen' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2603 NAME ( 'zigbeeDeviceIotZone' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2604 NAME ( 'zigbeeDeviceType' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2605 NAME ( 'zigbeeDeviceSoftwareBuildId' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2606 NAME ( 'zigbeeDeviceDateCode' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2607 NAME ( 'zigbeeDeviceModel' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2608 NAME ( 'zigbeeDeviceVendor' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2609 NAME ( 'zigbeeDeviceManufacturerName' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2610 NAME ( 'zigbeeDevicePowerSource' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2611 NAME ( 'zigbeeDeviceModelId' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2701 NAME ( 'iotZoneDescription' )
+    SINGLE-VALUE
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+    )
+-
+replace: olcObjectClasses
+olcObjectClasses:  ( 1.3.6.1.4.1.99.1001 NAME 'networkHost'
+    STRUCTURAL
+    SUP top
+    MUST ( cn )
+    MAY ( networkHostRole $ networkHostGroup $ networkHostOperatingSystem $ networkHostPlatform $ networkHostType $ networkHostDomain $ networkHostDescription $ networkHostWatch $ networkHostInetAddress $ networkHostInet6Address $ macAddress $ networkHostLastSeen )
+    )
+olcObjectClasses:  ( 1.3.6.1.4.1.99.1002 NAME 'networkId'
+    STRUCTURAL
+    SUP top
+    MUST ( cn )
+    MAY ( macAddress $ networkIdIpAddress $ networkIdReportingSource $ networkIdReportingSourceInterface $ networkIdLastSeen )
+    )
+olcObjectClasses:  ( 1.3.6.1.4.1.99.1003 NAME 'l3Network'
+    STRUCTURAL
+    SUP top
+    MUST ( cn )
+    MAY ( l3NetworkSoa $ l3NetworkDomain $ l3NetworkNtpServers $ l3NetworkDescription )
+    )
+olcObjectClasses:  ( 1.3.6.1.4.1.99.1004 NAME 'inetNetwork'
+    STRUCTURAL
+    SUP top
+    MUST ( cn )
+    MAY ( inetNetworkPrefix $ inetNetworkGateway $ inetNetworkDynamicRange )
+    )
+olcObjectClasses:  ( 1.3.6.1.4.1.99.1005 NAME 'inet6Network'
+    STRUCTURAL
+    SUP top
+    MUST ( cn )
+    MAY ( inet6NetworkPrefix $ inet6NetworkGateway )
+    )
+olcObjectClasses:  ( 1.3.6.1.4.1.99.1006 NAME 'zigbeeDevice'
+    STRUCTURAL
+    SUP top
+    MUST ( cn )
+    MAY ( zigbeeDeviceDescription $ zigbeeDeviceLastSeen $ zigbeeDeviceIotZone $ zigbeeDeviceType $ zigbeeDeviceSoftwareBuildId $ zigbeeDeviceDateCode $ zigbeeDeviceModel $ zigbeeDeviceVendor $ zigbeeDeviceManufacturerName $ zigbeeDevicePowerSource $ zigbeeDeviceModelId )
+    )
+olcObjectClasses:  ( 1.3.6.1.4.1.99.1007 NAME 'iotZone'
+    STRUCTURAL
+    SUP top
+    MUST ( cn )
+    MAY ( iotZoneDescription )
+    )

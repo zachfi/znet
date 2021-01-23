@@ -8,6 +8,7 @@ import (
 
 	ldap "github.com/go-ldap/ldap/v3"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var defaultNetworkHostAttributes = []string{
@@ -28,7 +29,10 @@ var defaultNetworkHostAttributes = []string{
 }
 
 // CreateNetworkHost creates a new LDAP entry by the received name.
-func (i *Inventory) CreateNetworkHost(x NetworkHost) (*NetworkHost, error) {
+func (i *Inventory) CreateNetworkHost(x *NetworkHost) (*NetworkHost, error) {
+	if x == nil {
+		return nil, fmt.Errorf("unable to create nil NetworkHost")
+	}
 	if x.Name == "" {
 		return nil, fmt.Errorf("unable to create a node with no Name set")
 	}
@@ -53,7 +57,10 @@ func (i *Inventory) CreateNetworkHost(x NetworkHost) (*NetworkHost, error) {
 }
 
 // UpdateNetworkHost updates an existing LDAP entry, retrieved by name.
-func (i *Inventory) UpdateNetworkHost(x NetworkHost) (*NetworkHost, error) {
+func (i *Inventory) UpdateNetworkHost(x *NetworkHost) (*NetworkHost, error) {
+	if x == nil {
+		return nil, fmt.Errorf("unable to update nil NetworkHost")
+	}
 	if x.Dn == "" {
 		return nil, fmt.Errorf("unable to update a node with no Dn set")
 	}
@@ -82,21 +89,21 @@ func (i *Inventory) UpdateNetworkHost(x NetworkHost) (*NetworkHost, error) {
 	if x.Description != "" {
 		a.Replace("networkHostDescription", []string{x.Description})
 	}
-
-	if x.Watch != nil {
-		a.Replace("watch", []string{strconv.FormatBool(*x.Watch)})
-	}
+	// TODO figure out the how we can avoid replacing the bool...
+	// in case its not set on the update.
+	// Replace the bool
+	a.Replace("watch", []string{strconv.FormatBool(x.Watch)})
 	if x.InetAddress != nil {
-		a.Replace("networkHostInetAddress", *x.InetAddress)
+		a.Replace("networkHostInetAddress", x.InetAddress)
 	}
 	if x.Inet6Address != nil {
-		a.Replace("networkHostInet6Address", *x.Inet6Address)
+		a.Replace("networkHostInet6Address", x.Inet6Address)
 	}
 	if x.MacAddress != nil {
-		a.Replace("macAddress", *x.MacAddress)
+		a.Replace("macAddress", x.MacAddress)
 	}
 	if x.LastSeen != nil {
-		a.Replace("networkHostLastSeen", []string{x.LastSeen.Format(time.RFC3339)})
+		a.Replace("networkHostLastSeen", []string{x.LastSeen.AsTime().Format(time.RFC3339)})
 	}
 
 	log.Debugf("updating networkHost: %+v", a)
@@ -203,25 +210,25 @@ func (i *Inventory) ListNetworkHosts() (*[]NetworkHost, error) {
 			case "networkHostWatch":
 				{
 					v := boolValues(a)[0]
-					h.Watch = &v
+					h.Watch = v
 				}
 			case "networkHostInetAddress":
 				{
 					attrs := []string{}
 					attrs = append(attrs, stringValues(a)...)
-					h.InetAddress = &attrs
+					h.InetAddress = attrs
 				}
 			case "networkHostInet6Address":
 				{
 					attrs := []string{}
 					attrs = append(attrs, stringValues(a)...)
-					h.Inet6Address = &attrs
+					h.Inet6Address = attrs
 				}
 			case "macAddress":
 				{
 					attrs := []string{}
 					attrs = append(attrs, stringValues(a)...)
-					h.MacAddress = &attrs
+					h.MacAddress = attrs
 				}
 			case "networkHostLastSeen":
 				{
@@ -237,7 +244,7 @@ func (i *Inventory) ListNetworkHosts() (*[]NetworkHost, error) {
 						attrs = append(attrs, t)
 					}
 
-					h.LastSeen = &attrs[0]
+					h.LastSeen = timestamppb.New(attrs[0])
 				}
 			case "dn":
 				{
@@ -263,7 +270,10 @@ var defaultNetworkIDAttributes = []string{
 }
 
 // CreateNetworkID creates a new LDAP entry by the received name.
-func (i *Inventory) CreateNetworkID(x NetworkID) (*NetworkID, error) {
+func (i *Inventory) CreateNetworkID(x *NetworkID) (*NetworkID, error) {
+	if x == nil {
+		return nil, fmt.Errorf("unable to create nil NetworkID")
+	}
 	if x.Name == "" {
 		return nil, fmt.Errorf("unable to create a node with no Name set")
 	}
@@ -288,7 +298,10 @@ func (i *Inventory) CreateNetworkID(x NetworkID) (*NetworkID, error) {
 }
 
 // UpdateNetworkID updates an existing LDAP entry, retrieved by name.
-func (i *Inventory) UpdateNetworkID(x NetworkID) (*NetworkID, error) {
+func (i *Inventory) UpdateNetworkID(x *NetworkID) (*NetworkID, error) {
+	if x == nil {
+		return nil, fmt.Errorf("unable to update nil NetworkID")
+	}
 	if x.Dn == "" {
 		return nil, fmt.Errorf("unable to update a node with no Dn set")
 	}
@@ -297,19 +310,19 @@ func (i *Inventory) UpdateNetworkID(x NetworkID) (*NetworkID, error) {
 
 	a := ldap.NewModifyRequest(x.Dn, []ldap.Control{})
 	if x.MacAddress != nil {
-		a.Replace("macAddress", *x.MacAddress)
+		a.Replace("macAddress", x.MacAddress)
 	}
 	if x.IpAddress != nil {
-		a.Replace("networkIdIpAddress", *x.IpAddress)
+		a.Replace("networkIdIpAddress", x.IpAddress)
 	}
 	if x.ReportingSource != nil {
-		a.Replace("networkIdReportingSource", *x.ReportingSource)
+		a.Replace("networkIdReportingSource", x.ReportingSource)
 	}
 	if x.ReportingSourceInterface != nil {
-		a.Replace("networkIdReportingSourceInterface", *x.ReportingSourceInterface)
+		a.Replace("networkIdReportingSourceInterface", x.ReportingSourceInterface)
 	}
 	if x.LastSeen != nil {
-		a.Replace("networkIdLastSeen", []string{x.LastSeen.Format(time.RFC3339)})
+		a.Replace("networkIdLastSeen", []string{x.LastSeen.AsTime().Format(time.RFC3339)})
 	}
 
 	log.Debugf("updating networkId: %+v", a)
@@ -389,25 +402,25 @@ func (i *Inventory) ListNetworkIDs() (*[]NetworkID, error) {
 				{
 					attrs := []string{}
 					attrs = append(attrs, stringValues(a)...)
-					h.MacAddress = &attrs
+					h.MacAddress = attrs
 				}
 			case "networkIdIpAddress":
 				{
 					attrs := []string{}
 					attrs = append(attrs, stringValues(a)...)
-					h.IpAddress = &attrs
+					h.IpAddress = attrs
 				}
 			case "networkIdReportingSource":
 				{
 					attrs := []string{}
 					attrs = append(attrs, stringValues(a)...)
-					h.ReportingSource = &attrs
+					h.ReportingSource = attrs
 				}
 			case "networkIdReportingSourceInterface":
 				{
 					attrs := []string{}
 					attrs = append(attrs, stringValues(a)...)
-					h.ReportingSourceInterface = &attrs
+					h.ReportingSourceInterface = attrs
 				}
 			case "networkIdLastSeen":
 				{
@@ -423,7 +436,7 @@ func (i *Inventory) ListNetworkIDs() (*[]NetworkID, error) {
 						attrs = append(attrs, t)
 					}
 
-					h.LastSeen = &attrs[0]
+					h.LastSeen = timestamppb.New(attrs[0])
 				}
 			case "dn":
 				{
@@ -450,7 +463,10 @@ var defaultL3NetworkAttributes = []string{
 }
 
 // CreateL3Network creates a new LDAP entry by the received name.
-func (i *Inventory) CreateL3Network(x L3Network) (*L3Network, error) {
+func (i *Inventory) CreateL3Network(x *L3Network) (*L3Network, error) {
+	if x == nil {
+		return nil, fmt.Errorf("unable to create nil L3Network")
+	}
 	if x.Name == "" {
 		return nil, fmt.Errorf("unable to create a node with no Name set")
 	}
@@ -475,7 +491,10 @@ func (i *Inventory) CreateL3Network(x L3Network) (*L3Network, error) {
 }
 
 // UpdateL3Network updates an existing LDAP entry, retrieved by name.
-func (i *Inventory) UpdateL3Network(x L3Network) (*L3Network, error) {
+func (i *Inventory) UpdateL3Network(x *L3Network) (*L3Network, error) {
+	if x == nil {
+		return nil, fmt.Errorf("unable to update nil L3Network")
+	}
 	if x.Dn == "" {
 		return nil, fmt.Errorf("unable to update a node with no Dn set")
 	}
@@ -490,7 +509,7 @@ func (i *Inventory) UpdateL3Network(x L3Network) (*L3Network, error) {
 		a.Replace("l3NetworkDomain", []string{x.Domain})
 	}
 	if x.NtpServers != nil {
-		a.Replace("l3NetworkNtpServers", *x.NtpServers)
+		a.Replace("l3NetworkNtpServers", x.NtpServers)
 	}
 	if x.Description != "" {
 		a.Replace("l3NetworkDescription", []string{x.Description})
@@ -581,7 +600,7 @@ func (i *Inventory) ListL3Networks() (*[]L3Network, error) {
 				{
 					attrs := []string{}
 					attrs = append(attrs, stringValues(a)...)
-					h.NtpServers = &attrs
+					h.NtpServers = attrs
 				}
 			case "l3NetworkInetNetwork":
 				{
@@ -615,7 +634,10 @@ var defaultInetNetworkAttributes = []string{
 }
 
 // CreateInetNetwork creates a new LDAP entry by the received name.
-func (i *Inventory) CreateInetNetwork(x InetNetwork) (*InetNetwork, error) {
+func (i *Inventory) CreateInetNetwork(x *InetNetwork) (*InetNetwork, error) {
+	if x == nil {
+		return nil, fmt.Errorf("unable to create nil InetNetwork")
+	}
 	if x.Name == "" {
 		return nil, fmt.Errorf("unable to create a node with no Name set")
 	}
@@ -640,7 +662,10 @@ func (i *Inventory) CreateInetNetwork(x InetNetwork) (*InetNetwork, error) {
 }
 
 // UpdateInetNetwork updates an existing LDAP entry, retrieved by name.
-func (i *Inventory) UpdateInetNetwork(x InetNetwork) (*InetNetwork, error) {
+func (i *Inventory) UpdateInetNetwork(x *InetNetwork) (*InetNetwork, error) {
+	if x == nil {
+		return nil, fmt.Errorf("unable to update nil InetNetwork")
+	}
 	if x.Dn == "" {
 		return nil, fmt.Errorf("unable to update a node with no Dn set")
 	}
@@ -764,7 +789,10 @@ var defaultInet6NetworkAttributes = []string{
 }
 
 // CreateInet6Network creates a new LDAP entry by the received name.
-func (i *Inventory) CreateInet6Network(x Inet6Network) (*Inet6Network, error) {
+func (i *Inventory) CreateInet6Network(x *Inet6Network) (*Inet6Network, error) {
+	if x == nil {
+		return nil, fmt.Errorf("unable to create nil Inet6Network")
+	}
 	if x.Name == "" {
 		return nil, fmt.Errorf("unable to create a node with no Name set")
 	}
@@ -789,7 +817,10 @@ func (i *Inventory) CreateInet6Network(x Inet6Network) (*Inet6Network, error) {
 }
 
 // UpdateInet6Network updates an existing LDAP entry, retrieved by name.
-func (i *Inventory) UpdateInet6Network(x Inet6Network) (*Inet6Network, error) {
+func (i *Inventory) UpdateInet6Network(x *Inet6Network) (*Inet6Network, error) {
+	if x == nil {
+		return nil, fmt.Errorf("unable to update nil Inet6Network")
+	}
 	if x.Dn == "" {
 		return nil, fmt.Errorf("unable to update a node with no Dn set")
 	}
@@ -915,7 +946,10 @@ var defaultZigbeeDeviceAttributes = []string{
 }
 
 // CreateZigbeeDevice creates a new LDAP entry by the received name.
-func (i *Inventory) CreateZigbeeDevice(x ZigbeeDevice) (*ZigbeeDevice, error) {
+func (i *Inventory) CreateZigbeeDevice(x *ZigbeeDevice) (*ZigbeeDevice, error) {
+	if x == nil {
+		return nil, fmt.Errorf("unable to create nil ZigbeeDevice")
+	}
 	if x.Name == "" {
 		return nil, fmt.Errorf("unable to create a node with no Name set")
 	}
@@ -940,7 +974,10 @@ func (i *Inventory) CreateZigbeeDevice(x ZigbeeDevice) (*ZigbeeDevice, error) {
 }
 
 // UpdateZigbeeDevice updates an existing LDAP entry, retrieved by name.
-func (i *Inventory) UpdateZigbeeDevice(x ZigbeeDevice) (*ZigbeeDevice, error) {
+func (i *Inventory) UpdateZigbeeDevice(x *ZigbeeDevice) (*ZigbeeDevice, error) {
+	if x == nil {
+		return nil, fmt.Errorf("unable to update nil ZigbeeDevice")
+	}
 	if x.Dn == "" {
 		return nil, fmt.Errorf("unable to update a node with no Dn set")
 	}
@@ -952,7 +989,7 @@ func (i *Inventory) UpdateZigbeeDevice(x ZigbeeDevice) (*ZigbeeDevice, error) {
 		a.Replace("zigbeeDeviceDescription", []string{x.Description})
 	}
 	if x.LastSeen != nil {
-		a.Replace("zigbeeDeviceLastSeen", []string{x.LastSeen.Format(time.RFC3339)})
+		a.Replace("zigbeeDeviceLastSeen", []string{x.LastSeen.AsTime().Format(time.RFC3339)})
 	}
 	if x.IotZone != "" {
 		a.Replace("zigbeeDeviceIotZone", []string{x.IotZone})
@@ -1077,7 +1114,7 @@ func (i *Inventory) ListZigbeeDevices() (*[]ZigbeeDevice, error) {
 						attrs = append(attrs, t)
 					}
 
-					h.LastSeen = &attrs[0]
+					h.LastSeen = timestamppb.New(attrs[0])
 				}
 			case "zigbeeDeviceIotZone":
 				{
@@ -1131,7 +1168,10 @@ var defaultIOTZoneAttributes = []string{
 }
 
 // CreateIOTZone creates a new LDAP entry by the received name.
-func (i *Inventory) CreateIOTZone(x IOTZone) (*IOTZone, error) {
+func (i *Inventory) CreateIOTZone(x *IOTZone) (*IOTZone, error) {
+	if x == nil {
+		return nil, fmt.Errorf("unable to create nil IOTZone")
+	}
 	if x.Name == "" {
 		return nil, fmt.Errorf("unable to create a node with no Name set")
 	}
@@ -1156,7 +1196,10 @@ func (i *Inventory) CreateIOTZone(x IOTZone) (*IOTZone, error) {
 }
 
 // UpdateIOTZone updates an existing LDAP entry, retrieved by name.
-func (i *Inventory) UpdateIOTZone(x IOTZone) (*IOTZone, error) {
+func (i *Inventory) UpdateIOTZone(x *IOTZone) (*IOTZone, error) {
+	if x == nil {
+		return nil, fmt.Errorf("unable to update nil IOTZone")
+	}
 	if x.Dn == "" {
 		return nil, fmt.Errorf("unable to update a node with no Dn set")
 	}

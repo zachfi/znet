@@ -11,20 +11,21 @@ import (
 	"google.golang.org/grpc"
 	"gopkg.in/yaml.v2"
 
+	"github.com/xaque208/znet/internal/config"
 	"github.com/xaque208/znet/internal/gitwatch"
 	"github.com/xaque208/znet/pkg/continuous"
 	"github.com/xaque208/znet/pkg/events"
 )
 
 type Builder struct {
-	config Config
+	config *config.BuilderConfig
 	conn   *grpc.ClientConn
 	mux    sync.Mutex
 }
 
-func NewBuilder(conn *grpc.ClientConn, config Config) *Builder {
+func NewBuilder(conn *grpc.ClientConn, cfg *config.BuilderConfig) *Builder {
 	return &Builder{
-		config: config,
+		config: cfg,
 		conn:   conn,
 	}
 }
@@ -150,8 +151,8 @@ func (b *Builder) checkoutTagHandler(name string, payload events.Payload) error 
 	return nil
 }
 
-func (b *Builder) loadRepoConfig(cacheDir string) (*RepoConfig, error) {
-	var repoConfig RepoConfig
+func (b *Builder) loadRepoConfig(cacheDir string) (*config.RepoConfig, error) {
+	var repoConfig config.RepoConfig
 
 	configPath := fmt.Sprintf("%s/.build.yaml", cacheDir)
 

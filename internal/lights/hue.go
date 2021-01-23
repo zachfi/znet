@@ -6,11 +6,26 @@ import (
 
 	"github.com/amimof/huego"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/xaque208/znet/internal/config"
 )
 
 type hueLight struct {
-	config Config
+	config *config.LightsConfig
 	hue    *huego.Bridge
+}
+
+func NewHueLight(cfg *config.LightsConfig) (Handler, error) {
+	if cfg.Hue == nil {
+		return nil, fmt.Errorf("unable to create new hue light with nil config")
+	}
+
+	h := hueLight{
+		config: cfg,
+		hue:    huego.New(cfg.Hue.Endpoint, cfg.Hue.User),
+	}
+
+	return h, nil
 }
 
 // On turns off the Hue Light for a room.
@@ -167,9 +182,9 @@ func (l hueLight) Toggle(groupName string) error {
 
 			if light.IsOn() {
 				return light.Off()
-			} else {
-				return light.On()
 			}
+
+			return light.On()
 		}
 
 	} else {
@@ -179,9 +194,8 @@ func (l hueLight) Toggle(groupName string) error {
 
 		if g.IsOn() {
 			return g.Off()
-		} else {
-			return g.On()
 		}
+		return g.On()
 	}
 
 	return nil

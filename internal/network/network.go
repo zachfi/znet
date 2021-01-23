@@ -1,20 +1,22 @@
 package network
 
 import (
-	"github.com/xaque208/znet/pkg/events"
 	"google.golang.org/grpc"
+
+	"github.com/xaque208/znet/internal/config"
+	"github.com/xaque208/znet/pkg/events"
 )
 
 // Agent is an RPC client worker bee.
 type Network struct {
-	config Config
+	config *config.NetworkConfig
 	conn   *grpc.ClientConn
 }
 
 // NewAgent returns a new *Agent from the given arguments.
-func NewNetwork(config Config, conn *grpc.ClientConn) *Network {
+func NewNetwork(cfg *config.NetworkConfig, conn *grpc.ClientConn) *Network {
 	return &Network{
-		config: config,
+		config: cfg,
 		conn:   conn,
 	}
 }

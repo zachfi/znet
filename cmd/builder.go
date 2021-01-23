@@ -11,6 +11,8 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/xaque208/znet/internal/builder"
+	"github.com/xaque208/znet/internal/comms"
+	"github.com/xaque208/znet/internal/config"
 	"github.com/xaque208/znet/pkg/eventmachine"
 	"github.com/xaque208/znet/pkg/events"
 	"github.com/xaque208/znet/rpc"
@@ -30,18 +32,7 @@ func init() {
 }
 
 func runBuilder(cmd *cobra.Command, args []string) {
-	formatter := log.TextFormatter{
-		FullTimestamp: true,
-	}
-
-	log.SetFormatter(&formatter)
-	if trace {
-		log.SetLevel(log.TraceLevel)
-	} else if verbose {
-		log.SetLevel(log.DebugLevel)
-	} else {
-		log.SetLevel(log.InfoLevel)
-	}
+	initLogger()
 
 	z, err := znet.NewZnet(cfgFile)
 	if err != nil {
@@ -50,13 +41,18 @@ func runBuilder(cmd *cobra.Command, args []string) {
 
 	z.Config.RPC.ServerAddress = viper.GetString("rpc.server_address")
 
-	conn := znet.NewConn(z.Config.RPC.ServerAddress, z.Config)
+	cfg := &config.Config{
+		Vault: z.Config.Vault,
+		TLS:   z.Config.TLS,
+	}
+
+	conn := comms.StandardRPCClient(z.Config.RPC.ServerAddress, *cfg)
 
 	if z.Config.Builder == nil {
 		log.Fatal("unable to create agent with nil Builder configuration")
 	}
 
-	x := builder.NewBuilder(conn, *z.Config.Builder)
+	x := builder.NewBuilder(conn, z.Config.Builder)
 
 	consumers := []events.Consumer{
 		x,

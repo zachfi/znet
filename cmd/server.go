@@ -24,6 +24,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/xaque208/znet/internal/config"
 	"github.com/xaque208/znet/znet"
 )
 
@@ -49,21 +50,7 @@ func init() {
 }
 
 func server(cmd *cobra.Command, args []string) {
-	formatter := log.TextFormatter{
-		DisableQuote:     true,
-		DisableTimestamp: true,
-	}
-
-	log.SetFormatter(&formatter)
-	if trace {
-		log.SetLevel(log.TraceLevel)
-	} else if verbose {
-		log.SetLevel(log.DebugLevel)
-	} else {
-		log.SetLevel(log.InfoLevel)
-	}
-
-	log.Infof("%s starting", Version)
+	initLogger()
 
 	// Handle environment variables
 	replacer := strings.NewReplacer(".", "_")
@@ -80,13 +67,13 @@ func server(cmd *cobra.Command, args []string) {
 	viper.SetDefault("rpc.listen_address", rpcListenAddr)
 
 	if z.Config.RPC == nil {
-		z.Config.RPC = &znet.RPCConfig{}
+		z.Config.RPC = &config.RPCConfig{}
 	}
 
 	z.Config.RPC.ListenAddress = viper.GetString("rpc.listen_address")
 
 	if z.Config.HTTP == nil {
-		z.Config.HTTP = &znet.HTTPConfig{}
+		z.Config.HTTP = &config.HTTPConfig{}
 	}
 
 	z.Config.HTTP.ListenAddress = viper.GetString("http.listen_address")
@@ -103,18 +90,16 @@ func server(cmd *cobra.Command, args []string) {
 		done <- true
 	}()
 
-	znetServer := znet.NewServer(z.Config)
-	err = znetServer.Start(z)
+	server := znet.NewServer(z.Config)
+	err = server.Start(z)
 	if err != nil {
 		log.Error(err)
 	}
 
 	<-done
 
-	err = znetServer.Stop()
+	err = server.Stop()
 	if err != nil {
 		log.Error(err)
 	}
-
-	z.Stop()
 }

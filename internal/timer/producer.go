@@ -2,44 +2,53 @@ package timer
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
+	"github.com/xaque208/znet/internal/config"
+	"github.com/xaque208/znet/internal/lights"
 	"github.com/xaque208/znet/pkg/events"
 )
 
 // EventProducer implements events.Producer with an attached GRPC connection
 // and a configuration.
 type EventProducer struct {
+	lights *lights.Lights
 	conn   *grpc.ClientConn
-	config Config
-	ctx    context.Context
-	cancel func()
+	config *config.TimerConfig
 }
 
-// NewProducer creates a new EventProducer to implement events.Producer and
-// attach the received GRPC connection.
-func NewProducer(conn *grpc.ClientConn, config Config) events.Producer {
-	ctx, cancel := context.WithCancel(context.Background())
-
-	var producer events.Producer = &EventProducer{
-		conn:   conn,
-		config: config,
-		ctx:    ctx,
-		cancel: cancel,
+// NewProducer receives a config to build a new EventProducer.
+func NewProducer(cfg *config.TimerConfig) (events.Producer, error) {
+	if cfg == nil {
+		return nil, fmt.Errorf("unable to create new timer producer from nil config")
 	}
 
-	return producer
+	var producer events.Producer = &EventProducer{
+		config: cfg,
+	}
+
+	return producer, nil
 }
 
-// Start initializes the producer.
-func (e *EventProducer) Start() error {
+// Connect starts the producer.
+func (e *EventProducer) Connect(ctx context.Context, conn *grpc.ClientConn) error {
+	if conn == nil {
+		return fmt.Errorf("unable to connext with nil gRPC connection")
+	}
+
+	if e.conn != nil {
+		log.Warnf("replacing non-nil gRPC client connection")
+	}
+	e.conn = conn
+
 	log.Info("starting timer eventProducer")
 
 	go func() {
-		err := e.scheduler()
+		err := e.scheduler(ctx)
 		if err != nil {
 			log.Error(err)
 		}
@@ -48,13 +57,7 @@ func (e *EventProducer) Start() error {
 	return nil
 }
 
-// Stop shuts down the producer.
-func (e *EventProducer) Stop() error {
-	e.cancel()
-	return nil
-}
-
-func (e *EventProducer) scheduleEvents(scheduledEvents *events.Scheduler, v EventConfig) error {
+func (e *EventProducer) scheduleEvents(scheduledEvents *events.Scheduler, v config.EventConfig) error {
 	loc, err := time.LoadLocation(e.config.TimeZone)
 	if err != nil {
 		return err
@@ -95,7 +98,7 @@ func (e *EventProducer) scheduleEvents(scheduledEvents *events.Scheduler, v Even
 	return nil
 }
 
-func (e *EventProducer) scheduleRepeatEvents(scheduledEvents *events.Scheduler, v RepeatEventConfig) error {
+func (e *EventProducer) scheduleRepeatEvents(scheduledEvents *events.Scheduler, v config.RepeatEventConfig) error {
 
 	// Stop calculating events beyond this time.
 	end := time.Now().Add(time.Duration(e.config.FutureLimit) * time.Second)
@@ -125,7 +128,7 @@ func (e *EventProducer) scheduleRepeatEvents(scheduledEvents *events.Scheduler, 
 	return nil
 }
 
-func (e *EventProducer) scheduler() error {
+func (e *EventProducer) scheduler(ctx context.Context) error {
 	sch := events.NewScheduler()
 
 	go func() {
@@ -160,14 +163,7 @@ func (e *EventProducer) scheduler() error {
 			}
 
 			for _, n := range names {
-				now := time.Now()
-
-				ev := NamedTimer{
-					Name: n,
-					Time: &now,
-				}
-
-				err := events.ProduceEvent(e.conn, ev)
+				err := e.lights.NamedTimerHandler(n)
 				if err != nil {
 					log.Error(err)
 				}
@@ -182,7 +178,7 @@ func (e *EventProducer) scheduler() error {
 		"events":          len(e.config.Events),
 	}).Debug("timer scheduler started")
 
-	<-e.ctx.Done()
+	<-ctx.Done()
 	log.Debug("scheduler dying")
 
 	return nil

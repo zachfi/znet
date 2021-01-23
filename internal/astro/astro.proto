@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package astro;
+
+option go_package = "internal/astro";
+
+message Empty {}
+
+service Astro {
+  rpc Sunrise(Empty) returns (Empty);
+  rpc Sunset(Empty) returns (Empty);
+  rpc PreSunset(Empty) returns (Empty);
+}

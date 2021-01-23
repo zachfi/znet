@@ -1,0 +1,124 @@
+{{- if eq .File.GetName "inventory.proto"}}
+// Code generated, do not edit
+package cmd
+
+import (
+	"context"
+	"io"
+
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
+	"github.com/xaque208/znet/znet"
+	"github.com/xaque208/znet/internal/comms"
+	"github.com/xaque208/znet/internal/config"
+	"github.com/xaque208/znet/internal/inventory"
+)
+
+var inventoryCommand = &cobra.Command{
+	Use:     "inventory",
+	Short:   "Report on inventory",
+	Long:    "Run an inventory report",
+	Example: "znet inv",
+	// Run:     runInv,
+}
+  {{- $messagesOld := list "Inet6Network" "InetNetwork" "L3Network" "NetworkHost" "NetworkID" "ZigbeeDevice" "IOTZone" }}
+  {{- $messages := list "NetworkHost" }}
+  {{- range .File.MessageType }}
+    {{- if has .GetName $messages }}
+      {{- $typeName := (.GetName|snakeCase)}}
+      {{- $commandName := (.GetName)}}
+// typeName: {{$typeName}}
+// commandName: {{$commandName}}
+
+var {{$commandName|lowerCamelCase}}Cmd = &cobra.Command{
+	Use:     "{{$typeName}}",
+	Short:   "Manage {{$typeName}} inventory resources",
+	// Long:    "Run an inventory report",
+	Example: "znet inventory {{$typeName}}",
+	Run:     run{{$commandName}},
+}
+
+func run{{$commandName}}(cmd *cobra.Command, args []string) {
+	initLogger()
+
+	z, err := znet.NewZnet(cfgFile)
+	if err != nil {
+		log.Error(err)
+	}
+
+	z.Config.RPC.ServerAddress = viper.GetString("rpc.server_address")
+
+	if z.Config.RPC.ServerAddress == "" {
+		log.Fatal("no rpc.server configuration specified")
+	}
+
+	cfg := &config.Config{
+		Vault: z.Config.Vault,
+		TLS:   z.Config.TLS,
+	}
+
+	conn := comms.StandardRPCClient(z.Config.RPC.ServerAddress, *cfg)
+
+	defer func() {
+		err = conn.Close()
+		if err != nil {
+			log.Error(err)
+		}
+	}()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	inventoryClient := inventory.NewInventoryClient(conn)
+
+	stream, err := inventoryClient.List{{$commandName}}s(ctx, &inventory.Empty{})
+	if err != nil {
+    log.Errorf("stream error: %s", err)
+	}
+
+	for {
+		var d *inventory.{{$commandName}}
+
+		d, err = stream.Recv()
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+
+			switch status.Code(err) {
+			case codes.OK:
+				continue
+			default:
+				log.Errorf("default status.Code: %+v", status.Code(err))
+        break
+			}
+		}
+
+		if d != nil {
+			log.Debugf("NetworkHost: %+v", d)
+		}
+  }
+
+}
+    {{- end }}
+  {{- end }}
+
+func init() {
+  {{- range .File.MessageType }}
+    {{- if has .GetName $messages }}
+      {{- $commandName := (.GetName)}}
+	inventoryCommand.AddCommand({{$commandName|lowerCamelCase}}Cmd)
+    {{- end }}
+  {{- end }}
+
+	// invCmd.PersistentFlags().StringVarP(&rpcServer, "rpc", "r", ":8800", "Specify RPC server address")
+	// invCmd.Flags().BoolP("verbose", "v", false, "Raise verbosity")
+
+	// invCmd.PersistentFlags().StringVarP(&adopt, "adopt", "a", "", "Adopt an unknown host by MAC address")
+}
+
+{{- end }}

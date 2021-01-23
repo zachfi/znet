@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package iot;
+
+option go_package = "github.com/xaque208/znet/pkg/iot";
+
+message Empty {}
+
+// <discovery_prefix>/<component>/[<node_id>/]<object_id>/config
+message DeviceDiscovery {
+  string discovery_prefix = 1;
+  string component = 2;
+  string node_id = 3;
+  string object_id = 4;
+  repeated string endpoint = 5;
+  bytes message = 6;
+}
+
+
+message Click {
+  string count = 1;
+  string device = 2;
+  string zone = 3;
+}
+
+// service IOT {
+//   rpc ClickEvent(Click) returns (Empty);
+// }
+//

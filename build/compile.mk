@@ -27,11 +27,21 @@ proto: proto-grpc gofmt-fix
 
 proto-grpc:
 	@echo "=== $(PROJECT_NAME) === [ proto compile    ]: compiling protobufs:"
-	@protoc -I rpc/ rpc/rpc.proto \
-		--go_out=plugins=grpc:rpc \
-		--gotemplate_out=template_dir=templates,debug=true,single-package-mode=true,all=true:internal
-	@protoc -I rpc/ rpc/rpc.proto \
-		--gotemplate_out=template_dir=templates.cmd,debug=true,single-package-mode=true,all=true:cmd
+	@protoc -I ./ \
+		rpc/rpc.proto \
+		pkg/iot/iot.proto \
+		internal/astro/astro.proto \
+		internal/agent/agent.proto \
+		internal/lights/lights.proto \
+		internal/timer/timer.proto \
+		internal/inventory/inventory.proto \
+		internal/telemetry/telemetry.proto \
+		--go_out=plugins=grpc:./ \
+		--go_opt=paths=source_relative
+	@protoc -I internal/inventory/ -I ./ internal/inventory/inventory.proto \
+		--gotemplate_out=template_dir=internal/inventory/templates,debug=false,single-package-mode=true,all=true:internal/inventory
+	@protoc -I internal/inventory/ -I ./ internal/inventory/inventory.proto \
+		--gotemplate_out=template_dir=cmd/templates,debug=false,single-package-mode=true,all=true:cmd
 
 compile-all: deps-only
 	@echo "=== $(PROJECT_NAME) === [ compile          ]: building commands:"

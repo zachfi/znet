@@ -35,7 +35,10 @@ func CacheRepo(url string, cacheDir string, sshPublicKey string) error {
 			cloneOpts.Auth = publicKey
 		}
 
-		log.Infof("cloning repo from origin %s", url)
+		log.WithFields(log.Fields{
+			"url": url,
+		}).Info("cloning repo")
+
 		_, cloneErr := git.PlainClone(cacheDir, false, cloneOpts)
 		if cloneErr != nil {
 			return fmt.Errorf("error while cloning %s: %s", url, cloneErr)

@@ -2,7 +2,6 @@ package znet
 
 import (
 	"context"
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -13,16 +12,18 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
 
 	"github.com/xaque208/znet/internal/agent"
 	"github.com/xaque208/znet/internal/astro"
+	"github.com/xaque208/znet/internal/comms"
+	"github.com/xaque208/znet/internal/config"
 	"github.com/xaque208/znet/internal/gitwatch"
 	"github.com/xaque208/znet/internal/inventory"
+	"github.com/xaque208/znet/internal/lights"
+	"github.com/xaque208/znet/internal/telemetry"
 	"github.com/xaque208/znet/internal/timer"
 	"github.com/xaque208/znet/pkg/continuous"
 	"github.com/xaque208/znet/pkg/eventmachine"
-	"github.com/xaque208/znet/pkg/iot"
 	"github.com/xaque208/znet/rpc"
 )
 
@@ -32,10 +33,11 @@ type Server struct {
 	ctx          context.Context
 	eventMachine *eventmachine.EventMachine
 	grpcServer   *grpc.Server
-	httpConfig   *HTTPConfig
+	httpConfig   *config.HTTPConfig
 	httpServer   *http.Server
-	ldapConfig   *inventory.LDAPConfig
-	rpcConfig    *RPCConfig
+	ldapConfig   *config.LDAPConfig
+	rpcConfig    *config.RPCConfig
+	config       *config.Config
 }
 
 type statusCheckHandler struct {
@@ -48,29 +50,18 @@ func init() {
 		executionDuration,
 		executionExitStatus,
 
-		airHeatindex,
-		airHumidity,
-		airTemperature,
 		tempCoef,
-		thingWireless,
 		waterTempCoef,
-		waterTemperature,
 
 		// rpc
 		rpcEventServerEventCount,
 		rpcEventServerSubscriberCount,
-
-		telemetryIOTUnhandledReport,
-		telemetryIOTReport,
-		telemetryIOTBatteryPercent,
-		telemetryIOTLinkQuality,
-		telemetryIOTBridgeState,
 	)
 }
 
 // NewServer creates a new Server composed of the received information.
 // func NewServer(config Config, consumers []events.Consumer) *Server {
-func NewServer(config Config) *Server {
+func NewServer(cfg *config.Config) *Server {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	eventMachine, err := eventmachine.New(ctx, nil)
@@ -79,47 +70,28 @@ func NewServer(config Config) *Server {
 	}
 
 	var httpServer *http.Server
-	if config.HTTP.ListenAddress != "" {
-		httpServer = &http.Server{Addr: config.HTTP.ListenAddress}
+	if cfg.HTTP.ListenAddress != "" {
+		httpServer = &http.Server{Addr: cfg.HTTP.ListenAddress}
 	}
 
-	roots, err := CABundle(config.Vault)
-	if err != nil {
-		log.Error(err)
-	}
-
-	c, err := newCertify(config.Vault, config.TLS)
-	if err != nil {
-		log.Error(err)
-	}
-
-	tlsConfig := &tls.Config{
-		GetCertificate: c.GetCertificate,
-		ClientCAs:      roots,
-		// RootCAs:        cp,
-		ClientAuth: tls.RequireAndVerifyClientCert,
-		// ClientAuth:           tls.VerifyClientCertIfGiven,
-	}
-
-	if config.HTTP == nil || config.RPC == nil {
+	if cfg.HTTP == nil || cfg.RPC == nil {
 		log.Errorf("unable to build znet Server with nil HTTPConfig or RPCConfig")
 	}
 
-	s := &Server{
+	return &Server{
 		ctx:          ctx,
 		cancel:       cancel,
 		eventMachine: eventMachine,
 
-		httpConfig: config.HTTP,
-		rpcConfig:  config.RPC,
-		ldapConfig: config.LDAP,
+		config:     cfg,
+		httpConfig: cfg.HTTP,
+		rpcConfig:  cfg.RPC,
+		ldapConfig: cfg.LDAP,
 
 		httpServer: httpServer,
 
-		grpcServer: grpc.NewServer(grpc.Creds(credentials.NewTLS(tlsConfig))),
+		grpcServer: comms.StandardRPCServer(cfg.Vault, cfg.TLS),
 	}
-
-	return s
 }
 
 func (s *statusCheckHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -138,25 +110,66 @@ func (s *statusCheckHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Fprint(w, string(payload))
 }
-func (s *Server) startRPCListener() error {
-	rpcInventoryServer := inventory.NewRPCServer(*s.ldapConfig)
-	rpc.RegisterInventoryServer(s.grpcServer, rpcInventoryServer)
 
+func (s *Server) startRPCListener() error {
+	//
+	// inventoryServer
+	inventoryServer, err := inventory.NewServer(s.ldapConfig)
+	if err != nil {
+		return err
+	}
+
+	inventory.RegisterInventoryServer(s.grpcServer, inventoryServer)
+
+	//
+	// astroServer
+	astroServer, err := astro.NewAstro(s.config)
+	if err != nil {
+		return err
+	}
+
+	astro.RegisterAstroServer(s.grpcServer, astroServer)
+
+	//
+	// lightsServer
+	lightsServer, err := lights.NewLights(s.config)
+	if err != nil {
+		return err
+	}
+
+	lights.RegisterLightsServer(s.grpcServer, lightsServer)
+
+	//
 	// telemetryServer
-	inv := inventory.NewInventory(*s.ldapConfig)
-	rpcTelemetryServer := newTelemetryServer(inv, s.eventMachine)
-	rpc.RegisterTelemetryServer(s.grpcServer, rpcTelemetryServer)
+	inv, err := inventory.NewInventory(s.ldapConfig)
+	if err != nil {
+		return err
+	}
+
+	telemetryServer, err := telemetry.NewServer(inv, lightsServer)
+	if err != nil {
+		return err
+	}
+
+	telemetry.RegisterTelemetryServer(s.grpcServer, telemetryServer)
 
 	// rpcEventServer
 	rpcEventServer := &eventServer{eventMachine: s.eventMachine, ctx: s.ctx}
 
 	rpc.RegisterEventsServer(s.grpcServer, rpcEventServer)
 	rpcEventServer.RegisterEvents(agent.EventNames)
-	rpcEventServer.RegisterEvents(astro.EventNames)
 	rpcEventServer.RegisterEvents(continuous.EventNames)
 	rpcEventServer.RegisterEvents(gitwatch.EventNames)
-	rpcEventServer.RegisterEvents(iot.EventNames)
 	rpcEventServer.RegisterEvents(timer.EventNames)
+
+	//
+	// timerServer
+	timerServer, err := timer.NewServer(lightsServer)
+	if err != nil {
+		return err
+	}
+
+	timer.RegisterTimerServer(s.grpcServer, timerServer)
 
 	go func() {
 		lis, err := net.Listen("tcp", s.rpcConfig.ListenAddress)
@@ -197,7 +210,10 @@ func (s *Server) Start(z *Znet) error {
 			"http_listen": s.httpConfig.ListenAddress,
 		}).Info("starting HTTP listener")
 
-		s.startHTTPListener()
+		err := s.startHTTPListener()
+		if err != nil {
+			return err
+		}
 	}
 
 	if s.rpcConfig.ListenAddress != "" {
@@ -205,7 +221,10 @@ func (s *Server) Start(z *Znet) error {
 			"rpc_listen": s.rpcConfig.ListenAddress,
 		}).Debug("starting RPC listener")
 
-		s.startRPCListener()
+		err := s.startRPCListener()
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -238,6 +257,7 @@ func (s *Server) Stop() error {
 	}
 
 	s.grpcServer.Stop()
+
 	err = s.eventMachine.Stop()
 	if err != nil {
 		errs = append(errs, err)

@@ -11,7 +11,9 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/xaque208/znet/rpc"
+	"github.com/xaque208/znet/internal/comms"
+	"github.com/xaque208/znet/internal/config"
+	"github.com/xaque208/znet/internal/inventory"
 	"github.com/xaque208/znet/znet"
 )
 
@@ -35,19 +37,7 @@ var networkhostCmd = &cobra.Command{
 }
 
 func runNetworkHost(cmd *cobra.Command, args []string) {
-	formatter := log.TextFormatter{
-		DisableQuote:     true,
-		DisableTimestamp: true,
-	}
-
-	log.SetFormatter(&formatter)
-	if trace {
-		log.SetLevel(log.TraceLevel)
-	} else if verbose {
-		log.SetLevel(log.DebugLevel)
-	} else {
-		log.SetLevel(log.InfoLevel)
-	}
+	initLogger()
 
 	z, err := znet.NewZnet(cfgFile)
 	if err != nil {
@@ -60,29 +50,32 @@ func runNetworkHost(cmd *cobra.Command, args []string) {
 		log.Fatal("no rpc.server configuration specified")
 	}
 
-	conn := znet.NewConn(z.Config.RPC.ServerAddress, z.Config)
+	cfg := &config.Config{
+		Vault: z.Config.Vault,
+		TLS:   z.Config.TLS,
+	}
+
+	conn := comms.StandardRPCClient(z.Config.RPC.ServerAddress, *cfg)
 
 	defer func() {
 		err = conn.Close()
 		if err != nil {
 			log.Error(err)
 		}
-
-		z.Stop()
 	}()
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	inventoryClient := rpc.NewInventoryClient(conn)
+	inventoryClient := inventory.NewInventoryClient(conn)
 
-	stream, err := inventoryClient.ListNetworkHosts(ctx, &rpc.Empty{})
+	stream, err := inventoryClient.ListNetworkHosts(ctx, &inventory.Empty{})
 	if err != nil {
 		log.Errorf("stream error: %s", err)
 	}
 
 	for {
-		var d *rpc.NetworkHost
+		var d *inventory.NetworkHost
 
 		d, err = stream.Recv()
 		if err != nil {

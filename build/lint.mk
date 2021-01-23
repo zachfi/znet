@@ -9,7 +9,7 @@ GOIMPORTS    ?= goimports
 
 COMMIT_LINT_CMD   ?= go-gitlint
 COMMIT_LINT_REGEX ?= "(chore|docs|feat|fix|refactor|tests?)(\([^\)]+\))?: .*"
-COMMIT_LINT_START ?= "2020-05-20"
+COMMIT_LINT_START ?= "2021-01-01"
 
 GOLINTER      = golangci-lint
 
@@ -21,12 +21,6 @@ GO_FILES        ?= $(shell find $(SRCDIR) -type f -name "*.go" | grep -v -e ".gi
 PROJECT_MODULE  ?= $(shell $(GO) list -m)
 
 GO_MOD_OUTDATED ?= go-mod-outdated
-
-GOTOOLS += github.com/client9/misspell/cmd/misspell \
-           github.com/llorllale/go-gitlint/cmd/go-gitlint \
-           github.com/psampaz/go-mod-outdated \
-           github.com/golangci/golangci-lint/cmd/golangci-lint \
-           golang.org/x/tools/cmd/goimports
 
 
 lint: deps spell-check gofmt lint-commit golangci goimports outdated

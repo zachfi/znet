@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/prometheus/client_golang/api"
@@ -12,38 +13,55 @@ import (
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
+	"github.com/xaque208/znet/internal/config"
 	"github.com/xaque208/znet/pkg/events"
 )
 
 // EventProducer implements events.Producer with an attached GRPC connection.
 type EventProducer struct {
+	sync.Mutex
 	conn   *grpc.ClientConn
-	config Config
-	ctx    context.Context
-	cancel func()
+	config *config.AstroConfig
 }
 
-// NewProducer creates a new EventProducer to implement events.Producer and
-// attach the received GRPC connection.
-func NewProducer(conn *grpc.ClientConn, config Config) events.Producer {
-	ctx, cancel := context.WithCancel(context.Background())
-
-	var producer events.Producer = &EventProducer{
-		conn:   conn,
-		config: config,
-		ctx:    ctx,
-		cancel: cancel,
+// NewProducer receives a config to build a new EventProducer.
+func NewProducer(cfg *config.AstroConfig) (events.Producer, error) {
+	if cfg == nil {
+		return nil, fmt.Errorf("unable to create new astro producer from nil config")
 	}
 
-	return producer
+	var producer events.Producer = &EventProducer{
+		config: cfg,
+	}
+
+	return producer, nil
 }
 
-// Start initializes the producer.
-func (e *EventProducer) Start() error {
+// Connect starts the producer
+func (e *EventProducer) Connect(ctx context.Context, conn *grpc.ClientConn) error {
+	if conn == nil {
+		return fmt.Errorf("unable to connext with nil gRPC connection")
+	}
+
+	e.Lock()
+	defer e.Unlock()
+
+	if e.conn != nil {
+		log.Warnf("replacing non-nil gRPC client connection")
+		log.Debug("closing old connection")
+
+		err := e.conn.Close()
+		if err != nil {
+			log.Error(err)
+		}
+	}
+
+	e.conn = conn
+
 	log.Info("starting astro eventProducer")
 
 	go func() {
-		err := e.scheduler()
+		err := e.scheduler(ctx)
 		if err != nil {
 			log.Error(err)
 		}
@@ -52,13 +70,7 @@ func (e *EventProducer) Start() error {
 	return nil
 }
 
-// Stop shuts down the producer.
-func (e *EventProducer) Stop() error {
-	e.cancel()
-	return nil
-}
-
-func (e *EventProducer) scheduleEvents(sch *events.Scheduler) error {
+func (e *EventProducer) scheduleEvents(ctx context.Context, sch *events.Scheduler) error {
 	clientConf := api.Config{
 		Address: e.config.MetricsURL,
 	}
@@ -69,8 +81,8 @@ func (e *EventProducer) scheduleEvents(sch *events.Scheduler) error {
 	}
 
 	for _, l := range e.config.Locations {
-		sunriseTime := queryForTime(e.ctx, client, fmt.Sprintf("owm_sunrise_time{location=\"%s\"}", l))
-		sunsetTime := queryForTime(e.ctx, client, fmt.Sprintf("owm_sunset_time{location=\"%s\"}", l))
+		sunriseTime := queryForTime(ctx, client, fmt.Sprintf("owm_sunrise_time{location=\"%s\"}", l))
+		sunsetTime := queryForTime(ctx, client, fmt.Sprintf("owm_sunset_time{location=\"%s\"}", l))
 
 		log.Tracef("astro found sunriseTime: %+v", sunriseTime)
 		log.Tracef("astro found sunsetTime: %+v", sunsetTime)
@@ -106,10 +118,10 @@ func (e *EventProducer) scheduleEvents(sch *events.Scheduler) error {
 	return nil
 }
 
-func (e *EventProducer) scheduler() error {
+func (e *EventProducer) scheduler(ctx context.Context) error {
 	sch := events.NewScheduler()
 
-	err := e.scheduleEvents(sch)
+	err := e.scheduleEvents(ctx, sch)
 	if err != nil {
 		log.Error(err)
 	}
@@ -130,16 +142,26 @@ func (e *EventProducer) scheduler() error {
 			}
 
 			for _, n := range names {
-				now := time.Now()
+				astroClient := NewAstroClient(e.conn)
 
-				ev := SolarEvent{
-					Name: n,
-					Time: &now,
-				}
-
-				err := events.ProduceEvent(e.conn, ev)
-				if err != nil {
-					log.Error(err)
+				switch n {
+				case "Sunrise":
+					_, err := astroClient.Sunrise(ctx, &Empty{})
+					if err != nil {
+						log.Error(err)
+					}
+				case "Sunset":
+					_, err := astroClient.Sunset(ctx, &Empty{})
+					if err != nil {
+						log.Error(err)
+					}
+				case "PreSunset":
+					_, err := astroClient.PreSunset(ctx, &Empty{})
+					if err != nil {
+						log.Error(err)
+					}
+				default:
+					log.Warnf("unknown astro event name: %s", n)
 				}
 
 				sch.Step()
@@ -148,7 +170,7 @@ func (e *EventProducer) scheduler() error {
 		}
 	}()
 
-	<-e.ctx.Done()
+	<-ctx.Done()
 	log.Debugf("scheduler dying")
 
 	return nil

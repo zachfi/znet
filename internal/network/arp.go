@@ -9,9 +9,11 @@ import (
 
 	junos "github.com/scottdware/go-junos"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/xaque208/znet/internal/inventory"
+	"github.com/xaque208/znet/internal/telemetry"
 	"github.com/xaque208/znet/internal/timer"
 	"github.com/xaque208/znet/pkg/events"
-	"github.com/xaque208/znet/rpc"
 )
 
 func (n *Network) namedTimerHandler(name string, payload events.Payload) error {
@@ -59,8 +61,8 @@ func (n *Network) namedTimerHandler(name string, payload events.Payload) error {
 	return nil
 }
 
-func (n *Network) ScrapeJunosHost(wg *sync.WaitGroup, h *rpc.NetworkHost) {
-	telemetryClient := rpc.NewTelemetryClient(n.conn)
+func (n *Network) ScrapeJunosHost(wg *sync.WaitGroup, h *inventory.NetworkHost) {
+	telemetryClient := telemetry.NewTelemetryClient(n.conn)
 
 	hostName := strings.Join([]string{h.Name, h.Domain}, ".")
 	log.Debugf("scraping ARP status from host: %s", hostName)
@@ -94,7 +96,7 @@ func (n *Network) ScrapeJunosHost(wg *sync.WaitGroup, h *rpc.NetworkHost) {
 
 		name := strings.ToLower(strings.Join([]string{arp.MACAddress, arp.Interface}, "_"))
 
-		networkID := &rpc.NetworkID{
+		networkID := &inventory.NetworkID{
 			Name:                     name,
 			IpAddress:                []string{arp.IPAddress},
 			MacAddress:               []string{arp.MACAddress},

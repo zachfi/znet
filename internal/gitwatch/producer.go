@@ -8,6 +8,7 @@ import (
 
 	"google.golang.org/grpc"
 
+	"github.com/xaque208/znet/internal/config"
 	"github.com/xaque208/znet/pkg/continuous"
 	"github.com/xaque208/znet/pkg/events"
 
@@ -17,29 +18,35 @@ import (
 // EventProducer implements events.Producer with an attached GRPC connection
 // and a configuration.
 type EventProducer struct {
-	config Config
+	config *config.GitWatchConfig
 	conn   *grpc.ClientConn
-	ctx    context.Context
-	cancel func()
 }
 
-// NewProducer creates a new EventProducer to implement events.Producer and
-// attach the received GRPC connection.
-func NewProducer(conn *grpc.ClientConn, config Config) events.Producer {
-	ctx, cancel := context.WithCancel(context.Background())
-
-	var producer events.Producer = &EventProducer{
-		conn:   conn,
-		config: config,
-		ctx:    ctx,
-		cancel: cancel,
+// NewProducer receives a config to build a new EventProducer.
+func NewProducer(cfg *config.GitWatchConfig) (events.Producer, error) {
+	if cfg == nil {
+		return nil, fmt.Errorf("unable to create new gitwatch producer from nil config")
 	}
 
-	return producer
+	var producer events.Producer = &EventProducer{
+		config: cfg,
+	}
+
+	return producer, nil
 }
 
-// Start initializes the producer.
-func (e *EventProducer) Start() error {
+// Connect initializes the producer.
+func (e *EventProducer) Connect(ctx context.Context, conn *grpc.ClientConn) error {
+	if conn == nil {
+		return fmt.Errorf("unable to connext with nil gRPC connection")
+	}
+
+	if e.conn != nil {
+		log.Warnf("replacing non-nil gRPC client connection")
+	}
+
+	e.conn = conn
+
 	var interval int = 600
 
 	if e.config.Interval > 0 {
@@ -57,18 +64,12 @@ func (e *EventProducer) Start() error {
 		if err != nil {
 			log.Error(err)
 		}
-	}(e.ctx, interval)
+	}(ctx, interval)
 
 	return nil
 }
 
-// Stop shuts down the producer.
-func (e *EventProducer) Stop() error {
-	e.cancel()
-	return nil
-}
-
-func (e *EventProducer) handleRepo(ctx context.Context, repo Repo, collection *string) error {
+func (e *EventProducer) handleRepo(ctx context.Context, repo config.GitWatchRepo, collection *string) error {
 	if repo.Name == "" {
 		return fmt.Errorf("repo name cannot be empty: %+v", repo)
 	}
@@ -171,7 +172,7 @@ func (e *EventProducer) handleRepo(ctx context.Context, repo Repo, collection *s
 	return nil
 }
 
-func (e *EventProducer) trackRepos(ctx context.Context, repos []Repo, collection *string, ticker *time.Ticker) {
+func (e *EventProducer) trackRepos(ctx context.Context, repos []config.GitWatchRepo, collection *string, ticker *time.Ticker) {
 	for {
 		select {
 		case <-ctx.Done():
@@ -212,7 +213,7 @@ func (e *EventProducer) watcher(ctx context.Context, ticker *time.Ticker) error 
 			t = ticker
 		}
 
-		go func(collection Collection) {
+		go func(collection config.GitWatchCollection) {
 			log.WithFields(log.Fields{
 				"name":       collection.Name,
 				"interval":   collection.Interval,

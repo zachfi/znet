@@ -4,18 +4,6 @@
 
 GO           ?= go
 
-# These should be mirrored in /tools.go to keep versions consistent
-GOTOOLS      += github.com/client9/misspell/cmd/misspell
-
-
-tools: check-version
-	@echo "=== $(PROJECT_NAME) === [ tools            ]: Installing tools required by the project..."
-	@$(GO) install $(GOTOOLS)
-
-tools-update: check-version
-	@echo "=== $(PROJECT_NAME) === [ tools-update     ]: Updating tools required by the project..."
-	@$(GO) get -u $(GOTOOLS)
-
 deps: tools deps-only
 
 deps-only:
@@ -23,4 +11,4 @@ deps-only:
 	${GO} mod tidy
 	${GO} mod vendor
 
-.PHONY: deps deps-only tools tools-update
+.PHONY: deps deps-only

@@ -26,7 +26,6 @@ import (
 var cfgFile string
 var verbose bool
 var trace bool
-var rpcServer string
 
 // Version is the version of the project
 var Version string

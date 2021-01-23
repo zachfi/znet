@@ -1,0 +1,103 @@
+syntax = "proto3";
+
+package inventory;
+
+option go_package = "github.com/xaque208/znet/internal/inventory";
+
+import "google/protobuf/timestamp.proto";
+import "pkg/iot/iot.proto";
+
+message Empty {}
+
+message IOTDevice {
+  string name = 1;
+  iot.DeviceDiscovery device_discovery = 2;
+  NetworkID network_id = 3;
+}
+
+// NetworkHost is the information about any host that is attached to the
+// network.
+message NetworkHost {
+  string role = 1;
+  string group = 2;
+  string name = 3;
+  string operating_system = 4;
+  string platform = 5;
+  string type = 6;
+  string domain = 7;
+  string description = 8;
+  bool watch = 9;
+  repeated string inet_address = 10;
+  repeated string inet6_address = 11;
+  repeated string mac_address = 12;
+  google.protobuf.Timestamp last_seen = 13;
+  string dn = 14;
+}
+
+message NetworkID {
+  string name = 1;
+  repeated string mac_address = 2;
+  repeated string ip_address = 3;
+  repeated string reporting_source = 4;
+  repeated string reporting_source_interface = 5;
+  google.protobuf.Timestamp last_seen = 6;
+  string dn = 7;
+}
+
+message L3Network {
+  string name = 1;
+  string soa = 2;
+  string domain = 3;
+  repeated string ntp_servers = 4;
+  repeated InetNetwork inet_network = 5;
+  repeated Inet6Network inet6_network = 6;
+  string dn = 7;
+  string description = 8;
+}
+
+message InetNetwork {
+  string name = 1;
+
+  string prefix = 2;
+  string gateway = 3;
+  string dynamic_range = 4;
+  string dn = 5;
+}
+
+message Inet6Network {
+  string name = 1;
+
+  string prefix = 2;
+  string gateway = 3;
+  string dn = 4;
+}
+
+message ZigbeeDevice {
+  string name = 1;
+  string description = 2;
+  string dn = 3;
+  google.protobuf.Timestamp last_seen = 4;
+  string iot_zone = 5;
+  string type = 6;
+  string software_build_id = 7;
+  string date_code = 8;
+  string model = 9;
+  string vendor = 10;
+  string manufacturer_name = 11;
+  string power_source = 12;
+  string model_id = 13;
+}
+
+
+message IOTZone {
+  string name = 1;
+  string description = 2;
+  string dn = 3;
+}
+
+service Inventory {
+  rpc ListNetworkHosts(Empty) returns (stream NetworkHost);
+  rpc ListNetworkIDs(Empty) returns (stream NetworkID);
+  rpc ListZigbeeDevices(Empty) returns (stream ZigbeeDevice);
+}
+

@@ -6,11 +6,23 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/xaque208/rftoy/rftoy"
+
+	"github.com/xaque208/znet/internal/config"
 )
 
 type rftoyLight struct {
-	config   Config
+	config   *config.LightsConfig
 	endpoint *rftoy.RFToy
+}
+
+func NewRFToyLight(cfg *config.LightsConfig) (Handler, error) {
+	if cfg.RFToy == nil {
+		return nil, fmt.Errorf("unable to create new rftoy light with nil config")
+	}
+
+	return rftoyLight{
+		endpoint: &rftoy.RFToy{Address: cfg.RFToy.Endpoint},
+	}, nil
 }
 
 func (l rftoyLight) Off(groupName string) error {

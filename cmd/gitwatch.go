@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"os"
 	"os/signal"
 	"syscall"
@@ -9,6 +10,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/xaque208/znet/internal/comms"
+	"github.com/xaque208/znet/internal/config"
 	"github.com/xaque208/znet/internal/gitwatch"
 	"github.com/xaque208/znet/znet"
 )
@@ -26,18 +29,7 @@ func init() {
 }
 
 func runGitwatch(cmd *cobra.Command, args []string) {
-	formatter := log.TextFormatter{
-		FullTimestamp: true,
-	}
-
-	log.SetFormatter(&formatter)
-	if trace {
-		log.SetLevel(log.TraceLevel)
-	} else if verbose {
-		log.SetLevel(log.DebugLevel)
-	} else {
-		log.SetLevel(log.InfoLevel)
-	}
+	initLogger()
 
 	z, err := znet.NewZnet(cfgFile)
 	if err != nil {
@@ -46,14 +38,25 @@ func runGitwatch(cmd *cobra.Command, args []string) {
 
 	z.Config.RPC.ServerAddress = viper.GetString("rpc.server_address")
 
-	conn := znet.NewConn(z.Config.RPC.ServerAddress, z.Config)
+	cfg := &config.Config{
+		Vault: z.Config.Vault,
+		TLS:   z.Config.TLS,
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	conn := comms.StandardRPCClient(z.Config.RPC.ServerAddress, *cfg)
 
 	if z.Config.GitWatch == nil {
 		log.Fatal("unable to create agent with nil GitWatch configuration")
 	}
 
-	x := gitwatch.NewProducer(conn, *z.Config.GitWatch)
-	err = x.Start()
+	x, err := gitwatch.NewProducer(z.Config.GitWatch)
+	if err != nil {
+		log.Error(err)
+	}
+
+	err = x.Connect(ctx, conn)
 	if err != nil {
 		log.Error(err)
 	}
@@ -71,10 +74,7 @@ func runGitwatch(cmd *cobra.Command, args []string) {
 
 	<-done
 
-	err = x.Stop()
-	if err != nil {
-		log.Error(err)
-	}
+	cancel()
 
 	log.Debug("closing RPC connection")
 	err = conn.Close()
