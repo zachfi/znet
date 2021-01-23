@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	log "github.com/sirupsen/logrus"
+
 	"github.com/xaque208/znet/internal/comms"
 	"github.com/xaque208/znet/internal/config"
 )

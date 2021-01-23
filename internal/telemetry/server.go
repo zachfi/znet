@@ -9,6 +9,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/xaque208/znet/internal/inventory"
@@ -114,9 +115,9 @@ func (l *Server) hasLabels(nodeID string, labels []string) bool {
 	return true
 }
 
-func (l *Server) findMACs(macs []string) (*[]inventory.NetworkHost, *[]inventory.NetworkID, error) {
-	var keepHosts []inventory.NetworkHost
-	var keepIds []inventory.NetworkID
+func (l *Server) findMACs(macs []string) ([]*inventory.NetworkHost, []*inventory.NetworkID, error) {
+	var keepHosts []*inventory.NetworkHost
+	var keepIds []*inventory.NetworkID
 
 	networkHosts, err := l.inventory.ListNetworkHosts()
 	if err != nil {
@@ -124,7 +125,9 @@ func (l *Server) findMACs(macs []string) (*[]inventory.NetworkHost, *[]inventory
 	}
 
 	if networkHosts != nil {
-		for _, x := range *networkHosts {
+		for i := range *networkHosts {
+			x := proto.Clone(&(*networkHosts)[i]).(*inventory.NetworkHost)
+
 			if x.MacAddress != nil {
 				for _, m := range x.MacAddress {
 					for _, mm := range macs {
@@ -143,7 +146,9 @@ func (l *Server) findMACs(macs []string) (*[]inventory.NetworkHost, *[]inventory
 	}
 
 	if networkIDs != nil {
-		for _, x := range *networkIDs {
+		for i := range *networkIDs {
+			x := proto.Clone(&(*networkIDs)[i]).(*inventory.NetworkID)
+
 			if x.MacAddress != nil {
 				for _, m := range x.MacAddress {
 					for _, mm := range macs {
@@ -156,7 +161,7 @@ func (l *Server) findMACs(macs []string) (*[]inventory.NetworkHost, *[]inventory
 		}
 	}
 
-	return &keepHosts, &keepIds, nil
+	return keepHosts, keepIds, nil
 }
 
 func (l *Server) ReportNetworkID(ctx context.Context, request *inventory.NetworkID) (*inventory.Empty, error) {
@@ -177,39 +182,35 @@ func (l *Server) ReportNetworkID(ctx context.Context, request *inventory.Network
 	}
 
 	// do nothing if a host matches
-	if hosts != nil {
-		if len(*hosts) > 0 {
-			for _, h := range *ids {
-				err = l.inventory.UpdateTimestamp(h.Dn, "networkHost")
-				if err != nil {
-					log.Error(err)
-				}
+	if len(hosts) > 0 {
+		for _, x := range ids {
+			err = l.inventory.UpdateTimestamp(x.Dn, "networkHost")
+			if err != nil {
+				log.Error(err)
 			}
-			return &inventory.Empty{}, nil
 		}
+		return &inventory.Empty{}, nil
 	}
 
 	now := time.Now()
 
 	// update the lastSeen for nettworkIds
-	if ids != nil {
-		if len(*ids) > 0 {
-			log.Debugf("ids found for report: %+v", *ids)
-			for _, h := range *ids {
-				if h.Dn != "" {
-					x := inventory.NetworkID{
-						Dn:                       h.Dn,
-						IpAddress:                request.IpAddress,
-						MacAddress:               request.MacAddress,
-						ReportingSource:          request.ReportingSource,
-						ReportingSourceInterface: request.ReportingSourceInterface,
-						LastSeen:                 timestamppb.New(now),
-					}
+	if len(ids) > 0 {
+		log.Debugf("ids found for report: %+v", ids)
+		for _, id := range ids {
+			if id.Dn != "" {
+				x := &inventory.NetworkID{
+					Dn:                       id.Dn,
+					IpAddress:                request.IpAddress,
+					MacAddress:               request.MacAddress,
+					ReportingSource:          request.ReportingSource,
+					ReportingSourceInterface: request.ReportingSourceInterface,
+					LastSeen:                 timestamppb.New(now),
+				}
 
-					_, err = l.inventory.UpdateNetworkID(x)
-					if err != nil {
-						return &inventory.Empty{}, err
-					}
+				_, err = l.inventory.UpdateNetworkID(x)
+				if err != nil {
+					return &inventory.Empty{}, err
 				}
 			}
 		}
@@ -217,7 +218,7 @@ func (l *Server) ReportNetworkID(ctx context.Context, request *inventory.Network
 
 	log.Debugf("existing mac not found: %+v", request.MacAddress)
 
-	x := inventory.NetworkID{
+	x := &inventory.NetworkID{
 		Name:                     request.Name,
 		IpAddress:                request.IpAddress,
 		MacAddress:               request.MacAddress,
@@ -336,7 +337,7 @@ func (l *Server) handleZigbeeReport(request *inventory.IOTDevice) error {
 
 			if m.Message != nil {
 				for _, d := range m.Message.(iot.ZigbeeBridgeMessageDevices) {
-					x := inventory.ZigbeeDevice{
+					x := &inventory.ZigbeeDevice{
 						Name:     d.FriendlyName,
 						LastSeen: timestamppb.New(now),
 						// IeeeAddr:        d.IeeeAddr,
@@ -381,7 +382,7 @@ func (l *Server) handleZigbeeReport(request *inventory.IOTDevice) error {
 				telemetryIOTLinkQuality.WithLabelValues(request.DeviceDiscovery.ObjectId, request.DeviceDiscovery.Component).Set(float64(m.LinkQuality))
 			}
 
-			x := inventory.ZigbeeDevice{
+			x := &inventory.ZigbeeDevice{
 				Name:     request.DeviceDiscovery.ObjectId,
 				LastSeen: timestamppb.New(now),
 			}

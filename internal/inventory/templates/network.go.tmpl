@@ -32,7 +32,11 @@ var default{{.GetName}}Attributes = []string{
 }
 
 // Create{{.GetName}} creates a new LDAP entry by the received name.
-func (i *Inventory) Create{{.GetName}}(x {{.GetName}}) (*{{.GetName}}, error) {
+func (i *Inventory) Create{{.GetName}}(x *{{.GetName}}) (*{{.GetName}}, error) {
+  if x == nil {
+    return nil, fmt.Errorf("unable to create nil {{.GetName}}")
+  }
+
 	{{- $objectClass := .GetName | kebabCase | lowerCamelCase }}
   if x.Name == "" {
     return nil, fmt.Errorf("unable to create a node with no Name set")
@@ -66,7 +70,11 @@ func (i *Inventory) Create{{.GetName}}(x {{.GetName}}) (*{{.GetName}}, error) {
 }
 
 // Update{{.GetName}} updates an existing LDAP entry, retrieved by name.
-func (i *Inventory) Update{{.GetName}}(x {{.GetName}}) (*{{.GetName}}, error) {
+func (i *Inventory) Update{{.GetName}}(x *{{.GetName}}) (*{{.GetName}}, error) {
+  if x == nil {
+    return nil, fmt.Errorf("unable to update nil {{.GetName}}")
+  }
+
 	{{- $objectClass := .GetName | kebabCase | lowerCamelCase }}
 	if x.Dn == "" {
 		return nil, fmt.Errorf("unable to update a node with no Dn set")

@@ -48,100 +48,95 @@ func (l *Lights) ClickHandler(click *iot.Click) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	room := l.getRoom(click.Zone)
+	if room == nil {
+		return fmt.Errorf("no room named %s was found in config", click.Zone)
+	}
+
+	log.WithFields(log.Fields{
+		"room_name": room.Name,
+		"zone":      click.Zone,
+		"device":    click.Device,
+		"count":     click.Count,
+	}).Trace("clicking room")
+
+	alert := false
+	dim := false
+	on := false
+	toggle := false
+	color := false
+
+	request := &LightGroupRequest{
+		Brightness: 254,
+		Color:      "#ffffff",
+		Colors:     l.config.PartyColors,
+		Name:       room.Name,
+	}
+
+	switch click.Count {
+	case "single":
+		toggle = true
+	case "double":
+		dim = true
+		on = true
+		color = true
+	case "triple":
+		_, err := l.Off(ctx, request)
+		return err
+	case "quadruple":
+		_, err := l.RandomColor(ctx, request)
+		return err
+	case "long", "long_release":
+		dim = true
+		request.Brightness = 110
+	case "many":
+		alert = true
+	default:
+		log.Debugf("unknown click event: %s", click.Count)
+	}
+
+	if toggle {
+		_, err := l.Toggle(ctx, request)
+		if err != nil {
+			log.Error(err)
+		}
+	}
+
+	if on {
+		_, err := l.On(ctx, request)
+		if err != nil {
+			log.Error(err)
+		}
+	}
+
+	if alert {
+		_, err := l.Alert(ctx, request)
+		if err != nil {
+			log.Error(err)
+		}
+	}
+
+	if dim {
+		_, err := l.Dim(ctx, request)
+		if err != nil {
+			log.Error(err)
+		}
+	}
+
+	if color {
+		_, err := l.SetColor(ctx, request)
+		if err != nil {
+			log.Error(err)
+		}
+	}
+
+	return nil
+}
+
+func (l *Lights) getRoom(name string) *config.LightsRoom {
 	for _, room := range l.config.Rooms {
-		alert := false
-		dim := false
-		off := false
-		on := false
-		toggle := false
-		party := false
-		color := false
-
-		hex := "#ffffff"
-		var brightness int32 = 254
-
-		if room.Name == click.Zone {
-			log.WithFields(log.Fields{
-				"room_name": room.Name,
-				"zone":      click.Zone,
-				"device":    click.Device,
-				"count":     click.Count,
-			}).Trace("clicking room")
-
-			switch click.Count {
-			case "single":
-				toggle = true
-			case "double":
-				dim = true
-				on = true
-				color = true
-			case "triple":
-				off = true
-			case "quadruple":
-				party = true
-			case "long", "long_release":
-				dim = true
-				brightness = 100
-			case "many":
-				alert = true
-			default:
-				log.Debugf("unknown click event: %s", click.Count)
-			}
-
-			room := &LightGroupRequest{
-				Name: room.Name,
-			}
-
-			if toggle {
-				_, err := l.Toggle(ctx, room)
-				if err != nil {
-					log.Error(err)
-				}
-			}
-
-			if off {
-				_, err := l.Off(ctx, room)
-				if err != nil {
-					log.Error(err)
-				}
-			}
-
-			if on {
-				_, err := l.On(ctx, room)
-				if err != nil {
-					log.Error(err)
-				}
-			}
-
-			if alert {
-				_, err := l.Alert(ctx, room)
-				if err != nil {
-					log.Error(err)
-				}
-			}
-
-			for _, h := range l.handlers {
-				if dim {
-					err := h.Dim(room.Name, brightness)
-					if err != nil {
-						log.Error(err)
-					}
-				}
-
-				if color {
-					err := h.SetColor(room.Name, hex)
-					if err != nil {
-						log.Error(err)
-					}
-				}
-
-				if party {
-					err := h.RandomColor(room.Name, l.config.PartyColors)
-					if err != nil {
-						log.Error(err)
-					}
-				}
-			}
+		if room.Name == name {
+			return &room
 		}
 	}
 
@@ -200,7 +195,10 @@ func (l *Lights) SetRoomForEvent(name string) {
 		for _, o := range room.On {
 			if o == name {
 				for _, h := range l.handlers {
-					h.On(room.Name)
+					err := h.On(room.Name)
+					if err != nil {
+						log.Error(err)
+					}
 				}
 			}
 		}
@@ -208,7 +206,10 @@ func (l *Lights) SetRoomForEvent(name string) {
 		for _, o := range room.Off {
 			if o == name {
 				for _, h := range l.handlers {
-					h.Off(room.Name)
+					err := h.Off(room.Name)
+					if err != nil {
+						log.Error(err)
+					}
 				}
 			}
 		}
@@ -216,7 +217,10 @@ func (l *Lights) SetRoomForEvent(name string) {
 		for _, o := range room.Dim {
 			if o == name {
 				for _, h := range l.handlers {
-					h.Dim(room.Name, 110)
+					err := h.Dim(room.Name, 110)
+					if err != nil {
+						log.Error(err)
+					}
 				}
 			}
 		}
@@ -224,7 +228,10 @@ func (l *Lights) SetRoomForEvent(name string) {
 		for _, o := range room.Alert {
 			if o == name {
 				for _, h := range l.handlers {
-					h.Alert(room.Name)
+					err := h.Alert(room.Name)
+					if err != nil {
+						log.Error(err)
+					}
 				}
 			}
 		}
@@ -246,7 +253,7 @@ func (l *Lights) Alert(ctx context.Context, req *LightGroupRequest) (*LightRespo
 // Dim calls Dim() on each handler.
 func (l *Lights) Dim(ctx context.Context, req *LightGroupRequest) (*LightResponse, error) {
 	for _, h := range l.handlers {
-		err := h.Dim(req.Name, 110)
+		err := h.Dim(req.Name, req.Brightness)
 		if err != nil {
 			log.Error(err)
 		}

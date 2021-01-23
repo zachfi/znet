@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/vault/api"
 	log "github.com/sirupsen/logrus"
+
 	"github.com/xaque208/znet/internal/config"
 )
 

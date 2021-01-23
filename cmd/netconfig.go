@@ -97,7 +97,6 @@ func runNetconfig(cmd *cobra.Command, args []string) {
 				continue
 			default:
 				log.Error(err)
-				break
 			}
 		}
 		break
@@ -120,7 +119,6 @@ func runNetconfig(cmd *cobra.Command, args []string) {
 				continue
 			default:
 				log.Error(err)
-				break
 			}
 		}
 

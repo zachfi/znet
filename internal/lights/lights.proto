@@ -28,6 +28,7 @@ message LightGroupRequest {
   string name = 1;
   string color = 2;
   repeated string colors = 3;
+  int32 brightness = 4;
 }
 
 message LightResponse {

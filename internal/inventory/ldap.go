@@ -8,6 +8,7 @@ import (
 
 	ldap "github.com/go-ldap/ldap/v3"
 	log "github.com/sirupsen/logrus"
+
 	"github.com/xaque208/znet/internal/config"
 )
 

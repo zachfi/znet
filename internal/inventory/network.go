@@ -29,7 +29,10 @@ var defaultNetworkHostAttributes = []string{
 }
 
 // CreateNetworkHost creates a new LDAP entry by the received name.
-func (i *Inventory) CreateNetworkHost(x NetworkHost) (*NetworkHost, error) {
+func (i *Inventory) CreateNetworkHost(x *NetworkHost) (*NetworkHost, error) {
+	if x == nil {
+		return nil, fmt.Errorf("unable to create nil NetworkHost")
+	}
 	if x.Name == "" {
 		return nil, fmt.Errorf("unable to create a node with no Name set")
 	}
@@ -54,7 +57,10 @@ func (i *Inventory) CreateNetworkHost(x NetworkHost) (*NetworkHost, error) {
 }
 
 // UpdateNetworkHost updates an existing LDAP entry, retrieved by name.
-func (i *Inventory) UpdateNetworkHost(x NetworkHost) (*NetworkHost, error) {
+func (i *Inventory) UpdateNetworkHost(x *NetworkHost) (*NetworkHost, error) {
+	if x == nil {
+		return nil, fmt.Errorf("unable to update nil NetworkHost")
+	}
 	if x.Dn == "" {
 		return nil, fmt.Errorf("unable to update a node with no Dn set")
 	}
@@ -264,7 +270,10 @@ var defaultNetworkIDAttributes = []string{
 }
 
 // CreateNetworkID creates a new LDAP entry by the received name.
-func (i *Inventory) CreateNetworkID(x NetworkID) (*NetworkID, error) {
+func (i *Inventory) CreateNetworkID(x *NetworkID) (*NetworkID, error) {
+	if x == nil {
+		return nil, fmt.Errorf("unable to create nil NetworkID")
+	}
 	if x.Name == "" {
 		return nil, fmt.Errorf("unable to create a node with no Name set")
 	}
@@ -289,7 +298,10 @@ func (i *Inventory) CreateNetworkID(x NetworkID) (*NetworkID, error) {
 }
 
 // UpdateNetworkID updates an existing LDAP entry, retrieved by name.
-func (i *Inventory) UpdateNetworkID(x NetworkID) (*NetworkID, error) {
+func (i *Inventory) UpdateNetworkID(x *NetworkID) (*NetworkID, error) {
+	if x == nil {
+		return nil, fmt.Errorf("unable to update nil NetworkID")
+	}
 	if x.Dn == "" {
 		return nil, fmt.Errorf("unable to update a node with no Dn set")
 	}
@@ -451,7 +463,10 @@ var defaultL3NetworkAttributes = []string{
 }
 
 // CreateL3Network creates a new LDAP entry by the received name.
-func (i *Inventory) CreateL3Network(x L3Network) (*L3Network, error) {
+func (i *Inventory) CreateL3Network(x *L3Network) (*L3Network, error) {
+	if x == nil {
+		return nil, fmt.Errorf("unable to create nil L3Network")
+	}
 	if x.Name == "" {
 		return nil, fmt.Errorf("unable to create a node with no Name set")
 	}
@@ -476,7 +491,10 @@ func (i *Inventory) CreateL3Network(x L3Network) (*L3Network, error) {
 }
 
 // UpdateL3Network updates an existing LDAP entry, retrieved by name.
-func (i *Inventory) UpdateL3Network(x L3Network) (*L3Network, error) {
+func (i *Inventory) UpdateL3Network(x *L3Network) (*L3Network, error) {
+	if x == nil {
+		return nil, fmt.Errorf("unable to update nil L3Network")
+	}
 	if x.Dn == "" {
 		return nil, fmt.Errorf("unable to update a node with no Dn set")
 	}
@@ -616,7 +634,10 @@ var defaultInetNetworkAttributes = []string{
 }
 
 // CreateInetNetwork creates a new LDAP entry by the received name.
-func (i *Inventory) CreateInetNetwork(x InetNetwork) (*InetNetwork, error) {
+func (i *Inventory) CreateInetNetwork(x *InetNetwork) (*InetNetwork, error) {
+	if x == nil {
+		return nil, fmt.Errorf("unable to create nil InetNetwork")
+	}
 	if x.Name == "" {
 		return nil, fmt.Errorf("unable to create a node with no Name set")
 	}
@@ -641,7 +662,10 @@ func (i *Inventory) CreateInetNetwork(x InetNetwork) (*InetNetwork, error) {
 }
 
 // UpdateInetNetwork updates an existing LDAP entry, retrieved by name.
-func (i *Inventory) UpdateInetNetwork(x InetNetwork) (*InetNetwork, error) {
+func (i *Inventory) UpdateInetNetwork(x *InetNetwork) (*InetNetwork, error) {
+	if x == nil {
+		return nil, fmt.Errorf("unable to update nil InetNetwork")
+	}
 	if x.Dn == "" {
 		return nil, fmt.Errorf("unable to update a node with no Dn set")
 	}
@@ -765,7 +789,10 @@ var defaultInet6NetworkAttributes = []string{
 }
 
 // CreateInet6Network creates a new LDAP entry by the received name.
-func (i *Inventory) CreateInet6Network(x Inet6Network) (*Inet6Network, error) {
+func (i *Inventory) CreateInet6Network(x *Inet6Network) (*Inet6Network, error) {
+	if x == nil {
+		return nil, fmt.Errorf("unable to create nil Inet6Network")
+	}
 	if x.Name == "" {
 		return nil, fmt.Errorf("unable to create a node with no Name set")
 	}
@@ -790,7 +817,10 @@ func (i *Inventory) CreateInet6Network(x Inet6Network) (*Inet6Network, error) {
 }
 
 // UpdateInet6Network updates an existing LDAP entry, retrieved by name.
-func (i *Inventory) UpdateInet6Network(x Inet6Network) (*Inet6Network, error) {
+func (i *Inventory) UpdateInet6Network(x *Inet6Network) (*Inet6Network, error) {
+	if x == nil {
+		return nil, fmt.Errorf("unable to update nil Inet6Network")
+	}
 	if x.Dn == "" {
 		return nil, fmt.Errorf("unable to update a node with no Dn set")
 	}
@@ -916,7 +946,10 @@ var defaultZigbeeDeviceAttributes = []string{
 }
 
 // CreateZigbeeDevice creates a new LDAP entry by the received name.
-func (i *Inventory) CreateZigbeeDevice(x ZigbeeDevice) (*ZigbeeDevice, error) {
+func (i *Inventory) CreateZigbeeDevice(x *ZigbeeDevice) (*ZigbeeDevice, error) {
+	if x == nil {
+		return nil, fmt.Errorf("unable to create nil ZigbeeDevice")
+	}
 	if x.Name == "" {
 		return nil, fmt.Errorf("unable to create a node with no Name set")
 	}
@@ -941,7 +974,10 @@ func (i *Inventory) CreateZigbeeDevice(x ZigbeeDevice) (*ZigbeeDevice, error) {
 }
 
 // UpdateZigbeeDevice updates an existing LDAP entry, retrieved by name.
-func (i *Inventory) UpdateZigbeeDevice(x ZigbeeDevice) (*ZigbeeDevice, error) {
+func (i *Inventory) UpdateZigbeeDevice(x *ZigbeeDevice) (*ZigbeeDevice, error) {
+	if x == nil {
+		return nil, fmt.Errorf("unable to update nil ZigbeeDevice")
+	}
 	if x.Dn == "" {
 		return nil, fmt.Errorf("unable to update a node with no Dn set")
 	}
@@ -1132,7 +1168,10 @@ var defaultIOTZoneAttributes = []string{
 }
 
 // CreateIOTZone creates a new LDAP entry by the received name.
-func (i *Inventory) CreateIOTZone(x IOTZone) (*IOTZone, error) {
+func (i *Inventory) CreateIOTZone(x *IOTZone) (*IOTZone, error) {
+	if x == nil {
+		return nil, fmt.Errorf("unable to create nil IOTZone")
+	}
 	if x.Name == "" {
 		return nil, fmt.Errorf("unable to create a node with no Name set")
 	}
@@ -1157,7 +1196,10 @@ func (i *Inventory) CreateIOTZone(x IOTZone) (*IOTZone, error) {
 }
 
 // UpdateIOTZone updates an existing LDAP entry, retrieved by name.
-func (i *Inventory) UpdateIOTZone(x IOTZone) (*IOTZone, error) {
+func (i *Inventory) UpdateIOTZone(x *IOTZone) (*IOTZone, error) {
+	if x == nil {
+		return nil, fmt.Errorf("unable to update nil IOTZone")
+	}
 	if x.Dn == "" {
 		return nil, fmt.Errorf("unable to update a node with no Dn set")
 	}

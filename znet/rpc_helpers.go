@@ -7,8 +7,6 @@ import (
 	"google.golang.org/grpc/peer"
 )
 
-type contextResolver func(context.Context) error
-
 func peerCN(streamContext context.Context) string {
 
 	var subscriber string

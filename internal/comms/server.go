@@ -4,9 +4,10 @@ import (
 	"crypto/tls"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/xaque208/znet/internal/config"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+
+	"github.com/xaque208/znet/internal/config"
 )
 
 // StandardRPCServer returns a normal gRPC server.

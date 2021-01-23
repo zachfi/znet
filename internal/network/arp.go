@@ -9,6 +9,7 @@ import (
 
 	junos "github.com/scottdware/go-junos"
 	log "github.com/sirupsen/logrus"
+
 	"github.com/xaque208/znet/internal/inventory"
 	"github.com/xaque208/znet/internal/telemetry"
 	"github.com/xaque208/znet/internal/timer"

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	ldap "github.com/go-ldap/ldap/v3"
+
 	"github.com/xaque208/znet/internal/config"
 )
 

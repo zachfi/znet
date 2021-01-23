@@ -1,5 +1,6 @@
 
 
+
 dn: cn={7}network,cn=schema,cn=config
 changetype: modify
 replace: olcAttributeTypes
@@ -103,7 +104,11 @@ olcAttributeTypes: ( 1.3.6.1.4.1.99.2303 NAME ( 'l3NetworkNtpServers' )
     SUBSTR caseIgnoreSubstringsMatch
     SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
     )
-olcAttributeTypes: ( 1.3.6.1.4.1.99.2304 NAME ( 'l3NetworkDescription' )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2304 NAME ( 'l3NetworkInetNetwork' )
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2305 NAME ( 'l3NetworkInet6Network' )
+    )
+olcAttributeTypes: ( 1.3.6.1.4.1.99.2306 NAME ( 'l3NetworkDescription' )
     SINGLE-VALUE
     EQUALITY caseIgnoreMatch
     SUBSTR caseIgnoreSubstringsMatch

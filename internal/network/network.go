@@ -1,9 +1,10 @@
 package network
 
 import (
+	"google.golang.org/grpc"
+
 	"github.com/xaque208/znet/internal/config"
 	"github.com/xaque208/znet/pkg/events"
-	"google.golang.org/grpc"
 )
 
 // Agent is an RPC client worker bee.

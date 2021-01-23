@@ -16,8 +16,9 @@ import (
 	"github.com/johanbrandhorst/certify"
 	"github.com/johanbrandhorst/certify/issuers/vault"
 	log "github.com/sirupsen/logrus"
-	"github.com/xaque208/znet/internal/config"
 	logrusadapter "logur.dev/adapter/logrus"
+
+	"github.com/xaque208/znet/internal/config"
 )
 
 // newCertify is used to help with TLS management.
