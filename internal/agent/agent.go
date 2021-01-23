@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/exec"
 	"text/template"
-	"time"
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -148,31 +147,29 @@ func (a *Agent) executeForGitEvent(x interface{}) error {
 					cmd.Env = append(os.Environ(), env...)
 				}
 
-				start := time.Now()
-				// var out bytes.Buffer
-				// cmd.Stdout = &out
-				output, err := cmd.CombinedOutput()
-				if err != nil {
-					log.Errorf("command execution failed: %s", err)
-				}
+				// start := time.Now()
+				// output, err := cmd.CombinedOutput()
+				// if err != nil {
+				// 	log.Errorf("command execution failed: %s", err)
+				// }
 
-				now := time.Now()
+				// now := time.Now()
 
-				ev := ExecutionResult{
-					Time:     &now,
-					Command:  execution.Command,
-					Args:     args,
-					Dir:      execution.Dir,
-					Output:   output,
-					ExitCode: cmd.ProcessState.ExitCode(),
-					Duration: time.Since(start),
-				}
-
-				err = events.ProduceEvent(a.conn, ev)
-				if err != nil {
-					log.Error(err)
-				}
-
+				// ev := ExecutionResult{
+				// 	Time:     &now,
+				// 	Command:  execution.Command,
+				// 	Args:     args,
+				// 	Dir:      execution.Dir,
+				// 	Output:   output,
+				// 	ExitCode: cmd.ProcessState.ExitCode(),
+				// 	Duration: time.Since(start),
+				// }
+				//
+				// err = events.ProduceEvent(a.conn, ev)
+				// if err != nil {
+				// 	log.Error(err)
+				// }
+				//
 			}
 		}
 	}
@@ -218,6 +215,16 @@ func (a *Agent) startRPCListener() error {
 	log.WithFields(log.Fields{
 		"id": info.ID,
 	}).Debug("os-release")
+
+	if a.config.Builder != nil {
+		buildServer, err := newBuilder(a.config)
+		if err != nil {
+			log.Error(err)
+		}
+		if buildServer != nil {
+			RegisterBuildServer(a.grpcServer, buildServer)
+		}
+	}
 
 	switch info.ID {
 	case "freebsd":

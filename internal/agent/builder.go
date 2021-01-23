@@ -1,4 +1,4 @@
-package builder
+package agent
 
 import (
 	"encoding/json"
@@ -28,41 +28,6 @@ func NewBuilder(conn *grpc.ClientConn, cfg *config.BuilderConfig) *Builder {
 		config: cfg,
 		conn:   conn,
 	}
-}
-
-func (b *Builder) EventNames() []string {
-	var names []string
-
-	names = append(names, gitwatch.EventNames...)
-	names = append(names, "BuildTag")
-	names = append(names, "BuildBranch")
-
-	log.Debugf("builder responding to %d event names: %+v", len(names), names)
-
-	return names
-}
-
-// Subscriptions implements the events.Consumer interface
-func (b *Builder) Subscriptions() *events.Subscriptions {
-	s := events.NewSubscriptions()
-
-	for _, e := range b.EventNames() {
-		switch e {
-		case "NewCommit":
-			s.Subscribe(e, b.checkoutCommitHandler)
-		case "NewTag":
-			s.Subscribe(e, b.checkoutTagHandler)
-		default:
-			log.Errorf("unhandled execution event %s", e)
-		}
-	}
-
-	log.WithFields(log.Fields{
-		"handlers": s.Handlers,
-		"filters":  s.Filters,
-	}).Debug("event subscriptions")
-
-	return s
 }
 
 func (b *Builder) checkoutCommitHandler(name string, payload events.Payload) error {
