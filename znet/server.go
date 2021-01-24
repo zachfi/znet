@@ -48,10 +48,6 @@ func init() {
 
 		tempCoef,
 		waterTempCoef,
-
-		// rpc
-		rpcEventServerEventCount,
-		rpcEventServerSubscriberCount,
 	)
 }
 

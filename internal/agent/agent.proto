@@ -32,6 +32,13 @@ message ProjectStatus {
   string latest_tag = 2;
 }
 
+message BuildSpec {
+  ProjectSpec spec = 1;
+  string commit = 2;
+  string branch = 3;
+  string tag = 4;
+}
+
 service JailHost {
   rpc List(Empty) returns (Jails);
 
@@ -47,6 +54,6 @@ service Node {
 }
 
 service Build {
-  rpc FetchProject(ProjectSpec) returns (ProjectStatus);
-  rpc BuildProject(ProjectSpec) returns (CommandResult);
+  rpc BuildTag(BuildSpec) returns (CommandResult);
+  rpc BuildCommit(BuildSpec) returns (CommandResult);
 }

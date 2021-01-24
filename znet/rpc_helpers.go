@@ -7,7 +7,7 @@ import (
 	"google.golang.org/grpc/peer"
 )
 
-func peerCN(streamContext context.Context) string {
+func PeerCN(streamContext context.Context) string {
 
 	var subscriber string
 	peer, ok := peer.FromContext(streamContext)
