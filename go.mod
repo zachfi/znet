@@ -7,7 +7,7 @@ require (
 	github.com/amimof/huego v1.1.0
 	github.com/blang/semver/v4 v4.0.0
 	github.com/containerd/continuity v0.0.0-20200710164510-efbc4488d8fe // indirect
-	github.com/eclipse/paho.mqtt.golang v1.2.0
+	github.com/eclipse/paho.mqtt.golang v1.3.1
 	github.com/fatih/color v1.10.0 // indirect
 	github.com/go-git/go-git/v5 v5.2.0
 	github.com/go-ldap/ldap/v3 v3.2.4
