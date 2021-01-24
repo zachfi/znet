@@ -18,11 +18,6 @@ var (
 		Help: "The total number of events that have been seen since start",
 	}, []string{"event_name"})
 
-	eventRemoteSendErrorTotal = prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name: "znet_remote_send_error_total",
-		Help: "The total number of that returned an error when sent",
-	}, []string{"event_name"})
-
 	tempCoef = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "thing_air_temperature_coef",
 		Help: "Air Temperature Coefficient",

@@ -22,6 +22,23 @@ message CommandResult {
   int32 exit_code = 3;
 }
 
+message ProjectSpec {
+  string name = 1;
+  string url = 2;
+}
+
+message ProjectStatus {
+  string head_commit = 1;
+  string latest_tag = 2;
+}
+
+message BuildSpec {
+  ProjectSpec spec = 1;
+  string commit = 2;
+  string branch = 3;
+  string tag = 4;
+}
+
 service JailHost {
   rpc List(Empty) returns (Jails);
 
@@ -34,4 +51,9 @@ service JailHost {
 service Node {
   rpc RunPuppetAgent(Empty) returns (CommandResult);
   rpc PackageUpgrade(Empty) returns (CommandResult);
+}
+
+service Build {
+  rpc BuildTag(BuildSpec) returns (CommandResult);
+  rpc BuildCommit(BuildSpec) returns (CommandResult);
 }
