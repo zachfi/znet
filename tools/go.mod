@@ -5,7 +5,7 @@ go 1.15
 require (
 	github.com/client9/misspell v0.3.4
 	github.com/git-chglog/git-chglog v0.10.0
-	github.com/golangci/golangci-lint v1.35.2
+	github.com/golangci/golangci-lint v1.36.0
 	github.com/goreleaser/goreleaser v0.155.0
 	github.com/psampaz/go-mod-outdated v0.7.0
 	github.com/stretchr/testify v1.7.0
