@@ -130,6 +130,8 @@ func (e *EventProducer) scheduler(ctx context.Context) error {
 		"event_count": len(sch.All()),
 	}).Debug("astro scheduler started")
 
+	astroClient := NewAstroClient(e.conn)
+
 	go func() {
 		for {
 			names := sch.WaitForNext()
@@ -142,7 +144,6 @@ func (e *EventProducer) scheduler(ctx context.Context) error {
 			}
 
 			for _, n := range names {
-				astroClient := NewAstroClient(e.conn)
 
 				switch n {
 				case "Sunrise":
@@ -165,7 +166,6 @@ func (e *EventProducer) scheduler(ctx context.Context) error {
 				}
 
 				sch.Step()
-
 			}
 		}
 	}()

@@ -18,7 +18,6 @@ func NewServer(lig *lights.Lights) (*Server, error) {
 }
 
 func (t *Server) NamedTimer(ctx context.Context, req *NamedTimeStamp) (*Empty, error) {
-
 	err := t.lights.NamedTimerHandler(req.Name)
 	if err != nil {
 		return nil, err
