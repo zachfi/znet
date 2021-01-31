@@ -42,8 +42,11 @@ func NewAgent(cfg *config.Config, conn *grpc.ClientConn) (*Agent, error) {
 		conn:   conn,
 	}
 
-	if cfg.RPC != nil {
-		a.grpcServer = comms.StandardRPCServer(cfg.Vault, cfg.TLS)
+	var err error
+
+	a.grpcServer, err = comms.StandardRPCServer(cfg.Vault, cfg.TLS)
+	if err != nil {
+		return nil, err
 	}
 
 	return a, nil

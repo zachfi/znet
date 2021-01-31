@@ -8,8 +8,21 @@ import (
 	"github.com/xaque208/znet/internal/config"
 )
 
-func TestAgent_Basic(t *testing.T) {
+func TestAgent_emptyConfig(t *testing.T) {
 	config := &config.Config{}
-	ag := NewAgent(config, nil)
-	require.NotNil(t, ag)
+	ag, err := NewAgent(config, nil)
+	require.Error(t, err)
+	require.Nil(t, ag)
+}
+
+func TestAgent_IncompleteVaultConfig(t *testing.T) {
+	config := &config.Config{
+		TLS:   &config.TLSConfig{},
+		Vault: &config.VaultConfig{},
+		RPC:   &config.RPCConfig{},
+		Agent: &config.AgentConfig{},
+	}
+	ag, err := NewAgent(config, nil)
+	require.Error(t, err, "unsupported protocol scheme")
+	require.Nil(t, ag)
 }
