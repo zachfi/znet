@@ -1,8 +1,8 @@
 # zNet
 
-![Build Status](https://github.com/xaque208/znet/workflows/Compiling/badge.svg)
-
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/xaque208/znet)](https://pkg.go.dev/github.com/xaque208/znet)
+![Build Status](https://github.com/xaque208/znet/workflows/Compiling/badge.svg)
+[![Coverage Status](https://coveralls.io/repos/github/xaque208/znet/badge.svg)](https://coveralls.io/github/xaque208/znet)
 
 > It isn't the destination, but the journey.
 
