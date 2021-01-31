@@ -114,15 +114,6 @@ func (s *Server) startRPCListener() error {
 	inventory.RegisterInventoryServer(s.grpcServer, inventoryServer)
 
 	//
-	// astroServer
-	astroServer, err := astro.NewAstro(s.config)
-	if err != nil {
-		return err
-	}
-
-	astro.RegisterAstroServer(s.grpcServer, astroServer)
-
-	//
 	// lightsServer
 	lightsServer, err := lights.NewLights(s.config)
 	if err != nil {
@@ -130,6 +121,15 @@ func (s *Server) startRPCListener() error {
 	}
 
 	lights.RegisterLightsServer(s.grpcServer, lightsServer)
+
+	//
+	// astroServer
+	astroServer, err := astro.NewAstro(s.config, lightsServer)
+	if err != nil {
+		return err
+	}
+
+	astro.RegisterAstroServer(s.grpcServer, astroServer)
 
 	//
 	// telemetryServer
