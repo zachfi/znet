@@ -39,7 +39,7 @@ jobs:
       - name: Coverage Report
         run: make cover-report
 
-      - uses: jandelgado/gcov2lcov-action@v1.0.5
+      - uses: jandelgado/gcov2lcov-action@v1.0.8
         with:
           infile: coverage/coverage.out
           outfile: coverage/coverage.lcov
