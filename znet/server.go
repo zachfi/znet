@@ -20,20 +20,18 @@ import (
 	"github.com/xaque208/znet/internal/lights"
 	"github.com/xaque208/znet/internal/telemetry"
 	"github.com/xaque208/znet/internal/timer"
-	"github.com/xaque208/znet/pkg/eventmachine"
 )
 
 // Server is a znet Server.
 type Server struct {
-	cancel       func()
-	ctx          context.Context
-	eventMachine *eventmachine.EventMachine
-	grpcServer   *grpc.Server
-	httpConfig   *config.HTTPConfig
-	httpServer   *http.Server
-	ldapConfig   *config.LDAPConfig
-	rpcConfig    *config.RPCConfig
-	config       *config.Config
+	cancel     func()
+	ctx        context.Context
+	grpcServer *grpc.Server
+	httpConfig *config.HTTPConfig
+	httpServer *http.Server
+	ldapConfig *config.LDAPConfig
+	rpcConfig  *config.RPCConfig
+	config     *config.Config
 }
 
 type statusCheckHandler struct {
@@ -56,12 +54,6 @@ func init() {
 func NewServer(cfg *config.Config) (*Server, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 
-	eventMachine, err := eventmachine.New(ctx, nil)
-	if err != nil {
-		cancel()
-		return nil, err
-	}
-
 	var httpServer *http.Server
 	if cfg.HTTP.ListenAddress != "" {
 		httpServer = &http.Server{Addr: cfg.HTTP.ListenAddress}
@@ -78,9 +70,8 @@ func NewServer(cfg *config.Config) (*Server, error) {
 	}
 
 	return &Server{
-		ctx:          ctx,
-		cancel:       cancel,
-		eventMachine: eventMachine,
+		ctx:    ctx,
+		cancel: cancel,
 
 		config:     cfg,
 		httpConfig: cfg.HTTP,
@@ -154,7 +145,6 @@ func (s *Server) startRPCListener() error {
 
 	//
 	// rpcEventServer
-	// rpcEventServer := &eventServer{eventMachine: s.eventMachine, ctx: s.ctx}
 
 	// rpc.RegisterEventsServer(s.grpcServer, rpcEventServer)
 	// rpcEventServer.RegisterEvents(continuous.EventNames)
@@ -256,12 +246,6 @@ func (s *Server) Stop() error {
 	}
 
 	s.grpcServer.Stop()
-
-	err = s.eventMachine.Stop()
-	if err != nil {
-		errs = append(errs, err)
-	}
-	s.cancel()
 
 	if len(errs) > 0 {
 		return fmt.Errorf("errors while shutting down: %s", errs)
