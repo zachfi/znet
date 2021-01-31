@@ -1,3 +1,4 @@
+// Continuous is used to a git repository cached on disk.
 package continuous
 
 import (
@@ -10,6 +11,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// CI is the configuration for remote URLs, repo caching, and SSH authentication
 type CI struct {
 	URL        string
 	CacheDir   string
