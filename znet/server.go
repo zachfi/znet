@@ -53,12 +53,12 @@ func init() {
 
 // NewServer creates a new Server composed of the received information.
 // func NewServer(config Config, consumers []events.Consumer) *Server {
-func NewServer(cfg *config.Config) *Server {
+func NewServer(cfg *config.Config) (*Server, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	eventMachine, err := eventmachine.New(ctx, nil)
 	if err != nil {
-		log.Error(err)
+		return nil, err
 	}
 
 	var httpServer *http.Server
@@ -68,6 +68,11 @@ func NewServer(cfg *config.Config) *Server {
 
 	if cfg.HTTP == nil || cfg.RPC == nil {
 		log.Errorf("unable to build znet Server with nil HTTPConfig or RPCConfig")
+	}
+
+	grpcServer, err := comms.StandardRPCServer(cfg.Vault, cfg.TLS)
+	if err != nil {
+		return nil, err
 	}
 
 	return &Server{
@@ -82,8 +87,8 @@ func NewServer(cfg *config.Config) *Server {
 
 		httpServer: httpServer,
 
-		grpcServer: comms.StandardRPCServer(cfg.Vault, cfg.TLS),
-	}
+		grpcServer: grpcServer,
+	}, nil
 }
 
 func (s *statusCheckHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
