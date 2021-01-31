@@ -2,7 +2,9 @@ package comms
 
 import (
 	"crypto/tls"
+	"time"
 
+	"github.com/johanbrandhorst/certify"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -18,9 +20,17 @@ func StandardRPCServer(v *config.VaultConfig, t *config.TLSConfig) *grpc.Server 
 		log.Error(err)
 	}
 
-	c, err := newCertify(v, t)
-	if err != nil {
-		log.Error(err)
+	var c *certify.Certify
+
+	for {
+		c, err = newCertify(v, t)
+		if err != nil {
+			log.Error(err)
+			time.Sleep(3 * time.Second)
+			continue
+		}
+
+		break
 	}
 
 	tlsConfig := &tls.Config{

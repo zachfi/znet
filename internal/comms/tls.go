@@ -29,7 +29,7 @@ func newCertify(vaultConfig *config.VaultConfig, tlsConfig *config.TLSConfig) (*
 
 	client, err := NewSecretClient(*vaultConfig)
 	if err != nil {
-		log.Error(err)
+		return nil, &NilClinetError{Err: err}
 	}
 
 	authMethod := &vault.RenewingToken{
@@ -73,7 +73,7 @@ func newCertify(vaultConfig *config.VaultConfig, tlsConfig *config.TLSConfig) (*
 	}
 
 	logFormatter := log.TextFormatter{
-		FullTimestamp: true,
+		FullTimestamp: false,
 	}
 
 	logger := log.New()
