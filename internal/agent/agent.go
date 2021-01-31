@@ -19,22 +19,22 @@ type Agent struct {
 }
 
 // NewAgent returns a new *Agent from the given arguments.
-func NewAgent(cfg *config.Config, conn *grpc.ClientConn) *Agent {
+func NewAgent(cfg *config.Config, conn *grpc.ClientConn) (*Agent, error) {
 
 	if cfg.TLS == nil {
-		log.Warn("nil TLS config")
+		return nil, fmt.Errorf("nil TLS config")
 	}
 
 	if cfg.Vault == nil {
-		log.Warn("nil Vault config")
+		return nil, fmt.Errorf("nil Vault config")
 	}
 
 	if cfg.RPC == nil {
-		log.Warn("nil RPC config")
+		return nil, fmt.Errorf("nil RPC config")
 	}
 
 	if cfg.Agent == nil {
-		log.Warn("nil Agent config")
+		return nil, fmt.Errorf("nil Agent config")
 	}
 
 	a := &Agent{
@@ -46,7 +46,7 @@ func NewAgent(cfg *config.Config, conn *grpc.ClientConn) *Agent {
 		a.grpcServer = comms.StandardRPCServer(cfg.Vault, cfg.TLS)
 	}
 
-	return a
+	return a, nil
 }
 
 // Start calls start on the agent gRPC server.

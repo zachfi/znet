@@ -54,7 +54,10 @@ func runAgent(cmd *cobra.Command, args []string) {
 
 	var agentServer *agent.Agent
 	if z.Config.Agent != nil {
-		agentServer = agent.NewAgent(z.Config, conn)
+		agentServer, err = agent.NewAgent(z.Config, conn)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	err = agentServer.Start()
