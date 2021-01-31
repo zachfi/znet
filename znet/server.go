@@ -58,6 +58,7 @@ func NewServer(cfg *config.Config) (*Server, error) {
 
 	eventMachine, err := eventmachine.New(ctx, nil)
 	if err != nil {
+		cancel()
 		return nil, err
 	}
 
@@ -72,6 +73,7 @@ func NewServer(cfg *config.Config) (*Server, error) {
 
 	grpcServer, err := comms.StandardRPCServer(cfg.Vault, cfg.TLS)
 	if err != nil {
+		cancel()
 		return nil, err
 	}
 
