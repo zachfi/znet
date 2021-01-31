@@ -40,7 +40,11 @@ func (z *ZigbeeBridgeLog) UnmarshalJSON(data []byte) error {
 	z.Type, _ = v["type"].(string)
 	message := v["message"]
 
+	z.Meta = v["meta"].(map[string]interface{})
+
 	switch z.Type {
+	case "device_announced":
+		z.Message = v["message"].(string)
 	case "devices":
 		j, err := json.Marshal(message)
 		if err != nil {
