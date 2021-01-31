@@ -2,8 +2,6 @@ package iot
 
 import (
 	"encoding/json"
-
-	log "github.com/sirupsen/logrus"
 )
 
 type ZigbeeMessage struct {
@@ -40,15 +38,14 @@ func (z *ZigbeeBridgeLog) UnmarshalJSON(data []byte) error {
 	z.Type, _ = v["type"].(string)
 	message := v["message"]
 
-	z.Meta = v["meta"].(map[string]interface{})
-
 	switch z.Type {
 	case "device_announced":
 		z.Message = v["message"].(string)
+		z.Meta = v["meta"].(map[string]interface{})
 	case "devices":
 		j, err := json.Marshal(message)
 		if err != nil {
-			log.Error(err)
+			return err
 		}
 
 		m := ZigbeeBridgeMessageDevices{}
@@ -58,6 +55,9 @@ func (z *ZigbeeBridgeLog) UnmarshalJSON(data []byte) error {
 		}
 
 		z.Message = m
+	case "ota_update":
+		z.Meta = v["meta"].(map[string]interface{})
+		z.Message = v["message"].(string)
 	}
 
 	return nil
