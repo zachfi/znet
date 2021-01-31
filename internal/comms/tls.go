@@ -29,7 +29,7 @@ func newCertify(vaultConfig *config.VaultConfig, tlsConfig *config.TLSConfig) (*
 
 	client, err := NewSecretClient(*vaultConfig)
 	if err != nil {
-		return nil, &NilClinetError{Err: err}
+		return nil, err
 	}
 
 	authMethod := &vault.RenewingToken{
