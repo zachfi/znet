@@ -12,12 +12,7 @@ type Astro struct {
 	lights *lights.Lights
 }
 
-func NewAstro(cfg *config.Config) (*Astro, error) {
-	l, err := lights.NewLights(cfg)
-	if err != nil {
-		return nil, err
-	}
-
+func NewAstro(cfg *config.Config, l *lights.Lights) (*Astro, error) {
 	astroServer := &Astro{
 		lights: l,
 	}
