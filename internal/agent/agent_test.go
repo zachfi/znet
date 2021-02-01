@@ -1,3 +1,5 @@
+// +build unit
+
 package agent
 
 import (
@@ -15,14 +17,34 @@ func TestAgent_emptyConfig(t *testing.T) {
 	require.Nil(t, ag)
 }
 
-func TestAgent_IncompleteVaultConfig(t *testing.T) {
-	config := &config.Config{
-		TLS:   &config.TLSConfig{},
-		Vault: &config.VaultConfig{},
-		RPC:   &config.RPCConfig{},
-		Agent: &config.AgentConfig{},
-	}
-	ag, err := NewAgent(config, nil)
+func TestAgent_Config(t *testing.T) {
+	c := &config.Config{}
+
+	ag, err := NewAgent(c, nil)
+	require.Error(t, err, "no TLS config")
+	require.Nil(t, ag)
+
+	c.TLS = &config.TLSConfig{}
+
+	ag, err = NewAgent(c, nil)
+	require.Error(t, err, "no Vault config")
+	require.Nil(t, ag)
+
+	c.Vault = &config.VaultConfig{}
+
+	ag, err = NewAgent(c, nil)
+	require.Error(t, err, "no RPC config")
+	require.Nil(t, ag)
+
+	c.RPC = &config.RPCConfig{}
+
+	ag, err = NewAgent(c, nil)
+	require.Error(t, err, "no Agent config")
+	require.Nil(t, ag)
+
+	c.Agent = &config.AgentConfig{}
+
+	ag, err = NewAgent(c, nil)
 	require.Error(t, err, "unsupported protocol scheme")
 	require.Nil(t, ag)
 }
