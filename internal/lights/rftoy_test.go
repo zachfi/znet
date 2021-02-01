@@ -2,9 +2,13 @@
 
 package lights
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/require"
+)
 
 func TestRftoyLight_interface(t *testing.T) {
 	var l Handler = rftoyLight{}
-	t.Log(l)
+	require.NotNil(t, l)
 }
