@@ -1,6 +1,10 @@
 package lights
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/require"
+)
 
 type mockLight struct {
 	alertCalls       int
@@ -49,5 +53,5 @@ func (m *mockLight) Toggle(groupName string) error {
 
 func TestMockHandler_interface(t *testing.T) {
 	var l Handler = &mockLight{}
-	t.Log(l)
+	require.NotNil(t, l)
 }
