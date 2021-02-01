@@ -132,3 +132,120 @@ func TestParseTopicPath(t *testing.T) {
 	}
 
 }
+
+func testFloat(f float32) *float32 {
+	return &f
+}
+
+func TestReadMessage(t *testing.T) {
+	t.Parallel()
+
+	cases := []struct {
+		ObjectID string
+		Payload  []byte
+		Endpoint []string
+		Obj      interface{}
+		Err      error
+	}{
+		{
+			ObjectID: "wifi",
+			Payload:  []byte(`{"ssid":"testaroo"}`),
+			Endpoint: []string{"ssid"},
+			Obj: WifiMessage{
+				SSID: "testaroo",
+			},
+		},
+		{
+			ObjectID: "air",
+			Payload:  []byte(`{"temperature": 17.28}`),
+			Endpoint: []string{"temperature"},
+			Obj: AirMessage{
+				Temperature: testFloat(17.28),
+			},
+		},
+		{
+			ObjectID: "air",
+			Payload:  []byte(`{"humidity":50.5}`),
+			Endpoint: []string{"humidity"},
+			Obj: AirMessage{
+				Humidity: testFloat(50.5),
+			},
+		},
+		{
+			ObjectID: "water",
+			Payload:  []byte(`{"temperature":50.5}`),
+			Endpoint: []string{"temperature"},
+			Obj: WaterMessage{
+				Temperature: testFloat(50.5),
+			},
+		},
+		{
+			ObjectID: "led",
+			Payload:  []byte(`{"name":"test"}`),
+			Endpoint: []string{"config"},
+			Obj: LEDConfig{
+				Name: "test",
+			},
+		},
+		{
+			ObjectID: "led",
+			Payload:  []byte(`{"state":"on"}`),
+			Endpoint: []string{"color"},
+			Obj: LEDColor{
+				State: "on",
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		result, err := ReadMessage(tc.ObjectID, tc.Payload, tc.Endpoint...)
+		assert.NoError(t, err)
+		assert.Equal(t, tc.Obj, result)
+	}
+
+}
+
+func TestReadZigbeeMessage(t *testing.T) {
+	t.Parallel()
+
+	cases := []struct {
+		ObjectID string
+		Payload  []byte
+		Endpoint []string
+		Obj      interface{}
+		Err      error
+	}{
+		{
+			ObjectID: "bridge",
+			Payload:  []byte(`online`),
+			Endpoint: []string{"state"},
+			Obj:      ZigbeeBridgeState("online"),
+		},
+		{
+			ObjectID: "bridge",
+			Payload:  []byte(`{"message":"Update available for '0x001777090899e9c9'","meta":{"device":"0x001777090899e9c9","status":"available"},"type":"ota_update"}`),
+			Endpoint: []string{"log"},
+			Obj: ZigbeeBridgeLog{
+				Message: "Update available for '0x001777090899e9c9'",
+				Meta: map[string]interface{}{
+					"device": "0x001777090899e9c9",
+					"status": "available",
+				},
+				Type: "ota_update",
+			},
+		},
+		{
+			ObjectID: "bridge",
+			Payload:  []byte(`online`),
+			Endpoint: []string{"config"},
+			Obj:      nil,
+		},
+	}
+
+	for _, tc := range cases {
+		result, err := ReadZigbeeMessage(tc.ObjectID, tc.Payload, tc.Endpoint...)
+		assert.NoError(t, err)
+		assert.Equal(t, tc.Obj, result)
+	}
+
+}

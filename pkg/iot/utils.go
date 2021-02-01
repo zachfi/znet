@@ -84,7 +84,7 @@ func ReadZigbeeMessage(objectID string, payload []byte, endpoint ...string) (int
 				m := ZigbeeBridgeLog{}
 				err := json.Unmarshal(payload, &m)
 				if err != nil {
-					log.Error(err)
+					return nil, err
 				}
 				return m, nil
 			case "state":
@@ -103,7 +103,7 @@ func ReadZigbeeMessage(objectID string, payload []byte, endpoint ...string) (int
 			m := ZigbeeMessage{}
 			err := json.Unmarshal(payload, &m)
 			if err != nil {
-				log.Error(err)
+				return nil, err
 			}
 			return m, nil
 		}
@@ -138,7 +138,7 @@ func ReadMessage(objectID string, payload []byte, endpoint ...string) (interface
 		m := WaterMessage{}
 		err := json.Unmarshal(payload, &m)
 		if err != nil {
-			log.Error(err)
+			return nil, err
 		}
 		return m, nil
 	case "led":
@@ -147,15 +147,16 @@ func ReadMessage(objectID string, payload []byte, endpoint ...string) (interface
 				m := LEDConfig{}
 				err := json.Unmarshal(payload, &m)
 				if err != nil {
-					log.Error(err)
+					return nil, err
 				}
 				return m, nil
 			} else if endpoint[0] == "color" {
 				m := LEDColor{}
 				err := json.Unmarshal(payload, &m)
 				if err != nil {
-					log.Error(err)
+					return nil, err
 				}
+				return m, nil
 			}
 			return nil, fmt.Errorf("unhandled led endpoint: %s : %+v", endpoint, string(payload))
 		}
