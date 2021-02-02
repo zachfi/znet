@@ -34,10 +34,6 @@ type Server struct {
 	config     *config.Config
 }
 
-type statusCheckHandler struct {
-	server *Server
-}
-
 func init() {
 	prometheus.MustRegister(
 		eventTotal,
@@ -52,16 +48,28 @@ func init() {
 // NewServer creates a new Server composed of the received information.
 // func NewServer(config Config, consumers []events.Consumer) *Server {
 func NewServer(cfg *config.Config) (*Server, error) {
-	ctx, cancel := context.WithCancel(context.Background())
+	if cfg.HTTP == nil {
+		return nil, fmt.Errorf("unable to build znet Server with nil HTTP config")
+	}
+
+	if cfg.RPC == nil {
+		return nil, fmt.Errorf("unable to build znet Server with nil RPC config")
+	}
+
+	if cfg.Vault == nil {
+		return nil, fmt.Errorf("unable to build znet Server with nil Vault config")
+	}
+
+	if cfg.TLS == nil {
+		return nil, fmt.Errorf("unable to build znet Server with nil TLS config")
+	}
 
 	var httpServer *http.Server
 	if cfg.HTTP.ListenAddress != "" {
 		httpServer = &http.Server{Addr: cfg.HTTP.ListenAddress}
 	}
 
-	if cfg.HTTP == nil || cfg.RPC == nil {
-		log.Errorf("unable to build znet Server with nil HTTPConfig or RPCConfig")
-	}
+	ctx, cancel := context.WithCancel(context.Background())
 
 	grpcServer, err := comms.StandardRPCServer(cfg.Vault, cfg.TLS)
 	if err != nil {
@@ -82,23 +90,6 @@ func NewServer(cfg *config.Config) (*Server, error) {
 
 		grpcServer: grpcServer,
 	}, nil
-}
-
-func (s *statusCheckHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	status := make(map[string]interface{})
-
-	status["status"] = "healthy"
-
-	grpcInfo := s.server.grpcServer.GetServiceInfo()
-
-	status["grpcServices"] = len(grpcInfo)
-
-	payload, err := json.MarshalIndent(status, "", "  ")
-	if err != nil {
-		log.Error(err)
-	}
-
-	fmt.Fprint(w, string(payload))
 }
 
 func (s *Server) startRPCListener() error {
