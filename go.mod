@@ -5,6 +5,7 @@ go 1.13
 require (
 	github.com/Microsoft/go-winio v0.4.15 // indirect
 	github.com/amimof/huego v1.1.0
+	github.com/antchfx/htmlquery v1.2.3
 	github.com/blang/semver/v4 v4.0.0
 	github.com/containerd/continuity v0.0.0-20200710164510-efbc4488d8fe // indirect
 	github.com/eclipse/paho.mqtt.golang v1.3.1
@@ -18,6 +19,7 @@ require (
 	github.com/hashicorp/hcl v1.0.1-vault // indirect
 	github.com/hashicorp/vault/api v1.0.5-0.20201001211907-38d91b749c77
 	github.com/hashicorp/vault/sdk v0.1.14-0.20201214222404-d8fffe05d2f4
+	github.com/iancoleman/strcase v0.1.3
 	github.com/imdario/mergo v0.3.11
 	github.com/jarcoal/httpmock v1.0.6 // indirect
 	github.com/johanbrandhorst/certify v1.8.1

@@ -1,3 +1,5 @@
+// +build unit
+
 package znet
 
 import (
@@ -8,7 +10,6 @@ import (
 )
 
 func TestNewServer_missingConfigs(t *testing.T) {
-
 	cfg := &config.Config{}
 
 	s, err := NewServer(cfg)
@@ -36,10 +37,6 @@ func TestNewServer_missingConfigs(t *testing.T) {
 	cfg.TLS = &config.TLSConfig{}
 
 	s, err = NewServer(cfg)
-	require.Error(t, err, "unable to summon vault token")
-	require.Nil(t, s)
-
-	// s, err = NewServer(cfg)
-	// require.NoError(t, err)
-	// require.NotNil(t, s)
+	require.NoError(t, err)
+	require.NotNil(t, s)
 }
