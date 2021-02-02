@@ -25,7 +25,7 @@ func NewZnet(file string) (*Znet, error) {
 
 	cfg, err := config.LoadConfig(file)
 	if err != nil {
-		return &Znet{}, fmt.Errorf("failed to load config file %s: %s", file, err)
+		return nil, fmt.Errorf("failed to load config file %s: %s", file, err)
 	}
 
 	if cfg.Environments != nil && cfg.Vault != nil {
