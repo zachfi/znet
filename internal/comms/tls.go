@@ -138,14 +138,14 @@ func CABundle(vaultConfig *config.VaultConfig) (*x509.CertPool, error) {
 
 	secret, err := vaultClient.Logical().Read("pki/cert/ca")
 	if err != nil {
-		log.Errorf("error reading ca: %v", err)
+		return nil, err
 	}
 
 	roots := x509.NewCertPool()
 
 	parsedCertBundle, err := certutil.ParsePKIMap(secret.Data)
 	if err != nil {
-		log.Errorf("error parsing secret: %s", err)
+		return nil, err
 	}
 
 	roots.AddCert(parsedCertBundle.Certificate)

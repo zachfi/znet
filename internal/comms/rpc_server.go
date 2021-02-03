@@ -10,17 +10,19 @@ import (
 	"github.com/xaque208/znet/internal/config"
 )
 
-// StandardRPCServer returns a normal gRPC server.
-func StandardRPCServer(v *config.VaultConfig, t *config.TLSConfig) (*grpc.Server, error) {
+// RPCServerFunc is used to create a new RPC server using a received config.
+type RPCServerFunc func(*config.Config) (*grpc.Server, error)
 
-	roots, err := CABundle(v)
+// StandardRPCServer returns a normal gRPC server.
+func StandardRPCServer(cfg *config.Config) (*grpc.Server, error) {
+	roots, err := CABundle(cfg.Vault)
 	if err != nil {
 		return nil, err
 	}
 
 	var c *certify.Certify
 
-	c, err = newCertify(v, t)
+	c, err = newCertify(cfg.Vault, cfg.TLS)
 	if err != nil {
 		return nil, err
 	}
