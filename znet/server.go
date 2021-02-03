@@ -24,14 +24,11 @@ import (
 
 // Server is a znet Server.
 type Server struct {
-	cancel     func()
-	ctx        context.Context
-	grpcServer *grpc.Server
-	httpConfig *config.HTTPConfig
-	httpServer *http.Server
-	ldapConfig *config.LDAPConfig
-	rpcConfig  *config.RPCConfig
-	config     *config.Config
+	config        *config.Config
+	grpcServer    *grpc.Server
+	httpServer    *http.Server
+	NewHTTPServer comms.HTTPServerFunc
+	NewRPCServer  comms.RPCServerFunc
 }
 
 func init() {
@@ -64,38 +61,26 @@ func NewServer(cfg *config.Config) (*Server, error) {
 		return nil, fmt.Errorf("unable to build znet Server with nil TLS config")
 	}
 
-	var httpServer *http.Server
-	if cfg.HTTP.ListenAddress != "" {
-		httpServer = &http.Server{Addr: cfg.HTTP.ListenAddress}
-	}
-
-	ctx, cancel := context.WithCancel(context.Background())
-
-	grpcServer, err := comms.StandardRPCServer(cfg.Vault, cfg.TLS)
-	if err != nil {
-		cancel()
-		return nil, err
-	}
-
 	return &Server{
-		ctx:    ctx,
-		cancel: cancel,
+		config: cfg,
 
-		config:     cfg,
-		httpConfig: cfg.HTTP,
-		rpcConfig:  cfg.RPC,
-		ldapConfig: cfg.LDAP,
-
-		httpServer: httpServer,
-
-		grpcServer: grpcServer,
+		NewRPCServer:  comms.StandardRPCServer,
+		NewHTTPServer: comms.StandardHTTPServer,
 	}, nil
 }
 
 func (s *Server) startRPCListener() error {
+	if s.grpcServer == nil {
+		grpcServer, err := s.NewRPCServer(s.config)
+		if err != nil {
+			return err
+		}
+		s.grpcServer = grpcServer
+	}
+
 	//
 	// inventoryServer
-	inventoryServer, err := inventory.NewServer(s.ldapConfig)
+	inventoryServer, err := inventory.NewServer(s.config.LDAP)
 	if err != nil {
 		return err
 	}
@@ -122,7 +107,7 @@ func (s *Server) startRPCListener() error {
 
 	//
 	// telemetryServer
-	inv, err := inventory.NewInventory(s.ldapConfig)
+	inv, err := inventory.NewInventory(s.config.LDAP)
 	if err != nil {
 		return err
 	}
@@ -152,7 +137,7 @@ func (s *Server) startRPCListener() error {
 	timer.RegisterTimerServer(s.grpcServer, timerServer)
 
 	go func() {
-		lis, err := net.Listen("tcp", s.rpcConfig.ListenAddress)
+		lis, err := net.Listen("tcp", s.config.RPC.ListenAddress)
 		if err != nil {
 			log.Errorf("rpc failed to listen: %s", err)
 		}
@@ -167,6 +152,14 @@ func (s *Server) startRPCListener() error {
 }
 
 func (s *Server) startHTTPListener() error {
+	if s.httpServer == nil {
+		httpServer, err := s.NewHTTPServer(s.config)
+		if err != nil {
+			return err
+		}
+		s.httpServer = httpServer
+	}
+
 	go func() {
 		if err := s.httpServer.ListenAndServe(); err != nil {
 			if err != http.ErrServerClosed {
@@ -180,14 +173,13 @@ func (s *Server) startHTTPListener() error {
 
 // Start is used to launch the server routines.
 func (s *Server) Start(z *Znet) error {
-
 	http.Handle("/metrics", promhttp.Handler())
 	http.Handle("/status/check", &statusCheckHandler{server: s})
 	http.HandleFunc("/alerts", s.alertsHandler)
 
-	if s.httpConfig.ListenAddress != "" {
+	if s.config.HTTP.ListenAddress != "" {
 		log.WithFields(log.Fields{
-			"http_listen": s.httpConfig.ListenAddress,
+			"http_listen": s.config.HTTP.ListenAddress,
 		}).Info("starting HTTP listener")
 
 		err := s.startHTTPListener()
@@ -196,9 +188,9 @@ func (s *Server) Start(z *Znet) error {
 		}
 	}
 
-	if s.rpcConfig.ListenAddress != "" {
+	if s.config.RPC.ListenAddress != "" {
 		log.WithFields(log.Fields{
-			"rpc_listen": s.rpcConfig.ListenAddress,
+			"rpc_listen": s.config.RPC.ListenAddress,
 		}).Debug("starting RPC listener")
 
 		err := s.startRPCListener()
@@ -218,7 +210,7 @@ func (s *Server) Stop() error {
 	log.Debug("stopping znetd")
 
 	d := time.Now().Add(1500 * time.Millisecond)
-	ctx, cancel := context.WithDeadline(s.ctx, d)
+	ctx, cancel := context.WithDeadline(context.Background(), d)
 	defer cancel()
 
 	err = s.httpServer.Shutdown(ctx)
