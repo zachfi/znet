@@ -45,6 +45,6 @@ func TestAgent_Config(t *testing.T) {
 	c.Agent = &config.AgentConfig{}
 
 	ag, err = NewAgent(c, nil)
-	require.Error(t, err, "unsupported protocol scheme")
-	require.Nil(t, ag)
+	require.NoError(t, err)
+	require.NotNil(t, ag)
 }
