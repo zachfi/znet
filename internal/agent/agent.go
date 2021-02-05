@@ -13,9 +13,10 @@ import (
 
 // Agent is an RPC client worker bee.
 type Agent struct {
-	config     *config.Config
-	conn       *grpc.ClientConn
-	grpcServer *grpc.Server
+	config       *config.Config
+	conn         *grpc.ClientConn
+	grpcServer   *grpc.Server
+	NewRPCServer comms.RPCServerFunc
 }
 
 // NewAgent returns a new *Agent from the given arguments.
@@ -40,13 +41,6 @@ func NewAgent(cfg *config.Config, conn *grpc.ClientConn) (*Agent, error) {
 	a := &Agent{
 		config: cfg,
 		conn:   conn,
-	}
-
-	var err error
-
-	a.grpcServer, err = comms.StandardRPCServer(cfg.Vault, cfg.TLS)
-	if err != nil {
-		return nil, err
 	}
 
 	return a, nil
@@ -82,6 +76,14 @@ func (a *Agent) Stop() error {
 }
 
 func (a *Agent) startRPCListener() error {
+	if a.grpcServer == nil {
+		grpcServer, err := a.NewRPCServer(a.config)
+		if err != nil {
+			return err
+		}
+		a.grpcServer = grpcServer
+	}
+
 	info, err := readOSRelease()
 	if err != nil {
 		return err
