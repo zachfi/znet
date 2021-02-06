@@ -42,7 +42,7 @@ func TestReportIOTDevice_nilDiscovery(t *testing.T) {
 	require.Nil(t, response)
 }
 
-func TestReportIOTDevice_lights(t *testing.T) {
+func TestReportIOTDevice_lights_handling(t *testing.T) {
 	log.SetLevel(log.DebugLevel)
 	defer log.SetLevel(log.InfoLevel)
 
@@ -79,18 +79,55 @@ func TestReportIOTDevice_lights(t *testing.T) {
 				ToggleCalls: map[string]int{"dungeon": 1},
 			},
 		},
+		{
+			Req: &inventory.IOTDevice{
+				DeviceDiscovery: &iot.DeviceDiscovery{
+					ObjectId:  zigbeeDeviceName,
+					Component: "zigbee2mqtt",
+					Message:   []byte(`{"action":"hold","battery":100,"linkquality":0,"voltage":3042}`),
+				},
+			},
+			Zone: "dungeon",
+			Handler: &lights.MockLight{
+				DimCalls: map[string]int{"dungeon": 1},
+			},
+		},
+		{
+			Req: &inventory.IOTDevice{
+				DeviceDiscovery: &iot.DeviceDiscovery{
+					ObjectId:  zigbeeDeviceName,
+					Component: "zigbee2mqtt",
+					Message:   []byte(`{"action":"quadruple","battery":100,"linkquality":0,"voltage":3042}`),
+				},
+			},
+			Zone: "dungeon",
+			Handler: &lights.MockLight{
+				RandomColorCalls: map[string]int{"dungeon": 1},
+			},
+		},
+		{
+			Req: &inventory.IOTDevice{
+				DeviceDiscovery: &iot.DeviceDiscovery{
+					ObjectId:  zigbeeDeviceName,
+					Component: "zigbee2mqtt",
+					Message:   []byte(`{"action":"triple","battery":100,"linkquality":0,"voltage":3042}`),
+				},
+			},
+			Zone: "dungeon",
+			Handler: &lights.MockLight{
+				OffCalls: map[string]int{"dungeon": 1},
+			},
+		},
 	}
 
 	for _, tc := range testCases {
 
 		lightsConfig := &config.Config{
 			Lights: &config.LightsConfig{
+				PartyColors: []string{"#f33333"},
 				Rooms: []config.LightsRoom{
 					{
-						Name:   "dungeon",
-						On:     []string{"double"},
-						Off:    []string{"triple"},
-						Toggle: []string{"triple"},
+						Name: "dungeon",
 					},
 				},
 			},
@@ -116,9 +153,11 @@ func TestReportIOTDevice_lights(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, response)
 
+		// inventory
 		require.Equal(t, 1, i.FetchZigbeeDeviceCalls[zigbeeDeviceName])
 		require.Equal(t, 0, len(i.CreateZigbeeDeviceCalls))
 
+		// lights handler
 		require.Equal(t, tc.Handler, h)
 	}
 
