@@ -4,6 +4,7 @@ import (
 	context "context"
 	"fmt"
 	"sort"
+	sync "sync"
 
 	"github.com/mpvl/unique"
 	log "github.com/sirupsen/logrus"
@@ -15,6 +16,7 @@ import (
 // Lights holds the information necessary to communicate with lighting
 // equipment, and the configuration to add a bit of context.
 type Lights struct {
+	sync.Mutex
 	config   *config.LightsConfig
 	handlers []Handler
 }
@@ -23,42 +25,38 @@ type Lights struct {
 // configuration.
 // func NewLights(cfg *config.LightsConfig, inventoryClient rpc.InventoryClient, mqttClient mqtt.Client) *Lights {
 func NewLights(cfg *config.Config) (*Lights, error) {
-	hue, err := NewHueLight(cfg.Lights)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create new hue light: %s", err)
-	}
-
-	zigbee, err := NewZigbeeLight(cfg)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create new zigbee light: %s", err)
-	}
-
-	rftoy, err := NewRFToyLight(cfg.Lights)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create new rftoy light: %s", err)
+	if cfg == nil {
+		return nil, fmt.Errorf("unable to create new Lights from nil config")
 	}
 
 	return &Lights{
-		config:   cfg.Lights,
-		handlers: []Handler{hue, zigbee, rftoy},
+		config: cfg.Lights,
 	}, nil
 }
 
-func (l *Lights) ClickHandler(click *iot.Click) error {
+// AddHandler is the way to register a new Handler with the Lights server.
+func (l *Lights) AddHandler(h Handler) {
+	l.Lock()
+	defer l.Unlock()
+
+	l.handlers = append(l.handlers, h)
+}
+
+func (l *Lights) ActionHandler(action *iot.Action) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	room := l.getRoom(click.Zone)
+	room := l.getRoom(action.Zone)
 	if room == nil {
-		return fmt.Errorf("no room named %s was found in config", click.Zone)
+		return fmt.Errorf("no room named %s was found in config", action.Zone)
 	}
 
 	log.WithFields(log.Fields{
 		"room_name": room.Name,
-		"zone":      click.Zone,
-		"device":    click.Device,
-		"count":     click.Count,
-	}).Trace("clicking room")
+		"zone":      action.Zone,
+		"device":    action.Device,
+		"event":     action.Event,
+	}).Trace("room action")
 
 	alert := false
 	dim := false
@@ -73,7 +71,7 @@ func (l *Lights) ClickHandler(click *iot.Click) error {
 		Name:       room.Name,
 	}
 
-	switch click.Count {
+	switch action.Event {
 	case "single":
 		toggle = true
 	case "double":
@@ -92,7 +90,7 @@ func (l *Lights) ClickHandler(click *iot.Click) error {
 	case "many":
 		alert = true
 	default:
-		log.Debugf("unknown click event: %s", click.Count)
+		log.Debugf("unknown action event: %s", action.Event)
 	}
 
 	if toggle {
@@ -134,6 +132,10 @@ func (l *Lights) ClickHandler(click *iot.Click) error {
 }
 
 func (l *Lights) getRoom(name string) *config.LightsRoom {
+	if l.config == nil {
+		return nil
+	}
+
 	for _, room := range l.config.Rooms {
 		if room.Name == name {
 			return &room

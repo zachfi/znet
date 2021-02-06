@@ -11,6 +11,12 @@ import (
 	"github.com/xaque208/znet/internal/config"
 )
 
+func TestNewLights(t *testing.T) {
+	l, err := NewLights(nil)
+	require.Error(t, err)
+	require.Nil(t, l)
+}
+
 func TestAlert(t *testing.T) {
 	h := &mockLight{}
 	l := &Lights{
