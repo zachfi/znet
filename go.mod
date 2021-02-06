@@ -48,7 +48,6 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.7.0
-	github.com/tcnksm/go-input v0.0.0-20180404061846-548a7d7a8ee8
 	github.com/xanzy/ssh-agent v0.3.0 // indirect
 	github.com/xaque208/rftoy v0.0.0-20191203015236-4727b87c3461
 	golang.org/x/crypto v0.0.0-20201117144127-c1f2f97bffc9
