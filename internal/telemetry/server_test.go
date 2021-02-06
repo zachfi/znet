@@ -1,0 +1,125 @@
+// +build unit
+
+package telemetry
+
+import (
+	"context"
+	"testing"
+
+	log "github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/require"
+	"github.com/xaque208/znet/internal/config"
+	"github.com/xaque208/znet/internal/inventory"
+	"github.com/xaque208/znet/internal/lights"
+	"github.com/xaque208/znet/pkg/iot"
+)
+
+var zigbeeDeviceName string = "0x00158d0004238a81"
+
+func TestNewServer(t *testing.T) {
+	l := &lights.Lights{}
+	h := &lights.MockLight{}
+	l.AddHandler(h)
+
+	s, err := NewServer(&inventory.MockInventory{}, l)
+	require.NoError(t, err)
+	require.NotNil(t, s)
+}
+
+func TestReportIOTDevice_nilDiscovery(t *testing.T) {
+	l := &lights.Lights{}
+	h := &lights.MockLight{}
+	l.AddHandler(h)
+
+	s, err := NewServer(&inventory.MockInventory{}, l)
+	require.NoError(t, err)
+	require.NotNil(t, s)
+
+	req := &inventory.IOTDevice{}
+
+	response, err := s.ReportIOTDevice(context.Background(), req)
+	require.Error(t, err)
+	require.Nil(t, response)
+}
+
+func TestReportIOTDevice_lights(t *testing.T) {
+	log.SetLevel(log.DebugLevel)
+	defer log.SetLevel(log.InfoLevel)
+
+	testCases := []struct {
+		Handler *lights.MockLight
+		Req     *inventory.IOTDevice
+		Zone    string
+	}{
+		{
+			Req: &inventory.IOTDevice{
+				DeviceDiscovery: &iot.DeviceDiscovery{
+					ObjectId:  zigbeeDeviceName,
+					Component: "zigbee2mqtt",
+					Message:   []byte(`{"action":"double","battery":100,"linkquality":0,"voltage":3042}`),
+				},
+			},
+			Zone: "dungeon",
+			Handler: &lights.MockLight{
+				OnCalls:       map[string]int{"dungeon": 1},
+				SetColorCalls: map[string]int{"dungeon": 1},
+				DimCalls:      map[string]int{"dungeon": 1},
+			},
+		},
+		{
+			Req: &inventory.IOTDevice{
+				DeviceDiscovery: &iot.DeviceDiscovery{
+					ObjectId:  zigbeeDeviceName,
+					Component: "zigbee2mqtt",
+					Message:   []byte(`{"action":"single","battery":100,"linkquality":0,"voltage":3042}`),
+				},
+			},
+			Zone: "dungeon",
+			Handler: &lights.MockLight{
+				ToggleCalls: map[string]int{"dungeon": 1},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+
+		lightsConfig := &config.Config{
+			Lights: &config.LightsConfig{
+				Rooms: []config.LightsRoom{
+					{
+						Name:   "dungeon",
+						On:     []string{"double"},
+						Off:    []string{"triple"},
+						Toggle: []string{"triple"},
+					},
+				},
+			},
+		}
+
+		// l := &lights.Lights{}
+		l, err := lights.NewLights(lightsConfig)
+		require.NoError(t, err)
+		require.NotNil(t, l)
+		h := &lights.MockLight{}
+		l.AddHandler(h)
+
+		i := &inventory.MockInventory{}
+		i.FetchZigbeeDeviceResponse = &inventory.ZigbeeDevice{
+			Name:    zigbeeDeviceName,
+			IotZone: "dungeon",
+		}
+
+		s, err := NewServer(i, l)
+		require.NoError(t, err)
+		require.NotNil(t, s)
+		response, err := s.ReportIOTDevice(context.Background(), tc.Req)
+		require.NoError(t, err)
+		require.NotNil(t, response)
+
+		require.Equal(t, 1, i.FetchZigbeeDeviceCalls[zigbeeDeviceName])
+		require.Equal(t, 0, len(i.CreateZigbeeDeviceCalls))
+
+		require.Equal(t, tc.Handler, h)
+	}
+
+}

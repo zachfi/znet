@@ -19,7 +19,7 @@ import (
 
 type Server struct {
 	lights     *lights.Lights
-	inventory  *inventory.Inventory
+	inventory  inventory.Inventory
 	keeper     thingKeeper
 	seenThings map[string]time.Time
 }
@@ -27,7 +27,7 @@ type Server struct {
 type thingKeeper map[string]map[string]string
 
 // NewServer returns a new Server.
-func NewServer(inv *inventory.Inventory, lig *lights.Lights) (*Server, error) {
+func NewServer(inv inventory.Inventory, lig *lights.Lights) (*Server, error) {
 	s := &Server{
 		lights:     lig,
 		inventory:  inv,
@@ -124,16 +124,14 @@ func (l *Server) findMACs(macs []string) ([]*inventory.NetworkHost, []*inventory
 		return nil, nil, err
 	}
 
-	if networkHosts != nil {
-		for i := range *networkHosts {
-			x := proto.Clone(&(*networkHosts)[i]).(*inventory.NetworkHost)
+	for i := range networkHosts {
+		x := proto.Clone(&(networkHosts)[i]).(*inventory.NetworkHost)
 
-			if x.MacAddress != nil {
-				for _, m := range x.MacAddress {
-					for _, mm := range macs {
-						if strings.EqualFold(m, mm) {
-							keepHosts = append(keepHosts, x)
-						}
+		if x.MacAddress != nil {
+			for _, m := range x.MacAddress {
+				for _, mm := range macs {
+					if strings.EqualFold(m, mm) {
+						keepHosts = append(keepHosts, x)
 					}
 				}
 			}
@@ -145,16 +143,14 @@ func (l *Server) findMACs(macs []string) ([]*inventory.NetworkHost, []*inventory
 		return nil, nil, err
 	}
 
-	if networkIDs != nil {
-		for i := range *networkIDs {
-			x := proto.Clone(&(*networkIDs)[i]).(*inventory.NetworkID)
+	for i := range networkIDs {
+		x := proto.Clone(&(networkIDs)[i]).(*inventory.NetworkID)
 
-			if x.MacAddress != nil {
-				for _, m := range x.MacAddress {
-					for _, mm := range macs {
-						if strings.EqualFold(m, mm) {
-							keepIds = append(keepIds, x)
-						}
+		if x.MacAddress != nil {
+			for _, m := range x.MacAddress {
+				for _, mm := range macs {
+					if strings.EqualFold(m, mm) {
+						keepIds = append(keepIds, x)
 					}
 				}
 			}
@@ -242,6 +238,10 @@ func (l *Server) ReportIOTDevice(ctx context.Context, request *inventory.IOTDevi
 
 	var err error
 
+	if request.DeviceDiscovery == nil {
+		return nil, fmt.Errorf("unable to receive IOTDevice with nil DeviceDiscovery")
+	}
+
 	log.WithFields(log.Fields{
 		"component": request.DeviceDiscovery.Component,
 		"node_id":   request.DeviceDiscovery.NodeId,
@@ -287,21 +287,6 @@ func (l *Server) ReportIOTDevice(ctx context.Context, request *inventory.IOTDevi
 		}
 	default:
 		telemetryIOTUnhandledReport.WithLabelValues(discovery.ObjectId, discovery.Component).Inc()
-	}
-
-	// Record an observation if all our parts are filled in.
-	labels := l.nodeLabels(discovery.NodeId)
-	if l.hasLabels(discovery.NodeId, []string{"ip", "mac"}) {
-		iotNode := iot.Node{
-			IP:         labels["ip"],
-			MACAddress: labels["mac"],
-			NodeID:     discovery.NodeId,
-		}
-
-		err := l.inventory.ObserveIOT(iotNode)
-		if err != nil {
-			log.Error(err)
-		}
 	}
 
 	return &inventory.Empty{}, nil
@@ -396,14 +381,14 @@ func (l *Server) handleZigbeeReport(request *inventory.IOTDevice) error {
 				}
 			}
 
-			if m.Click != "" {
-				click := &iot.Click{
-					Count:  m.Click,
+			if m.Action != "" {
+				action := &iot.Action{
+					Event:  m.Action,
 					Device: x.Name,
 					Zone:   result.IotZone,
 				}
 
-				err = l.lights.ClickHandler(click)
+				err = l.lights.ActionHandler(action)
 				if err != nil {
 					log.Error(err)
 				}
