@@ -7,12 +7,12 @@ import (
 
 // Server
 type Server struct {
-	inventory *Inventory
+	inventory Inventory
 }
 
 // NewServer is used to return a new Server, which implements the inventory RPC server.
-func NewServer(cfg *config.LDAPConfig) (*Server, error) {
-	inv, err := NewInventory(cfg)
+func NewLDAPServer(cfg *config.LDAPConfig) (*Server, error) {
+	inv, err := NewLDAPInventory(cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +35,7 @@ func (e *Server) ListNetworkHosts(req *Empty, stream Inventory_ListNetworkHostsS
 
 	// outputType: NetworkHost
 	if results != nil {
-		for _, r := range *results {
+		for _, r := range results {
 			xxx := &NetworkHost{}
 			xxx.Role = r.Role                       // TYPE_STRING
 			xxx.Group = r.Group                     // TYPE_STRING
@@ -85,7 +85,7 @@ func (e *Server) ListNetworkIDs(req *Empty, stream Inventory_ListNetworkIDsServe
 
 	// outputType: NetworkID
 	if results != nil {
-		for _, r := range *results {
+		for _, r := range results {
 			xxx := &NetworkID{}
 			xxx.Name = r.Name // TYPE_STRING
 			if r.MacAddress != nil {
@@ -127,7 +127,7 @@ func (e *Server) ListZigbeeDevices(req *Empty, stream Inventory_ListZigbeeDevice
 
 	// outputType: ZigbeeDevice
 	if results != nil {
-		for _, r := range *results {
+		for _, r := range results {
 			xxx := &ZigbeeDevice{}
 			xxx.Name = r.Name               // TYPE_STRING
 			xxx.Description = r.Description // TYPE_STRING

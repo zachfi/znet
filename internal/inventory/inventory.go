@@ -1,65 +1,36 @@
+// Code generated, do not edit
 package inventory
 
-import (
-	"crypto/tls"
-	"fmt"
-	"sync"
-	"time"
+// Inventory is the interface to implement for CRUD against a data store of network devices.
+type Inventory interface {
+	UpdateTimestamp(string, string) error
 
-	ldap "github.com/go-ldap/ldap/v3"
-
-	"github.com/xaque208/znet/internal/config"
-)
-
-// Inventory holds hte coniguration and clients necessary to retrieve information from data sources.
-type Inventory struct {
-	config *config.LDAPConfig
-	conn   *ldap.Conn
-	mux    sync.Mutex
-}
-
-// NewInventory returns a new Inventory object from the received config.
-func NewInventory(cfg *config.LDAPConfig) (*Inventory, error) {
-	conn, err := NewLDAPClient(cfg)
-	if err != nil {
-		return nil, fmt.Errorf("failed LDAP connection: %s", err)
-	}
-
-	return &Inventory{
-		config: cfg,
-		conn:   conn,
-	}, nil
-}
-
-// Close closes the LDAP client.
-func (i *Inventory) Close() {
-	i.conn.Close()
-}
-
-func (i *Inventory) reconnect() error {
-	// Make sure old connection if definitely closed
-	i.mux.Lock()
-	i.conn.Close()
-
-	// Connect to LDAP
-	l, err := ldap.DialTLS(
-		"tcp",
-		fmt.Sprintf("%s:%d", i.config.Host, 636),
-		&tls.Config{InsecureSkipVerify: true},
-	)
-	if err != nil {
-		return err
-	}
-
-	l.SetTimeout(15 * time.Second)
-
-	// First bind with a read only user
-	err = l.Bind(i.config.BindDN, i.config.BindPW)
-	if err != nil {
-		return err
-	}
-
-	i.conn = l
-	i.mux.Unlock()
-	return nil
+	CreateNetworkHost(*NetworkHost) (*NetworkHost, error)
+	FetchNetworkHost(string) (*NetworkHost, error)
+	ListNetworkHosts() ([]NetworkHost, error)
+	UpdateNetworkHost(*NetworkHost) (*NetworkHost, error)
+	CreateNetworkID(*NetworkID) (*NetworkID, error)
+	FetchNetworkID(string) (*NetworkID, error)
+	ListNetworkIDs() ([]NetworkID, error)
+	UpdateNetworkID(*NetworkID) (*NetworkID, error)
+	CreateL3Network(*L3Network) (*L3Network, error)
+	FetchL3Network(string) (*L3Network, error)
+	ListL3Networks() ([]L3Network, error)
+	UpdateL3Network(*L3Network) (*L3Network, error)
+	CreateInetNetwork(*InetNetwork) (*InetNetwork, error)
+	FetchInetNetwork(string) (*InetNetwork, error)
+	ListInetNetworks() ([]InetNetwork, error)
+	UpdateInetNetwork(*InetNetwork) (*InetNetwork, error)
+	CreateInet6Network(*Inet6Network) (*Inet6Network, error)
+	FetchInet6Network(string) (*Inet6Network, error)
+	ListInet6Networks() ([]Inet6Network, error)
+	UpdateInet6Network(*Inet6Network) (*Inet6Network, error)
+	CreateZigbeeDevice(*ZigbeeDevice) (*ZigbeeDevice, error)
+	FetchZigbeeDevice(string) (*ZigbeeDevice, error)
+	ListZigbeeDevices() ([]ZigbeeDevice, error)
+	UpdateZigbeeDevice(*ZigbeeDevice) (*ZigbeeDevice, error)
+	CreateIOTZone(*IOTZone) (*IOTZone, error)
+	FetchIOTZone(string) (*IOTZone, error)
+	ListIOTZones() ([]IOTZone, error)
+	UpdateIOTZone(*IOTZone) (*IOTZone, error)
 }
