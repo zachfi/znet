@@ -80,7 +80,7 @@ func (s *Server) startRPCListener() error {
 
 	//
 	// inventoryServer
-	inventoryServer, err := inventory.NewServer(s.config.LDAP)
+	inventoryServer, err := inventory.NewLDAPServer(s.config.LDAP)
 	if err != nil {
 		return err
 	}
@@ -92,6 +92,27 @@ func (s *Server) startRPCListener() error {
 	lightsServer, err := lights.NewLights(s.config)
 	if err != nil {
 		return err
+	}
+
+	hue, err := lights.NewHueLight(s.config.Lights)
+	if err != nil {
+		log.Error(err)
+	} else {
+		lightsServer.AddHandler(hue)
+	}
+
+	zigbee, err := lights.NewZigbeeLight(s.config)
+	if err != nil {
+		log.Error(err)
+	} else {
+		lightsServer.AddHandler(zigbee)
+	}
+
+	rftoy, err := lights.NewRFToyLight(s.config.Lights)
+	if err != nil {
+		log.Error(err)
+	} else {
+		lightsServer.AddHandler(rftoy)
 	}
 
 	lights.RegisterLightsServer(s.grpcServer, lightsServer)
@@ -107,7 +128,7 @@ func (s *Server) startRPCListener() error {
 
 	//
 	// telemetryServer
-	inv, err := inventory.NewInventory(s.config.LDAP)
+	inv, err := inventory.NewLDAPInventory(s.config.LDAP)
 	if err != nil {
 		return err
 	}
