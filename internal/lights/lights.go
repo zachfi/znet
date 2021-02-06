@@ -58,12 +58,6 @@ func (l *Lights) ActionHandler(action *iot.Action) error {
 		"event":     action.Event,
 	}).Trace("room action")
 
-	alert := false
-	dim := false
-	on := false
-	toggle := false
-	color := false
-
 	request := &LightGroupRequest{
 		Brightness: 254,
 		Color:      "#ffffff",
@@ -73,59 +67,36 @@ func (l *Lights) ActionHandler(action *iot.Action) error {
 
 	switch action.Event {
 	case "single":
-		toggle = true
+		_, err := l.Toggle(ctx, request)
+		return err
 	case "double":
-		dim = true
-		on = true
-		color = true
+		_, err := l.On(ctx, request)
+		if err != nil {
+			return err
+		}
+
+		_, err = l.Dim(ctx, request)
+		if err != nil {
+			return err
+		}
+
+		_, err = l.SetColor(ctx, request)
+		return err
 	case "triple":
 		_, err := l.Off(ctx, request)
 		return err
 	case "quadruple":
 		_, err := l.RandomColor(ctx, request)
 		return err
-	case "long", "long_release":
-		dim = true
+	case "hold", "release":
 		request.Brightness = 110
+		_, err := l.Dim(ctx, request)
+		return err
 	case "many":
-		alert = true
+		_, err := l.Alert(ctx, request)
+		return err
 	default:
 		log.Debugf("unknown action event: %s", action.Event)
-	}
-
-	if toggle {
-		_, err := l.Toggle(ctx, request)
-		if err != nil {
-			log.Error(err)
-		}
-	}
-
-	if on {
-		_, err := l.On(ctx, request)
-		if err != nil {
-			log.Error(err)
-		}
-	}
-
-	if alert {
-		_, err := l.Alert(ctx, request)
-		if err != nil {
-			log.Error(err)
-		}
-	}
-
-	if dim {
-		_, err := l.Dim(ctx, request)
-		if err != nil {
-			log.Error(err)
-		}
-	}
-
-	if color {
-		_, err := l.SetColor(ctx, request)
-		if err != nil {
-			log.Error(err)
-		}
 	}
 
 	return nil
@@ -293,7 +264,7 @@ func (l *Lights) RandomColor(ctx context.Context, req *LightGroupRequest) (*Ligh
 		return nil, fmt.Errorf("request contained no colors to select from")
 	}
 	for _, h := range l.handlers {
-		err := h.On(req.Name)
+		err := h.RandomColor(req.Name, req.Colors)
 		if err != nil {
 			log.Error(err)
 		}
