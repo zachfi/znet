@@ -7,7 +7,7 @@ import (
 type ZigbeeMessage struct {
 	Battery     int    `json:"battery,omitempty"`
 	LinkQuality int    `json:"linkquality,omitempty"`
-	Click       string `json:"click,omitempty"`
+	Action      string `json:"action,omitempty"`
 	Voltage     int    `json:"voltage,omitempty"`
 }
 

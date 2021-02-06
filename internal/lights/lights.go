@@ -4,6 +4,7 @@ import (
 	context "context"
 	"fmt"
 	"sort"
+	sync "sync"
 
 	"github.com/mpvl/unique"
 	log "github.com/sirupsen/logrus"
@@ -15,6 +16,7 @@ import (
 // Lights holds the information necessary to communicate with lighting
 // equipment, and the configuration to add a bit of context.
 type Lights struct {
+	sync.Mutex
 	config   *config.LightsConfig
 	handlers []Handler
 }
@@ -23,48 +25,38 @@ type Lights struct {
 // configuration.
 // func NewLights(cfg *config.LightsConfig, inventoryClient rpc.InventoryClient, mqttClient mqtt.Client) *Lights {
 func NewLights(cfg *config.Config) (*Lights, error) {
-	hue, err := NewHueLight(cfg.Lights)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create new hue light: %s", err)
-	}
-
-	zigbee, err := NewZigbeeLight(cfg)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create new zigbee light: %s", err)
-	}
-
-	rftoy, err := NewRFToyLight(cfg.Lights)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create new rftoy light: %s", err)
+	if cfg == nil {
+		return nil, fmt.Errorf("unable to create new Lights from nil config")
 	}
 
 	return &Lights{
-		config:   cfg.Lights,
-		handlers: []Handler{hue, zigbee, rftoy},
+		config: cfg.Lights,
 	}, nil
 }
 
-func (l *Lights) ClickHandler(click *iot.Click) error {
+// AddHandler is the way to register a new Handler with the Lights server.
+func (l *Lights) AddHandler(h Handler) {
+	l.Lock()
+	defer l.Unlock()
+
+	l.handlers = append(l.handlers, h)
+}
+
+func (l *Lights) ActionHandler(action *iot.Action) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	room := l.getRoom(click.Zone)
+	room := l.getRoom(action.Zone)
 	if room == nil {
-		return fmt.Errorf("no room named %s was found in config", click.Zone)
+		return fmt.Errorf("no room named %s was found in config", action.Zone)
 	}
 
 	log.WithFields(log.Fields{
 		"room_name": room.Name,
-		"zone":      click.Zone,
-		"device":    click.Device,
-		"count":     click.Count,
-	}).Trace("clicking room")
-
-	alert := false
-	dim := false
-	on := false
-	toggle := false
-	color := false
+		"zone":      action.Zone,
+		"device":    action.Device,
+		"event":     action.Event,
+	}).Trace("room action")
 
 	request := &LightGroupRequest{
 		Brightness: 254,
@@ -73,67 +65,48 @@ func (l *Lights) ClickHandler(click *iot.Click) error {
 		Name:       room.Name,
 	}
 
-	switch click.Count {
+	switch action.Event {
 	case "single":
-		toggle = true
+		_, err := l.Toggle(ctx, request)
+		return err
 	case "double":
-		dim = true
-		on = true
-		color = true
+		_, err := l.On(ctx, request)
+		if err != nil {
+			return err
+		}
+
+		_, err = l.Dim(ctx, request)
+		if err != nil {
+			return err
+		}
+
+		_, err = l.SetColor(ctx, request)
+		return err
 	case "triple":
 		_, err := l.Off(ctx, request)
 		return err
 	case "quadruple":
 		_, err := l.RandomColor(ctx, request)
 		return err
-	case "long", "long_release":
-		dim = true
+	case "hold", "release":
 		request.Brightness = 110
-	case "many":
-		alert = true
-	default:
-		log.Debugf("unknown click event: %s", click.Count)
-	}
-
-	if toggle {
-		_, err := l.Toggle(ctx, request)
-		if err != nil {
-			log.Error(err)
-		}
-	}
-
-	if on {
-		_, err := l.On(ctx, request)
-		if err != nil {
-			log.Error(err)
-		}
-	}
-
-	if alert {
-		_, err := l.Alert(ctx, request)
-		if err != nil {
-			log.Error(err)
-		}
-	}
-
-	if dim {
 		_, err := l.Dim(ctx, request)
-		if err != nil {
-			log.Error(err)
-		}
-	}
-
-	if color {
-		_, err := l.SetColor(ctx, request)
-		if err != nil {
-			log.Error(err)
-		}
+		return err
+	case "many":
+		_, err := l.Alert(ctx, request)
+		return err
+	default:
+		log.Debugf("unknown action event: %s", action.Event)
 	}
 
 	return nil
 }
 
 func (l *Lights) getRoom(name string) *config.LightsRoom {
+	if l.config == nil {
+		return nil
+	}
+
 	for _, room := range l.config.Rooms {
 		if room.Name == name {
 			return &room
@@ -291,7 +264,7 @@ func (l *Lights) RandomColor(ctx context.Context, req *LightGroupRequest) (*Ligh
 		return nil, fmt.Errorf("request contained no colors to select from")
 	}
 	for _, h := range l.handlers {
-		err := h.On(req.Name)
+		err := h.RandomColor(req.Name, req.Colors)
 		if err != nil {
 			log.Error(err)
 		}

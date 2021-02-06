@@ -25,7 +25,7 @@ func bufDialer(context.Context, string) (net.Conn, error) {
 }
 
 func TestServer(t *testing.T) {
-	h := &mockLight{}
+	h := &MockLight{}
 
 	lis = bufconn.Listen(bufSize)
 
@@ -59,40 +59,58 @@ func TestServer(t *testing.T) {
 		Name: "dungeon",
 	}
 
-	_, err = client.On(ctx, groupName)
-	require.NoError(t, err)
-	require.Equal(t, 1, h.onCalls)
+	testCases := []struct {
+		Call    func(context.Context, *LightGroupRequest, ...grpc.CallOption) (*LightResponse, error)
+		Handler *MockLight
+	}{
+		{
+			Call: client.On,
+			Handler: &MockLight{
+				OnCalls: map[string]int{"dungeon": 1},
+			},
+		},
+		{
+			Call: client.Off,
+			Handler: &MockLight{
+				// TODO fix this cary over from the previous itteration of the loop so we don't have to check the accumulation of the results here.
+				OnCalls:  map[string]int{"dungeon": 1},
+				OffCalls: map[string]int{"dungeon": 1},
+			},
+		},
+	}
 
-	_, err = client.Off(ctx, groupName)
-	require.NoError(t, err)
-	require.Equal(t, 1, h.offCalls)
+	for _, tc := range testCases {
+		_, err = tc.Call(ctx, groupName)
+		require.NoError(t, err)
+		require.Equal(t, tc.Handler, h)
 
-	_, err = client.Alert(ctx, groupName)
-	require.NoError(t, err)
-	require.Equal(t, 1, h.alertCalls)
-
-	_, err = client.Dim(ctx, groupName)
-	require.NoError(t, err)
-	require.Equal(t, 1, h.dimCalls)
-
-	_, err = client.SetColor(ctx, groupName)
-	require.Error(t, err)
-	require.Equal(t, 0, h.setColorCalls)
-	groupName.Color = "#ffffff"
-	_, err = client.SetColor(ctx, groupName)
-	require.NoError(t, err)
-	require.Equal(t, 1, h.setColorCalls)
-
-	_, err = client.Toggle(ctx, groupName)
-	require.NoError(t, err)
-	require.Equal(t, 1, h.toggleCalls)
-
-	_, err = client.RandomColor(ctx, groupName)
-	require.Error(t, err)
-	require.Equal(t, 0, h.randomColorCalls)
-	groupName.Colors = []string{"#ffffff"}
-	_, err = client.RandomColor(ctx, groupName)
-	require.NoError(t, err)
-	require.Equal(t, 1, h.setColorCalls)
+		// _, err = client.Alert(ctx, groupName)
+		// require.NoError(t, err)
+		// require.Equal(t, 1, h.AlertCalls)
+		//
+		// _, err = client.Dim(ctx, groupName)
+		// require.NoError(t, err)
+		// require.Equal(t, 1, h.DimCalls)
+		//
+		// _, err = client.SetColor(ctx, groupName)
+		// require.Error(t, err)
+		// require.Equal(t, 0, h.SetColorCalls)
+		// groupName.Color = "#ffffff"
+		// _, err = client.SetColor(ctx, groupName)
+		// require.NoError(t, err)
+		// require.Equal(t, 1, h.SetColorCalls)
+		//
+		// _, err = client.Toggle(ctx, groupName)
+		// require.NoError(t, err)
+		// require.Equal(t, 1, h.ToggleCalls)
+		//
+		// _, err = client.RandomColor(ctx, groupName)
+		// require.Error(t, err)
+		// require.Equal(t, 0, h.RandomColorCalls)
+		// groupName.Colors = []string{"#ffffff"}
+		// _, err = client.RandomColor(ctx, groupName)
+		// require.NoError(t, err)
+		// require.Equal(t, 1, h.SetColorCalls)
+	}
 
 }

@@ -1,0 +1,19 @@
+{{- if eq .File.GetName "inventory.proto"}}
+// Code generated, do not edit
+package inventory
+
+// Inventory is the interface to implement for CRUD against a data store of network devices.
+type Inventory interface {
+  UpdateTimestamp(string, string) error
+{{/* The resulting Go code, not the template here */}}
+{{- $messages := list "Inet6Network" "InetNetwork" "L3Network" "NetworkHost" "NetworkID" "ZigbeeDevice" "IOTZone" }}
+    {{- range .File.MessageType }}
+        {{- if has .GetName $messages }}
+  Create{{.GetName}}(*{{.GetName}}) (*{{.GetName}}, error)
+  Fetch{{.GetName}}(string) (*{{.GetName}}, error)
+  List{{.GetName}}s() ([]{{.GetName}}, error)
+  Update{{.GetName}}(*{{.GetName}}) (*{{.GetName}}, error)
+        {{- end }}
+    {{- end }}
+}
+{{- end }}

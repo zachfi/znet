@@ -1,0 +1,55 @@
+
+{{- if eq .File.GetName "inventory.proto"}}
+// Code generated, do not edit
+package inventory
+
+
+type MockInventory struct {
+{{- $messages := list "Inet6Network" "InetNetwork" "L3Network" "NetworkHost" "NetworkID" "ZigbeeDevice" "IOTZone" }}
+    {{- range .File.MessageType }}
+        {{- if has .GetName $messages }}
+  Fetch{{.GetName}}Calls map[string]int
+  Fetch{{.GetName}}Response *{{.GetName}}
+  List{{.GetName}}Response []{{.GetName}}
+  Create{{.GetName}}Calls []*{{.GetName}}
+        {{- end }}
+    {{- end }}
+}
+
+func (i *MockInventory) UpdateTimestamp(string, string) error {
+
+  return nil
+}
+
+{{- $messages := list "Inet6Network" "InetNetwork" "L3Network" "NetworkHost" "NetworkID" "ZigbeeDevice" "IOTZone" }}
+    {{- range .File.MessageType }}
+        {{- if has .GetName $messages }}
+func (i *MockInventory) Create{{.GetName}}(x *{{.GetName}}) (*{{.GetName}}, error) {
+  i.Create{{.GetName}}Calls = append(i.Create{{.GetName}}Calls, x)
+
+  return x, nil
+}
+
+func (i *MockInventory) Fetch{{.GetName}}(name string) (*{{.GetName}}, error) {
+  if len(i.Fetch{{.GetName}}Calls) == 0 {
+    i.Fetch{{.GetName}}Calls = make(map[string]int)
+  }
+
+  i.Fetch{{.GetName}}Calls[name]++
+
+  return i.Fetch{{.GetName}}Response, nil
+}
+
+func (i *MockInventory) List{{.GetName}}s() ([]{{.GetName}}, error) {
+
+  return nil, nil
+}
+
+func (i *MockInventory) Update{{.GetName}}(*{{.GetName}}) (*{{.GetName}}, error) {
+
+  return nil, nil
+}
+
+        {{- end }}
+    {{- end }}
+{{- end }}

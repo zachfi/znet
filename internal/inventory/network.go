@@ -29,7 +29,7 @@ var defaultNetworkHostAttributes = []string{
 }
 
 // CreateNetworkHost creates a new LDAP entry by the received name.
-func (i *Inventory) CreateNetworkHost(x *NetworkHost) (*NetworkHost, error) {
+func (i *LDAPInventory) CreateNetworkHost(x *NetworkHost) (*NetworkHost, error) {
 	if x == nil {
 		return nil, fmt.Errorf("unable to create nil NetworkHost")
 	}
@@ -57,7 +57,7 @@ func (i *Inventory) CreateNetworkHost(x *NetworkHost) (*NetworkHost, error) {
 }
 
 // UpdateNetworkHost updates an existing LDAP entry, retrieved by name.
-func (i *Inventory) UpdateNetworkHost(x *NetworkHost) (*NetworkHost, error) {
+func (i *LDAPInventory) UpdateNetworkHost(x *NetworkHost) (*NetworkHost, error) {
 	if x == nil {
 		return nil, fmt.Errorf("unable to update nil NetworkHost")
 	}
@@ -117,7 +117,7 @@ func (i *Inventory) UpdateNetworkHost(x *NetworkHost) (*NetworkHost, error) {
 }
 
 // FetchNetworkHost will retrieve a NetworkHost by name.
-func (i *Inventory) FetchNetworkHost(name string) (*NetworkHost, error) {
+func (i *LDAPInventory) FetchNetworkHost(name string) (*NetworkHost, error) {
 
 	results, err := i.ListNetworkHosts()
 	if err != nil {
@@ -125,7 +125,7 @@ func (i *Inventory) FetchNetworkHost(name string) (*NetworkHost, error) {
 	}
 
 	if results != nil {
-		for _, x := range *results {
+		for _, x := range results {
 			if x.Name == name {
 				return &x, nil
 			}
@@ -137,7 +137,7 @@ func (i *Inventory) FetchNetworkHost(name string) (*NetworkHost, error) {
 
 // ListNetworkHosts retrieves all existing LDAP entries.
 // nolint:gocyclo
-func (i *Inventory) ListNetworkHosts() (*[]NetworkHost, error) {
+func (i *LDAPInventory) ListNetworkHosts() ([]NetworkHost, error) {
 	if i.conn == nil {
 		return nil, fmt.Errorf("unable to ListNetworkHosts() with nil LDAP client")
 	}
@@ -256,7 +256,7 @@ func (i *Inventory) ListNetworkHosts() (*[]NetworkHost, error) {
 		xxx = append(xxx, h)
 	}
 
-	return &xxx, nil
+	return xxx, nil
 }
 
 var defaultNetworkIDAttributes = []string{
@@ -270,7 +270,7 @@ var defaultNetworkIDAttributes = []string{
 }
 
 // CreateNetworkID creates a new LDAP entry by the received name.
-func (i *Inventory) CreateNetworkID(x *NetworkID) (*NetworkID, error) {
+func (i *LDAPInventory) CreateNetworkID(x *NetworkID) (*NetworkID, error) {
 	if x == nil {
 		return nil, fmt.Errorf("unable to create nil NetworkID")
 	}
@@ -298,7 +298,7 @@ func (i *Inventory) CreateNetworkID(x *NetworkID) (*NetworkID, error) {
 }
 
 // UpdateNetworkID updates an existing LDAP entry, retrieved by name.
-func (i *Inventory) UpdateNetworkID(x *NetworkID) (*NetworkID, error) {
+func (i *LDAPInventory) UpdateNetworkID(x *NetworkID) (*NetworkID, error) {
 	if x == nil {
 		return nil, fmt.Errorf("unable to update nil NetworkID")
 	}
@@ -336,7 +336,7 @@ func (i *Inventory) UpdateNetworkID(x *NetworkID) (*NetworkID, error) {
 }
 
 // FetchNetworkID will retrieve a NetworkID by name.
-func (i *Inventory) FetchNetworkID(name string) (*NetworkID, error) {
+func (i *LDAPInventory) FetchNetworkID(name string) (*NetworkID, error) {
 
 	results, err := i.ListNetworkIDs()
 	if err != nil {
@@ -344,7 +344,7 @@ func (i *Inventory) FetchNetworkID(name string) (*NetworkID, error) {
 	}
 
 	if results != nil {
-		for _, x := range *results {
+		for _, x := range results {
 			if x.Name == name {
 				return &x, nil
 			}
@@ -356,7 +356,7 @@ func (i *Inventory) FetchNetworkID(name string) (*NetworkID, error) {
 
 // ListNetworkIDs retrieves all existing LDAP entries.
 // nolint:gocyclo
-func (i *Inventory) ListNetworkIDs() (*[]NetworkID, error) {
+func (i *LDAPInventory) ListNetworkIDs() ([]NetworkID, error) {
 	if i.conn == nil {
 		return nil, fmt.Errorf("unable to ListNetworkIDs() with nil LDAP client")
 	}
@@ -448,7 +448,7 @@ func (i *Inventory) ListNetworkIDs() (*[]NetworkID, error) {
 		xxx = append(xxx, h)
 	}
 
-	return &xxx, nil
+	return xxx, nil
 }
 
 var defaultL3NetworkAttributes = []string{
@@ -463,7 +463,7 @@ var defaultL3NetworkAttributes = []string{
 }
 
 // CreateL3Network creates a new LDAP entry by the received name.
-func (i *Inventory) CreateL3Network(x *L3Network) (*L3Network, error) {
+func (i *LDAPInventory) CreateL3Network(x *L3Network) (*L3Network, error) {
 	if x == nil {
 		return nil, fmt.Errorf("unable to create nil L3Network")
 	}
@@ -491,7 +491,7 @@ func (i *Inventory) CreateL3Network(x *L3Network) (*L3Network, error) {
 }
 
 // UpdateL3Network updates an existing LDAP entry, retrieved by name.
-func (i *Inventory) UpdateL3Network(x *L3Network) (*L3Network, error) {
+func (i *LDAPInventory) UpdateL3Network(x *L3Network) (*L3Network, error) {
 	if x == nil {
 		return nil, fmt.Errorf("unable to update nil L3Network")
 	}
@@ -526,7 +526,7 @@ func (i *Inventory) UpdateL3Network(x *L3Network) (*L3Network, error) {
 }
 
 // FetchL3Network will retrieve a L3Network by name.
-func (i *Inventory) FetchL3Network(name string) (*L3Network, error) {
+func (i *LDAPInventory) FetchL3Network(name string) (*L3Network, error) {
 
 	results, err := i.ListL3Networks()
 	if err != nil {
@@ -534,7 +534,7 @@ func (i *Inventory) FetchL3Network(name string) (*L3Network, error) {
 	}
 
 	if results != nil {
-		for _, x := range *results {
+		for _, x := range results {
 			if x.Name == name {
 				return &x, nil
 			}
@@ -546,7 +546,7 @@ func (i *Inventory) FetchL3Network(name string) (*L3Network, error) {
 
 // ListL3Networks retrieves all existing LDAP entries.
 // nolint:gocyclo
-func (i *Inventory) ListL3Networks() (*[]L3Network, error) {
+func (i *LDAPInventory) ListL3Networks() ([]L3Network, error) {
 	if i.conn == nil {
 		return nil, fmt.Errorf("unable to ListL3Networks() with nil LDAP client")
 	}
@@ -622,7 +622,7 @@ func (i *Inventory) ListL3Networks() (*[]L3Network, error) {
 		xxx = append(xxx, h)
 	}
 
-	return &xxx, nil
+	return xxx, nil
 }
 
 var defaultInetNetworkAttributes = []string{
@@ -634,7 +634,7 @@ var defaultInetNetworkAttributes = []string{
 }
 
 // CreateInetNetwork creates a new LDAP entry by the received name.
-func (i *Inventory) CreateInetNetwork(x *InetNetwork) (*InetNetwork, error) {
+func (i *LDAPInventory) CreateInetNetwork(x *InetNetwork) (*InetNetwork, error) {
 	if x == nil {
 		return nil, fmt.Errorf("unable to create nil InetNetwork")
 	}
@@ -662,7 +662,7 @@ func (i *Inventory) CreateInetNetwork(x *InetNetwork) (*InetNetwork, error) {
 }
 
 // UpdateInetNetwork updates an existing LDAP entry, retrieved by name.
-func (i *Inventory) UpdateInetNetwork(x *InetNetwork) (*InetNetwork, error) {
+func (i *LDAPInventory) UpdateInetNetwork(x *InetNetwork) (*InetNetwork, error) {
 	if x == nil {
 		return nil, fmt.Errorf("unable to update nil InetNetwork")
 	}
@@ -694,7 +694,7 @@ func (i *Inventory) UpdateInetNetwork(x *InetNetwork) (*InetNetwork, error) {
 }
 
 // FetchInetNetwork will retrieve a InetNetwork by name.
-func (i *Inventory) FetchInetNetwork(name string) (*InetNetwork, error) {
+func (i *LDAPInventory) FetchInetNetwork(name string) (*InetNetwork, error) {
 
 	results, err := i.ListInetNetworks()
 	if err != nil {
@@ -702,7 +702,7 @@ func (i *Inventory) FetchInetNetwork(name string) (*InetNetwork, error) {
 	}
 
 	if results != nil {
-		for _, x := range *results {
+		for _, x := range results {
 			if x.Name == name {
 				return &x, nil
 			}
@@ -714,7 +714,7 @@ func (i *Inventory) FetchInetNetwork(name string) (*InetNetwork, error) {
 
 // ListInetNetworks retrieves all existing LDAP entries.
 // nolint:gocyclo
-func (i *Inventory) ListInetNetworks() (*[]InetNetwork, error) {
+func (i *LDAPInventory) ListInetNetworks() ([]InetNetwork, error) {
 	if i.conn == nil {
 		return nil, fmt.Errorf("unable to ListInetNetworks() with nil LDAP client")
 	}
@@ -778,7 +778,7 @@ func (i *Inventory) ListInetNetworks() (*[]InetNetwork, error) {
 		xxx = append(xxx, h)
 	}
 
-	return &xxx, nil
+	return xxx, nil
 }
 
 var defaultInet6NetworkAttributes = []string{
@@ -789,7 +789,7 @@ var defaultInet6NetworkAttributes = []string{
 }
 
 // CreateInet6Network creates a new LDAP entry by the received name.
-func (i *Inventory) CreateInet6Network(x *Inet6Network) (*Inet6Network, error) {
+func (i *LDAPInventory) CreateInet6Network(x *Inet6Network) (*Inet6Network, error) {
 	if x == nil {
 		return nil, fmt.Errorf("unable to create nil Inet6Network")
 	}
@@ -817,7 +817,7 @@ func (i *Inventory) CreateInet6Network(x *Inet6Network) (*Inet6Network, error) {
 }
 
 // UpdateInet6Network updates an existing LDAP entry, retrieved by name.
-func (i *Inventory) UpdateInet6Network(x *Inet6Network) (*Inet6Network, error) {
+func (i *LDAPInventory) UpdateInet6Network(x *Inet6Network) (*Inet6Network, error) {
 	if x == nil {
 		return nil, fmt.Errorf("unable to update nil Inet6Network")
 	}
@@ -846,7 +846,7 @@ func (i *Inventory) UpdateInet6Network(x *Inet6Network) (*Inet6Network, error) {
 }
 
 // FetchInet6Network will retrieve a Inet6Network by name.
-func (i *Inventory) FetchInet6Network(name string) (*Inet6Network, error) {
+func (i *LDAPInventory) FetchInet6Network(name string) (*Inet6Network, error) {
 
 	results, err := i.ListInet6Networks()
 	if err != nil {
@@ -854,7 +854,7 @@ func (i *Inventory) FetchInet6Network(name string) (*Inet6Network, error) {
 	}
 
 	if results != nil {
-		for _, x := range *results {
+		for _, x := range results {
 			if x.Name == name {
 				return &x, nil
 			}
@@ -866,7 +866,7 @@ func (i *Inventory) FetchInet6Network(name string) (*Inet6Network, error) {
 
 // ListInet6Networks retrieves all existing LDAP entries.
 // nolint:gocyclo
-func (i *Inventory) ListInet6Networks() (*[]Inet6Network, error) {
+func (i *LDAPInventory) ListInet6Networks() ([]Inet6Network, error) {
 	if i.conn == nil {
 		return nil, fmt.Errorf("unable to ListInet6Networks() with nil LDAP client")
 	}
@@ -926,7 +926,7 @@ func (i *Inventory) ListInet6Networks() (*[]Inet6Network, error) {
 		xxx = append(xxx, h)
 	}
 
-	return &xxx, nil
+	return xxx, nil
 }
 
 var defaultZigbeeDeviceAttributes = []string{
@@ -946,7 +946,7 @@ var defaultZigbeeDeviceAttributes = []string{
 }
 
 // CreateZigbeeDevice creates a new LDAP entry by the received name.
-func (i *Inventory) CreateZigbeeDevice(x *ZigbeeDevice) (*ZigbeeDevice, error) {
+func (i *LDAPInventory) CreateZigbeeDevice(x *ZigbeeDevice) (*ZigbeeDevice, error) {
 	if x == nil {
 		return nil, fmt.Errorf("unable to create nil ZigbeeDevice")
 	}
@@ -974,7 +974,7 @@ func (i *Inventory) CreateZigbeeDevice(x *ZigbeeDevice) (*ZigbeeDevice, error) {
 }
 
 // UpdateZigbeeDevice updates an existing LDAP entry, retrieved by name.
-func (i *Inventory) UpdateZigbeeDevice(x *ZigbeeDevice) (*ZigbeeDevice, error) {
+func (i *LDAPInventory) UpdateZigbeeDevice(x *ZigbeeDevice) (*ZigbeeDevice, error) {
 	if x == nil {
 		return nil, fmt.Errorf("unable to update nil ZigbeeDevice")
 	}
@@ -1030,7 +1030,7 @@ func (i *Inventory) UpdateZigbeeDevice(x *ZigbeeDevice) (*ZigbeeDevice, error) {
 }
 
 // FetchZigbeeDevice will retrieve a ZigbeeDevice by name.
-func (i *Inventory) FetchZigbeeDevice(name string) (*ZigbeeDevice, error) {
+func (i *LDAPInventory) FetchZigbeeDevice(name string) (*ZigbeeDevice, error) {
 
 	results, err := i.ListZigbeeDevices()
 	if err != nil {
@@ -1038,7 +1038,7 @@ func (i *Inventory) FetchZigbeeDevice(name string) (*ZigbeeDevice, error) {
 	}
 
 	if results != nil {
-		for _, x := range *results {
+		for _, x := range results {
 			if x.Name == name {
 				return &x, nil
 			}
@@ -1050,7 +1050,7 @@ func (i *Inventory) FetchZigbeeDevice(name string) (*ZigbeeDevice, error) {
 
 // ListZigbeeDevices retrieves all existing LDAP entries.
 // nolint:gocyclo
-func (i *Inventory) ListZigbeeDevices() (*[]ZigbeeDevice, error) {
+func (i *LDAPInventory) ListZigbeeDevices() ([]ZigbeeDevice, error) {
 	if i.conn == nil {
 		return nil, fmt.Errorf("unable to ListZigbeeDevices() with nil LDAP client")
 	}
@@ -1158,7 +1158,7 @@ func (i *Inventory) ListZigbeeDevices() (*[]ZigbeeDevice, error) {
 		xxx = append(xxx, h)
 	}
 
-	return &xxx, nil
+	return xxx, nil
 }
 
 var defaultIOTZoneAttributes = []string{
@@ -1168,7 +1168,7 @@ var defaultIOTZoneAttributes = []string{
 }
 
 // CreateIOTZone creates a new LDAP entry by the received name.
-func (i *Inventory) CreateIOTZone(x *IOTZone) (*IOTZone, error) {
+func (i *LDAPInventory) CreateIOTZone(x *IOTZone) (*IOTZone, error) {
 	if x == nil {
 		return nil, fmt.Errorf("unable to create nil IOTZone")
 	}
@@ -1196,7 +1196,7 @@ func (i *Inventory) CreateIOTZone(x *IOTZone) (*IOTZone, error) {
 }
 
 // UpdateIOTZone updates an existing LDAP entry, retrieved by name.
-func (i *Inventory) UpdateIOTZone(x *IOTZone) (*IOTZone, error) {
+func (i *LDAPInventory) UpdateIOTZone(x *IOTZone) (*IOTZone, error) {
 	if x == nil {
 		return nil, fmt.Errorf("unable to update nil IOTZone")
 	}
@@ -1222,7 +1222,7 @@ func (i *Inventory) UpdateIOTZone(x *IOTZone) (*IOTZone, error) {
 }
 
 // FetchIOTZone will retrieve a IOTZone by name.
-func (i *Inventory) FetchIOTZone(name string) (*IOTZone, error) {
+func (i *LDAPInventory) FetchIOTZone(name string) (*IOTZone, error) {
 
 	results, err := i.ListIOTZones()
 	if err != nil {
@@ -1230,7 +1230,7 @@ func (i *Inventory) FetchIOTZone(name string) (*IOTZone, error) {
 	}
 
 	if results != nil {
-		for _, x := range *results {
+		for _, x := range results {
 			if x.Name == name {
 				return &x, nil
 			}
@@ -1242,7 +1242,7 @@ func (i *Inventory) FetchIOTZone(name string) (*IOTZone, error) {
 
 // ListIOTZones retrieves all existing LDAP entries.
 // nolint:gocyclo
-func (i *Inventory) ListIOTZones() (*[]IOTZone, error) {
+func (i *LDAPInventory) ListIOTZones() ([]IOTZone, error) {
 	if i.conn == nil {
 		return nil, fmt.Errorf("unable to ListIOTZones() with nil LDAP client")
 	}
@@ -1298,5 +1298,5 @@ func (i *Inventory) ListIOTZones() (*[]IOTZone, error) {
 		xxx = append(xxx, h)
 	}
 
-	return &xxx, nil
+	return xxx, nil
 }

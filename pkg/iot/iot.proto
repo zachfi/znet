@@ -17,13 +17,8 @@ message DeviceDiscovery {
 }
 
 
-message Click {
-  string count = 1;
+message Action {
+  string event = 1;
   string device = 2;
   string zone = 3;
 }
-
-// service IOT {
-//   rpc ClickEvent(Click) returns (Empty);
-// }
-//

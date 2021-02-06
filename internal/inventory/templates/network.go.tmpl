@@ -32,7 +32,7 @@ var default{{.GetName}}Attributes = []string{
 }
 
 // Create{{.GetName}} creates a new LDAP entry by the received name.
-func (i *Inventory) Create{{.GetName}}(x *{{.GetName}}) (*{{.GetName}}, error) {
+func (i *LDAPInventory) Create{{.GetName}}(x *{{.GetName}}) (*{{.GetName}}, error) {
   if x == nil {
     return nil, fmt.Errorf("unable to create nil {{.GetName}}")
   }
@@ -70,7 +70,7 @@ func (i *Inventory) Create{{.GetName}}(x *{{.GetName}}) (*{{.GetName}}, error) {
 }
 
 // Update{{.GetName}} updates an existing LDAP entry, retrieved by name.
-func (i *Inventory) Update{{.GetName}}(x *{{.GetName}}) (*{{.GetName}}, error) {
+func (i *LDAPInventory) Update{{.GetName}}(x *{{.GetName}}) (*{{.GetName}}, error) {
   if x == nil {
     return nil, fmt.Errorf("unable to update nil {{.GetName}}")
   }
@@ -139,7 +139,7 @@ func (i *Inventory) Update{{.GetName}}(x *{{.GetName}}) (*{{.GetName}}, error) {
 }
 
 // Fetch{{.GetName}} will retrieve a {{.GetName}} by name.
-func (i *Inventory) Fetch{{.GetName}}(name string) (*{{.GetName}}, error) {
+func (i *LDAPInventory) Fetch{{.GetName}}(name string) (*{{.GetName}}, error) {
   {{- $varname := .GetName|snakeCase|lowerCamelCase}}
 
   results, err := i.List{{.GetName}}s()
@@ -148,7 +148,7 @@ func (i *Inventory) Fetch{{.GetName}}(name string) (*{{.GetName}}, error) {
   }
 
   if results != nil {
-    for _, x := range *results {
+    for _, x := range results {
       if x.Name == name {
         return &x, nil
       }
@@ -160,7 +160,7 @@ func (i *Inventory) Fetch{{.GetName}}(name string) (*{{.GetName}}, error) {
 
 // List{{.GetName}}s retrieves all existing LDAP entries.
 // nolint:gocyclo
-func (i *Inventory) List{{.GetName}}s() (*[]{{.GetName}}, error) {
+func (i *LDAPInventory) List{{.GetName}}s() ([]{{.GetName}}, error) {
 	if i.conn == nil {
 		return nil, fmt.Errorf("unable to List{{.GetName}}s() with nil LDAP client")
 	}
@@ -262,7 +262,7 @@ func (i *Inventory) List{{.GetName}}s() (*[]{{.GetName}}, error) {
 		xxx = append(xxx, h)
 	}
 
-	return &xxx, nil
+	return xxx, nil
 }
     {{- end }}
 {{- end }}
