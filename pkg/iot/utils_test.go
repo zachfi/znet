@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestParseTopicPath(t *testing.T) {
@@ -76,6 +77,15 @@ func TestParseTopicPath(t *testing.T) {
 			},
 		},
 
+		{
+			Topic: "zigbee2mqtt/0x00158d0004238a81",
+			Should: TopicPath{
+				Component: "zigbee2mqtt",
+				ObjectID:  "0x00158d0004238a81",
+				Endpoint:  []string{},
+			},
+		},
+
 		// "workgroup/92696ed2ae92b430f4e9447583936628/wifi/bssid",
 
 		// "stat/92696ed2ae92b430f4e9447583936628/tempcoef",
@@ -124,11 +134,7 @@ func TestParseTopicPath(t *testing.T) {
 	for _, s := range samples {
 		result, err := ParseTopicPath(s.Topic)
 		assert.Nil(t, err)
-		assert.Equal(t, s.Should.DiscoveryPrefix, result.DiscoveryPrefix)
-		assert.Equal(t, s.Should.Component, result.Component)
-		assert.Equal(t, s.Should.NodeID, result.NodeID)
-		assert.Equal(t, s.Should.ObjectID, result.ObjectID)
-		assert.Equal(t, s.Should.Endpoint, result.Endpoint)
+		require.Equal(t, s.Should, result)
 	}
 
 }
