@@ -11,7 +11,7 @@ import (
 
 // Server is the struct to implement the IOTServer.
 type Server struct {
-	sync.Mutex
+	mutex      sync.Mutex
 	mqttClient mqtt.Client
 }
 
@@ -26,8 +26,8 @@ func NewServer(mqttClient mqtt.Client) (*Server, error) {
 //
 // https://www.zigbee2mqtt.io/information/ota_updates.html#update-to-latest-firmware
 func (s *Server) UpdateDevice(ctx context.Context, req *UpdateRequest) (*Empty, error) {
-	s.Lock()
-	defer s.Unlock()
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 
 	topic := "zigbee2mqtt/bridge/request/device/ota_update/update"
 	message := map[string]interface{}{
