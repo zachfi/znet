@@ -337,6 +337,8 @@ func (l *Server) handleZigbeeReport(request *inventory.IOTDevice) error {
 
 		case "iot.ZigbeeBridgeMessageDevices":
 			bridgeLogHandler = l.handleZigbeeDevices
+		default:
+			log.Debugf("unhandled iot.ZigbeeBridgeLog: %s", messageTypeName)
 		}
 
 		err = bridgeLogHandler(m)
