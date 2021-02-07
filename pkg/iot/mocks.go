@@ -1,17 +1,10 @@
 package iot
 
 import (
-	"testing"
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
-	"github.com/stretchr/testify/require"
 )
-
-func TestMqttToken_interface(t *testing.T) {
-	var token mqtt.Token = &MockToken{}
-	require.NotNil(t, token)
-}
 
 type MockToken struct {
 	ready    bool
@@ -33,11 +26,6 @@ func (mt *MockToken) Error() error {
 
 func (mt *MockToken) Done() <-chan struct{} {
 	return mt.complete
-}
-
-func TestMqttClient_interface(t *testing.T) {
-	var client mqtt.Client = &MockClient{}
-	require.NotNil(t, client)
 }
 
 type MockClient struct {
