@@ -23,7 +23,6 @@ type Lights struct {
 
 // NewLights creates and returns a new Lights object based on the received
 // configuration.
-// func NewLights(cfg *config.LightsConfig, inventoryClient rpc.InventoryClient, mqttClient mqtt.Client) *Lights {
 func NewLights(cfg *config.Config) (*Lights, error) {
 	if cfg == nil {
 		return nil, fmt.Errorf("unable to create new Lights from nil config")

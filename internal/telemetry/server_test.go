@@ -43,9 +43,6 @@ func TestReportIOTDevice_nilDiscovery(t *testing.T) {
 }
 
 func TestReportIOTDevice_lights_handling(t *testing.T) {
-	log.SetLevel(log.DebugLevel)
-	defer log.SetLevel(log.InfoLevel)
-
 	testCases := []struct {
 		Handler *lights.MockLight
 		Req     *inventory.IOTDevice
@@ -159,6 +156,90 @@ func TestReportIOTDevice_lights_handling(t *testing.T) {
 
 		// lights handler
 		require.Equal(t, tc.Handler, h)
+	}
+
+}
+
+func TestReportIOTDevice_beidge_state(t *testing.T) {
+	log.SetLevel(log.DebugLevel)
+	defer log.SetLevel(log.InfoLevel)
+
+	testCases := []struct {
+		// Handler *lights.MockLight
+		Req *inventory.IOTDevice
+		// Zone string
+	}{
+		{
+			Req: &inventory.IOTDevice{
+				DeviceDiscovery: &iot.DeviceDiscovery{
+					ObjectId:  "bridge",
+					Component: "zigbee2mqtt",
+					Endpoint:  []string{"state"},
+					Message:   []byte(`online`),
+				},
+			},
+		},
+		{
+			Req: &inventory.IOTDevice{
+				DeviceDiscovery: &iot.DeviceDiscovery{
+					ObjectId:  "bridge",
+					Component: "zigbee2mqtt",
+					Endpoint:  []string{"state"},
+					Message:   []byte(`offline`),
+				},
+			},
+		},
+		{
+			Req: &inventory.IOTDevice{
+				DeviceDiscovery: &iot.DeviceDiscovery{
+					ObjectId:  "bridge",
+					Component: "zigbee2mqtt",
+					Endpoint:  []string{"log"},
+					Message:   []byte(`{"message":"Update available for '0x001788010898e9c1'","meta":{"device":"0x001788010898e9c1","status":"available"},"type":"ota_update"}`),
+				},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+
+		lightsConfig := &config.Config{
+			Lights: &config.LightsConfig{
+				PartyColors: []string{"#f33333"},
+				Rooms: []config.LightsRoom{
+					{
+						Name: "dungeon",
+					},
+				},
+			},
+		}
+
+		// l := &lights.Lights{}
+		l, err := lights.NewLights(lightsConfig)
+		require.NoError(t, err)
+		require.NotNil(t, l)
+		h := &lights.MockLight{}
+		l.AddHandler(h)
+
+		i := &inventory.MockInventory{}
+		// i.FetchZigbeeDeviceResponse = &inventory.ZigbeeDevice{
+		// 	Name:    zigbeeDeviceName,
+		// 	IotZone: "dungeon",
+		// }
+
+		s, err := NewServer(i, l)
+		require.NoError(t, err)
+		require.NotNil(t, s)
+		response, err := s.ReportIOTDevice(context.Background(), tc.Req)
+		require.NoError(t, err)
+		require.NotNil(t, response)
+
+		// inventory
+		// require.Equal(t, 1, i.FetchZigbeeDeviceCalls[zigbeeDeviceName])
+		// require.Equal(t, 0, len(i.CreateZigbeeDeviceCalls))
+
+		// lights handler
+		// require.Equal(t, tc.Handler, h)
 	}
 
 }

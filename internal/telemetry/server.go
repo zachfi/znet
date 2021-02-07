@@ -18,9 +18,9 @@ import (
 )
 
 type Server struct {
-	lights     *lights.Lights
 	inventory  inventory.Inventory
 	keeper     thingKeeper
+	lights     *lights.Lights
 	seenThings map[string]time.Time
 }
 
@@ -29,9 +29,9 @@ type thingKeeper map[string]map[string]string
 // NewServer returns a new Server.
 func NewServer(inv inventory.Inventory, lig *lights.Lights) (*Server, error) {
 	s := &Server{
-		lights:     lig,
 		inventory:  inv,
 		keeper:     make(thingKeeper),
+		lights:     lig,
 		seenThings: make(map[string]time.Time),
 	}
 
@@ -320,38 +320,52 @@ func (l *Server) handleZigbeeReport(request *inventory.IOTDevice) error {
 		case "iot.ZigbeeBridgeLog":
 			m := msg.(iot.ZigbeeBridgeLog)
 
+			messageTypeName := reflect.TypeOf(m.Message).String()
+
 			if m.Message != nil {
-				for _, d := range m.Message.(iot.ZigbeeBridgeMessageDevices) {
-					x := &inventory.ZigbeeDevice{
-						Name:     d.FriendlyName,
-						LastSeen: timestamppb.New(now),
-						// IeeeAddr:        d.IeeeAddr,
-						Type:            d.Type,
-						SoftwareBuildId: d.SoftwareBuildID,
-						DateCode:        d.DateCode,
-						Model:           d.Model,
-						Vendor:          d.Vendor,
-						// Description      : d.Description,
-						ManufacturerName: d.ManufacturerName,
-						PowerSource:      d.PowerSource,
-						ModelId:          d.ModelID,
-						// HardwareVersion:  d.HardwareVersion,
+				switch messageTypeName {
+				case "string":
+					if strings.HasPrefix(m.Message.(string), "Update available") {
+						// zigbee2mqtt/bridge/request/device/ota_update/update
+						log.WithFields(log.Fields{
+							"device": m.Meta["device"],
+							"status": m.Meta["status"],
+						}).Debug("update needed")
 					}
 
-					_, err := l.inventory.FetchZigbeeDevice(x.Name)
-					if err != nil {
-						log.Error(err)
-						createResult, err := l.inventory.CreateZigbeeDevice(x)
-						if err != nil {
-							return err
+				case "iot.ZigbeeBridgeMessageDevices":
+					for _, d := range m.Message.(iot.ZigbeeBridgeMessageDevices) {
+						x := &inventory.ZigbeeDevice{
+							Name:     d.FriendlyName,
+							LastSeen: timestamppb.New(now),
+							// IeeeAddr:        d.IeeeAddr,
+							Type:            d.Type,
+							SoftwareBuildId: d.SoftwareBuildID,
+							DateCode:        d.DateCode,
+							Model:           d.Model,
+							Vendor:          d.Vendor,
+							// Description      : d.Description,
+							ManufacturerName: d.ManufacturerName,
+							PowerSource:      d.PowerSource,
+							ModelId:          d.ModelID,
+							// HardwareVersion:  d.HardwareVersion,
 						}
 
-						log.WithFields(log.Fields{
-							"name":   createResult.Name,
-							"vendor": createResult.Vendor,
-							"model":  createResult.Model,
-							"zone":   createResult.IotZone,
-						}).Debug("createResult")
+						_, err := l.inventory.FetchZigbeeDevice(x.Name)
+						if err != nil {
+							log.Error(err)
+							createResult, err := l.inventory.CreateZigbeeDevice(x)
+							if err != nil {
+								return err
+							}
+
+							log.WithFields(log.Fields{
+								"name":   createResult.Name,
+								"vendor": createResult.Vendor,
+								"model":  createResult.Model,
+								"zone":   createResult.IotZone,
+							}).Debug("createResult")
+						}
 					}
 				}
 			}

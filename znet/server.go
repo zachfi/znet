@@ -126,6 +126,12 @@ func (s *Server) startRPCListener() error {
 		return err
 	}
 
+	// For IOT updates
+	// mqttClient, err := iot.NewMQTTClient(s.config.MQTT)
+	// if err != nil {
+	// 	return err
+	// }
+
 	telemetryServer, err := telemetry.NewServer(inv, lightsServer)
 	if err != nil {
 		return err
