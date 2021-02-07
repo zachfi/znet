@@ -8,6 +8,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
+
 	"github.com/xaque208/znet/internal/config"
 	"github.com/xaque208/znet/internal/inventory"
 	"github.com/xaque208/znet/internal/lights"
