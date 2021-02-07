@@ -21,6 +21,7 @@ type Server struct {
 	inventory  inventory.Inventory
 	keeper     thingKeeper
 	lights     *lights.Lights
+	iotServer  *iot.Server
 	seenThings map[string]time.Time
 }
 
@@ -292,6 +293,11 @@ func (l *Server) ReportIOTDevice(ctx context.Context, request *inventory.IOTDevi
 	return &inventory.Empty{}, nil
 }
 
+func (l *Server) SetIOTServer(iotServer *iot.Server) error {
+	l.iotServer = iotServer
+	return nil
+}
+
 func (l *Server) handleZigbeeReport(request *inventory.IOTDevice) error {
 	if request == nil {
 		return fmt.Errorf("unable to read zigbee report from nil request")
@@ -332,6 +338,17 @@ func (l *Server) handleZigbeeReport(request *inventory.IOTDevice) error {
 							"status": m.Meta["status"],
 						}).Debug("update needed")
 					}
+
+					req := &iot.UpdateRequest{
+						Device: m.Meta["device"].(string),
+					}
+
+					go func() {
+						_, err := l.iotServer.UpdateDevice(context.Background(), req)
+						if err != nil {
+							log.Error()
+						}
+					}()
 
 				case "iot.ZigbeeBridgeMessageDevices":
 					for _, d := range m.Message.(iot.ZigbeeBridgeMessageDevices) {
