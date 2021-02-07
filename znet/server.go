@@ -20,6 +20,7 @@ import (
 	"github.com/xaque208/znet/internal/lights"
 	"github.com/xaque208/znet/internal/telemetry"
 	"github.com/xaque208/znet/internal/timer"
+	"github.com/xaque208/znet/pkg/iot"
 )
 
 // Server is a znet Server.
@@ -119,6 +120,19 @@ func (s *Server) startRPCListener() error {
 
 	astro.RegisterAstroServer(s.grpcServer, astroServer)
 
+	// iotServer
+	mqttClient, err := iot.NewMQTTClient(s.config.MQTT)
+	if err != nil {
+		return err
+	}
+
+	iotServer, err := iot.NewServer(mqttClient)
+	if err != nil {
+		return err
+	}
+
+	iot.RegisterIOTServer(s.grpcServer, iotServer)
+
 	//
 	// telemetryServer
 	inv, err := inventory.NewLDAPInventory(s.config.LDAP)
@@ -126,26 +140,17 @@ func (s *Server) startRPCListener() error {
 		return err
 	}
 
-	// For IOT updates
-	// mqttClient, err := iot.NewMQTTClient(s.config.MQTT)
-	// if err != nil {
-	// 	return err
-	// }
-
 	telemetryServer, err := telemetry.NewServer(inv, lightsServer)
 	if err != nil {
 		return err
 	}
 
+	err = telemetryServer.SetIOTServer(iotServer)
+	if err != nil {
+		return err
+	}
+
 	telemetry.RegisterTelemetryServer(s.grpcServer, telemetryServer)
-
-	//
-	// rpcEventServer
-
-	// rpc.RegisterEventsServer(s.grpcServer, rpcEventServer)
-	// rpcEventServer.RegisterEvents(continuous.EventNames)
-	// rpcEventServer.RegisterEvents(gitwatch.EventNames)
-	// rpcEventServer.RegisterEvents(timer.EventNames)
 
 	//
 	// timerServer
