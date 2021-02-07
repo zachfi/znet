@@ -6,8 +6,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/xaque208/znet/internal/agent"
 	"google.golang.org/grpc"
+
+	"github.com/xaque208/znet/internal/agent"
 
 	"github.com/xaque208/znet/internal/config"
 	"github.com/xaque208/znet/pkg/continuous"
@@ -120,18 +121,26 @@ func (e *EventProducer) handleRepo(ctx context.Context, repo config.GitWatchRepo
 		lastTag := ci.LatestTag()
 
 		if lastTag != "" {
-			e.buildClient.BuildTag(ctx, &agent.BuildSpec{
+			result, err := e.buildClient.BuildTag(ctx, &agent.BuildSpec{
 				Tag: lastTag,
 				Project: &agent.ProjectSpec{
 					Name: repo.Name,
 					Url:  repo.URL,
 				},
 			})
+
+			if err != nil {
+				return err
+			}
+
+			log.WithFields(log.Fields{
+				"exit_code": result.ExitCode,
+			}).Debug("result")
 		}
 	}
 
 	for shortName, newHead := range newHeads {
-		e.buildClient.BuildCommit(ctx, &agent.BuildSpec{
+		result, err := e.buildClient.BuildCommit(ctx, &agent.BuildSpec{
 			Commit: newHead,
 			Branch: shortName,
 			Project: &agent.ProjectSpec{
@@ -139,16 +148,28 @@ func (e *EventProducer) handleRepo(ctx context.Context, repo config.GitWatchRepo
 				Url:  repo.URL,
 			},
 		})
+		if err != nil {
+			return err
+		}
+		log.WithFields(log.Fields{
+			"exit_code": result.ExitCode,
+		}).Debug("result")
 	}
 
 	for _, r := range newTags {
-		e.buildClient.BuildTag(ctx, &agent.BuildSpec{
+		result, err := e.buildClient.BuildTag(ctx, &agent.BuildSpec{
 			Tag: r,
 			Project: &agent.ProjectSpec{
 				Name: repo.Name,
 				Url:  repo.URL,
 			},
 		})
+		if err != nil {
+			return err
+		}
+		log.WithFields(log.Fields{
+			"exit_code": result.ExitCode,
+		}).Debug("result")
 	}
 
 	return nil
