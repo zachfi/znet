@@ -8,6 +8,8 @@ import (
 
 	"google.golang.org/grpc"
 
+	"github.com/xaque208/znet/internal/agent"
+
 	"github.com/xaque208/znet/internal/config"
 	"github.com/xaque208/znet/pkg/continuous"
 	"github.com/xaque208/znet/pkg/events"
@@ -18,8 +20,9 @@ import (
 // EventProducer implements events.Producer with an attached GRPC connection
 // and a configuration.
 type EventProducer struct {
-	config *config.GitWatchConfig
-	conn   *grpc.ClientConn
+	config      *config.GitWatchConfig
+	conn        *grpc.ClientConn
+	buildClient agent.BuildClient
 }
 
 // NewProducer receives a config to build a new EventProducer.
@@ -44,6 +47,8 @@ func (e *EventProducer) Connect(ctx context.Context, conn *grpc.ClientConn) erro
 	if e.conn != nil {
 		log.Warnf("replacing non-nil gRPC client connection")
 	}
+
+	e.buildClient = agent.NewBuildClient(e.conn)
 
 	e.conn = conn
 
@@ -73,8 +78,6 @@ func (e *EventProducer) handleRepo(ctx context.Context, repo config.GitWatchRepo
 	if repo.Name == "" {
 		return fmt.Errorf("repo name cannot be empty: %+v", repo)
 	}
-
-	t := time.Now()
 
 	var cacheDir string
 	if collection != nil {
@@ -118,55 +121,55 @@ func (e *EventProducer) handleRepo(ctx context.Context, repo config.GitWatchRepo
 		lastTag := ci.LatestTag()
 
 		if lastTag != "" {
-			ev := NewTag{
-				Name: repo.Name,
-				URL:  repo.URL,
-				Time: &t,
-				Tag:  lastTag,
-			}
+			result, err := e.buildClient.BuildTag(ctx, &agent.BuildSpec{
+				Tag: lastTag,
+				Project: &agent.ProjectSpec{
+					Name: repo.Name,
+					Url:  repo.URL,
+				},
+			})
 
-			if collection != nil {
-				ev.Collection = *collection
-			}
-
-			err = events.ProduceEvent(e.conn, ev)
 			if err != nil {
-				log.Error(err)
+				return err
 			}
+
+			log.WithFields(log.Fields{
+				"exit_code": result.ExitCode,
+			}).Debug("result")
 		}
 	}
 
 	for shortName, newHead := range newHeads {
-		ev := NewCommit{
-			Name:   repo.Name,
-			URL:    repo.URL,
-			Time:   &t,
-			Hash:   newHead,
+		result, err := e.buildClient.BuildCommit(ctx, &agent.BuildSpec{
+			Commit: newHead,
 			Branch: shortName,
-		}
-
-		err = events.ProduceEvent(e.conn, ev)
+			Project: &agent.ProjectSpec{
+				Name: repo.Name,
+				Url:  repo.URL,
+			},
+		})
 		if err != nil {
-			log.Error(err)
+			return err
 		}
+		log.WithFields(log.Fields{
+			"exit_code": result.ExitCode,
+		}).Debug("result")
 	}
 
 	for _, r := range newTags {
-		ev := NewTag{
-			Name: repo.Name,
-			URL:  repo.URL,
-			Time: &t,
-			Tag:  r,
-		}
-
-		if collection != nil {
-			ev.Collection = *collection
-		}
-
-		err = events.ProduceEvent(e.conn, ev)
+		result, err := e.buildClient.BuildTag(ctx, &agent.BuildSpec{
+			Tag: r,
+			Project: &agent.ProjectSpec{
+				Name: repo.Name,
+				Url:  repo.URL,
+			},
+		})
 		if err != nil {
-			log.Error(err)
+			return err
 		}
+		log.WithFields(log.Fields{
+			"exit_code": result.ExitCode,
+		}).Debug("result")
 	}
 
 	return nil

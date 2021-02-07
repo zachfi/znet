@@ -44,7 +44,6 @@ func init() {
 }
 
 // NewServer creates a new Server composed of the received information.
-// func NewServer(config Config, consumers []events.Consumer) *Server {
 func NewServer(cfg *config.Config) (*Server, error) {
 	if cfg.HTTP == nil {
 		return nil, fmt.Errorf("unable to build znet Server with nil HTTP config")

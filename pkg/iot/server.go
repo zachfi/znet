@@ -19,6 +19,7 @@ type Server struct {
 func NewServer(mqttClient mqtt.Client) (*Server, error) {
 	return &Server{
 		mqttClient: mqttClient,
+		mutex:      sync.Mutex{},
 	}, nil
 }
 

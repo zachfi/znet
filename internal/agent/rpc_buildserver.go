@@ -31,20 +31,20 @@ func (b *buildServer) BuildTag(ctx context.Context, req *BuildSpec) (*CommandRes
 	b.Lock()
 	defer b.Unlock()
 
-	if req.Spec.Name == "" {
-		return nil, fmt.Errorf("unable to build tag for unnamed ProjectSpec")
+	if req.Project.Name == "" {
+		return nil, fmt.Errorf("unable to build tag for unnamed Project")
 	}
 
 	log.WithFields(log.Fields{
-		"url":  req.Spec.Url,
-		"name": req.Spec.Name,
+		"url":  req.Project.Url,
+		"name": req.Project.Name,
 		"tag":  req.Tag,
 	}).Debug("building project")
 
-	cacheDir := fmt.Sprintf("%s/%s", b.config.CacheDir, req.Spec.Name)
+	cacheDir := fmt.Sprintf("%s/%s", b.config.CacheDir, req.Project.Name)
 
 	ci := continuous.NewCI(
-		req.Spec.Url,
+		req.Project.Url,
 		cacheDir,
 		b.config.SSHKeyPath,
 	)
@@ -79,20 +79,20 @@ func (b *buildServer) BuildCommit(ctx context.Context, req *BuildSpec) (*Command
 	b.Lock()
 	defer b.Unlock()
 
-	if req.Spec.Name == "" {
-		return nil, fmt.Errorf("unable to build tag for unnamed ProjectSpec")
+	if req.Project.Name == "" {
+		return nil, fmt.Errorf("unable to build tag for unnamed Project")
 	}
 
 	log.WithFields(log.Fields{
-		"url":  req.Spec.Url,
-		"name": req.Spec.Name,
+		"url":  req.Project.Url,
+		"name": req.Project.Name,
 		"tag":  req.Tag,
 	}).Debug("building project")
 
-	cacheDir := fmt.Sprintf("%s/%s", b.config.CacheDir, req.Spec.Name)
+	cacheDir := fmt.Sprintf("%s/%s", b.config.CacheDir, req.Project.Name)
 
 	ci := continuous.NewCI(
-		req.Spec.Url,
+		req.Project.Url,
 		cacheDir,
 		b.config.SSHKeyPath,
 	)
