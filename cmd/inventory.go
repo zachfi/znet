@@ -25,18 +25,26 @@ var inventoryCommand = &cobra.Command{
 	// Run:     runInv,
 }
 
+var listCmd = &cobra.Command{
+	Use:     "list",
+	Short:   "List items from the inventory",
+	Long:    "List items from the inventory",
+	Example: "znet inventory list",
+	// Run:     runList,
+}
+
 // typeName: network_host
 // commandName: NetworkHost
 
-var networkhostCmd = &cobra.Command{
+var listNetworkHostCmd = &cobra.Command{
 	Use:   "network_host",
 	Short: "Manage network_host inventory resources",
 	// Long:    "Run an inventory report",
 	Example: "znet inventory network_host",
-	Run:     runNetworkHost,
+	Run:     runListNetworkHost,
 }
 
-func runNetworkHost(cmd *cobra.Command, args []string) {
+func runListNetworkHost(cmd *cobra.Command, args []string) {
 	initLogger()
 
 	z, err := znet.NewZnet(cfgFile)
@@ -99,8 +107,84 @@ func runNetworkHost(cmd *cobra.Command, args []string) {
 
 }
 
+// typeName: zigbee_device
+// commandName: ZigbeeDevice
+
+var listZigbeeDeviceCmd = &cobra.Command{
+	Use:   "zigbee_device",
+	Short: "Manage zigbee_device inventory resources",
+	// Long:    "Run an inventory report",
+	Example: "znet inventory zigbee_device",
+	Run:     runListZigbeeDevice,
+}
+
+func runListZigbeeDevice(cmd *cobra.Command, args []string) {
+	initLogger()
+
+	z, err := znet.NewZnet(cfgFile)
+	if err != nil {
+		log.Error(err)
+	}
+
+	z.Config.RPC.ServerAddress = viper.GetString("rpc.server_address")
+
+	if z.Config.RPC.ServerAddress == "" {
+		log.Fatal("no rpc.server configuration specified")
+	}
+
+	cfg := &config.Config{
+		Vault: z.Config.Vault,
+		TLS:   z.Config.TLS,
+	}
+
+	conn := comms.StandardRPCClient(z.Config.RPC.ServerAddress, *cfg)
+
+	defer func() {
+		err = conn.Close()
+		if err != nil {
+			log.Error(err)
+		}
+	}()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	inventoryClient := inventory.NewInventoryClient(conn)
+
+	stream, err := inventoryClient.ListZigbeeDevices(ctx, &inventory.Empty{})
+	if err != nil {
+		log.Errorf("stream error: %s", err)
+	}
+
+	for {
+		var d *inventory.ZigbeeDevice
+
+		d, err = stream.Recv()
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+
+			switch status.Code(err) {
+			case codes.OK:
+				continue
+			default:
+				log.Errorf("default status.Code: %+v", status.Code(err))
+				break
+			}
+		}
+
+		if d != nil {
+			log.Debugf("NetworkHost: %+v", d)
+		}
+	}
+
+}
+
 func init() {
-	inventoryCommand.AddCommand(networkhostCmd)
+	inventoryCommand.AddCommand(listCmd)
+	listCmd.AddCommand(listNetworkHostCmd)
+	listCmd.AddCommand(listZigbeeDeviceCmd)
 
 	// invCmd.PersistentFlags().StringVarP(&rpcServer, "rpc", "r", ":8800", "Specify RPC server address")
 	// invCmd.Flags().BoolP("verbose", "v", false, "Raise verbosity")

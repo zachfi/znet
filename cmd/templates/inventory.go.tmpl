@@ -25,8 +25,17 @@ var inventoryCommand = &cobra.Command{
 	Example: "znet inv",
 	// Run:     runInv,
 }
+
+var listCmd = &cobra.Command{
+	Use:     "list",
+	Short:   "List items from the inventory",
+	Long:    "List items from the inventory",
+	Example: "znet inventory list",
+	// Run:     runList,
+}
+
   {{- $messagesOld := list "Inet6Network" "InetNetwork" "L3Network" "NetworkHost" "NetworkID" "ZigbeeDevice" "IOTZone" }}
-  {{- $messages := list "NetworkHost" }}
+  {{- $messages := list "NetworkHost" "ZigbeeDevice" }}
   {{- range .File.MessageType }}
     {{- if has .GetName $messages }}
       {{- $typeName := (.GetName|snakeCase)}}
@@ -34,15 +43,15 @@ var inventoryCommand = &cobra.Command{
 // typeName: {{$typeName}}
 // commandName: {{$commandName}}
 
-var {{$commandName|lowerCamelCase}}Cmd = &cobra.Command{
+var list{{$commandName}}Cmd = &cobra.Command{
 	Use:     "{{$typeName}}",
 	Short:   "Manage {{$typeName}} inventory resources",
 	// Long:    "Run an inventory report",
 	Example: "znet inventory {{$typeName}}",
-	Run:     run{{$commandName}},
+	Run:     runList{{$commandName}},
 }
 
-func run{{$commandName}}(cmd *cobra.Command, args []string) {
+func runList{{$commandName}}(cmd *cobra.Command, args []string) {
 	initLogger()
 
 	z, err := znet.NewZnet(cfgFile)
@@ -108,10 +117,12 @@ func run{{$commandName}}(cmd *cobra.Command, args []string) {
   {{- end }}
 
 func init() {
+	inventoryCommand.AddCommand(listCmd)
+
   {{- range .File.MessageType }}
     {{- if has .GetName $messages }}
       {{- $commandName := (.GetName)}}
-	inventoryCommand.AddCommand({{$commandName|lowerCamelCase}}Cmd)
+	listCmd.AddCommand(list{{$commandName}}Cmd)
     {{- end }}
   {{- end }}
 
