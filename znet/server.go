@@ -108,13 +108,6 @@ func (s *Server) startRPCListener() error {
 		lightsServer.AddHandler(zigbee)
 	}
 
-	rftoy, err := lights.NewRFToyLight(s.config.Lights)
-	if err != nil {
-		log.Error(err)
-	} else {
-		lightsServer.AddHandler(rftoy)
-	}
-
 	lights.RegisterLightsServer(s.grpcServer, lightsServer)
 
 	//
