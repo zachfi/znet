@@ -95,6 +95,13 @@ func ReadZigbeeMessage(objectID string, payload []byte, endpoint ...string) (int
 			case "config":
 				// do nothing for a config message
 				return nil, nil
+			case "devices":
+				m := ZigbeeBridgeMessageDevices{}
+				err := json.Unmarshal(payload, &m)
+				if err != nil {
+					return nil, err
+				}
+				return m, nil
 			}
 		}
 		return nil, fmt.Errorf("unhandled bridge endpoint: %s", endpoint)

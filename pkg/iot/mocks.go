@@ -57,9 +57,7 @@ func (mc *MockClient) Connect() mqtt.Token {
 	return mc.token
 }
 
-func (mc *MockClient) Disconnect(quiesce uint) {
-	return
-}
+func (mc *MockClient) Disconnect(quiesce uint) {}
 
 func (mc *MockClient) Publish(topic string, qos byte, retained bool, payload interface{}) mqtt.Token {
 	return mc.token
@@ -77,9 +75,7 @@ func (mc *MockClient) Unsubscribe(topics ...string) mqtt.Token {
 	return mc.token
 }
 
-func (mc *MockClient) AddRoute(topic string, handler mqtt.MessageHandler) {
-	return
-}
+func (mc *MockClient) AddRoute(topic string, handler mqtt.MessageHandler) {}
 
 func (mc *MockClient) OptionsReader() mqtt.ClientOptionsReader {
 	return mqtt.ClientOptionsReader{}
