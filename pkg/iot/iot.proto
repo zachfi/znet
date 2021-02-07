@@ -16,9 +16,12 @@ message DeviceDiscovery {
   bytes message = 6;
 }
 
-
 message Action {
   string event = 1;
   string device = 2;
   string zone = 3;
 }
+
+message UpdateRequest { string device = 1; }
+
+service IOT { rpc UpdateDevice(UpdateRequest) returns (Empty); }

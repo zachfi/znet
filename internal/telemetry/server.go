@@ -21,6 +21,7 @@ type Server struct {
 	inventory  inventory.Inventory
 	keeper     thingKeeper
 	lights     *lights.Lights
+	iotServer  *iot.Server
 	seenThings map[string]time.Time
 }
 
@@ -292,6 +293,11 @@ func (l *Server) ReportIOTDevice(ctx context.Context, request *inventory.IOTDevi
 	return &inventory.Empty{}, nil
 }
 
+func (l *Server) SetIOTServer(iotServer *iot.Server) error {
+	l.iotServer = iotServer
+	return nil
+}
+
 func (l *Server) handleZigbeeReport(request *inventory.IOTDevice) error {
 	if request == nil {
 		return fmt.Errorf("unable to read zigbee report from nil request")
@@ -306,109 +312,139 @@ func (l *Server) handleZigbeeReport(request *inventory.IOTDevice) error {
 
 	now := time.Now()
 
-	if msg != nil {
-		switch reflect.TypeOf(msg).String() {
-		case "iot.ZigbeeBridgeState":
-			m := msg.(iot.ZigbeeBridgeState)
-			switch m {
-			case iot.Offline:
-				telemetryIOTBridgeState.WithLabelValues().Set(float64(0))
-			case iot.Online:
-				telemetryIOTBridgeState.WithLabelValues().Set(float64(1))
+	switch reflect.TypeOf(msg).String() {
+	case "iot.ZigbeeBridgeState":
+		m := msg.(iot.ZigbeeBridgeState)
+		switch m {
+		case iot.Offline:
+			telemetryIOTBridgeState.WithLabelValues().Set(float64(0))
+		case iot.Online:
+			telemetryIOTBridgeState.WithLabelValues().Set(float64(1))
+		}
+
+	case "iot.ZigbeeBridgeLog":
+		m := msg.(iot.ZigbeeBridgeLog)
+
+		messageTypeName := reflect.TypeOf(m.Message).String()
+
+		var bridgeLogHandler func(iot.ZigbeeBridgeLog) error
+
+		switch messageTypeName {
+		case "string":
+			if strings.HasPrefix(m.Message.(string), "Update available") {
+				bridgeLogHandler = l.handleZigbeeDeviceUpdate
 			}
 
-		case "iot.ZigbeeBridgeLog":
-			m := msg.(iot.ZigbeeBridgeLog)
+		case "iot.ZigbeeBridgeMessageDevices":
+			bridgeLogHandler = l.handleZigbeeDevices
+		default:
+			log.Debugf("unhandled iot.ZigbeeBridgeLog: %s", messageTypeName)
+		}
 
-			messageTypeName := reflect.TypeOf(m.Message).String()
+		err = bridgeLogHandler(m)
+		if err != nil {
+			return err
+		}
 
-			if m.Message != nil {
-				switch messageTypeName {
-				case "string":
-					if strings.HasPrefix(m.Message.(string), "Update available") {
-						// zigbee2mqtt/bridge/request/device/ota_update/update
-						log.WithFields(log.Fields{
-							"device": m.Meta["device"],
-							"status": m.Meta["status"],
-						}).Debug("update needed")
-					}
+	case "iot.ZigbeeMessage":
+		m := msg.(iot.ZigbeeMessage)
 
-				case "iot.ZigbeeBridgeMessageDevices":
-					for _, d := range m.Message.(iot.ZigbeeBridgeMessageDevices) {
-						x := &inventory.ZigbeeDevice{
-							Name:     d.FriendlyName,
-							LastSeen: timestamppb.New(now),
-							// IeeeAddr:        d.IeeeAddr,
-							Type:            d.Type,
-							SoftwareBuildId: d.SoftwareBuildID,
-							DateCode:        d.DateCode,
-							Model:           d.Model,
-							Vendor:          d.Vendor,
-							// Description      : d.Description,
-							ManufacturerName: d.ManufacturerName,
-							PowerSource:      d.PowerSource,
-							ModelId:          d.ModelID,
-							// HardwareVersion:  d.HardwareVersion,
-						}
+		if m.Battery > 0 {
+			telemetryIOTBatteryPercent.WithLabelValues(request.DeviceDiscovery.ObjectId, request.DeviceDiscovery.Component).Set(float64(m.Battery))
+		}
 
-						_, err := l.inventory.FetchZigbeeDevice(x.Name)
-						if err != nil {
-							log.Error(err)
-							createResult, err := l.inventory.CreateZigbeeDevice(x)
-							if err != nil {
-								return err
-							}
+		if m.LinkQuality > 0 {
+			telemetryIOTLinkQuality.WithLabelValues(request.DeviceDiscovery.ObjectId, request.DeviceDiscovery.Component).Set(float64(m.LinkQuality))
+		}
 
-							log.WithFields(log.Fields{
-								"name":   createResult.Name,
-								"vendor": createResult.Vendor,
-								"model":  createResult.Model,
-								"zone":   createResult.IotZone,
-							}).Debug("createResult")
-						}
-					}
-				}
+		x := &inventory.ZigbeeDevice{
+			Name:     request.DeviceDiscovery.ObjectId,
+			LastSeen: timestamppb.New(now),
+		}
+
+		result, err := l.inventory.FetchZigbeeDevice(x.Name)
+		if err != nil {
+			log.Error(err)
+			_, err = l.inventory.CreateZigbeeDevice(x)
+			if err != nil {
+				return err
+			}
+		}
+
+		if m.Action != "" {
+			action := &iot.Action{
+				Event:  m.Action,
+				Device: x.Name,
+				Zone:   result.IotZone,
 			}
 
-		case "iot.ZigbeeMessage":
-			m := msg.(iot.ZigbeeMessage)
-
-			if m.Battery > 0 {
-				telemetryIOTBatteryPercent.WithLabelValues(request.DeviceDiscovery.ObjectId, request.DeviceDiscovery.Component).Set(float64(m.Battery))
-			}
-
-			if m.LinkQuality > 0 {
-				telemetryIOTLinkQuality.WithLabelValues(request.DeviceDiscovery.ObjectId, request.DeviceDiscovery.Component).Set(float64(m.LinkQuality))
-			}
-
-			x := &inventory.ZigbeeDevice{
-				Name:     request.DeviceDiscovery.ObjectId,
-				LastSeen: timestamppb.New(now),
-			}
-
-			result, err := l.inventory.FetchZigbeeDevice(x.Name)
+			err = l.lights.ActionHandler(action)
 			if err != nil {
 				log.Error(err)
-				_, err = l.inventory.CreateZigbeeDevice(x)
-				if err != nil {
-					return err
-				}
-			}
-
-			if m.Action != "" {
-				action := &iot.Action{
-					Event:  m.Action,
-					Device: x.Name,
-					Zone:   result.IotZone,
-				}
-
-				err = l.lights.ActionHandler(action)
-				if err != nil {
-					log.Error(err)
-				}
 			}
 		}
 	}
+
+	return nil
+}
+
+func (l *Server) handleZigbeeDevices(m iot.ZigbeeBridgeLog) error {
+	now := time.Now()
+
+	for _, d := range m.Message.(iot.ZigbeeBridgeMessageDevices) {
+		x := &inventory.ZigbeeDevice{
+			Name:     d.FriendlyName,
+			LastSeen: timestamppb.New(now),
+			// IeeeAddr:        d.IeeeAddr,
+			Type:            d.Type,
+			SoftwareBuildId: d.SoftwareBuildID,
+			DateCode:        d.DateCode,
+			Model:           d.Model,
+			Vendor:          d.Vendor,
+			// Description      : d.Description,
+			ManufacturerName: d.ManufacturerName,
+			PowerSource:      d.PowerSource,
+			ModelId:          d.ModelID,
+			// HardwareVersion:  d.HardwareVersion,
+		}
+
+		_, err := l.inventory.FetchZigbeeDevice(x.Name)
+		if err != nil {
+			log.Error(err)
+			createResult, err := l.inventory.CreateZigbeeDevice(x)
+			if err != nil {
+				return err
+			}
+
+			log.WithFields(log.Fields{
+				"name":   createResult.Name,
+				"vendor": createResult.Vendor,
+				"model":  createResult.Model,
+				"zone":   createResult.IotZone,
+			}).Debug("createResult")
+		}
+	}
+
+	return nil
+}
+
+func (l *Server) handleZigbeeDeviceUpdate(m iot.ZigbeeBridgeLog) error {
+	// zigbee2mqtt/bridge/request/device/ota_update/update
+	log.WithFields(log.Fields{
+		"device": m.Meta["device"],
+		"status": m.Meta["status"],
+	}).Debug("upgrade report")
+
+	req := &iot.UpdateRequest{
+		Device: m.Meta["device"].(string),
+	}
+
+	go func() {
+		_, err := l.iotServer.UpdateDevice(context.Background(), req)
+		if err != nil {
+			log.Error()
+		}
+	}()
 
 	return nil
 }
