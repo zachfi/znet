@@ -46,7 +46,7 @@ func NewServer(inv inventory.Inventory, lig *lights.Lights) (*Server, error) {
 
 			// Expire the old entries
 			for k, v := range tMap {
-				if time.Since(v) > (600 * time.Second) {
+				if time.Since(v) > (300 * time.Second) {
 					log.WithFields(log.Fields{
 						"device": k,
 					}).Info("expiring")
@@ -294,7 +294,12 @@ func (l *Server) ReportIOTDevice(ctx context.Context, request *inventory.IOTDevi
 }
 
 func (l *Server) SetIOTServer(iotServer *iot.Server) error {
+	if l.iotServer != nil {
+		log.Debugf("replaceing iotServer on telemetryServer")
+	}
+
 	l.iotServer = iotServer
+
 	return nil
 }
 

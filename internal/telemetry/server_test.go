@@ -161,7 +161,7 @@ func TestReportIOTDevice_lights_handling(t *testing.T) {
 
 }
 
-func TestReportIOTDevice_beidge_state(t *testing.T) {
+func TestReportIOTDevice_bridge_state(t *testing.T) {
 	log.SetLevel(log.DebugLevel)
 	defer log.SetLevel(log.InfoLevel)
 
@@ -219,6 +219,7 @@ func TestReportIOTDevice_beidge_state(t *testing.T) {
 		l, err := lights.NewLights(lightsConfig)
 		require.NoError(t, err)
 		require.NotNil(t, l)
+
 		h := &lights.MockLight{}
 		l.AddHandler(h)
 
@@ -228,9 +229,17 @@ func TestReportIOTDevice_beidge_state(t *testing.T) {
 		// 	IotZone: "dungeon",
 		// }
 
+		iotServer, err := iot.NewServer(&iot.MockClient{})
+		require.NoError(t, err)
+		require.NotNil(t, iotServer)
+
 		s, err := NewServer(i, l)
 		require.NoError(t, err)
 		require.NotNil(t, s)
+
+		err = s.SetIOTServer(iotServer)
+		require.NoError(t, err)
+
 		response, err := s.ReportIOTDevice(context.Background(), tc.Req)
 		require.NoError(t, err)
 		require.NotNil(t, response)
