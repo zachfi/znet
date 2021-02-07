@@ -33,7 +33,7 @@ message ProjectStatus {
 }
 
 message BuildSpec {
-  ProjectSpec spec = 1;
+  ProjectSpec project = 1;
   string commit = 2;
   string branch = 3;
   string tag = 4;
@@ -47,7 +47,7 @@ service JailHost {
   rpc Stop(Jail) returns (CommandResult);
 }
 
-// A standard operating system node.
+// Node is a standard operating system node.
 service Node {
   rpc RunPuppetAgent(Empty) returns (CommandResult);
   rpc PackageUpgrade(Empty) returns (CommandResult);
