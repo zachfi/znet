@@ -315,6 +315,10 @@ func (l *Server) handleZigbeeReport(request *inventory.IOTDevice) error {
 		return err
 	}
 
+	if msg == nil {
+		return nil
+	}
+
 	now := time.Now()
 
 	switch reflect.TypeOf(msg).String() {
