@@ -4,32 +4,39 @@ package inventory
 type MockInventory struct {
 	FetchNetworkHostCalls     map[string]int
 	FetchNetworkHostResponse  *NetworkHost
+	FetchNetworkHostError     error
 	ListNetworkHostResponse   []NetworkHost
-	CreateNetworkHostCalls    []*NetworkHost
+	CreateNetworkHostCalls    map[string]int
 	FetchNetworkIDCalls       map[string]int
 	FetchNetworkIDResponse    *NetworkID
+	FetchNetworkIDError       error
 	ListNetworkIDResponse     []NetworkID
-	CreateNetworkIDCalls      []*NetworkID
+	CreateNetworkIDCalls      map[string]int
 	FetchL3NetworkCalls       map[string]int
 	FetchL3NetworkResponse    *L3Network
+	FetchL3NetworkError       error
 	ListL3NetworkResponse     []L3Network
-	CreateL3NetworkCalls      []*L3Network
+	CreateL3NetworkCalls      map[string]int
 	FetchInetNetworkCalls     map[string]int
 	FetchInetNetworkResponse  *InetNetwork
+	FetchInetNetworkError     error
 	ListInetNetworkResponse   []InetNetwork
-	CreateInetNetworkCalls    []*InetNetwork
+	CreateInetNetworkCalls    map[string]int
 	FetchInet6NetworkCalls    map[string]int
 	FetchInet6NetworkResponse *Inet6Network
+	FetchInet6NetworkError    error
 	ListInet6NetworkResponse  []Inet6Network
-	CreateInet6NetworkCalls   []*Inet6Network
+	CreateInet6NetworkCalls   map[string]int
 	FetchZigbeeDeviceCalls    map[string]int
 	FetchZigbeeDeviceResponse *ZigbeeDevice
+	FetchZigbeeDeviceError    error
 	ListZigbeeDeviceResponse  []ZigbeeDevice
-	CreateZigbeeDeviceCalls   []*ZigbeeDevice
+	CreateZigbeeDeviceCalls   map[string]int
 	FetchIOTZoneCalls         map[string]int
 	FetchIOTZoneResponse      *IOTZone
+	FetchIOTZoneError         error
 	ListIOTZoneResponse       []IOTZone
-	CreateIOTZoneCalls        []*IOTZone
+	CreateIOTZoneCalls        map[string]int
 }
 
 func (i *MockInventory) UpdateTimestamp(string, string) error {
@@ -37,7 +44,11 @@ func (i *MockInventory) UpdateTimestamp(string, string) error {
 	return nil
 }
 func (i *MockInventory) CreateNetworkHost(x *NetworkHost) (*NetworkHost, error) {
-	i.CreateNetworkHostCalls = append(i.CreateNetworkHostCalls, x)
+	if len(i.CreateNetworkHostCalls) == 0 {
+		i.CreateNetworkHostCalls = make(map[string]int)
+	}
+
+	i.CreateNetworkHostCalls[x.Name]++
 
 	return x, nil
 }
@@ -48,6 +59,10 @@ func (i *MockInventory) FetchNetworkHost(name string) (*NetworkHost, error) {
 	}
 
 	i.FetchNetworkHostCalls[name]++
+
+	if i.FetchNetworkHostError != nil {
+		return nil, i.FetchNetworkHostError
+	}
 
 	return i.FetchNetworkHostResponse, nil
 }
@@ -62,7 +77,11 @@ func (i *MockInventory) UpdateNetworkHost(*NetworkHost) (*NetworkHost, error) {
 	return nil, nil
 }
 func (i *MockInventory) CreateNetworkID(x *NetworkID) (*NetworkID, error) {
-	i.CreateNetworkIDCalls = append(i.CreateNetworkIDCalls, x)
+	if len(i.CreateNetworkIDCalls) == 0 {
+		i.CreateNetworkIDCalls = make(map[string]int)
+	}
+
+	i.CreateNetworkIDCalls[x.Name]++
 
 	return x, nil
 }
@@ -73,6 +92,10 @@ func (i *MockInventory) FetchNetworkID(name string) (*NetworkID, error) {
 	}
 
 	i.FetchNetworkIDCalls[name]++
+
+	if i.FetchNetworkIDError != nil {
+		return nil, i.FetchNetworkIDError
+	}
 
 	return i.FetchNetworkIDResponse, nil
 }
@@ -87,7 +110,11 @@ func (i *MockInventory) UpdateNetworkID(*NetworkID) (*NetworkID, error) {
 	return nil, nil
 }
 func (i *MockInventory) CreateL3Network(x *L3Network) (*L3Network, error) {
-	i.CreateL3NetworkCalls = append(i.CreateL3NetworkCalls, x)
+	if len(i.CreateL3NetworkCalls) == 0 {
+		i.CreateL3NetworkCalls = make(map[string]int)
+	}
+
+	i.CreateL3NetworkCalls[x.Name]++
 
 	return x, nil
 }
@@ -98,6 +125,10 @@ func (i *MockInventory) FetchL3Network(name string) (*L3Network, error) {
 	}
 
 	i.FetchL3NetworkCalls[name]++
+
+	if i.FetchL3NetworkError != nil {
+		return nil, i.FetchL3NetworkError
+	}
 
 	return i.FetchL3NetworkResponse, nil
 }
@@ -112,7 +143,11 @@ func (i *MockInventory) UpdateL3Network(*L3Network) (*L3Network, error) {
 	return nil, nil
 }
 func (i *MockInventory) CreateInetNetwork(x *InetNetwork) (*InetNetwork, error) {
-	i.CreateInetNetworkCalls = append(i.CreateInetNetworkCalls, x)
+	if len(i.CreateInetNetworkCalls) == 0 {
+		i.CreateInetNetworkCalls = make(map[string]int)
+	}
+
+	i.CreateInetNetworkCalls[x.Name]++
 
 	return x, nil
 }
@@ -123,6 +158,10 @@ func (i *MockInventory) FetchInetNetwork(name string) (*InetNetwork, error) {
 	}
 
 	i.FetchInetNetworkCalls[name]++
+
+	if i.FetchInetNetworkError != nil {
+		return nil, i.FetchInetNetworkError
+	}
 
 	return i.FetchInetNetworkResponse, nil
 }
@@ -137,7 +176,11 @@ func (i *MockInventory) UpdateInetNetwork(*InetNetwork) (*InetNetwork, error) {
 	return nil, nil
 }
 func (i *MockInventory) CreateInet6Network(x *Inet6Network) (*Inet6Network, error) {
-	i.CreateInet6NetworkCalls = append(i.CreateInet6NetworkCalls, x)
+	if len(i.CreateInet6NetworkCalls) == 0 {
+		i.CreateInet6NetworkCalls = make(map[string]int)
+	}
+
+	i.CreateInet6NetworkCalls[x.Name]++
 
 	return x, nil
 }
@@ -148,6 +191,10 @@ func (i *MockInventory) FetchInet6Network(name string) (*Inet6Network, error) {
 	}
 
 	i.FetchInet6NetworkCalls[name]++
+
+	if i.FetchInet6NetworkError != nil {
+		return nil, i.FetchInet6NetworkError
+	}
 
 	return i.FetchInet6NetworkResponse, nil
 }
@@ -162,7 +209,11 @@ func (i *MockInventory) UpdateInet6Network(*Inet6Network) (*Inet6Network, error)
 	return nil, nil
 }
 func (i *MockInventory) CreateZigbeeDevice(x *ZigbeeDevice) (*ZigbeeDevice, error) {
-	i.CreateZigbeeDeviceCalls = append(i.CreateZigbeeDeviceCalls, x)
+	if len(i.CreateZigbeeDeviceCalls) == 0 {
+		i.CreateZigbeeDeviceCalls = make(map[string]int)
+	}
+
+	i.CreateZigbeeDeviceCalls[x.Name]++
 
 	return x, nil
 }
@@ -173,6 +224,10 @@ func (i *MockInventory) FetchZigbeeDevice(name string) (*ZigbeeDevice, error) {
 	}
 
 	i.FetchZigbeeDeviceCalls[name]++
+
+	if i.FetchZigbeeDeviceError != nil {
+		return nil, i.FetchZigbeeDeviceError
+	}
 
 	return i.FetchZigbeeDeviceResponse, nil
 }
@@ -187,7 +242,11 @@ func (i *MockInventory) UpdateZigbeeDevice(*ZigbeeDevice) (*ZigbeeDevice, error)
 	return nil, nil
 }
 func (i *MockInventory) CreateIOTZone(x *IOTZone) (*IOTZone, error) {
-	i.CreateIOTZoneCalls = append(i.CreateIOTZoneCalls, x)
+	if len(i.CreateIOTZoneCalls) == 0 {
+		i.CreateIOTZoneCalls = make(map[string]int)
+	}
+
+	i.CreateIOTZoneCalls[x.Name]++
 
 	return x, nil
 }
@@ -198,6 +257,10 @@ func (i *MockInventory) FetchIOTZone(name string) (*IOTZone, error) {
 	}
 
 	i.FetchIOTZoneCalls[name]++
+
+	if i.FetchIOTZoneError != nil {
+		return nil, i.FetchIOTZoneError
+	}
 
 	return i.FetchIOTZoneResponse, nil
 }

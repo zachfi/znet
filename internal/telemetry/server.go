@@ -332,25 +332,25 @@ func (l *Server) handleZigbeeReport(request *inventory.IOTDevice) error {
 
 		messageTypeName := reflect.TypeOf(m.Message).String()
 
-		var bridgeLogHandler func(iot.ZigbeeBridgeLog) error
-
 		switch messageTypeName {
 		case "string":
 			if strings.HasPrefix(m.Message.(string), "Update available") {
-				bridgeLogHandler = l.handleZigbeeDeviceUpdate
+				err = l.handleZigbeeDeviceUpdate(m)
+				if err != nil {
+					return err
+				}
 			}
-
-		case "iot.ZigbeeBridgeMessageDevices":
-			bridgeLogHandler = l.handleZigbeeDevices
 		default:
-			log.Debugf("unhandled iot.ZigbeeBridgeLog: %s", messageTypeName)
+			return fmt.Errorf("unhandled iot.ZigbeeBridgeLog: %s", messageTypeName)
 		}
 
-		err = bridgeLogHandler(m)
+	case "iot.ZigbeeBridgeMessageDevices":
+		m := msg.(iot.ZigbeeBridgeMessageDevices)
+
+		err = l.handleZigbeeDevices(m)
 		if err != nil {
 			return err
 		}
-
 	case "iot.ZigbeeMessage":
 		m := msg.(iot.ZigbeeMessage)
 
@@ -393,10 +393,10 @@ func (l *Server) handleZigbeeReport(request *inventory.IOTDevice) error {
 	return nil
 }
 
-func (l *Server) handleZigbeeDevices(m iot.ZigbeeBridgeLog) error {
+func (l *Server) handleZigbeeDevices(m iot.ZigbeeBridgeMessageDevices) error {
 	now := time.Now()
 
-	for _, d := range m.Message.(iot.ZigbeeBridgeMessageDevices) {
+	for _, d := range m {
 		x := &inventory.ZigbeeDevice{
 			Name:     d.FriendlyName,
 			LastSeen: timestamppb.New(now),
@@ -411,6 +411,10 @@ func (l *Server) handleZigbeeDevices(m iot.ZigbeeBridgeLog) error {
 			PowerSource:      d.PowerSource,
 			ModelId:          d.ModelID,
 			// HardwareVersion:  d.HardwareVersion,
+		}
+
+		if x.Name == "Coordinator" {
+			continue
 		}
 
 		_, err := l.inventory.FetchZigbeeDevice(x.Name)

@@ -4,9 +4,9 @@ package telemetry
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 
 	"github.com/xaque208/znet/internal/config"
@@ -162,13 +162,9 @@ func TestReportIOTDevice_lights_handling(t *testing.T) {
 }
 
 func TestReportIOTDevice_bridge_state(t *testing.T) {
-	log.SetLevel(log.DebugLevel)
-	defer log.SetLevel(log.InfoLevel)
-
 	testCases := []struct {
-		// Handler *lights.MockLight
 		Req *inventory.IOTDevice
-		// Zone string
+		Inv *inventory.MockInventory
 	}{
 		{
 			Req: &inventory.IOTDevice{
@@ -209,6 +205,29 @@ func TestReportIOTDevice_bridge_state(t *testing.T) {
 					Message:   sampleDevices,
 				},
 			},
+			Inv: &inventory.MockInventory{
+				FetchZigbeeDeviceError: fmt.Errorf("mock error"),
+				FetchZigbeeDeviceCalls: map[string]int{
+					"0x00158d0003960d06": 1,
+					"0x00158d0004238a36": 1,
+					"0x00158d0004238a81": 1,
+					"0x00178801042131ca": 1,
+					"0x0017880104215e6a": 1,
+					"0x0017880104650857": 1,
+					"0x00178801087fc8c8": 1,
+					"0x001788010898e9c1": 1,
+				},
+				CreateZigbeeDeviceCalls: map[string]int{
+					"0x00158d0003960d06": 1,
+					"0x00158d0004238a36": 1,
+					"0x00158d0004238a81": 1,
+					"0x00178801042131ca": 1,
+					"0x0017880104215e6a": 1,
+					"0x0017880104650857": 1,
+					"0x00178801087fc8c8": 1,
+					"0x001788010898e9c1": 1,
+				},
+			},
 		},
 	}
 
@@ -241,10 +260,12 @@ func TestReportIOTDevice_bridge_state(t *testing.T) {
 		l.AddHandler(h)
 
 		i := &inventory.MockInventory{}
-		// i.FetchZigbeeDeviceResponse = &inventory.ZigbeeDevice{
-		// 	Name:    zigbeeDeviceName,
-		// 	IotZone: "dungeon",
-		// }
+
+		if tc.Inv != nil {
+			if tc.Inv.FetchZigbeeDeviceError != nil {
+				i.FetchZigbeeDeviceError = tc.Inv.FetchZigbeeDeviceError
+			}
+		}
 
 		iotServer, err := iot.NewServer(&iot.MockClient{})
 		require.NoError(t, err)
@@ -261,12 +282,9 @@ func TestReportIOTDevice_bridge_state(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, response)
 
-		// inventory
-		// require.Equal(t, 1, i.FetchZigbeeDeviceCalls[zigbeeDeviceName])
-		// require.Equal(t, 0, len(i.CreateZigbeeDeviceCalls))
-
-		// lights handler
-		// require.Equal(t, tc.Handler, h)
+		if tc.Inv != nil {
+			require.Equal(t, tc.Inv, i)
+		}
 	}
 
 }

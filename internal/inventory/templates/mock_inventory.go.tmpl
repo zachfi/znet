@@ -10,8 +10,9 @@ type MockInventory struct {
         {{- if has .GetName $messages }}
   Fetch{{.GetName}}Calls map[string]int
   Fetch{{.GetName}}Response *{{.GetName}}
+  Fetch{{.GetName}}Error error
   List{{.GetName}}Response []{{.GetName}}
-  Create{{.GetName}}Calls []*{{.GetName}}
+  Create{{.GetName}}Calls map[string]int
         {{- end }}
     {{- end }}
 }
@@ -25,7 +26,11 @@ func (i *MockInventory) UpdateTimestamp(string, string) error {
     {{- range .File.MessageType }}
         {{- if has .GetName $messages }}
 func (i *MockInventory) Create{{.GetName}}(x *{{.GetName}}) (*{{.GetName}}, error) {
-  i.Create{{.GetName}}Calls = append(i.Create{{.GetName}}Calls, x)
+  if len(i.Create{{.GetName}}Calls) == 0 {
+    i.Create{{.GetName}}Calls = make(map[string]int)
+  }
+
+  i.Create{{.GetName}}Calls[x.Name]++
 
   return x, nil
 }
@@ -36,6 +41,10 @@ func (i *MockInventory) Fetch{{.GetName}}(name string) (*{{.GetName}}, error) {
   }
 
   i.Fetch{{.GetName}}Calls[name]++
+
+  if i.Fetch{{.GetName}}Error != nil {
+    return nil, i.Fetch{{.GetName}}Error
+  }
 
   return i.Fetch{{.GetName}}Response, nil
 }
