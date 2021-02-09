@@ -21,4 +21,8 @@ import (
 
 	// build/release.mk
 	_ "github.com/goreleaser/goreleaser"
+
+	// build/compile.mk
+	_ "github.com/Masterminds/sprig/v3"
+	_ "moul.io/protoc-gen-gotemplate"
 )
