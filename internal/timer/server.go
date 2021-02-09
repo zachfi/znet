@@ -7,6 +7,7 @@ import (
 )
 
 type Server struct {
+	UnimplementedTimerServer
 	lights *lights.Lights
 }
 
