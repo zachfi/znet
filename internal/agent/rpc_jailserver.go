@@ -7,6 +7,7 @@ import (
 )
 
 type jailServer struct {
+	UnimplementedJailHostServer
 	sync.Mutex
 }
 
@@ -26,7 +27,9 @@ func (j *jailServer) Stop(ctx context.Context, req *Jail) (*CommandResult, error
 	return nil, nil
 }
 
-type notImplementedJailServer struct{}
+type notImplementedJailServer struct {
+	UnimplementedJailHostServer
+}
 
 func (j *notImplementedJailServer) List(ctx context.Context, req *Empty) (*Jails, error) {
 	return nil, fmt.Errorf("jail server not implemented on this platform")

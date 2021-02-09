@@ -9,6 +9,7 @@ import (
 )
 
 type nodeServer struct {
+	UnimplementedNodeServer
 	sync.Mutex
 
 	// ID is the os-release ID

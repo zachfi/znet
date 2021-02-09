@@ -14,6 +14,7 @@ import (
 )
 
 type buildServer struct {
+	UnimplementedBuildServer
 	sync.Mutex
 	config *config.BuilderConfig
 }
