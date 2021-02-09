@@ -11,6 +11,7 @@ import (
 
 // Server is the struct to implement the IOTServer.
 type Server struct {
+	UnimplementedIOTServer
 	mutex      sync.Mutex
 	mqttClient mqtt.Client
 }

@@ -7,16 +7,11 @@
 package iot
 
 import (
-	context "context"
-	reflect "reflect"
-	sync "sync"
-
 	proto "github.com/golang/protobuf/proto"
-	grpc "google.golang.org/grpc"
-	codes "google.golang.org/grpc/codes"
-	status "google.golang.org/grpc/status"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	reflect "reflect"
+	sync "sync"
 )
 
 const (
@@ -402,84 +397,4 @@ func file_pkg_iot_iot_proto_init() {
 	file_pkg_iot_iot_proto_rawDesc = nil
 	file_pkg_iot_iot_proto_goTypes = nil
 	file_pkg_iot_iot_proto_depIdxs = nil
-}
-
-// Reference imports to suppress errors if they are not otherwise used.
-var _ context.Context
-var _ grpc.ClientConnInterface
-
-// This is a compile-time assertion to ensure that this generated file
-// is compatible with the grpc package it is being compiled against.
-const _ = grpc.SupportPackageIsVersion6
-
-// IOTClient is the client API for IOT service.
-//
-// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
-type IOTClient interface {
-	UpdateDevice(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*Empty, error)
-}
-
-type iOTClient struct {
-	cc grpc.ClientConnInterface
-}
-
-func NewIOTClient(cc grpc.ClientConnInterface) IOTClient {
-	return &iOTClient{cc}
-}
-
-func (c *iOTClient) UpdateDevice(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
-	err := c.cc.Invoke(ctx, "/iot.IOT/UpdateDevice", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-// IOTServer is the server API for IOT service.
-type IOTServer interface {
-	UpdateDevice(context.Context, *UpdateRequest) (*Empty, error)
-}
-
-// UnimplementedIOTServer can be embedded to have forward compatible implementations.
-type UnimplementedIOTServer struct {
-}
-
-func (*UnimplementedIOTServer) UpdateDevice(context.Context, *UpdateRequest) (*Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateDevice not implemented")
-}
-
-func RegisterIOTServer(s *grpc.Server, srv IOTServer) {
-	s.RegisterService(&_IOT_serviceDesc, srv)
-}
-
-func _IOT_UpdateDevice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(IOTServer).UpdateDevice(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/iot.IOT/UpdateDevice",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IOTServer).UpdateDevice(ctx, req.(*UpdateRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-var _IOT_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "iot.IOT",
-	HandlerType: (*IOTServer)(nil),
-	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "UpdateDevice",
-			Handler:    _IOT_UpdateDevice_Handler,
-		},
-	},
-	Streams:  []grpc.StreamDesc{},
-	Metadata: "pkg/iot/iot.proto",
 }

@@ -27,21 +27,22 @@ proto: proto-grpc gofmt-fix
 
 proto-grpc:
 	@echo "=== $(PROJECT_NAME) === [ proto compile    ]: compiling protobufs:"
-	@protoc -I ./ \
+	@$(GO) generate pkg/iot
+	@protoc --go_out=./ --go_opt=paths=source_relative \
+		--go-grpc_out=./ --go-grpc_opt=paths=source_relative \
 		rpc/rpc.proto \
-		pkg/iot/iot.proto \
 		internal/astro/astro.proto \
 		internal/agent/agent.proto \
 		internal/lights/lights.proto \
 		internal/timer/timer.proto \
 		internal/inventory/inventory.proto \
-		internal/telemetry/telemetry.proto \
-		--go_out=plugins=grpc:./ \
-		--go_opt=paths=source_relative
-	@protoc -I internal/inventory/ -I ./ internal/inventory/inventory.proto \
-		--gotemplate_out=template_dir=internal/inventory/templates,debug=false,single-package-mode=true,all=true:internal/inventory
-	@protoc -I internal/inventory/ -I ./ internal/inventory/inventory.proto \
-		--gotemplate_out=template_dir=cmd/templates,debug=false,single-package-mode=true,all=true:cmd
+		internal/telemetry/telemetry.proto
+	@protoc -I internal/inventory/ -I ./
+		--gotemplate_out=template_dir=internal/inventory/templates,debug=false,single-package-mode=true,all=true:internal/inventory \
+		internal/inventory/inventory.proto
+	@protoc -I internal/inventory/ -I ./
+		--gotemplate_out=template_dir=cmd/templates,debug=false,single-package-mode=true,all=true:cmd \
+		internal/inventory/inventory.proto
 
 compile-all: deps-only
 	@echo "=== $(PROJECT_NAME) === [ compile          ]: building commands:"
