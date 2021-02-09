@@ -16,6 +16,7 @@ import (
 // Lights holds the information necessary to communicate with lighting
 // equipment, and the configuration to add a bit of context.
 type Lights struct {
+	UnimplementedLightsServer
 	sync.Mutex
 	config   *config.LightsConfig
 	handlers []Handler
