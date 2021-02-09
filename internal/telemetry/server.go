@@ -18,6 +18,7 @@ import (
 )
 
 type Server struct {
+	UnimplementedTelemetryServer
 	inventory  inventory.Inventory
 	keeper     thingKeeper
 	lights     *lights.Lights
