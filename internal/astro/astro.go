@@ -9,6 +9,7 @@ import (
 
 // Astro exposes the RPC methods to communicate astrological events to the system.
 type Astro struct {
+	UnimplementedAstroServer
 	lights *lights.Lights
 }
 
