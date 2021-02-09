@@ -7,16 +7,11 @@
 package rpc
 
 import (
-	context "context"
-	reflect "reflect"
-	sync "sync"
-
 	proto "github.com/golang/protobuf/proto"
-	grpc "google.golang.org/grpc"
-	codes "google.golang.org/grpc/codes"
-	status "google.golang.org/grpc/status"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	reflect "reflect"
+	sync "sync"
 )
 
 const (
@@ -436,148 +431,4 @@ func file_rpc_rpc_proto_init() {
 	file_rpc_rpc_proto_rawDesc = nil
 	file_rpc_rpc_proto_goTypes = nil
 	file_rpc_rpc_proto_depIdxs = nil
-}
-
-// Reference imports to suppress errors if they are not otherwise used.
-var _ context.Context
-var _ grpc.ClientConnInterface
-
-// This is a compile-time assertion to ensure that this generated file
-// is compatible with the grpc package it is being compiled against.
-const _ = grpc.SupportPackageIsVersion6
-
-// EventsClient is the client API for Events service.
-//
-// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
-type EventsClient interface {
-	NoticeEvent(ctx context.Context, in *Event, opts ...grpc.CallOption) (*EventResponse, error)
-	SubscribeEvents(ctx context.Context, in *EventSub, opts ...grpc.CallOption) (Events_SubscribeEventsClient, error)
-}
-
-type eventsClient struct {
-	cc grpc.ClientConnInterface
-}
-
-func NewEventsClient(cc grpc.ClientConnInterface) EventsClient {
-	return &eventsClient{cc}
-}
-
-func (c *eventsClient) NoticeEvent(ctx context.Context, in *Event, opts ...grpc.CallOption) (*EventResponse, error) {
-	out := new(EventResponse)
-	err := c.cc.Invoke(ctx, "/rpc.Events/NoticeEvent", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *eventsClient) SubscribeEvents(ctx context.Context, in *EventSub, opts ...grpc.CallOption) (Events_SubscribeEventsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_Events_serviceDesc.Streams[0], "/rpc.Events/SubscribeEvents", opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &eventsSubscribeEventsClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type Events_SubscribeEventsClient interface {
-	Recv() (*Event, error)
-	grpc.ClientStream
-}
-
-type eventsSubscribeEventsClient struct {
-	grpc.ClientStream
-}
-
-func (x *eventsSubscribeEventsClient) Recv() (*Event, error) {
-	m := new(Event)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-// EventsServer is the server API for Events service.
-type EventsServer interface {
-	NoticeEvent(context.Context, *Event) (*EventResponse, error)
-	SubscribeEvents(*EventSub, Events_SubscribeEventsServer) error
-}
-
-// UnimplementedEventsServer can be embedded to have forward compatible implementations.
-type UnimplementedEventsServer struct {
-}
-
-func (*UnimplementedEventsServer) NoticeEvent(context.Context, *Event) (*EventResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method NoticeEvent not implemented")
-}
-func (*UnimplementedEventsServer) SubscribeEvents(*EventSub, Events_SubscribeEventsServer) error {
-	return status.Errorf(codes.Unimplemented, "method SubscribeEvents not implemented")
-}
-
-func RegisterEventsServer(s *grpc.Server, srv EventsServer) {
-	s.RegisterService(&_Events_serviceDesc, srv)
-}
-
-func _Events_NoticeEvent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Event)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(EventsServer).NoticeEvent(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/rpc.Events/NoticeEvent",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EventsServer).NoticeEvent(ctx, req.(*Event))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Events_SubscribeEvents_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(EventSub)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(EventsServer).SubscribeEvents(m, &eventsSubscribeEventsServer{stream})
-}
-
-type Events_SubscribeEventsServer interface {
-	Send(*Event) error
-	grpc.ServerStream
-}
-
-type eventsSubscribeEventsServer struct {
-	grpc.ServerStream
-}
-
-func (x *eventsSubscribeEventsServer) Send(m *Event) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-var _Events_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "rpc.Events",
-	HandlerType: (*EventsServer)(nil),
-	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "NoticeEvent",
-			Handler:    _Events_NoticeEvent_Handler,
-		},
-	},
-	Streams: []grpc.StreamDesc{
-		{
-			StreamName:    "SubscribeEvents",
-			Handler:       _Events_SubscribeEvents_Handler,
-			ServerStreams: true,
-		},
-	},
-	Metadata: "rpc/rpc.proto",
 }
