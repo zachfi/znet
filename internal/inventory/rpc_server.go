@@ -7,6 +7,7 @@ import (
 
 // Server
 type Server struct {
+	UnimplementedInventoryServer
 	inventory Inventory
 }
 
