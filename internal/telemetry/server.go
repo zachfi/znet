@@ -340,11 +340,10 @@ func (l *Server) handleZigbeeReport(request *inventory.IOTDevice) error {
 		switch messageTypeName {
 		case "string":
 			if strings.HasPrefix(m.Message.(string), "Update available") {
-				err = l.handleZigbeeDeviceUpdate(m)
-				if err != nil {
-					return err
-				}
+				return l.handleZigbeeDeviceUpdate(m)
 			}
+		case "iot.ZigbeeBridgeMessageDevices":
+			return l.handleZigbeeDevices(m.Message.(iot.ZigbeeBridgeMessageDevices))
 		default:
 			return fmt.Errorf("unhandled iot.ZigbeeBridgeLog: %s", messageTypeName)
 		}
@@ -352,10 +351,7 @@ func (l *Server) handleZigbeeReport(request *inventory.IOTDevice) error {
 	case "iot.ZigbeeBridgeMessageDevices":
 		m := msg.(iot.ZigbeeBridgeMessageDevices)
 
-		err = l.handleZigbeeDevices(m)
-		if err != nil {
-			return err
-		}
+		return l.handleZigbeeDevices(m)
 	case "iot.ZigbeeMessage":
 		m := msg.(iot.ZigbeeMessage)
 
