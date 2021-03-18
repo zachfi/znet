@@ -5,7 +5,6 @@ go 1.13
 require (
 	github.com/Microsoft/go-winio v0.4.16 // indirect
 	github.com/amimof/huego v1.1.0
-	github.com/antchfx/htmlquery v1.2.3
 	github.com/blang/semver/v4 v4.0.0
 	github.com/containerd/continuity v0.0.0-20200710164510-efbc4488d8fe // indirect
 	github.com/eclipse/paho.mqtt.golang v1.3.2
@@ -19,7 +18,6 @@ require (
 	github.com/hashicorp/hcl v1.0.1-vault // indirect
 	github.com/hashicorp/vault/api v1.0.5-0.20201001211907-38d91b749c77
 	github.com/hashicorp/vault/sdk v0.1.14-0.20201214222404-d8fffe05d2f4
-	github.com/iancoleman/strcase v0.1.3
 	github.com/imdario/mergo v0.3.11
 	github.com/jarcoal/httpmock v1.0.8 // indirect
 	github.com/johanbrandhorst/certify v1.8.1
@@ -40,7 +38,7 @@ require (
 	github.com/prometheus/client_golang v1.9.0
 	github.com/prometheus/common v0.18.0
 	github.com/scottdware/go-junos v0.0.0-20200809143445-1805793fac10
-	github.com/sirupsen/logrus v1.8.0
+	github.com/sirupsen/logrus v1.8.1
 	github.com/smartystreets/assertions v1.0.0 // indirect
 	github.com/spf13/afero v1.5.1 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
