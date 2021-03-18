@@ -16,6 +16,20 @@ func TestZigbeeBridgeLog(t *testing.T) {
 		Obj     ZigbeeBridgeLog
 	}{
 		{
+			[]byte(`{"message":"interview_successful","meta":{"description":"Hue white A60 bulb E27","friendly_name":"0x0017880102be373d","model":"9290011370","supported":true,"vendor":"Philips"},"type":"pairing"}`),
+			ZigbeeBridgeLog{
+				Type:    "pairing",
+				Message: "interview_successful",
+				Meta: map[string]interface{}{
+					"description":   "Hue white A60 bulb E27",
+					"friendly_name": "0x0017880102be373d",
+					"model":         "9290011370",
+					"vendor":        "Philips",
+					"supported":     true,
+				},
+			},
+		},
+		{
 			[]byte(`{"type":"device_announced","message":"announce","meta":{"friendly_name":"0x0017880104650857"}}`),
 			ZigbeeBridgeLog{
 				Type:    "device_announced",

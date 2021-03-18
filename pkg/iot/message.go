@@ -58,6 +58,9 @@ func (z *ZigbeeBridgeLog) UnmarshalJSON(data []byte) error {
 	case "ota_update":
 		z.Meta = v["meta"].(map[string]interface{})
 		z.Message = v["message"].(string)
+	case "pairing":
+		z.Meta = v["meta"].(map[string]interface{})
+		z.Message = v["message"].(string)
 	}
 
 	return nil

@@ -335,6 +335,10 @@ func (l *Server) handleZigbeeReport(request *inventory.IOTDevice) error {
 	case "iot.ZigbeeBridgeLog":
 		m := msg.(iot.ZigbeeBridgeLog)
 
+		if m.Message == nil {
+			return fmt.Errorf("unhandled iot.ZigbeeBridgeLog type: %s", m.Type)
+		}
+
 		messageTypeName := reflect.TypeOf(m.Message).String()
 
 		switch messageTypeName {
