@@ -170,7 +170,10 @@ func (l *Lights) SetRoomForEvent(name string) {
 				for _, h := range l.handlers {
 					err := h.On(room.Name)
 					if err != nil {
-						log.Error(err)
+						log.WithFields(log.Fields{
+							"room":  room.Name,
+							"error": err,
+						}).Error("on failed")
 					}
 				}
 			}
@@ -181,7 +184,10 @@ func (l *Lights) SetRoomForEvent(name string) {
 				for _, h := range l.handlers {
 					err := h.Off(room.Name)
 					if err != nil {
-						log.Error(err)
+						log.WithFields(log.Fields{
+							"room":  room.Name,
+							"error": err,
+						}).Error("off failed")
 					}
 				}
 			}
@@ -192,7 +198,10 @@ func (l *Lights) SetRoomForEvent(name string) {
 				for _, h := range l.handlers {
 					err := h.Dim(room.Name, 110)
 					if err != nil {
-						log.Error(err)
+						log.WithFields(log.Fields{
+							"room":  room.Name,
+							"error": err,
+						}).Error("dim failed")
 					}
 				}
 			}
@@ -203,7 +212,10 @@ func (l *Lights) SetRoomForEvent(name string) {
 				for _, h := range l.handlers {
 					err := h.Alert(room.Name)
 					if err != nil {
-						log.Error(err)
+						log.WithFields(log.Fields{
+							"room":  room.Name,
+							"error": err,
+						}).Error("alert failed")
 					}
 				}
 			}

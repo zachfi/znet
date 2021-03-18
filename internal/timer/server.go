@@ -12,9 +12,9 @@ type Server struct {
 }
 
 // NewServer returns a new Server.
-func NewServer(lig *lights.Lights) (*Server, error) {
+func NewServer(l *lights.Lights) (*Server, error) {
 	return &Server{
-		lights: lig,
+		lights: l,
 	}, nil
 }
 
@@ -24,5 +24,5 @@ func (t *Server) NamedTimer(ctx context.Context, req *NamedTimeStamp) (*Empty, e
 		return nil, err
 	}
 
-	return nil, nil
+	return &Empty{}, nil
 }

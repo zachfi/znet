@@ -138,7 +138,9 @@ func (e *EventProducer) scheduler(ctx context.Context) error {
 				if len(times) == 0 {
 					err := e.scheduleRepeatEvents(sch, repeatEvent)
 					if err != nil {
-						log.Error(err)
+						log.WithFields(log.Fields{
+							"repeatEvent": repeatEvent.Produce,
+						}).Error(err)
 					}
 				}
 			}
@@ -165,7 +167,9 @@ func (e *EventProducer) scheduler(ctx context.Context) error {
 			for _, n := range names {
 				_, err := timerClient.NamedTimer(ctx, &NamedTimeStamp{Name: n})
 				if err != nil {
-					log.Error(err)
+					log.WithFields(log.Fields{
+						"name": n,
+					}).Error(err)
 				}
 
 				sch.Step()
