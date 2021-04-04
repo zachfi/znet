@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	github.com/Microsoft/go-winio v0.4.16 // indirect
-	github.com/amimof/huego v1.1.0
+	github.com/amimof/huego v1.2.0
 	github.com/blang/semver/v4 v4.0.0
 	github.com/containerd/continuity v0.0.0-20200710164510-efbc4488d8fe // indirect
 	github.com/eclipse/paho.mqtt.golang v1.3.3

@@ -10,7 +10,7 @@ github.com/alecthomas/template
 github.com/alecthomas/template/parse
 # github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d
 github.com/alecthomas/units
-# github.com/amimof/huego v1.1.0
+# github.com/amimof/huego v1.2.0
 github.com/amimof/huego
 # github.com/beorn7/perks v1.0.1
 github.com/beorn7/perks/quantile
