@@ -16,7 +16,7 @@ require (
 	github.com/google/go-cmp v0.5.4 // indirect
 	github.com/hashicorp/go-retryablehttp v0.6.7 // indirect
 	github.com/hashicorp/hcl v1.0.1-vault // indirect
-	github.com/hashicorp/vault/api v1.0.5-0.20201001211907-38d91b749c77
+	github.com/hashicorp/vault/api v1.1.0
 	github.com/hashicorp/vault/sdk v0.2.0
 	github.com/imdario/mergo v0.3.12
 	github.com/jarcoal/httpmock v1.0.8 // indirect
