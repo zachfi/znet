@@ -11,8 +11,7 @@ require (
 	github.com/go-git/go-git/v5 v5.3.0
 	github.com/go-ldap/ldap/v3 v3.2.4
 	github.com/go-test/deep v1.0.7 // indirect
-	github.com/golang/protobuf v1.4.3
-	github.com/google/go-cmp v0.5.4 // indirect
+	github.com/golang/protobuf v1.5.2
 	github.com/hashicorp/go-retryablehttp v0.6.7 // indirect
 	github.com/hashicorp/hcl v1.0.1-vault // indirect
 	github.com/hashicorp/vault/api v1.1.0
@@ -51,7 +50,7 @@ require (
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/genproto v0.0.0-20201203001206-6486ece9c497 // indirect
 	google.golang.org/grpc v1.36.1
-	google.golang.org/protobuf v1.25.0
+	google.golang.org/protobuf v1.26.0
 	gopkg.in/ini.v1 v1.62.0
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
