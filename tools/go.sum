@@ -1472,8 +1472,8 @@ honnef.co/go/tools v0.0.1-2020.1.3/go.mod h1:X/FiERA/W4tHapMX5mGpAtMSVEeEUOyHaw9
 honnef.co/go/tools v0.0.1-2020.1.4/go.mod h1:X/FiERA/W4tHapMX5mGpAtMSVEeEUOyHaw9vFzvIQ3k=
 honnef.co/go/tools v0.1.3 h1:qTakTkI6ni6LFD5sBwwsdSO+AQqbSIxOauHTTQKZ/7o=
 honnef.co/go/tools v0.1.3/go.mod h1:NgwopIslSNH47DimFoV78dnkksY2EFtX0ajyb3K/las=
-moul.io/protoc-gen-gotemplate v1.11.0 h1:fmm5vPyoHnhD5IaxOGls4PD91xpkqFEVicns4IrBZOc=
-moul.io/protoc-gen-gotemplate v1.11.0/go.mod h1:zmZ6h/sbLEUUOyT3vjuYta5J33xKYQ3zxRhAQkEebK0=
+moul.io/protoc-gen-gotemplate v1.11.2 h1:y/UobVWRJjfhF2MiqmlO2eeHXMAtL7j9Dr0e7fko5CE=
+moul.io/protoc-gen-gotemplate v1.11.2/go.mod h1:zmZ6h/sbLEUUOyT3vjuYta5J33xKYQ3zxRhAQkEebK0=
 mvdan.cc/gofumpt v0.1.1 h1:bi/1aS/5W00E2ny5q65w9SnKpWEF/UIOqDYBILpo9rA=
 mvdan.cc/gofumpt v0.1.1/go.mod h1:yXG1r1WqZVKWbVRtBWKWX9+CxGYfA51nSomhM0woR48=
 mvdan.cc/interfacer v0.0.0-20180901003855-c20040233aed h1:WX1yoOaKQfddO/mLzdV4wptyWgoH/6hwLs7QHTixo0I=
