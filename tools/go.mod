@@ -15,6 +15,6 @@ require (
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/tools v0.1.0
 	google.golang.org/genproto v0.0.0-20210207032614-bba0dbe2a9ea // indirect
-	gotest.tools/gotestsum v1.6.3
+	gotest.tools/gotestsum v1.6.4
 	moul.io/protoc-gen-gotemplate v1.11.2
 )
