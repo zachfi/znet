@@ -8,7 +8,7 @@ require (
 	github.com/git-chglog/git-chglog v0.14.2
 	github.com/golangci/golangci-lint v1.39.0
 	github.com/google/uuid v1.2.0 // indirect
-	github.com/goreleaser/goreleaser v0.162.0
+	github.com/goreleaser/goreleaser v0.164.0
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0 // indirect
 	github.com/mitchellh/copystructure v1.1.1 // indirect
 	github.com/psampaz/go-mod-outdated v0.8.0
