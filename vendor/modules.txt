@@ -20,7 +20,7 @@ github.com/blang/semver/v4
 github.com/cespare/xxhash/v2
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
-# github.com/eclipse/paho.mqtt.golang v1.3.3
+# github.com/eclipse/paho.mqtt.golang v1.3.4
 github.com/eclipse/paho.mqtt.golang
 github.com/eclipse/paho.mqtt.golang/packets
 # github.com/emirpasic/gods v1.12.0
