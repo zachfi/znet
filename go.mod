@@ -8,7 +8,7 @@ require (
 	github.com/containerd/continuity v0.0.0-20200710164510-efbc4488d8fe // indirect
 	github.com/eclipse/paho.mqtt.golang v1.3.4
 	github.com/fatih/color v1.10.0 // indirect
-	github.com/go-git/go-git/v5 v5.3.0
+	github.com/go-git/go-git/v5 v5.4.1
 	github.com/go-ldap/ldap/v3 v3.3.0
 	github.com/go-test/deep v1.0.7 // indirect
 	github.com/golang/protobuf v1.5.2
@@ -43,7 +43,7 @@ require (
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.7.0
 	github.com/xaque208/rftoy v0.0.0-20191203015236-4727b87c3461
-	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2
+	golang.org/x/crypto v0.0.0-20210421170649-83a5a9bb288b
 	golang.org/x/text v0.3.4 // indirect
 	golang.org/x/time v0.0.0-20200630173020-3af7569d3a1e // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
