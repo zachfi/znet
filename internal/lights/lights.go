@@ -26,7 +26,7 @@ type Lights struct {
 // configuration.
 func NewLights(cfg *config.Config) (*Lights, error) {
 	if cfg == nil {
-		return nil, fmt.Errorf("unable to create new Lights from nil config")
+		return nil, ErrNilConfig
 	}
 
 	return &Lights{
@@ -34,7 +34,7 @@ func NewLights(cfg *config.Config) (*Lights, error) {
 	}, nil
 }
 
-// AddHandler is the way to register a new Handler with the Lights server.
+// AddHandler is used to register the received Handler.
 func (l *Lights) AddHandler(h Handler) {
 	l.Lock()
 	defer l.Unlock()
@@ -119,9 +119,17 @@ func (l *Lights) getRoom(name string) *config.LightsRoom {
 // configuredEventNames is a collection of events that are configured in the
 // lighting config.  These event names determin all th epossible event names
 // that will be responded to.
-func (l *Lights) configuredEventNames() []string {
+func (l *Lights) configuredEventNames() ([]string, error) {
 
 	names := []string{}
+
+	if l.config == nil {
+		return nil, ErrNilConfig
+	}
+
+	if l.config.Rooms == nil {
+		return nil, ErrNoRoomsConfigured
+	}
 
 	for _, r := range l.config.Rooms {
 		names = append(names, r.On...)
@@ -134,11 +142,14 @@ func (l *Lights) configuredEventNames() []string {
 	sort.Strings(names)
 	unique.Strings(&names)
 
-	return names
+	return names, nil
 }
 
 func (l *Lights) NamedTimerHandler(e string) error {
-	names := l.configuredEventNames()
+	names, err := l.configuredEventNames()
+	if err != nil {
+		return err
+	}
 
 	configuredEvent := func(name string, names []string) bool {
 		for _, n := range names {
