@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
 	"github.com/xaque208/znet/internal/config"
 	"github.com/xaque208/znet/internal/lights"
 )
@@ -13,7 +14,11 @@ func TestServer(t *testing.T) {
 
 	c := &config.Config{
 		Lights: &config.LightsConfig{
-			Rooms: []config.LightsRoom{},
+			Rooms: []config.LightsRoom{
+				{
+					On: []string{"one"},
+				},
+			},
 		},
 	}
 

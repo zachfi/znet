@@ -42,6 +42,9 @@ func (l *Lights) AddHandler(h Handler) {
 	l.handlers = append(l.handlers, h)
 }
 
+// ActionHandler is called when an action is requested against a light group.
+// The action speciefies the a button press and a room to give enough context
+// for how to change the behavior of the lights in response to the action.
 func (l *Lights) ActionHandler(action *iot.Action) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
