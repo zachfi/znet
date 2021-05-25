@@ -15,6 +15,36 @@ func TestNewLights(t *testing.T) {
 	l, err := NewLights(nil)
 	require.Error(t, err)
 	require.Nil(t, l)
+
+	// with config
+	c := &config.Config{
+		Lights: &config.LightsConfig{
+			Rooms: []config.LightsRoom{},
+		},
+	}
+
+	l, err = NewLights(c)
+	require.NoError(t, err)
+	require.NotNil(t, l)
+}
+
+func TestAddHandler(t *testing.T) {
+	c := &config.Config{
+		Lights: &config.LightsConfig{
+			Rooms: []config.LightsRoom{},
+		},
+	}
+
+	l, err := NewLights(c)
+	require.NoError(t, err)
+	require.NotNil(t, l)
+
+	h := &MockLight{}
+
+	l.AddHandler(h)
+
+	require.Equal(t, h, l.handlers[0])
+
 }
 
 func TestAlert(t *testing.T) {
