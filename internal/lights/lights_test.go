@@ -44,6 +44,55 @@ func TestAddHandler(t *testing.T) {
 	l.AddHandler(h)
 
 	require.Equal(t, h, l.handlers[0])
+}
+
+func TestConfiguredEventNames(t *testing.T) {
+
+	cases := []struct {
+		config *config.LightsConfig
+		names  []string
+		err    error
+	}{
+		{
+			config: nil,
+			names:  nil,
+			err:    ErrNilConfig,
+		},
+		{
+			config: &config.LightsConfig{
+				Rooms: []config.LightsRoom{},
+			},
+			names: nil,
+			err:   ErrNoRoomsConfigured,
+		},
+		{
+			config: &config.LightsConfig{
+				Rooms: []config.LightsRoom{
+					{
+						On:  []string{"one"},
+						Off: []string{"two"},
+					},
+				},
+			},
+			names: []string{"one", "two"},
+			err:   nil,
+		},
+	}
+
+	for _, tc := range cases {
+		c := &config.Config{
+			Lights: tc.config,
+		}
+
+		l, err := NewLights(c)
+		require.NoError(t, err)
+		require.NotNil(t, l)
+
+		names, err := l.configuredEventNames()
+		require.Equal(t, tc.err, err)
+		require.Equal(t, tc.names, names)
+
+	}
 
 }
 
