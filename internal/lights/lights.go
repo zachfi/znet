@@ -56,7 +56,7 @@ func (l *Lights) ActionHandler(action *iot.Action) error {
 		"zone":      action.Zone,
 		"device":    action.Device,
 		"event":     action.Event,
-	}).Trace("room action")
+	}).Debug("room action")
 
 	request := &LightGroupRequest{
 		Brightness: 254,
@@ -127,7 +127,7 @@ func (l *Lights) configuredEventNames() ([]string, error) {
 		return nil, ErrNilConfig
 	}
 
-	if l.config.Rooms == nil {
+	if l.config.Rooms == nil || len(l.config.Rooms) == 0 {
 		return nil, ErrNoRoomsConfigured
 	}
 
