@@ -12,12 +12,10 @@ import (
 
 func TestServer(t *testing.T) {
 
-	c := &config.Config{
-		Lights: &config.LightsConfig{
-			Rooms: []config.LightsRoom{
-				{
-					On: []string{"one"},
-				},
+	c := &config.LightsConfig{
+		Rooms: []config.LightsRoom{
+			{
+				On: []string{"one"},
 			},
 		},
 	}

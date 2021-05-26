@@ -120,13 +120,11 @@ func TestReportIOTDevice_lights_handling(t *testing.T) {
 
 	for _, tc := range testCases {
 
-		lightsConfig := &config.Config{
-			Lights: &config.LightsConfig{
-				PartyColors: []string{"#f33333"},
-				Rooms: []config.LightsRoom{
-					{
-						Name: "dungeon",
-					},
+		lightsConfig := &config.LightsConfig{
+			PartyColors: []string{"#f33333"},
+			Rooms: []config.LightsRoom{
+				{
+					Name: "dungeon",
 				},
 			},
 		}
@@ -240,13 +238,11 @@ func TestReportIOTDevice_bridge_state(t *testing.T) {
 
 	for _, tc := range testCases {
 
-		lightsConfig := &config.Config{
-			Lights: &config.LightsConfig{
-				PartyColors: []string{"#f33333"},
-				Rooms: []config.LightsRoom{
-					{
-						Name: "dungeon",
-					},
+		lightsConfig := &config.LightsConfig{
+			PartyColors: []string{"#f33333"},
+			Rooms: []config.LightsRoom{
+				{
+					Name: "dungeon",
 				},
 			},
 		}

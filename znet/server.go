@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -25,6 +26,7 @@ import (
 
 // Server is a znet Server.
 type Server struct {
+	sync.Mutex
 	config        *config.Config
 	grpcServer    *grpc.Server
 	httpServer    *http.Server
@@ -70,6 +72,9 @@ func NewServer(cfg *config.Config) (*Server, error) {
 }
 
 func (s *Server) startRPCListener() error {
+	s.Lock()
+	defer s.Unlock()
+
 	if s.grpcServer == nil {
 		grpcServer, err := s.NewRPCServer(s.config)
 		if err != nil {
@@ -89,7 +94,7 @@ func (s *Server) startRPCListener() error {
 
 	//
 	// lightsServer
-	lightsServer, err := lights.NewLights(s.config)
+	lightsServer, err := lights.NewLights(s.config.Lights)
 	if err != nil {
 		return err
 	}
@@ -176,6 +181,9 @@ func (s *Server) startRPCListener() error {
 }
 
 func (s *Server) startHTTPListener() error {
+	s.Lock()
+	defer s.Unlock()
+
 	if s.httpServer == nil {
 		httpServer, err := s.NewHTTPServer(s.config)
 		if err != nil {
