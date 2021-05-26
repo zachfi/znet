@@ -22,6 +22,8 @@ type Lights struct {
 	handlers []Handler
 }
 
+var defaultColorPool = []string{"#006c7f", "#e32636", "#b0bf1a"}
+
 // NewLights creates and returns a new Lights object based on the received
 // configuration.
 func NewLights(cfg *config.Config) (*Lights, error) {
@@ -51,7 +53,7 @@ func (l *Lights) ActionHandler(action *iot.Action) error {
 
 	room := l.getRoom(action.Zone)
 	if room == nil {
-		return fmt.Errorf("no room named %s was found in config", action.Zone)
+		return ErrRoomNotFound
 	}
 
 	log.WithFields(log.Fields{
@@ -99,10 +101,8 @@ func (l *Lights) ActionHandler(action *iot.Action) error {
 		_, err := l.Alert(ctx, request)
 		return err
 	default:
-		log.Debugf("unknown action event: %s", action.Event)
+		return fmt.Errorf("%s: %w", action.Event, ErrUnknownActionEvent)
 	}
-
-	return nil
 }
 
 func (l *Lights) getRoom(name string) *config.LightsRoom {
@@ -286,11 +286,18 @@ func (l *Lights) On(ctx context.Context, req *LightGroupRequest) (*LightResponse
 }
 
 func (l *Lights) RandomColor(ctx context.Context, req *LightGroupRequest) (*LightResponse, error) {
+
+	var colors []string
+
 	if len(req.Colors) == 0 {
-		return nil, fmt.Errorf("request contained no colors to select from")
+		log.Debug("using default colors")
+		colors = defaultColorPool
+	} else {
+		colors = req.Colors
 	}
+
 	for _, h := range l.handlers {
-		err := h.RandomColor(req.Name, req.Colors)
+		err := h.RandomColor(req.Name, colors)
 		if err != nil {
 			log.Error(err)
 		}

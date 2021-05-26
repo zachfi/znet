@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/xaque208/znet/internal/config"
+	"github.com/xaque208/znet/pkg/iot"
 )
 
 func TestNewLights(t *testing.T) {
@@ -92,6 +93,153 @@ func TestConfiguredEventNames(t *testing.T) {
 		require.Equal(t, tc.err, err)
 		require.Equal(t, tc.names, names)
 
+	}
+
+}
+
+func TestActionHandler(t *testing.T) {
+	cases := map[string]struct {
+		action *iot.Action
+		mock   *MockLight
+		err    error
+		config *config.LightsConfig
+	}{
+		"no config": {
+			config: &config.LightsConfig{},
+			action: &iot.Action{},
+			mock:   &MockLight{},
+			err:    ErrRoomNotFound,
+		},
+		"simple toggle": {
+			config: &config.LightsConfig{
+				Rooms: []config.LightsRoom{
+					{
+						Name: "zone",
+						On:   []string{"one"},
+						Off:  []string{"two"},
+					},
+				},
+			},
+			action: &iot.Action{
+				Event: "single",
+				Zone:  "zone",
+			},
+			mock: &MockLight{
+				ToggleCalls: map[string]int{"zone": 1},
+			},
+		},
+		"double": {
+			action: &iot.Action{
+				Event: "double",
+				Zone:  "zone1",
+			},
+			config: &config.LightsConfig{
+				Rooms: []config.LightsRoom{
+					{
+						Name: "zone1",
+					},
+				},
+			},
+			mock: &MockLight{
+				OnCalls:       map[string]int{"zone1": 1},
+				DimCalls:      map[string]int{"zone1": 1},
+				SetColorCalls: map[string]int{"zone1": 1},
+			},
+		},
+		"triple": {
+			action: &iot.Action{
+				Event: "triple",
+				Zone:  "zone1",
+			},
+			config: &config.LightsConfig{
+				Rooms: []config.LightsRoom{
+					{
+						Name: "zone1",
+					},
+				},
+			},
+			mock: &MockLight{
+				OffCalls: map[string]int{"zone1": 1},
+			},
+		},
+		"quadruple": {
+			action: &iot.Action{
+				Event: "quadruple",
+				Zone:  "zone1",
+			},
+			config: &config.LightsConfig{
+				Rooms: []config.LightsRoom{
+					{
+						Name: "zone1",
+					},
+				},
+			},
+			mock: &MockLight{
+				RandomColorCalls: map[string]int{"zone1": 1},
+			},
+		},
+		"hold": {
+			action: &iot.Action{
+				Event: "hold",
+				Zone:  "zone1",
+			},
+			config: &config.LightsConfig{
+				Rooms: []config.LightsRoom{
+					{
+						Name: "zone1",
+					},
+				},
+			},
+			mock: &MockLight{
+				DimCalls: map[string]int{"zone1": 1},
+			},
+		},
+		"release": {
+			action: &iot.Action{
+				Event: "release",
+				Zone:  "zone1",
+			},
+			config: &config.LightsConfig{
+				Rooms: []config.LightsRoom{
+					{
+						Name: "zone1",
+					},
+				},
+			},
+			mock: &MockLight{
+				DimCalls: map[string]int{"zone1": 1},
+			},
+		},
+		"many": {
+			action: &iot.Action{
+				Event: "many",
+				Zone:  "zone1",
+			},
+			config: &config.LightsConfig{
+				Rooms: []config.LightsRoom{
+					{
+						Name: "zone1",
+					},
+				},
+			},
+			mock: &MockLight{
+				AlertCalls: map[string]int{"zone1": 1},
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		h := &MockLight{}
+
+		l := &Lights{
+			config:   tc.config,
+			handlers: []Handler{h},
+		}
+
+		err := l.ActionHandler(tc.action)
+		require.Equal(t, tc.err, err)
+
+		require.Equal(t, tc.mock, h)
 	}
 
 }
