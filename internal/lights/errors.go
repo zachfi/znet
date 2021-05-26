@@ -15,3 +15,5 @@ var ErrRoomNotFound = errors.New("room not found")
 
 // ErrUnknownActionEvent is used to indicate that an action was not recognized.
 var ErrUnknownActionEvent = errors.New("unknown action event")
+
+var ErrHandlerFailed = errors.New("handler failed")

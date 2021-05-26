@@ -33,10 +33,10 @@ func TestServer(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, s)
 
-	l := &Lights{
-		config:   &config.LightsConfig{},
-		handlers: []Handler{h},
-	}
+	l, err := NewLights(&config.LightsConfig{})
+	require.NoError(t, err)
+
+	l.AddHandler(h)
 
 	RegisterLightsServer(s, l)
 

@@ -18,10 +18,8 @@ func TestNewLights(t *testing.T) {
 	require.Nil(t, l)
 
 	// with config
-	c := &config.Config{
-		Lights: &config.LightsConfig{
-			Rooms: []config.LightsRoom{},
-		},
+	c := &config.LightsConfig{
+		Rooms: []config.LightsRoom{},
 	}
 
 	l, err = NewLights(c)
@@ -30,10 +28,8 @@ func TestNewLights(t *testing.T) {
 }
 
 func TestAddHandler(t *testing.T) {
-	c := &config.Config{
-		Lights: &config.LightsConfig{
-			Rooms: []config.LightsRoom{},
-		},
+	c := &config.LightsConfig{
+		Rooms: []config.LightsRoom{},
 	}
 
 	l, err := NewLights(c)
@@ -81,13 +77,15 @@ func TestConfiguredEventNames(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		c := &config.Config{
-			Lights: tc.config,
+		l, err := NewLights(tc.config)
+		if tc.config == nil {
+			require.Error(t, err, ErrNilConfig)
+			require.Nil(t, l)
+			continue
+		} else {
+			require.NoError(t, err)
+			require.NotNil(t, l)
 		}
-
-		l, err := NewLights(c)
-		require.NoError(t, err)
-		require.NotNil(t, l)
 
 		names, err := l.configuredEventNames()
 		require.Equal(t, tc.err, err)
@@ -231,12 +229,12 @@ func TestActionHandler(t *testing.T) {
 	for _, tc := range cases {
 		h := &MockLight{}
 
-		l := &Lights{
-			config:   tc.config,
-			handlers: []Handler{h},
-		}
+		l, err := NewLights(tc.config)
+		require.NoError(t, err)
 
-		err := l.ActionHandler(tc.action)
+		l.AddHandler(h)
+
+		err = l.ActionHandler(tc.action)
 		require.Equal(t, tc.err, err)
 
 		require.Equal(t, tc.mock, h)
@@ -252,17 +250,17 @@ func TestAlert(t *testing.T) {
 
 	for _, tc := range testCases {
 		h := &MockLight{}
-		l := &Lights{
-			config:   &config.LightsConfig{},
-			handlers: []Handler{h},
-		}
+		l, err := NewLights(&config.LightsConfig{})
+		require.NoError(t, err)
+
+		l.AddHandler(h)
 
 		groupName := &LightGroupRequest{
 			Name: "dungeon",
 		}
 		ctx := context.Background()
 
-		_, err := l.On(ctx, groupName)
+		_, err = l.On(ctx, groupName)
 		require.NoError(t, err)
 		// TODO
 		require.Equal(t, tc.Handler, h)

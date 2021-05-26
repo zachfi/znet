@@ -20,19 +20,21 @@ type Lights struct {
 	sync.Mutex
 	config   *config.LightsConfig
 	handlers []Handler
+	zones    *Zones
 }
 
 var defaultColorPool = []string{"#006c7f", "#e32636", "#b0bf1a"}
 
 // NewLights creates and returns a new Lights object based on the received
 // configuration.
-func NewLights(cfg *config.Config) (*Lights, error) {
+func NewLights(cfg *config.LightsConfig) (*Lights, error) {
 	if cfg == nil {
 		return nil, ErrNilConfig
 	}
 
 	return &Lights{
-		config: cfg.Lights,
+		config: cfg,
+		zones:  &Zones{},
 	}, nil
 }
 
@@ -251,42 +253,32 @@ func (l *Lights) Alert(ctx context.Context, req *LightGroupRequest) (*LightRespo
 
 // Dim calls Dim() on each handler.
 func (l *Lights) Dim(ctx context.Context, req *LightGroupRequest) (*LightResponse, error) {
-	for _, h := range l.handlers {
-		err := h.Dim(req.Name, req.Brightness)
-		if err != nil {
-			log.Error(err)
-		}
-	}
+	z := l.zones.GetZone(req.Name)
+	z.Dim(req.Brightness)
+	z.Handle(req.Name, l.handlers...)
 
 	return &LightResponse{}, nil
 }
 
 // Off calls Off() on each handler.
 func (l *Lights) Off(ctx context.Context, req *LightGroupRequest) (*LightResponse, error) {
-	for _, h := range l.handlers {
-		err := h.Off(req.Name)
-		if err != nil {
-			log.Error(err)
-		}
-	}
+	z := l.zones.GetZone(req.Name)
+	z.Off()
+	z.Handle(req.Name, l.handlers...)
 
 	return &LightResponse{}, nil
 }
 
 // On calls On() on each handler.
 func (l *Lights) On(ctx context.Context, req *LightGroupRequest) (*LightResponse, error) {
-	for _, h := range l.handlers {
-		err := h.On(req.Name)
-		if err != nil {
-			log.Error(err)
-		}
-	}
+	z := l.zones.GetZone(req.Name)
+	z.On()
+	z.Handle(req.Name, l.handlers...)
 
 	return &LightResponse{}, nil
 }
 
 func (l *Lights) RandomColor(ctx context.Context, req *LightGroupRequest) (*LightResponse, error) {
-
 	var colors []string
 
 	if len(req.Colors) == 0 {
@@ -296,12 +288,9 @@ func (l *Lights) RandomColor(ctx context.Context, req *LightGroupRequest) (*Ligh
 		colors = req.Colors
 	}
 
-	for _, h := range l.handlers {
-		err := h.RandomColor(req.Name, colors)
-		if err != nil {
-			log.Error(err)
-		}
-	}
+	z := l.zones.GetZone(req.Name)
+	z.RandomColor(colors)
+	z.Handle(req.Name, l.handlers...)
 
 	return &LightResponse{}, nil
 }
@@ -311,12 +300,9 @@ func (l *Lights) SetColor(ctx context.Context, req *LightGroupRequest) (*LightRe
 		return nil, fmt.Errorf("request missing color spec")
 	}
 
-	for _, h := range l.handlers {
-		err := h.SetColor(req.Name, req.Color)
-		if err != nil {
-			log.Error(err)
-		}
-	}
+	z := l.zones.GetZone(req.Name)
+	z.SetColor(req.Color)
+	z.Handle(req.Name, l.handlers...)
 
 	return &LightResponse{}, nil
 }
