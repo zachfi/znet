@@ -254,8 +254,16 @@ func (l *Lights) Alert(ctx context.Context, req *LightGroupRequest) (*LightRespo
 // Dim calls Dim() on each handler.
 func (l *Lights) Dim(ctx context.Context, req *LightGroupRequest) (*LightResponse, error) {
 	z := l.zones.GetZone(req.Name)
-	z.Dim(req.Brightness)
-	z.Handle(req.Name, l.handlers...)
+
+	err := z.Dim(req.Brightness)
+	if err != nil {
+		return nil, err
+	}
+
+	err = z.Handle(req.Name, l.handlers...)
+	if err != nil {
+		return nil, err
+	}
 
 	return &LightResponse{}, nil
 }
@@ -263,8 +271,16 @@ func (l *Lights) Dim(ctx context.Context, req *LightGroupRequest) (*LightRespons
 // Off calls Off() on each handler.
 func (l *Lights) Off(ctx context.Context, req *LightGroupRequest) (*LightResponse, error) {
 	z := l.zones.GetZone(req.Name)
-	z.Off()
-	z.Handle(req.Name, l.handlers...)
+
+	err := z.Off()
+	if err != nil {
+		return nil, err
+	}
+
+	err = z.Handle(req.Name, l.handlers...)
+	if err != nil {
+		return nil, err
+	}
 
 	return &LightResponse{}, nil
 }
@@ -272,8 +288,16 @@ func (l *Lights) Off(ctx context.Context, req *LightGroupRequest) (*LightRespons
 // On calls On() on each handler.
 func (l *Lights) On(ctx context.Context, req *LightGroupRequest) (*LightResponse, error) {
 	z := l.zones.GetZone(req.Name)
-	z.On()
-	z.Handle(req.Name, l.handlers...)
+
+	err := z.On()
+	if err != nil {
+		return nil, err
+	}
+
+	err = z.Handle(req.Name, l.handlers...)
+	if err != nil {
+		return nil, err
+	}
 
 	return &LightResponse{}, nil
 }
@@ -289,8 +313,15 @@ func (l *Lights) RandomColor(ctx context.Context, req *LightGroupRequest) (*Ligh
 	}
 
 	z := l.zones.GetZone(req.Name)
-	z.RandomColor(colors)
-	z.Handle(req.Name, l.handlers...)
+	err := z.RandomColor(colors)
+	if err != nil {
+		return nil, err
+	}
+
+	err = z.Handle(req.Name, l.handlers...)
+	if err != nil {
+		return nil, err
+	}
 
 	return &LightResponse{}, nil
 }
@@ -301,8 +332,15 @@ func (l *Lights) SetColor(ctx context.Context, req *LightGroupRequest) (*LightRe
 	}
 
 	z := l.zones.GetZone(req.Name)
-	z.SetColor(req.Color)
-	z.Handle(req.Name, l.handlers...)
+	err := z.SetColor(req.Color)
+	if err != nil {
+		return nil, err
+	}
+
+	err = z.Handle(req.Name, l.handlers...)
+	if err != nil {
+		return nil, err
+	}
 
 	return &LightResponse{}, nil
 }
