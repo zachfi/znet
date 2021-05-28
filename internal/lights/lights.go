@@ -20,21 +20,25 @@ type Lights struct {
 	sync.Mutex
 	config   *config.LightsConfig
 	handlers []Handler
+	zones    *Zones
 }
+
+var defaultColorPool = []string{"#006c7f", "#e32636", "#b0bf1a"}
 
 // NewLights creates and returns a new Lights object based on the received
 // configuration.
-func NewLights(cfg *config.Config) (*Lights, error) {
+func NewLights(cfg *config.LightsConfig) (*Lights, error) {
 	if cfg == nil {
-		return nil, fmt.Errorf("unable to create new Lights from nil config")
+		return nil, ErrNilConfig
 	}
 
 	return &Lights{
-		config: cfg.Lights,
+		config: cfg,
+		zones:  &Zones{},
 	}, nil
 }
 
-// AddHandler is the way to register a new Handler with the Lights server.
+// AddHandler is used to register the received Handler.
 func (l *Lights) AddHandler(h Handler) {
 	l.Lock()
 	defer l.Unlock()
@@ -42,13 +46,16 @@ func (l *Lights) AddHandler(h Handler) {
 	l.handlers = append(l.handlers, h)
 }
 
+// ActionHandler is called when an action is requested against a light group.
+// The action speciefies the a button press and a room to give enough context
+// for how to change the behavior of the lights in response to the action.
 func (l *Lights) ActionHandler(action *iot.Action) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	room := l.getRoom(action.Zone)
 	if room == nil {
-		return fmt.Errorf("no room named %s was found in config", action.Zone)
+		return ErrRoomNotFound
 	}
 
 	log.WithFields(log.Fields{
@@ -56,7 +63,7 @@ func (l *Lights) ActionHandler(action *iot.Action) error {
 		"zone":      action.Zone,
 		"device":    action.Device,
 		"event":     action.Event,
-	}).Trace("room action")
+	}).Debug("room action")
 
 	request := &LightGroupRequest{
 		Brightness: 254,
@@ -96,10 +103,8 @@ func (l *Lights) ActionHandler(action *iot.Action) error {
 		_, err := l.Alert(ctx, request)
 		return err
 	default:
-		log.Debugf("unknown action event: %s", action.Event)
+		return fmt.Errorf("%s: %w", action.Event, ErrUnknownActionEvent)
 	}
-
-	return nil
 }
 
 func (l *Lights) getRoom(name string) *config.LightsRoom {
@@ -119,9 +124,17 @@ func (l *Lights) getRoom(name string) *config.LightsRoom {
 // configuredEventNames is a collection of events that are configured in the
 // lighting config.  These event names determin all th epossible event names
 // that will be responded to.
-func (l *Lights) configuredEventNames() []string {
+func (l *Lights) configuredEventNames() ([]string, error) {
 
 	names := []string{}
+
+	if l.config == nil {
+		return nil, ErrNilConfig
+	}
+
+	if l.config.Rooms == nil || len(l.config.Rooms) == 0 {
+		return nil, ErrNoRoomsConfigured
+	}
 
 	for _, r := range l.config.Rooms {
 		names = append(names, r.On...)
@@ -134,11 +147,14 @@ func (l *Lights) configuredEventNames() []string {
 	sort.Strings(names)
 	unique.Strings(&names)
 
-	return names
+	return names, nil
 }
 
 func (l *Lights) NamedTimerHandler(e string) error {
-	names := l.configuredEventNames()
+	names, err := l.configuredEventNames()
+	if err != nil {
+		return err
+	}
 
 	configuredEvent := func(name string, names []string) bool {
 		for _, n := range names {
@@ -237,11 +253,16 @@ func (l *Lights) Alert(ctx context.Context, req *LightGroupRequest) (*LightRespo
 
 // Dim calls Dim() on each handler.
 func (l *Lights) Dim(ctx context.Context, req *LightGroupRequest) (*LightResponse, error) {
-	for _, h := range l.handlers {
-		err := h.Dim(req.Name, req.Brightness)
-		if err != nil {
-			log.Error(err)
-		}
+	z := l.zones.GetZone(req.Name)
+
+	err := z.Dim(req.Brightness)
+	if err != nil {
+		return nil, err
+	}
+
+	err = z.Handle(req.Name, l.handlers...)
+	if err != nil {
+		return nil, err
 	}
 
 	return &LightResponse{}, nil
@@ -249,11 +270,16 @@ func (l *Lights) Dim(ctx context.Context, req *LightGroupRequest) (*LightRespons
 
 // Off calls Off() on each handler.
 func (l *Lights) Off(ctx context.Context, req *LightGroupRequest) (*LightResponse, error) {
-	for _, h := range l.handlers {
-		err := h.Off(req.Name)
-		if err != nil {
-			log.Error(err)
-		}
+	z := l.zones.GetZone(req.Name)
+
+	err := z.Off()
+	if err != nil {
+		return nil, err
+	}
+
+	err = z.Handle(req.Name, l.handlers...)
+	if err != nil {
+		return nil, err
 	}
 
 	return &LightResponse{}, nil
@@ -261,25 +287,40 @@ func (l *Lights) Off(ctx context.Context, req *LightGroupRequest) (*LightRespons
 
 // On calls On() on each handler.
 func (l *Lights) On(ctx context.Context, req *LightGroupRequest) (*LightResponse, error) {
-	for _, h := range l.handlers {
-		err := h.On(req.Name)
-		if err != nil {
-			log.Error(err)
-		}
+	z := l.zones.GetZone(req.Name)
+
+	err := z.On()
+	if err != nil {
+		return nil, err
+	}
+
+	err = z.Handle(req.Name, l.handlers...)
+	if err != nil {
+		return nil, err
 	}
 
 	return &LightResponse{}, nil
 }
 
 func (l *Lights) RandomColor(ctx context.Context, req *LightGroupRequest) (*LightResponse, error) {
+	var colors []string
+
 	if len(req.Colors) == 0 {
-		return nil, fmt.Errorf("request contained no colors to select from")
+		log.Debug("using default colors")
+		colors = defaultColorPool
+	} else {
+		colors = req.Colors
 	}
-	for _, h := range l.handlers {
-		err := h.RandomColor(req.Name, req.Colors)
-		if err != nil {
-			log.Error(err)
-		}
+
+	z := l.zones.GetZone(req.Name)
+	err := z.RandomColor(colors)
+	if err != nil {
+		return nil, err
+	}
+
+	err = z.Handle(req.Name, l.handlers...)
+	if err != nil {
+		return nil, err
 	}
 
 	return &LightResponse{}, nil
@@ -290,11 +331,15 @@ func (l *Lights) SetColor(ctx context.Context, req *LightGroupRequest) (*LightRe
 		return nil, fmt.Errorf("request missing color spec")
 	}
 
-	for _, h := range l.handlers {
-		err := h.SetColor(req.Name, req.Color)
-		if err != nil {
-			log.Error(err)
-		}
+	z := l.zones.GetZone(req.Name)
+	err := z.SetColor(req.Color)
+	if err != nil {
+		return nil, err
+	}
+
+	err = z.Handle(req.Name, l.handlers...)
+	if err != nil {
+		return nil, err
 	}
 
 	return &LightResponse{}, nil
