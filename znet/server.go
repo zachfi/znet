@@ -83,6 +83,17 @@ func (s *Server) startRPCListener() error {
 		s.grpcServer = grpcServer
 	}
 
+	// clients to be used by the servers
+	mqttClient, err := iot.NewMQTTClient(s.config.MQTT)
+	if err != nil {
+		return err
+	}
+
+	invClient, err := inventory.NewLDAPInventory(s.config.LDAP)
+	if err != nil {
+		return err
+	}
+
 	//
 	// inventoryServer
 	inventoryServer, err := inventory.NewLDAPServer(s.config.LDAP)
@@ -106,7 +117,7 @@ func (s *Server) startRPCListener() error {
 		lightsServer.AddHandler(hue)
 	}
 
-	zigbee, err := lights.NewZigbeeLight(s.config)
+	zigbee, err := lights.NewZigbeeLight(s.config, mqttClient, invClient)
 	if err != nil {
 		log.Error(err)
 	} else {
@@ -125,11 +136,6 @@ func (s *Server) startRPCListener() error {
 	astro.RegisterAstroServer(s.grpcServer, astroServer)
 
 	// iotServer
-	mqttClient, err := iot.NewMQTTClient(s.config.MQTT)
-	if err != nil {
-		return err
-	}
-
 	iotServer, err := iot.NewServer(mqttClient)
 	if err != nil {
 		return err
@@ -139,12 +145,7 @@ func (s *Server) startRPCListener() error {
 
 	//
 	// telemetryServer
-	inv, err := inventory.NewLDAPInventory(s.config.LDAP)
-	if err != nil {
-		return err
-	}
-
-	telemetryServer, err := telemetry.NewServer(inv, lightsServer)
+	telemetryServer, err := telemetry.NewServer(invClient, lightsServer)
 	if err != nil {
 		return err
 	}

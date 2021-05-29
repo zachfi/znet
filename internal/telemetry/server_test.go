@@ -204,7 +204,7 @@ func TestReportIOTDevice_bridge_state(t *testing.T) {
 				},
 			},
 			Inv: &inventory.MockInventory{
-				FetchZigbeeDeviceError: fmt.Errorf("mock error"),
+				FetchZigbeeDeviceErr: fmt.Errorf("mock error"),
 				FetchZigbeeDeviceCalls: map[string]int{
 					"0x00158d0003960d06": 1,
 					"0x00158d0004238a36": 1,
@@ -258,8 +258,8 @@ func TestReportIOTDevice_bridge_state(t *testing.T) {
 		i := &inventory.MockInventory{}
 
 		if tc.Inv != nil {
-			if tc.Inv.FetchZigbeeDeviceError != nil {
-				i.FetchZigbeeDeviceError = tc.Inv.FetchZigbeeDeviceError
+			if tc.Inv.FetchZigbeeDeviceErr != nil {
+				i.FetchZigbeeDeviceErr = tc.Inv.FetchZigbeeDeviceErr
 			}
 		}
 

@@ -10,7 +10,6 @@ import (
 
 	"github.com/xaque208/znet/internal/config"
 	"github.com/xaque208/znet/internal/inventory"
-	"github.com/xaque208/znet/pkg/iot"
 )
 
 type zigbeeLight struct {
@@ -19,17 +18,9 @@ type zigbeeLight struct {
 	mqttClient mqtt.Client
 }
 
-func NewZigbeeLight(cfg *config.Config) (Handler, error) {
-	inv, err := inventory.NewLDAPInventory(cfg.LDAP)
-	if err != nil {
-		return nil, err
-	}
+const defaultTransitionTime = 0.5
 
-	mqttClient, err := iot.NewMQTTClient(cfg.MQTT)
-	if err != nil {
-		return nil, err
-	}
-
+func NewZigbeeLight(cfg *config.Config, mqttClient mqtt.Client, inv inventory.Inventory) (Handler, error) {
 	return &zigbeeLight{
 		config:     cfg.Lights,
 		inv:        inv,
@@ -51,7 +42,7 @@ func (l zigbeeLight) Toggle(groupName string) error {
 		topic := fmt.Sprintf("zigbee2mqtt/%s/set", devices[i].Name)
 		message := map[string]interface{}{
 			"state":      "TOGGLE",
-			"transition": 0.5,
+			"transition": defaultTransitionTime,
 		}
 
 		m, err := json.Marshal(message)
@@ -107,7 +98,7 @@ func (l zigbeeLight) On(groupName string) error {
 		topic := fmt.Sprintf("zigbee2mqtt/%s/set", devices[i].Name)
 		message := map[string]interface{}{
 			"state":      "ON",
-			"transition": 0.5,
+			"transition": defaultTransitionTime,
 		}
 
 		m, err := json.Marshal(message)
@@ -135,7 +126,7 @@ func (l zigbeeLight) Off(groupName string) error {
 		topic := fmt.Sprintf("zigbee2mqtt/%s/set", devices[i].Name)
 		message := map[string]interface{}{
 			"state":      "OFF",
-			"transition": 0.5,
+			"transition": defaultTransitionTime,
 		}
 
 		m, err := json.Marshal(message)
@@ -163,7 +154,7 @@ func (l zigbeeLight) Dim(groupName string, brightness int32) error {
 		topic := fmt.Sprintf("zigbee2mqtt/%s/set", devices[i].Name)
 		message := map[string]interface{}{
 			"brightness": brightness,
-			"transition": 0.5,
+			"transition": defaultTransitionTime,
 		}
 
 		m, err := json.Marshal(message)
@@ -191,7 +182,7 @@ func (l zigbeeLight) SetColor(groupName string, hex string) error {
 
 		topic := fmt.Sprintf("zigbee2mqtt/%s/set", devices[i].Name)
 		message := map[string]interface{}{
-			"transition": 0.5,
+			"transition": defaultTransitionTime,
 			"color": map[string]string{
 				"hex": hex,
 			},
@@ -222,7 +213,7 @@ func (l zigbeeLight) RandomColor(groupName string, hex []string) error {
 
 		topic := fmt.Sprintf("zigbee2mqtt/%s/set", devices[i].Name)
 		message := map[string]interface{}{
-			"transition": 0.5,
+			"transition": defaultTransitionTime,
 			"color": map[string]string{
 				"hex": hex[rand.Intn(len(hex))],
 			},

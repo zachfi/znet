@@ -122,10 +122,9 @@ func (l *Lights) getRoom(name string) *config.LightsRoom {
 }
 
 // configuredEventNames is a collection of events that are configured in the
-// lighting config.  These event names determin all th epossible event names
+// lighting config.  These event names determin all the epossible event names
 // that will be responded to.
 func (l *Lights) configuredEventNames() ([]string, error) {
-
 	names := []string{}
 
 	if l.config == nil {
@@ -150,7 +149,7 @@ func (l *Lights) configuredEventNames() ([]string, error) {
 	return names, nil
 }
 
-func (l *Lights) NamedTimerHandler(e string) error {
+func (l *Lights) NamedTimerHandler(ctx context.Context, e string) error {
 	names, err := l.configuredEventNames()
 	if err != nil {
 		return err
@@ -174,69 +173,45 @@ func (l *Lights) NamedTimerHandler(e string) error {
 		return nil
 	}
 
-	l.SetRoomForEvent(e)
-
-	return nil
+	return l.SetRoomForEvent(ctx, e)
 }
 
-func (l *Lights) SetRoomForEvent(name string) {
+func (l *Lights) SetRoomForEvent(ctx context.Context, event string) error {
 	for _, room := range l.config.Rooms {
 		for _, o := range room.On {
-			if o == name {
-				for _, h := range l.handlers {
-					err := h.On(room.Name)
-					if err != nil {
-						log.WithFields(log.Fields{
-							"room":  room.Name,
-							"error": err,
-						}).Error("on failed")
-					}
-				}
+			if o == event {
+				req := &LightGroupRequest{Name: room.Name}
+				_, err := l.On(ctx, req)
+				return err
 			}
 		}
 
 		for _, o := range room.Off {
-			if o == name {
-				for _, h := range l.handlers {
-					err := h.Off(room.Name)
-					if err != nil {
-						log.WithFields(log.Fields{
-							"room":  room.Name,
-							"error": err,
-						}).Error("off failed")
-					}
-				}
+			if o == event {
+				req := &LightGroupRequest{Name: room.Name}
+				_, err := l.Off(ctx, req)
+				return err
 			}
 		}
 
 		for _, o := range room.Dim {
-			if o == name {
-				for _, h := range l.handlers {
-					err := h.Dim(room.Name, 110)
-					if err != nil {
-						log.WithFields(log.Fields{
-							"room":  room.Name,
-							"error": err,
-						}).Error("dim failed")
-					}
-				}
+			if o == event {
+				req := &LightGroupRequest{Name: room.Name, Brightness: 110}
+				_, err := l.Dim(ctx, req)
+				return err
 			}
 		}
 
 		for _, o := range room.Alert {
-			if o == name {
-				for _, h := range l.handlers {
-					err := h.Alert(room.Name)
-					if err != nil {
-						log.WithFields(log.Fields{
-							"room":  room.Name,
-							"error": err,
-						}).Error("alert failed")
-					}
-				}
+			if o == event {
+				req := &LightGroupRequest{Name: room.Name}
+				_, err := l.Alert(ctx, req)
+				return err
 			}
 		}
 	}
+
+	return nil
 }
 
 // Alert calls Alert() on each handler.

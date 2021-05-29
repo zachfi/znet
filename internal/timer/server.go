@@ -28,10 +28,5 @@ func (t *Server) NamedTimer(ctx context.Context, req *NamedTimeStamp) (*Empty, e
 		return nil, fmt.Errorf("unable to handle request with empty name")
 	}
 
-	err := t.lights.NamedTimerHandler(req.Name)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Empty{}, nil
+	return &Empty{}, t.lights.NamedTimerHandler(ctx, req.Name)
 }

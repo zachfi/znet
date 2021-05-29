@@ -43,6 +43,7 @@ func (i *LDAPInventory) Close() {
 func (i *LDAPInventory) reconnect() error {
 	// Make sure old connection if definitely closed
 	i.mux.Lock()
+	defer i.mux.Unlock()
 	i.conn.Close()
 
 	// Connect to LDAP
@@ -64,7 +65,6 @@ func (i *LDAPInventory) reconnect() error {
 	}
 
 	i.conn = l
-	i.mux.Unlock()
 	return nil
 }
 
