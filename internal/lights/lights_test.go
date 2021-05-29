@@ -95,6 +95,93 @@ func TestConfiguredEventNames(t *testing.T) {
 
 }
 
+func TestNamedTimerHandler(t *testing.T) {
+	cases := map[string]struct {
+		event  string
+		mock   *MockLight
+		err    error
+		config *config.LightsConfig
+	}{
+		"no config": {
+			config: &config.LightsConfig{},
+			event:  "Now",
+			mock:   &MockLight{},
+			err:    ErrNoRoomsConfigured,
+		},
+		"On": {
+			event: "Later",
+			config: &config.LightsConfig{
+				Rooms: []config.LightsRoom{
+					{
+						Name: "zone1",
+						On:   []string{"Later"},
+					},
+				},
+			},
+			mock: &MockLight{
+				OnCalls: map[string]int{"zone1": 1},
+			},
+		},
+		"Off": {
+			event: "Later",
+			config: &config.LightsConfig{
+				Rooms: []config.LightsRoom{
+					{
+						Name: "zone1",
+						Off:  []string{"Later"},
+					},
+				},
+			},
+			mock: &MockLight{
+				OffCalls: map[string]int{"zone1": 1},
+			},
+		},
+		"Dim": {
+			event: "Later",
+			config: &config.LightsConfig{
+				Rooms: []config.LightsRoom{
+					{
+						Name: "zone1",
+						Dim:  []string{"Later"},
+					},
+				},
+			},
+			mock: &MockLight{
+				DimCalls: map[string]int{"zone1": 1},
+			},
+		},
+		"Alert": {
+			event: "Later",
+			config: &config.LightsConfig{
+				Rooms: []config.LightsRoom{
+					{
+						Name:  "zone1",
+						Alert: []string{"Later"},
+					},
+				},
+			},
+			mock: &MockLight{
+				AlertCalls: map[string]int{"zone1": 1},
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		h := &MockLight{}
+
+		l, err := NewLights(tc.config)
+		require.NoError(t, err)
+
+		l.AddHandler(h)
+
+		err = l.NamedTimerHandler(context.Background(), tc.event)
+		require.Equal(t, tc.err, err)
+
+		require.Equal(t, tc.mock, h)
+	}
+
+}
+
 func TestActionHandler(t *testing.T) {
 	cases := map[string]struct {
 		action *iot.Action

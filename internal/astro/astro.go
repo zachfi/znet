@@ -22,16 +22,13 @@ func NewAstro(cfg *config.Config, l *lights.Lights) (*Astro, error) {
 }
 
 func (a *Astro) Sunrise(ctx context.Context, req *Empty) (*Empty, error) {
-	a.lights.SetRoomForEvent("Sunrise")
-	return &Empty{}, nil
+	return &Empty{}, a.lights.SetRoomForEvent(ctx, "Sunrise")
 }
 
 func (a *Astro) Sunset(ctx context.Context, req *Empty) (*Empty, error) {
-	a.lights.SetRoomForEvent("SunSet")
-	return &Empty{}, nil
+	return &Empty{}, a.lights.SetRoomForEvent(ctx, "SunSet")
 }
 
 func (a *Astro) PreSunset(ctx context.Context, req *Empty) (*Empty, error) {
-	a.lights.SetRoomForEvent("PreSunset")
-	return &Empty{}, nil
+	return &Empty{}, a.lights.SetRoomForEvent(ctx, "PreSunset")
 }
