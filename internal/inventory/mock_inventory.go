@@ -4,38 +4,45 @@ package inventory
 type MockInventory struct {
 	FetchNetworkHostCalls     map[string]int
 	FetchNetworkHostResponse  *NetworkHost
-	FetchNetworkHostError     error
+	FetchNetworkHostErr       error
 	ListNetworkHostResponse   []NetworkHost
+	ListNetworkHostErr        error
 	CreateNetworkHostCalls    map[string]int
 	FetchNetworkIDCalls       map[string]int
 	FetchNetworkIDResponse    *NetworkID
-	FetchNetworkIDError       error
+	FetchNetworkIDErr         error
 	ListNetworkIDResponse     []NetworkID
+	ListNetworkIDErr          error
 	CreateNetworkIDCalls      map[string]int
 	FetchL3NetworkCalls       map[string]int
 	FetchL3NetworkResponse    *L3Network
-	FetchL3NetworkError       error
+	FetchL3NetworkErr         error
 	ListL3NetworkResponse     []L3Network
+	ListL3NetworkErr          error
 	CreateL3NetworkCalls      map[string]int
 	FetchInetNetworkCalls     map[string]int
 	FetchInetNetworkResponse  *InetNetwork
-	FetchInetNetworkError     error
+	FetchInetNetworkErr       error
 	ListInetNetworkResponse   []InetNetwork
+	ListInetNetworkErr        error
 	CreateInetNetworkCalls    map[string]int
 	FetchInet6NetworkCalls    map[string]int
 	FetchInet6NetworkResponse *Inet6Network
-	FetchInet6NetworkError    error
+	FetchInet6NetworkErr      error
 	ListInet6NetworkResponse  []Inet6Network
+	ListInet6NetworkErr       error
 	CreateInet6NetworkCalls   map[string]int
 	FetchZigbeeDeviceCalls    map[string]int
 	FetchZigbeeDeviceResponse *ZigbeeDevice
-	FetchZigbeeDeviceError    error
+	FetchZigbeeDeviceErr      error
 	ListZigbeeDeviceResponse  []ZigbeeDevice
+	ListZigbeeDeviceErr       error
 	CreateZigbeeDeviceCalls   map[string]int
 	FetchIOTZoneCalls         map[string]int
 	FetchIOTZoneResponse      *IOTZone
-	FetchIOTZoneError         error
+	FetchIOTZoneErr           error
 	ListIOTZoneResponse       []IOTZone
+	ListIOTZoneErr            error
 	CreateIOTZoneCalls        map[string]int
 }
 
@@ -60,8 +67,8 @@ func (i *MockInventory) FetchNetworkHost(name string) (*NetworkHost, error) {
 
 	i.FetchNetworkHostCalls[name]++
 
-	if i.FetchNetworkHostError != nil {
-		return nil, i.FetchNetworkHostError
+	if i.FetchNetworkHostErr != nil {
+		return nil, i.FetchNetworkHostErr
 	}
 
 	return i.FetchNetworkHostResponse, nil
@@ -69,7 +76,11 @@ func (i *MockInventory) FetchNetworkHost(name string) (*NetworkHost, error) {
 
 func (i *MockInventory) ListNetworkHosts() ([]NetworkHost, error) {
 
-	return nil, nil
+	if i.ListNetworkHostErr != nil {
+		return nil, i.ListNetworkHostErr
+	}
+
+	return i.ListNetworkHostResponse, nil
 }
 
 func (i *MockInventory) UpdateNetworkHost(*NetworkHost) (*NetworkHost, error) {
@@ -93,8 +104,8 @@ func (i *MockInventory) FetchNetworkID(name string) (*NetworkID, error) {
 
 	i.FetchNetworkIDCalls[name]++
 
-	if i.FetchNetworkIDError != nil {
-		return nil, i.FetchNetworkIDError
+	if i.FetchNetworkIDErr != nil {
+		return nil, i.FetchNetworkIDErr
 	}
 
 	return i.FetchNetworkIDResponse, nil
@@ -102,7 +113,11 @@ func (i *MockInventory) FetchNetworkID(name string) (*NetworkID, error) {
 
 func (i *MockInventory) ListNetworkIDs() ([]NetworkID, error) {
 
-	return nil, nil
+	if i.ListNetworkIDErr != nil {
+		return nil, i.ListNetworkIDErr
+	}
+
+	return i.ListNetworkIDResponse, nil
 }
 
 func (i *MockInventory) UpdateNetworkID(*NetworkID) (*NetworkID, error) {
@@ -126,8 +141,8 @@ func (i *MockInventory) FetchL3Network(name string) (*L3Network, error) {
 
 	i.FetchL3NetworkCalls[name]++
 
-	if i.FetchL3NetworkError != nil {
-		return nil, i.FetchL3NetworkError
+	if i.FetchL3NetworkErr != nil {
+		return nil, i.FetchL3NetworkErr
 	}
 
 	return i.FetchL3NetworkResponse, nil
@@ -135,7 +150,11 @@ func (i *MockInventory) FetchL3Network(name string) (*L3Network, error) {
 
 func (i *MockInventory) ListL3Networks() ([]L3Network, error) {
 
-	return nil, nil
+	if i.ListL3NetworkErr != nil {
+		return nil, i.ListL3NetworkErr
+	}
+
+	return i.ListL3NetworkResponse, nil
 }
 
 func (i *MockInventory) UpdateL3Network(*L3Network) (*L3Network, error) {
@@ -159,8 +178,8 @@ func (i *MockInventory) FetchInetNetwork(name string) (*InetNetwork, error) {
 
 	i.FetchInetNetworkCalls[name]++
 
-	if i.FetchInetNetworkError != nil {
-		return nil, i.FetchInetNetworkError
+	if i.FetchInetNetworkErr != nil {
+		return nil, i.FetchInetNetworkErr
 	}
 
 	return i.FetchInetNetworkResponse, nil
@@ -168,7 +187,11 @@ func (i *MockInventory) FetchInetNetwork(name string) (*InetNetwork, error) {
 
 func (i *MockInventory) ListInetNetworks() ([]InetNetwork, error) {
 
-	return nil, nil
+	if i.ListInetNetworkErr != nil {
+		return nil, i.ListInetNetworkErr
+	}
+
+	return i.ListInetNetworkResponse, nil
 }
 
 func (i *MockInventory) UpdateInetNetwork(*InetNetwork) (*InetNetwork, error) {
@@ -192,8 +215,8 @@ func (i *MockInventory) FetchInet6Network(name string) (*Inet6Network, error) {
 
 	i.FetchInet6NetworkCalls[name]++
 
-	if i.FetchInet6NetworkError != nil {
-		return nil, i.FetchInet6NetworkError
+	if i.FetchInet6NetworkErr != nil {
+		return nil, i.FetchInet6NetworkErr
 	}
 
 	return i.FetchInet6NetworkResponse, nil
@@ -201,7 +224,11 @@ func (i *MockInventory) FetchInet6Network(name string) (*Inet6Network, error) {
 
 func (i *MockInventory) ListInet6Networks() ([]Inet6Network, error) {
 
-	return nil, nil
+	if i.ListInet6NetworkErr != nil {
+		return nil, i.ListInet6NetworkErr
+	}
+
+	return i.ListInet6NetworkResponse, nil
 }
 
 func (i *MockInventory) UpdateInet6Network(*Inet6Network) (*Inet6Network, error) {
@@ -225,8 +252,8 @@ func (i *MockInventory) FetchZigbeeDevice(name string) (*ZigbeeDevice, error) {
 
 	i.FetchZigbeeDeviceCalls[name]++
 
-	if i.FetchZigbeeDeviceError != nil {
-		return nil, i.FetchZigbeeDeviceError
+	if i.FetchZigbeeDeviceErr != nil {
+		return nil, i.FetchZigbeeDeviceErr
 	}
 
 	return i.FetchZigbeeDeviceResponse, nil
@@ -234,7 +261,11 @@ func (i *MockInventory) FetchZigbeeDevice(name string) (*ZigbeeDevice, error) {
 
 func (i *MockInventory) ListZigbeeDevices() ([]ZigbeeDevice, error) {
 
-	return nil, nil
+	if i.ListZigbeeDeviceErr != nil {
+		return nil, i.ListZigbeeDeviceErr
+	}
+
+	return i.ListZigbeeDeviceResponse, nil
 }
 
 func (i *MockInventory) UpdateZigbeeDevice(*ZigbeeDevice) (*ZigbeeDevice, error) {
@@ -258,8 +289,8 @@ func (i *MockInventory) FetchIOTZone(name string) (*IOTZone, error) {
 
 	i.FetchIOTZoneCalls[name]++
 
-	if i.FetchIOTZoneError != nil {
-		return nil, i.FetchIOTZoneError
+	if i.FetchIOTZoneErr != nil {
+		return nil, i.FetchIOTZoneErr
 	}
 
 	return i.FetchIOTZoneResponse, nil
@@ -267,7 +298,11 @@ func (i *MockInventory) FetchIOTZone(name string) (*IOTZone, error) {
 
 func (i *MockInventory) ListIOTZones() ([]IOTZone, error) {
 
-	return nil, nil
+	if i.ListIOTZoneErr != nil {
+		return nil, i.ListIOTZoneErr
+	}
+
+	return i.ListIOTZoneResponse, nil
 }
 
 func (i *MockInventory) UpdateIOTZone(*IOTZone) (*IOTZone, error) {

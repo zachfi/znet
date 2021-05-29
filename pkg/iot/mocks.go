@@ -29,8 +29,10 @@ func (mt *MockToken) Done() <-chan struct{} {
 }
 
 type MockClient struct {
-	isConnected bool
-	token       mqtt.Token
+	isConnected        bool
+	token              mqtt.Token
+	LastPublishTopic   string
+	LastPublishPayload interface{}
 }
 
 func (mc *MockClient) IsConnected() bool {
@@ -48,6 +50,8 @@ func (mc *MockClient) Connect() mqtt.Token {
 func (mc *MockClient) Disconnect(quiesce uint) {}
 
 func (mc *MockClient) Publish(topic string, qos byte, retained bool, payload interface{}) mqtt.Token {
+	mc.LastPublishTopic = topic
+	mc.LastPublishPayload = payload
 	return mc.token
 }
 
