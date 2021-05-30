@@ -5,7 +5,7 @@ import (
 )
 
 // ErrNilConfig is used to indicate that a method has received a config that was nil.
-var ErrNilConfig = errors.New("nil config")
+var ErrNilConfig = errors.New("nil lights config")
 
 // ErrNoRoomsConfigured is used to indicate that the configuration contained no Rooms.
 var ErrNoRoomsConfigured = errors.New("no rooms configured")
