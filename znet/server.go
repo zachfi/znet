@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
@@ -32,6 +33,9 @@ type Server struct {
 	httpServer    *http.Server
 	NewHTTPServer comms.HTTPServerFunc
 	NewRPCServer  comms.RPCServerFunc
+
+	mqttClient mqtt.Client
+	invClient  inventory.Inventory
 }
 
 func init() {
@@ -75,6 +79,8 @@ func (s *Server) startRPCListener() error {
 	s.Lock()
 	defer s.Unlock()
 
+	var err error
+
 	if s.grpcServer == nil {
 		grpcServer, err := s.NewRPCServer(s.config)
 		if err != nil {
@@ -83,20 +89,24 @@ func (s *Server) startRPCListener() error {
 		s.grpcServer = grpcServer
 	}
 
-	// clients to be used by the servers
-	mqttClient, err := iot.NewMQTTClient(s.config.MQTT)
-	if err != nil {
-		return err
+	if s.mqttClient == nil {
+		// clients to be used by the servers
+		s.mqttClient, err = iot.NewMQTTClient(s.config.MQTT)
+		if err != nil {
+			return err
+		}
 	}
 
-	invClient, err := inventory.NewLDAPInventory(s.config.LDAP)
-	if err != nil {
-		return err
+	if s.invClient == nil {
+		s.invClient, err = inventory.NewLDAPInventory(s.config.LDAP)
+		if err != nil {
+			return err
+		}
 	}
 
 	//
 	// inventoryServer
-	inventoryServer, err := inventory.NewLDAPServer(s.config.LDAP)
+	inventoryServer, err := inventory.NewLDAPServer(s.invClient)
 	if err != nil {
 		return err
 	}
@@ -117,7 +127,7 @@ func (s *Server) startRPCListener() error {
 		lightsServer.AddHandler(hue)
 	}
 
-	zigbee, err := lights.NewZigbeeLight(s.config, mqttClient, invClient)
+	zigbee, err := lights.NewZigbeeLight(s.config, s.mqttClient, s.invClient)
 	if err != nil {
 		log.Error(err)
 	} else {
@@ -136,7 +146,7 @@ func (s *Server) startRPCListener() error {
 	astro.RegisterAstroServer(s.grpcServer, astroServer)
 
 	// iotServer
-	iotServer, err := iot.NewServer(mqttClient)
+	iotServer, err := iot.NewServer(s.mqttClient)
 	if err != nil {
 		return err
 	}
@@ -145,7 +155,7 @@ func (s *Server) startRPCListener() error {
 
 	//
 	// telemetryServer
-	telemetryServer, err := telemetry.NewServer(invClient, lightsServer)
+	telemetryServer, err := telemetry.NewServer(s.invClient, lightsServer)
 	if err != nil {
 		return err
 	}
@@ -213,7 +223,7 @@ func (s *Server) Start(z *Znet) error {
 	if s.config.HTTP.ListenAddress != "" {
 		log.WithFields(log.Fields{
 			"http_listen": s.config.HTTP.ListenAddress,
-		}).Info("starting HTTP listener")
+		}).Debug("starting HTTP")
 
 		err := s.startHTTPListener()
 		if err != nil {
@@ -224,7 +234,7 @@ func (s *Server) Start(z *Znet) error {
 	if s.config.RPC.ListenAddress != "" {
 		log.WithFields(log.Fields{
 			"rpc_listen": s.config.RPC.ListenAddress,
-		}).Debug("starting RPC listener")
+		}).Debug("starting RPC")
 
 		err := s.startRPCListener()
 		if err != nil {
@@ -246,9 +256,11 @@ func (s *Server) Stop() error {
 	ctx, cancel := context.WithDeadline(context.Background(), d)
 	defer cancel()
 
-	err = s.httpServer.Shutdown(ctx)
-	if err != nil {
-		errs = append(errs, err)
+	if s.httpServer != nil {
+		err = s.httpServer.Shutdown(ctx)
+		if err != nil {
+			errs = append(errs, err)
+		}
 	}
 
 	select {
@@ -261,7 +273,9 @@ func (s *Server) Stop() error {
 		}
 	}
 
-	s.grpcServer.Stop()
+	if s.grpcServer != nil {
+		s.grpcServer.Stop()
+	}
 
 	if len(errs) > 0 {
 		return fmt.Errorf("errors while shutting down: %s", errs)
