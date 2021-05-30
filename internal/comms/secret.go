@@ -17,6 +17,10 @@ func NewSecretClient(config config.VaultConfig) (*api.Client, error) {
 	var err error
 	var token string
 
+	if config.Host == "" {
+		return nil, ErrMissingVaultConfig
+	}
+
 	apiConfig := &api.Config{
 		Address: config.Host,
 	}

@@ -127,7 +127,7 @@ func (s *singletonKey) Generate() (crypto.PrivateKey, error) {
 
 func CABundle(vaultConfig *config.VaultConfig) (*x509.CertPool, error) {
 	if vaultConfig == nil {
-		return nil, fmt.Errorf("unable to read CABundle using nil Vault config")
+		return nil, ErrNilVaultConfig
 	}
 
 	// Setup the vault client to read the CA cert

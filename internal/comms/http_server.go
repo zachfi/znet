@@ -1,7 +1,6 @@
 package comms
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/xaque208/znet/internal/config"
@@ -13,11 +12,11 @@ type HTTPServerFunc func(*config.Config) (*http.Server, error)
 // StandardHTTPServer returns a normal HTTP server.
 func StandardHTTPServer(cfg *config.Config) (*http.Server, error) {
 	if cfg.HTTP == nil {
-		return nil, fmt.Errorf("unable to create StandardHTTPServer with nil HTTP config")
+		return nil, ErrNoHTTPConfig
 	}
 
 	if cfg.HTTP.ListenAddress == "" {
-		return nil, fmt.Errorf("unable to create StandardHTTPServer with empty ListenAddress")
+		return nil, ErrNoHTTPListenAddress
 	}
 
 	return &http.Server{Addr: cfg.HTTP.ListenAddress}, nil

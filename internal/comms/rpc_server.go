@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 
 	"github.com/johanbrandhorst/certify"
+	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
@@ -15,23 +16,37 @@ type RPCServerFunc func(*config.Config) (*grpc.Server, error)
 
 // StandardRPCServer returns a normal gRPC server.
 func StandardRPCServer(cfg *config.Config) (*grpc.Server, error) {
-	roots, err := CABundle(cfg.Vault)
-	if err != nil {
-		return nil, err
+	options := []grpc.ServerOption{}
+
+	if cfg.Vault != nil {
+		roots, err := CABundle(cfg.Vault)
+		if err != nil {
+			if err != ErrMissingVaultConfig {
+				return nil, err
+			}
+		}
+
+		if roots != nil {
+			var c *certify.Certify
+
+			c, err = newCertify(cfg.Vault, cfg.TLS)
+			if err != nil {
+				return nil, err
+			}
+
+			tlsConfig := &tls.Config{
+				GetCertificate: c.GetCertificate,
+				ClientCAs:      roots,
+				ClientAuth:     tls.RequireAndVerifyClientCert,
+			}
+
+			options = append(options, grpc.Creds(credentials.NewTLS(tlsConfig)))
+		}
 	}
 
-	var c *certify.Certify
-
-	c, err = newCertify(cfg.Vault, cfg.TLS)
-	if err != nil {
-		return nil, err
+	if len(options) > 0 {
+		log.Debugf("starting with options: %+v", options)
 	}
 
-	tlsConfig := &tls.Config{
-		GetCertificate: c.GetCertificate,
-		ClientCAs:      roots,
-		ClientAuth:     tls.RequireAndVerifyClientCert,
-	}
-
-	return grpc.NewServer(grpc.Creds(credentials.NewTLS(tlsConfig))), err
+	return grpc.NewServer(options...), nil
 }
