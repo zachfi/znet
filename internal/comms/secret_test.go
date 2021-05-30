@@ -1,9 +1,15 @@
 package comms
 
-// func TestVaultStuff(t *testing.T) {
-// 	ln, client := createTestVault(t)
-// 	defer ln.Close()
-//
-// 	// Pass the client to the code under test.
-// 	myFunction(client)
-// }
+import (
+	"testing"
+
+	"github.com/stretchr/testify/require"
+)
+
+func TestVaultStuff(t *testing.T) {
+	ln, client := createTestVault(t)
+	defer ln.Close()
+
+	require.NotNil(t, ln)
+	require.NotNil(t, client)
+}
