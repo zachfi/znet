@@ -4,10 +4,12 @@ package telemetry
 
 import (
 	context "context"
-	inventory "github.com/xaque208/znet/internal/inventory"
+
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+
+	inventory "github.com/xaque208/znet/internal/inventory"
 )
 
 // This is a compile-time assertion to ensure that this generated file
