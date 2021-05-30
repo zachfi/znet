@@ -82,9 +82,9 @@ func (s *Server) startRPCListener() error {
 	var err error
 
 	if s.grpcServer == nil {
-		grpcServer, err := s.NewRPCServer(s.config)
-		if err != nil {
-			return err
+		grpcServer, serverErr := s.NewRPCServer(s.config)
+		if serverErr != nil {
+			return serverErr
 		}
 		s.grpcServer = grpcServer
 	}
