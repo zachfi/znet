@@ -6,17 +6,13 @@ require (
 	github.com/amimof/huego v1.2.0
 	github.com/antchfx/htmlquery v1.2.3
 	github.com/blang/semver/v4 v4.0.0
-	github.com/containerd/continuity v0.0.0-20200710164510-efbc4488d8fe // indirect
 	github.com/eclipse/paho.mqtt.golang v1.3.4
-	github.com/fatih/color v1.10.0 // indirect
 	github.com/go-git/go-git/v5 v5.4.1
 	github.com/go-ldap/ldap/v3 v3.3.0
-	github.com/go-test/deep v1.0.7 // indirect
 	github.com/golang/protobuf v1.5.2
-	github.com/hashicorp/go-retryablehttp v0.6.7 // indirect
-	github.com/hashicorp/hcl v1.0.1-vault // indirect
+	github.com/hashicorp/vault v1.7.2
 	github.com/hashicorp/vault/api v1.1.0
-	github.com/hashicorp/vault/sdk v0.2.0
+	github.com/hashicorp/vault/sdk v0.2.1-0.20210519002511-48c5544c77f4
 	github.com/iancoleman/strcase v0.1.3
 	github.com/imdario/mergo v0.3.12
 	github.com/jarcoal/httpmock v1.0.8 // indirect
@@ -29,8 +25,6 @@ require (
 	github.com/mpvl/unique v0.0.0-20150818121801-cbe035fff7de
 	github.com/onsi/ginkgo v1.14.2 // indirect
 	github.com/onsi/gomega v1.10.4 // indirect
-	github.com/opencontainers/runc v1.0.0-rc9 // indirect
-	github.com/ory/dockertest v3.3.5+incompatible // indirect
 	github.com/pelletier/go-toml v1.8.1 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.10.0
@@ -46,8 +40,6 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/xaque208/rftoy v0.0.0-20191203015236-4727b87c3461
 	golang.org/x/crypto v0.0.0-20210421170649-83a5a9bb288b
-	golang.org/x/text v0.3.4 // indirect
-	golang.org/x/time v0.0.0-20200630173020-3af7569d3a1e // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/genproto v0.0.0-20201203001206-6486ece9c497 // indirect
 	google.golang.org/grpc v1.38.0

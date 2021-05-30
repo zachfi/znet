@@ -164,6 +164,18 @@ func TestNamedTimerHandler(t *testing.T) {
 				AlertCalls: map[string]int{"zone1": 1},
 			},
 		},
+		"unknown event": {
+			event: "Later",
+			config: &config.LightsConfig{
+				Rooms: []config.LightsRoom{
+					{
+						Name: "zone1",
+					},
+				},
+			},
+			mock: &MockLight{},
+			err:  ErrUnhandledEventName,
+		},
 	}
 
 	for _, tc := range cases {

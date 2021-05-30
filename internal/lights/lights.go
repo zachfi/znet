@@ -165,12 +165,7 @@ func (l *Lights) NamedTimerHandler(ctx context.Context, e string) error {
 	}(e, names)
 
 	if !configuredEvent {
-		log.WithFields(log.Fields{
-			"name":            e,
-			"configuredNames": names,
-		}).Debug("unhandled lighting NamedTimer name")
-
-		return nil
+		return ErrUnhandledEventName
 	}
 
 	return l.SetRoomForEvent(ctx, e)

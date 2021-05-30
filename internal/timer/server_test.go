@@ -38,6 +38,6 @@ func TestServer(t *testing.T) {
 		Name: "sunrise",
 	}
 	e, err = s.NamedTimer(context.Background(), req)
-	require.NoError(t, err)
+	require.Equal(t, lights.ErrUnhandledEventName, err)
 	require.NotNil(t, e)
 }

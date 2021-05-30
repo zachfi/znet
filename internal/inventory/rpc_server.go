@@ -1,10 +1,6 @@
 // Code generated, do not edit
 package inventory
 
-import (
-	"github.com/xaque208/znet/internal/config"
-)
-
 // Server
 type Server struct {
 	UnimplementedInventoryServer
@@ -12,14 +8,9 @@ type Server struct {
 }
 
 // NewServer is used to return a new Server, which implements the inventory RPC server.
-func NewLDAPServer(cfg *config.LDAPConfig) (*Server, error) {
-	inv, err := NewLDAPInventory(cfg)
-	if err != nil {
-		return nil, err
-	}
-
+func NewLDAPServer(invClient Inventory) (*Server, error) {
 	return &Server{
-		inventory: inv,
+		inventory: invClient,
 	}, nil
 }
 
