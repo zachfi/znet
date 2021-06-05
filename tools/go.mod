@@ -7,7 +7,7 @@ require (
 	github.com/client9/misspell v0.3.4
 	github.com/git-chglog/git-chglog v0.14.2
 	github.com/golangci/golangci-lint v1.40.1
-	github.com/goreleaser/goreleaser v0.166.1
+	github.com/goreleaser/goreleaser v0.169.0
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0 // indirect
 	github.com/psampaz/go-mod-outdated v0.8.0
 	github.com/stretchr/testify v1.7.0
