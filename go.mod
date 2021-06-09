@@ -6,7 +6,7 @@ require (
 	github.com/amimof/huego v1.2.0
 	github.com/blang/semver/v4 v4.0.0
 	github.com/eclipse/paho.mqtt.golang v1.3.5
-	github.com/go-git/go-git/v5 v5.4.1
+	github.com/go-git/go-git/v5 v5.4.2
 	github.com/go-ldap/ldap/v3 v3.3.0
 	github.com/golang/protobuf v1.5.2
 	github.com/hashicorp/vault v1.7.2
