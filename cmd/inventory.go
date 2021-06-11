@@ -5,6 +5,7 @@ import (
 	"context"
 	"io"
 
+	prompt "github.com/c-bata/go-prompt"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -19,10 +20,10 @@ import (
 
 var inventoryCommand = &cobra.Command{
 	Use:     "inventory",
-	Short:   "Report on inventory",
-	Long:    "Run an inventory report",
+	Short:   "Interact with inventory data",
+	Long:    "Interact with inventory data",
 	Example: "znet inv",
-	// Run:     runInv,
+	Run:     runInteractive,
 }
 
 var listCmd = &cobra.Command{
@@ -31,6 +32,32 @@ var listCmd = &cobra.Command{
 	Long:    "List items from the inventory",
 	Example: "znet inventory list",
 	// Run:     runList,
+}
+
+func runInteractive(cmd *cobra.Command, args []string) {
+	initLogger()
+
+	cfg, err := config.LoadConfig(cfgFile)
+	if err != nil {
+		log.Error(err)
+	}
+
+	inv, err := inventory.NewLDAPInventory(cfg.LDAP)
+	if err != nil {
+		log.Error(err)
+	}
+
+	completer := &inventoryInteractive{
+		inv: inv,
+	}
+
+	p := prompt.New(
+		completer.executor,
+		completer.completer,
+		prompt.OptionTitle("znet inv"),
+	)
+
+	p.Run()
 }
 
 // typeName: network_host
