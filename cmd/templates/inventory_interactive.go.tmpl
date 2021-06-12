@@ -4,13 +4,15 @@ package cmd
 
 import (
 	"strings"
+	"os"
 
 	prompt "github.com/c-bata/go-prompt"
 	log "github.com/sirupsen/logrus"
+	"github.com/olekukonko/tablewriter"
 	"github.com/xaque208/znet/internal/inventory"
 )
 
-  {{- $messages := list "L3Network" "NetworkHost" "ZigbeeDevice" "IOTZone" }}
+  {{- $messages := list "L3Network" "NetworkHost" "ZigbeeDevice" }}
 
 type inventoryInteractive struct {
 	inv inventory.Inventory
@@ -28,16 +30,14 @@ func (i *inventoryInteractive) executor(in string) {
       {{- $typeName := (.GetName|snakeCase)}}
       {{- $commandName := (.GetName)}}
 		case "{{$typeName}}":
-			i, err := i.inv.List{{$commandName}}s()
-			if err != nil {
-				log.Error(err)
-			}
-
-			log.Infof("i: %+v", i)
+      i.print{{$commandName}}s()
     {{- end }}
   {{- end }}
 		}
 	case "get":
+    if len(blocks) < 3 {
+      return
+    }
 		item := blocks[2]
 
 		switch blocks[1] {
@@ -75,25 +75,24 @@ func (i *inventoryInteractive) completer(d prompt.Document) []prompt.Suggest {
 	s := []prompt.Suggest{
 		{Text: "list", Description: "List objects"},
 		{Text: "get", Description: "Get an object"},
+		{Text: "set", Description: "Set an object attributes"},
 	}
 
 	count := len(blocks)
 
-	if count > 0 {
-		switch blocks[0] {
-		case "list":
-			if count > 2 {
-				return []prompt.Suggest{}
-			}
-			return prompt.FilterHasPrefix(objects, d.GetWordBeforeCursor(), true)
+	if count <= 1 {
+			return prompt.FilterHasPrefix(s, d.GetWordBeforeCursor(), true)
+	}
 
+	if count == 2 {
+			return prompt.FilterHasPrefix(objects, d.GetWordBeforeCursor(), true)
+	}
+
+		switch blocks[0] {
+		// case "list":
 		case "get":
 			if count > 3 {
 				return []prompt.Suggest{}
-			}
-
-			if count == 1 {
-				return prompt.FilterHasPrefix(objects, d.GetWordBeforeCursor(), true)
 			}
 
 			switch blocks[1] {
@@ -102,26 +101,134 @@ func (i *inventoryInteractive) completer(d prompt.Document) []prompt.Suggest {
       {{- $typeName := (.GetName|snakeCase)}}
       {{- $commandName := (.GetName)}}
 			case "{{$typeName}}":
-				sugg := []prompt.Suggest{}
-				results, err := i.inv.List{{$commandName}}s()
-				if err != nil {
-					log.Error(err)
-					return []prompt.Suggest{}
-				}
-
-				for _, r := range results {
-					sugg = append(sugg, prompt.Suggest{Text: r.GetName(), Description: r.GetDescription()})
-				}
-				return prompt.FilterHasPrefix(sugg, d.GetWordBeforeCursor(), true)
+        return i.suggest{{$commandName}}(d)
     {{- end }}
   {{- end }}
 			}
+		case "set":
+			if count > 4 {
+				return []prompt.Suggest{}
+			}
 
-			return prompt.FilterHasPrefix(objects, d.GetWordBeforeCursor(), true)
-		}
+      if count == 3 {
+        switch blocks[1] {
+    {{- range .File.MessageType }}
+      {{- if has .GetName $messages }}
+        {{- $typeName := (.GetName|snakeCase)}}
+        {{- $commandName := (.GetName)}}
+        case "{{$typeName}}":
+          return i.suggest{{$commandName}}(d)
+      {{- end }}
+    {{- end }}
+        }
+      }
+
+      if count == 4 {
+        switch blocks[1] {
+    {{- range .File.MessageType }}
+      {{- if has .GetName $messages }}
+        {{- $typeName := (.GetName|snakeCase)}}
+        {{- $commandName := (.GetName)}}
+        case "{{$typeName}}":
+          return i.suggest{{$commandName}}Attributes(d)
+      {{- end }}
+    {{- end }}
+        }
+      }
 	}
 
-	return prompt.FilterHasPrefix(s, d.GetWordBeforeCursor(), true)
+  return []prompt.Suggest{}
 }
+
+  {{- range .File.MessageType }}
+    {{- if has .GetName $messages }}
+      {{- $typeName := (.GetName|snakeCase)}}
+      {{- $commandName := (.GetName)}}
+func (i *inventoryInteractive) print{{$commandName}}s() {
+  results, err := i.inv.List{{$commandName}}s()
+  if err != nil {
+    log.Error(err)
+  }
+
+  data := make([][]string, 0)
+
+  for _, r := range results {
+    data = append(data, []string{
+        {{- range .Field }}
+          {{- if eq .GetType.String "TYPE_STRING" }}
+              {{- if eq .GetLabel.String "LABEL_REPEATED" }}
+              {{- else }}
+          r.Get{{.Name|camelCase}}(),
+              {{- end }}
+          {{- end }}
+        {{- end }}
+    })
+  }
+
+  table := tablewriter.NewWriter(os.Stdout)
+  table.SetHeader([]string{
+      {{- range .Field }}
+          {{- if eq .GetType.String "TYPE_STRING" }}
+              {{- if eq .GetLabel.String "LABEL_REPEATED" }}
+              {{- else }}
+    "{{.GetName}}",
+              {{- end }}
+          {{- end }}
+      {{- end }}
+  })
+
+    table.SetAutoWrapText(false)
+    table.SetAutoFormatHeaders(true)
+    table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+    table.SetAlignment(tablewriter.ALIGN_LEFT)
+    table.SetHeaderLine(false)
+    table.SetBorder(false)
+    table.SetColumnSeparator("")
+
+  for _, v := range data {
+      table.Append(v)
+  }
+
+  table.Render() 
+}
+    {{- end }}
+  {{- end }}
+
+  {{- range .File.MessageType }}
+    {{- if has .GetName $messages }}
+      {{- $typeName := (.GetName|snakeCase)}}
+      {{- $commandName := (.GetName)}}
+func (i *inventoryInteractive) suggest{{$commandName}}(d prompt.Document) []prompt.Suggest {
+        sugg := []prompt.Suggest{}
+        results, err := i.inv.List{{$commandName}}s()
+        if err != nil {
+          log.Error(err)
+          return []prompt.Suggest{}
+        }
+
+        for _, r := range results {
+          sugg = append(sugg, prompt.Suggest{Text: r.GetName(), Description: r.GetDescription()})
+        }
+
+        return prompt.FilterHasPrefix(sugg, d.GetWordBeforeCursor(), true)
+}
+
+func (i *inventoryInteractive) suggest{{$commandName}}Attributes(d prompt.Document) []prompt.Suggest {
+    sugg := []prompt.Suggest{
+      {{- range .Field }}
+          {{- if eq .GetType.String "TYPE_STRING" }}
+              {{- if eq .GetLabel.String "LABEL_REPEATED" }}
+              {{- else }}
+      prompt.Suggest{Text: "{{.GetName}}"},
+              {{- end }}
+          {{- end }}
+      {{- end }}
+
+    }
+    return prompt.FilterHasPrefix(sugg, d.GetWordBeforeCursor(), true)
+}
+
+    {{- end }}
+  {{- end }}
 
 {{- end }}
