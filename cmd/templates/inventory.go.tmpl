@@ -48,13 +48,13 @@ func runInteractive(cmd *cobra.Command, args []string) {
 		log.Error(err)
 	}
 
-	completer := &inventoryInteractive{
-		inv: inv,
+	completer := &inventory.InventoryInteractive{
+		Inventory: inv,
 	}
 
 	p := prompt.New(
-		completer.executor,
-		completer.completer,
+		completer.Executor,
+		completer.Completer,
 		prompt.OptionTitle("znet inv"),
 	)
 

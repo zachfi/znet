@@ -1,5 +1,5 @@
 // Code generated, do not edit
-package cmd
+package inventory
 
 import (
 	"os"
@@ -8,14 +8,13 @@ import (
 	prompt "github.com/c-bata/go-prompt"
 	"github.com/olekukonko/tablewriter"
 	log "github.com/sirupsen/logrus"
-	"github.com/xaque208/znet/internal/inventory"
 )
 
-type inventoryInteractive struct {
-	inv inventory.Inventory
+type InventoryInteractive struct {
+	Inventory Inventory
 }
 
-func (i *inventoryInteractive) executor(in string) {
+func (i *InventoryInteractive) Executor(in string) {
 	in = strings.TrimSpace(in)
 	blocks := strings.Split(in, " ")
 
@@ -43,21 +42,21 @@ func (i *inventoryInteractive) executor(in string) {
 
 		switch object {
 		case "network_host":
-			i, err := i.inv.FetchNetworkHost(item)
+			i, err := i.Inventory.FetchNetworkHost(item)
 			if err != nil {
 				log.Error(err)
 			}
 
 			log.Infof("i: %+v", i)
 		case "l3_network":
-			i, err := i.inv.FetchL3Network(item)
+			i, err := i.Inventory.FetchL3Network(item)
 			if err != nil {
 				log.Error(err)
 			}
 
 			log.Infof("i: %+v", i)
 		case "zigbee_device":
-			i, err := i.inv.FetchZigbeeDevice(item)
+			i, err := i.Inventory.FetchZigbeeDevice(item)
 			if err != nil {
 				log.Error(err)
 			}
@@ -93,7 +92,7 @@ func (i *inventoryInteractive) executor(in string) {
 	}
 }
 
-func (i *inventoryInteractive) completer(d prompt.Document) []prompt.Suggest {
+func (i *InventoryInteractive) Completer(d prompt.Document) []prompt.Suggest {
 	blocks := strings.Split(d.CurrentLine(), " ")
 
 	objects := []prompt.Suggest{
@@ -163,8 +162,8 @@ func (i *inventoryInteractive) completer(d prompt.Document) []prompt.Suggest {
 
 	return []prompt.Suggest{}
 }
-func (i *inventoryInteractive) printNetworkHosts() {
-	results, err := i.inv.ListNetworkHosts()
+func (i *InventoryInteractive) printNetworkHosts() {
+	results, err := i.Inventory.ListNetworkHosts()
 	if err != nil {
 		log.Error(err)
 	}
@@ -212,8 +211,8 @@ func (i *inventoryInteractive) printNetworkHosts() {
 
 	table.Render()
 }
-func (i *inventoryInteractive) printL3Networks() {
-	results, err := i.inv.ListL3Networks()
+func (i *InventoryInteractive) printL3Networks() {
+	results, err := i.Inventory.ListL3Networks()
 	if err != nil {
 		log.Error(err)
 	}
@@ -253,8 +252,8 @@ func (i *inventoryInteractive) printL3Networks() {
 
 	table.Render()
 }
-func (i *inventoryInteractive) printZigbeeDevices() {
-	results, err := i.inv.ListZigbeeDevices()
+func (i *InventoryInteractive) printZigbeeDevices() {
+	results, err := i.Inventory.ListZigbeeDevices()
 	if err != nil {
 		log.Error(err)
 	}
@@ -308,9 +307,9 @@ func (i *inventoryInteractive) printZigbeeDevices() {
 
 	table.Render()
 }
-func (i *inventoryInteractive) suggestNetworkHost(d prompt.Document) []prompt.Suggest {
+func (i *InventoryInteractive) suggestNetworkHost(d prompt.Document) []prompt.Suggest {
 	sugg := []prompt.Suggest{}
-	results, err := i.inv.ListNetworkHosts()
+	results, err := i.Inventory.ListNetworkHosts()
 	if err != nil {
 		log.Error(err)
 		return []prompt.Suggest{}
@@ -323,7 +322,7 @@ func (i *inventoryInteractive) suggestNetworkHost(d prompt.Document) []prompt.Su
 	return prompt.FilterHasPrefix(sugg, d.GetWordBeforeCursor(), true)
 }
 
-func (i *inventoryInteractive) suggestNetworkHostAttributes(d prompt.Document) []prompt.Suggest {
+func (i *InventoryInteractive) suggestNetworkHostAttributes(d prompt.Document) []prompt.Suggest {
 	sugg := []prompt.Suggest{
 		{Text: "role"},
 		{Text: "group"},
@@ -338,8 +337,8 @@ func (i *inventoryInteractive) suggestNetworkHostAttributes(d prompt.Document) [
 	return prompt.FilterHasPrefix(sugg, d.GetWordBeforeCursor(), true)
 }
 
-func (i *inventoryInteractive) setNetworkHostAttribute(node, attr, val string) error {
-	x, err := i.inv.FetchNetworkHost(node)
+func (i *InventoryInteractive) setNetworkHostAttribute(node, attr, val string) error {
+	x, err := i.Inventory.FetchNetworkHost(node)
 	if err != nil {
 		return err
 	}
@@ -365,16 +364,16 @@ func (i *inventoryInteractive) setNetworkHostAttribute(node, attr, val string) e
 		x.Dn = val
 	}
 
-	x, err = i.inv.UpdateNetworkHost(x)
+	x, err = i.Inventory.UpdateNetworkHost(x)
 	if err != nil {
 		return err
 	}
 
 	return nil
 }
-func (i *inventoryInteractive) suggestL3Network(d prompt.Document) []prompt.Suggest {
+func (i *InventoryInteractive) suggestL3Network(d prompt.Document) []prompt.Suggest {
 	sugg := []prompt.Suggest{}
-	results, err := i.inv.ListL3Networks()
+	results, err := i.Inventory.ListL3Networks()
 	if err != nil {
 		log.Error(err)
 		return []prompt.Suggest{}
@@ -387,7 +386,7 @@ func (i *inventoryInteractive) suggestL3Network(d prompt.Document) []prompt.Sugg
 	return prompt.FilterHasPrefix(sugg, d.GetWordBeforeCursor(), true)
 }
 
-func (i *inventoryInteractive) suggestL3NetworkAttributes(d prompt.Document) []prompt.Suggest {
+func (i *InventoryInteractive) suggestL3NetworkAttributes(d prompt.Document) []prompt.Suggest {
 	sugg := []prompt.Suggest{
 		{Text: "name"},
 		{Text: "soa"},
@@ -398,8 +397,8 @@ func (i *inventoryInteractive) suggestL3NetworkAttributes(d prompt.Document) []p
 	return prompt.FilterHasPrefix(sugg, d.GetWordBeforeCursor(), true)
 }
 
-func (i *inventoryInteractive) setL3NetworkAttribute(node, attr, val string) error {
-	x, err := i.inv.FetchL3Network(node)
+func (i *InventoryInteractive) setL3NetworkAttribute(node, attr, val string) error {
+	x, err := i.Inventory.FetchL3Network(node)
 	if err != nil {
 		return err
 	}
@@ -417,16 +416,16 @@ func (i *inventoryInteractive) setL3NetworkAttribute(node, attr, val string) err
 		x.Description = val
 	}
 
-	x, err = i.inv.UpdateL3Network(x)
+	x, err = i.Inventory.UpdateL3Network(x)
 	if err != nil {
 		return err
 	}
 
 	return nil
 }
-func (i *inventoryInteractive) suggestZigbeeDevice(d prompt.Document) []prompt.Suggest {
+func (i *InventoryInteractive) suggestZigbeeDevice(d prompt.Document) []prompt.Suggest {
 	sugg := []prompt.Suggest{}
-	results, err := i.inv.ListZigbeeDevices()
+	results, err := i.Inventory.ListZigbeeDevices()
 	if err != nil {
 		log.Error(err)
 		return []prompt.Suggest{}
@@ -439,7 +438,7 @@ func (i *inventoryInteractive) suggestZigbeeDevice(d prompt.Document) []prompt.S
 	return prompt.FilterHasPrefix(sugg, d.GetWordBeforeCursor(), true)
 }
 
-func (i *inventoryInteractive) suggestZigbeeDeviceAttributes(d prompt.Document) []prompt.Suggest {
+func (i *InventoryInteractive) suggestZigbeeDeviceAttributes(d prompt.Document) []prompt.Suggest {
 	sugg := []prompt.Suggest{
 		{Text: "name"},
 		{Text: "description"},
@@ -457,8 +456,8 @@ func (i *inventoryInteractive) suggestZigbeeDeviceAttributes(d prompt.Document) 
 	return prompt.FilterHasPrefix(sugg, d.GetWordBeforeCursor(), true)
 }
 
-func (i *inventoryInteractive) setZigbeeDeviceAttribute(node, attr, val string) error {
-	x, err := i.inv.FetchZigbeeDevice(node)
+func (i *InventoryInteractive) setZigbeeDeviceAttribute(node, attr, val string) error {
+	x, err := i.Inventory.FetchZigbeeDevice(node)
 	if err != nil {
 		return err
 	}
@@ -490,7 +489,7 @@ func (i *inventoryInteractive) setZigbeeDeviceAttribute(node, attr, val string) 
 		x.ModelId = val
 	}
 
-	x, err = i.inv.UpdateZigbeeDevice(x)
+	x, err = i.Inventory.UpdateZigbeeDevice(x)
 	if err != nil {
 		return err
 	}

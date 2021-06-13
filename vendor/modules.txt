@@ -552,6 +552,8 @@ github.com/mpvl/unique
 github.com/nicolai86/scaleway-sdk
 # github.com/oklog/run v1.0.0
 github.com/oklog/run
+# github.com/olekukonko/tablewriter v0.0.0-20180130162743-b8a9be070da4
+github.com/olekukonko/tablewriter
 # github.com/oracle/oci-go-sdk v12.5.0+incompatible
 github.com/oracle/oci-go-sdk/common
 github.com/oracle/oci-go-sdk/common/auth
