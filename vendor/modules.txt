@@ -62,11 +62,6 @@ github.com/ProtonMail/go-crypto/openpgp/s2k
 github.com/StackExchange/wmi
 # github.com/acomagu/bufpipe v1.0.3
 github.com/acomagu/bufpipe
-# github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
-github.com/alecthomas/template
-github.com/alecthomas/template/parse
-# github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d
-github.com/alecthomas/units
 # github.com/aliyun/alibaba-cloud-sdk-go v0.0.0-20190620160927-9418d7b0cd0f
 github.com/aliyun/alibaba-cloud-sdk-go/sdk
 github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth
@@ -591,7 +586,6 @@ github.com/prometheus/client_model/go
 # github.com/prometheus/common v0.26.0
 github.com/prometheus/common/expfmt
 github.com/prometheus/common/internal/bitbucket.org/ww/goautoneg
-github.com/prometheus/common/log
 github.com/prometheus/common/model
 # github.com/prometheus/procfs v0.6.0
 github.com/prometheus/procfs
@@ -680,8 +674,6 @@ github.com/vmware/govmomi/vim25/types
 github.com/vmware/govmomi/vim25/xml
 # github.com/xanzy/ssh-agent v0.3.0
 github.com/xanzy/ssh-agent
-# github.com/xaque208/rftoy v0.0.0-20191203015236-4727b87c3461
-github.com/xaque208/rftoy/rftoy
 # github.com/ziutek/telnet v0.0.0-20180329124119-c3b780dc415b
 github.com/ziutek/telnet
 # go.etcd.io/bbolt v1.3.5
@@ -765,8 +757,6 @@ golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/plan9
 golang.org/x/sys/unix
 golang.org/x/sys/windows
-golang.org/x/sys/windows/registry
-golang.org/x/sys/windows/svc/eventlog
 # golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1
 golang.org/x/term
 # golang.org/x/text v0.3.5
@@ -929,8 +919,6 @@ google.golang.org/protobuf/types/known/fieldmaskpb
 google.golang.org/protobuf/types/known/structpb
 google.golang.org/protobuf/types/known/timestamppb
 google.golang.org/protobuf/types/known/wrapperspb
-# gopkg.in/alecthomas/kingpin.v2 v2.2.6
-gopkg.in/alecthomas/kingpin.v2
 # gopkg.in/inf.v0 v0.9.1
 gopkg.in/inf.v0
 # gopkg.in/ini.v1 v1.62.0
