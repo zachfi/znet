@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCompleter(t *testing.T) {
+func TestCompleter_Completer(t *testing.T) {
 	inv := &MockInventory{}
 
 	i := InventoryInteractive{
@@ -102,6 +102,50 @@ func TestCompleter(t *testing.T) {
 	for _, tc := range cases {
 		sugg := i.Completer(tc.document)
 		require.Equal(t, tc.results, sugg)
+	}
+}
+
+func TestCompleter_Executor(t *testing.T) {
+	inv := &MockInventory{}
+
+	i := &InventoryInteractive{
+		Inventory: inv,
+	}
+
+	inv.ListZigbeeDeviceResponse = []ZigbeeDevice{
+		{
+			Name: "0x0",
+		},
+	}
+
+	inv.FetchZigbeeDeviceResponse = &ZigbeeDevice{
+		Name: "0x0",
+	}
+
+	cases := []struct {
+		text string
+		mock MockInventory
+	}{
+		{
+			text: "set zigbee_device 0x0 vendor test",
+			mock: MockInventory{
+				FetchZigbeeDeviceCalls:  map[string]int{"0x0": 1},
+				UpdateZigbeeDeviceCalls: map[string]int{"0x0": 1},
+			},
+		},
+	}
+
+	// FetchZigbeeDeviceCalls    map[string]int
+	// FetchZigbeeDeviceResponse *ZigbeeDevice
+	// FetchZigbeeDeviceErr      error
+	// ListZigbeeDeviceResponse  []ZigbeeDevice
+	// ListZigbeeDeviceErr       error
+	// CreateZigbeeDeviceCalls   map[string]int
+
+	for _, tc := range cases {
+		i.Executor(tc.text)
+		require.Equal(t, tc.mock.FetchZigbeeDeviceCalls, inv.FetchZigbeeDeviceCalls)
+		require.Equal(t, tc.mock.UpdateZigbeeDeviceCalls, inv.UpdateZigbeeDeviceCalls)
 	}
 
 }

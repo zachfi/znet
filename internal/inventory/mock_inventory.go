@@ -2,48 +2,69 @@
 package inventory
 
 type MockInventory struct {
-	FetchNetworkHostCalls     map[string]int
-	FetchNetworkHostResponse  *NetworkHost
-	FetchNetworkHostErr       error
-	ListNetworkHostResponse   []NetworkHost
-	ListNetworkHostErr        error
-	CreateNetworkHostCalls    map[string]int
-	FetchNetworkIDCalls       map[string]int
-	FetchNetworkIDResponse    *NetworkID
-	FetchNetworkIDErr         error
-	ListNetworkIDResponse     []NetworkID
-	ListNetworkIDErr          error
-	CreateNetworkIDCalls      map[string]int
-	FetchL3NetworkCalls       map[string]int
-	FetchL3NetworkResponse    *L3Network
-	FetchL3NetworkErr         error
-	ListL3NetworkResponse     []L3Network
-	ListL3NetworkErr          error
-	CreateL3NetworkCalls      map[string]int
-	FetchInetNetworkCalls     map[string]int
-	FetchInetNetworkResponse  *InetNetwork
-	FetchInetNetworkErr       error
-	ListInetNetworkResponse   []InetNetwork
-	ListInetNetworkErr        error
-	CreateInetNetworkCalls    map[string]int
-	FetchInet6NetworkCalls    map[string]int
-	FetchInet6NetworkResponse *Inet6Network
-	FetchInet6NetworkErr      error
-	ListInet6NetworkResponse  []Inet6Network
-	ListInet6NetworkErr       error
-	CreateInet6NetworkCalls   map[string]int
-	FetchZigbeeDeviceCalls    map[string]int
-	FetchZigbeeDeviceResponse *ZigbeeDevice
-	FetchZigbeeDeviceErr      error
-	ListZigbeeDeviceResponse  []ZigbeeDevice
-	ListZigbeeDeviceErr       error
-	CreateZigbeeDeviceCalls   map[string]int
-	FetchIOTZoneCalls         map[string]int
-	FetchIOTZoneResponse      *IOTZone
-	FetchIOTZoneErr           error
-	ListIOTZoneResponse       []IOTZone
-	ListIOTZoneErr            error
-	CreateIOTZoneCalls        map[string]int
+	FetchNetworkHostCalls      map[string]int
+	FetchNetworkHostResponse   *NetworkHost
+	FetchNetworkHostErr        error
+	ListNetworkHostResponse    []NetworkHost
+	ListNetworkHostErr         error
+	CreateNetworkHostCalls     map[string]int
+	UpdateNetworkHostCalls     map[string]int
+	UpdateNetworkHostResponse  *NetworkHost
+	UpdateNetworkHostErr       error
+	FetchNetworkIDCalls        map[string]int
+	FetchNetworkIDResponse     *NetworkID
+	FetchNetworkIDErr          error
+	ListNetworkIDResponse      []NetworkID
+	ListNetworkIDErr           error
+	CreateNetworkIDCalls       map[string]int
+	UpdateNetworkIDCalls       map[string]int
+	UpdateNetworkIDResponse    *NetworkID
+	UpdateNetworkIDErr         error
+	FetchL3NetworkCalls        map[string]int
+	FetchL3NetworkResponse     *L3Network
+	FetchL3NetworkErr          error
+	ListL3NetworkResponse      []L3Network
+	ListL3NetworkErr           error
+	CreateL3NetworkCalls       map[string]int
+	UpdateL3NetworkCalls       map[string]int
+	UpdateL3NetworkResponse    *L3Network
+	UpdateL3NetworkErr         error
+	FetchInetNetworkCalls      map[string]int
+	FetchInetNetworkResponse   *InetNetwork
+	FetchInetNetworkErr        error
+	ListInetNetworkResponse    []InetNetwork
+	ListInetNetworkErr         error
+	CreateInetNetworkCalls     map[string]int
+	UpdateInetNetworkCalls     map[string]int
+	UpdateInetNetworkResponse  *InetNetwork
+	UpdateInetNetworkErr       error
+	FetchInet6NetworkCalls     map[string]int
+	FetchInet6NetworkResponse  *Inet6Network
+	FetchInet6NetworkErr       error
+	ListInet6NetworkResponse   []Inet6Network
+	ListInet6NetworkErr        error
+	CreateInet6NetworkCalls    map[string]int
+	UpdateInet6NetworkCalls    map[string]int
+	UpdateInet6NetworkResponse *Inet6Network
+	UpdateInet6NetworkErr      error
+	FetchZigbeeDeviceCalls     map[string]int
+	FetchZigbeeDeviceResponse  *ZigbeeDevice
+	FetchZigbeeDeviceErr       error
+	ListZigbeeDeviceResponse   []ZigbeeDevice
+	ListZigbeeDeviceErr        error
+	CreateZigbeeDeviceCalls    map[string]int
+	UpdateZigbeeDeviceCalls    map[string]int
+	UpdateZigbeeDeviceResponse *ZigbeeDevice
+	UpdateZigbeeDeviceErr      error
+	FetchIOTZoneCalls          map[string]int
+	FetchIOTZoneResponse       *IOTZone
+	FetchIOTZoneErr            error
+	ListIOTZoneResponse        []IOTZone
+	ListIOTZoneErr             error
+	CreateIOTZoneCalls         map[string]int
+	UpdateIOTZoneCalls         map[string]int
+	UpdateIOTZoneResponse      *IOTZone
+	UpdateIOTZoneErr           error
 }
 
 func (i *MockInventory) UpdateTimestamp(string, string) error {
@@ -83,9 +104,18 @@ func (i *MockInventory) ListNetworkHosts() ([]NetworkHost, error) {
 	return i.ListNetworkHostResponse, nil
 }
 
-func (i *MockInventory) UpdateNetworkHost(*NetworkHost) (*NetworkHost, error) {
+func (i *MockInventory) UpdateNetworkHost(x *NetworkHost) (*NetworkHost, error) {
+	if len(i.UpdateNetworkHostCalls) == 0 {
+		i.UpdateNetworkHostCalls = make(map[string]int)
+	}
 
-	return nil, nil
+	i.UpdateNetworkHostCalls[x.Name]++
+
+	if i.UpdateNetworkHostErr != nil {
+		return nil, i.UpdateNetworkHostErr
+	}
+
+	return i.UpdateNetworkHostResponse, nil
 }
 func (i *MockInventory) CreateNetworkID(x *NetworkID) (*NetworkID, error) {
 	if len(i.CreateNetworkIDCalls) == 0 {
@@ -120,9 +150,18 @@ func (i *MockInventory) ListNetworkIDs() ([]NetworkID, error) {
 	return i.ListNetworkIDResponse, nil
 }
 
-func (i *MockInventory) UpdateNetworkID(*NetworkID) (*NetworkID, error) {
+func (i *MockInventory) UpdateNetworkID(x *NetworkID) (*NetworkID, error) {
+	if len(i.UpdateNetworkIDCalls) == 0 {
+		i.UpdateNetworkIDCalls = make(map[string]int)
+	}
 
-	return nil, nil
+	i.UpdateNetworkIDCalls[x.Name]++
+
+	if i.UpdateNetworkIDErr != nil {
+		return nil, i.UpdateNetworkIDErr
+	}
+
+	return i.UpdateNetworkIDResponse, nil
 }
 func (i *MockInventory) CreateL3Network(x *L3Network) (*L3Network, error) {
 	if len(i.CreateL3NetworkCalls) == 0 {
@@ -157,9 +196,18 @@ func (i *MockInventory) ListL3Networks() ([]L3Network, error) {
 	return i.ListL3NetworkResponse, nil
 }
 
-func (i *MockInventory) UpdateL3Network(*L3Network) (*L3Network, error) {
+func (i *MockInventory) UpdateL3Network(x *L3Network) (*L3Network, error) {
+	if len(i.UpdateL3NetworkCalls) == 0 {
+		i.UpdateL3NetworkCalls = make(map[string]int)
+	}
 
-	return nil, nil
+	i.UpdateL3NetworkCalls[x.Name]++
+
+	if i.UpdateL3NetworkErr != nil {
+		return nil, i.UpdateL3NetworkErr
+	}
+
+	return i.UpdateL3NetworkResponse, nil
 }
 func (i *MockInventory) CreateInetNetwork(x *InetNetwork) (*InetNetwork, error) {
 	if len(i.CreateInetNetworkCalls) == 0 {
@@ -194,9 +242,18 @@ func (i *MockInventory) ListInetNetworks() ([]InetNetwork, error) {
 	return i.ListInetNetworkResponse, nil
 }
 
-func (i *MockInventory) UpdateInetNetwork(*InetNetwork) (*InetNetwork, error) {
+func (i *MockInventory) UpdateInetNetwork(x *InetNetwork) (*InetNetwork, error) {
+	if len(i.UpdateInetNetworkCalls) == 0 {
+		i.UpdateInetNetworkCalls = make(map[string]int)
+	}
 
-	return nil, nil
+	i.UpdateInetNetworkCalls[x.Name]++
+
+	if i.UpdateInetNetworkErr != nil {
+		return nil, i.UpdateInetNetworkErr
+	}
+
+	return i.UpdateInetNetworkResponse, nil
 }
 func (i *MockInventory) CreateInet6Network(x *Inet6Network) (*Inet6Network, error) {
 	if len(i.CreateInet6NetworkCalls) == 0 {
@@ -231,9 +288,18 @@ func (i *MockInventory) ListInet6Networks() ([]Inet6Network, error) {
 	return i.ListInet6NetworkResponse, nil
 }
 
-func (i *MockInventory) UpdateInet6Network(*Inet6Network) (*Inet6Network, error) {
+func (i *MockInventory) UpdateInet6Network(x *Inet6Network) (*Inet6Network, error) {
+	if len(i.UpdateInet6NetworkCalls) == 0 {
+		i.UpdateInet6NetworkCalls = make(map[string]int)
+	}
 
-	return nil, nil
+	i.UpdateInet6NetworkCalls[x.Name]++
+
+	if i.UpdateInet6NetworkErr != nil {
+		return nil, i.UpdateInet6NetworkErr
+	}
+
+	return i.UpdateInet6NetworkResponse, nil
 }
 func (i *MockInventory) CreateZigbeeDevice(x *ZigbeeDevice) (*ZigbeeDevice, error) {
 	if len(i.CreateZigbeeDeviceCalls) == 0 {
@@ -268,9 +334,18 @@ func (i *MockInventory) ListZigbeeDevices() ([]ZigbeeDevice, error) {
 	return i.ListZigbeeDeviceResponse, nil
 }
 
-func (i *MockInventory) UpdateZigbeeDevice(*ZigbeeDevice) (*ZigbeeDevice, error) {
+func (i *MockInventory) UpdateZigbeeDevice(x *ZigbeeDevice) (*ZigbeeDevice, error) {
+	if len(i.UpdateZigbeeDeviceCalls) == 0 {
+		i.UpdateZigbeeDeviceCalls = make(map[string]int)
+	}
 
-	return nil, nil
+	i.UpdateZigbeeDeviceCalls[x.Name]++
+
+	if i.UpdateZigbeeDeviceErr != nil {
+		return nil, i.UpdateZigbeeDeviceErr
+	}
+
+	return i.UpdateZigbeeDeviceResponse, nil
 }
 func (i *MockInventory) CreateIOTZone(x *IOTZone) (*IOTZone, error) {
 	if len(i.CreateIOTZoneCalls) == 0 {
@@ -305,7 +380,16 @@ func (i *MockInventory) ListIOTZones() ([]IOTZone, error) {
 	return i.ListIOTZoneResponse, nil
 }
 
-func (i *MockInventory) UpdateIOTZone(*IOTZone) (*IOTZone, error) {
+func (i *MockInventory) UpdateIOTZone(x *IOTZone) (*IOTZone, error) {
+	if len(i.UpdateIOTZoneCalls) == 0 {
+		i.UpdateIOTZoneCalls = make(map[string]int)
+	}
 
-	return nil, nil
+	i.UpdateIOTZoneCalls[x.Name]++
+
+	if i.UpdateIOTZoneErr != nil {
+		return nil, i.UpdateIOTZoneErr
+	}
+
+	return i.UpdateIOTZoneResponse, nil
 }
