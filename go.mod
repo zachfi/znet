@@ -4,7 +4,6 @@ go 1.13
 
 require (
 	github.com/amimof/huego v1.2.0
-	github.com/antchfx/htmlquery v1.2.3
 	github.com/blang/semver/v4 v4.0.0
 	github.com/c-bata/go-prompt v0.2.6
 	github.com/eclipse/paho.mqtt.golang v1.3.5
@@ -14,7 +13,6 @@ require (
 	github.com/hashicorp/vault v1.7.2
 	github.com/hashicorp/vault/api v1.1.0
 	github.com/hashicorp/vault/sdk v0.2.1-0.20210519002511-48c5544c77f4
-	github.com/iancoleman/strcase v0.1.3
 	github.com/imdario/mergo v0.3.12
 	github.com/jarcoal/httpmock v1.0.8 // indirect
 	github.com/johanbrandhorst/certify v1.8.1
@@ -32,7 +30,7 @@ require (
 	github.com/pelletier/go-toml v1.8.1 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.11.0
-	github.com/prometheus/common v0.26.0
+	github.com/prometheus/common v0.29.0
 	github.com/scottdware/go-junos v0.0.0-20200809143445-1805793fac10
 	github.com/sirupsen/logrus v1.8.0
 	github.com/smartystreets/assertions v1.0.0 // indirect
@@ -44,7 +42,6 @@ require (
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/crypto v0.0.0-20210421170649-83a5a9bb288b
 	golang.org/x/sys v0.0.0-20210611083646-a4fc73990273 // indirect
-	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/genproto v0.0.0-20201203001206-6486ece9c497 // indirect
 	google.golang.org/grpc v1.38.0
 	google.golang.org/protobuf v1.26.0
