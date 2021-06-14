@@ -171,85 +171,55 @@ func (i *LDAPInventory) ListNetworkHosts() ([]NetworkHost, error) {
 	// log.Tracef("search response: %+v", searchResult)
 
 	for _, e := range searchResult.Entries {
-		h := NetworkHost{}
+		h := NetworkHost{Dn: e.DN}
 
 		for _, a := range e.Attributes {
 			switch a.Name {
 			case "networkHostRole":
-				{
-					h.Role = stringValues(a)[0]
-				}
+				h.Role = stringValues(a)[0]
 			case "networkHostGroup":
-				{
-					h.Group = stringValues(a)[0]
-				}
+				h.Group = stringValues(a)[0]
 			case "cn":
-				{
-					h.Name = stringValues(a)[0]
-				}
+				h.Name = stringValues(a)[0]
 			case "networkHostOperatingSystem":
-				{
-					h.OperatingSystem = stringValues(a)[0]
-				}
+				h.OperatingSystem = stringValues(a)[0]
 			case "networkHostPlatform":
-				{
-					h.Platform = stringValues(a)[0]
-				}
+				h.Platform = stringValues(a)[0]
 			case "networkHostType":
-				{
-					h.Type = stringValues(a)[0]
-				}
+				h.Type = stringValues(a)[0]
 			case "networkHostDomain":
-				{
-					h.Domain = stringValues(a)[0]
-				}
+				h.Domain = stringValues(a)[0]
 			case "networkHostDescription":
-				{
-					h.Description = stringValues(a)[0]
-				}
+				h.Description = stringValues(a)[0]
 			case "networkHostWatch":
-				{
-					v := boolValues(a)[0]
-					h.Watch = v
-				}
+				v := boolValues(a)[0]
+				h.Watch = v
 			case "networkHostInetAddress":
-				{
-					attrs := []string{}
-					attrs = append(attrs, stringValues(a)...)
-					h.InetAddress = attrs
-				}
+				attrs := []string{}
+				attrs = append(attrs, stringValues(a)...)
+				h.InetAddress = attrs
 			case "networkHostInet6Address":
-				{
-					attrs := []string{}
-					attrs = append(attrs, stringValues(a)...)
-					h.Inet6Address = attrs
-				}
+				attrs := []string{}
+				attrs = append(attrs, stringValues(a)...)
+				h.Inet6Address = attrs
 			case "macAddress":
-				{
-					attrs := []string{}
-					attrs = append(attrs, stringValues(a)...)
-					h.MacAddress = attrs
-				}
+				attrs := []string{}
+				attrs = append(attrs, stringValues(a)...)
+				h.MacAddress = attrs
 			case "networkHostLastSeen":
-				{
-					attrs := []time.Time{}
+				attrs := []time.Time{}
 
-					for _, v := range stringValues(a) {
-						t, err := time.Parse(time.RFC3339, v)
-						if err != nil {
-							log.Errorf("unable to parse time: %s", err)
-							continue
-						}
-
-						attrs = append(attrs, t)
+				for _, v := range stringValues(a) {
+					t, err := time.Parse(time.RFC3339, v)
+					if err != nil {
+						log.Errorf("unable to parse time: %s", err)
+						continue
 					}
 
-					h.LastSeen = timestamppb.New(attrs[0])
+					attrs = append(attrs, t)
 				}
-			case "dn":
-				{
-					h.Dn = stringValues(a)[0]
-				}
+
+				h.LastSeen = timestamppb.New(attrs[0])
 			}
 		}
 
@@ -390,58 +360,42 @@ func (i *LDAPInventory) ListNetworkIDs() ([]NetworkID, error) {
 	// log.Tracef("search response: %+v", searchResult)
 
 	for _, e := range searchResult.Entries {
-		h := NetworkID{}
+		h := NetworkID{Dn: e.DN}
 
 		for _, a := range e.Attributes {
 			switch a.Name {
 			case "cn":
-				{
-					h.Name = stringValues(a)[0]
-				}
+				h.Name = stringValues(a)[0]
 			case "macAddress":
-				{
-					attrs := []string{}
-					attrs = append(attrs, stringValues(a)...)
-					h.MacAddress = attrs
-				}
+				attrs := []string{}
+				attrs = append(attrs, stringValues(a)...)
+				h.MacAddress = attrs
 			case "networkIdIpAddress":
-				{
-					attrs := []string{}
-					attrs = append(attrs, stringValues(a)...)
-					h.IpAddress = attrs
-				}
+				attrs := []string{}
+				attrs = append(attrs, stringValues(a)...)
+				h.IpAddress = attrs
 			case "networkIdReportingSource":
-				{
-					attrs := []string{}
-					attrs = append(attrs, stringValues(a)...)
-					h.ReportingSource = attrs
-				}
+				attrs := []string{}
+				attrs = append(attrs, stringValues(a)...)
+				h.ReportingSource = attrs
 			case "networkIdReportingSourceInterface":
-				{
-					attrs := []string{}
-					attrs = append(attrs, stringValues(a)...)
-					h.ReportingSourceInterface = attrs
-				}
+				attrs := []string{}
+				attrs = append(attrs, stringValues(a)...)
+				h.ReportingSourceInterface = attrs
 			case "networkIdLastSeen":
-				{
-					attrs := []time.Time{}
+				attrs := []time.Time{}
 
-					for _, v := range stringValues(a) {
-						t, err := time.Parse(time.RFC3339, v)
-						if err != nil {
-							log.Errorf("unable to parse time: %s", err)
-							continue
-						}
-
-						attrs = append(attrs, t)
+				for _, v := range stringValues(a) {
+					t, err := time.Parse(time.RFC3339, v)
+					if err != nil {
+						log.Errorf("unable to parse time: %s", err)
+						continue
 					}
 
-					h.LastSeen = timestamppb.New(attrs[0])
+					attrs = append(attrs, t)
 				}
-			case "dn":
-				{
-					h.Dn = stringValues(a)[0]
-				}
+
+				h.LastSeen = timestamppb.New(attrs[0])
 			}
 		}
 
@@ -580,42 +534,24 @@ func (i *LDAPInventory) ListL3Networks() ([]L3Network, error) {
 	// log.Tracef("search response: %+v", searchResult)
 
 	for _, e := range searchResult.Entries {
-		h := L3Network{}
+		h := L3Network{Dn: e.DN}
 
 		for _, a := range e.Attributes {
 			switch a.Name {
 			case "cn":
-				{
-					h.Name = stringValues(a)[0]
-				}
+				h.Name = stringValues(a)[0]
 			case "l3NetworkSoa":
-				{
-					h.Soa = stringValues(a)[0]
-				}
+				h.Soa = stringValues(a)[0]
 			case "l3NetworkDomain":
-				{
-					h.Domain = stringValues(a)[0]
-				}
+				h.Domain = stringValues(a)[0]
 			case "l3NetworkNtpServers":
-				{
-					attrs := []string{}
-					attrs = append(attrs, stringValues(a)...)
-					h.NtpServers = attrs
-				}
+				attrs := []string{}
+				attrs = append(attrs, stringValues(a)...)
+				h.NtpServers = attrs
 			case "l3NetworkInetNetwork":
-				{
-				}
 			case "l3NetworkInet6Network":
-				{
-				}
-			case "dn":
-				{
-					h.Dn = stringValues(a)[0]
-				}
 			case "l3NetworkDescription":
-				{
-					h.Description = stringValues(a)[0]
-				}
+				h.Description = stringValues(a)[0]
 			}
 		}
 
@@ -748,30 +684,18 @@ func (i *LDAPInventory) ListInetNetworks() ([]InetNetwork, error) {
 	// log.Tracef("search response: %+v", searchResult)
 
 	for _, e := range searchResult.Entries {
-		h := InetNetwork{}
+		h := InetNetwork{Dn: e.DN}
 
 		for _, a := range e.Attributes {
 			switch a.Name {
 			case "cn":
-				{
-					h.Name = stringValues(a)[0]
-				}
+				h.Name = stringValues(a)[0]
 			case "inetNetworkPrefix":
-				{
-					h.Prefix = stringValues(a)[0]
-				}
+				h.Prefix = stringValues(a)[0]
 			case "inetNetworkGateway":
-				{
-					h.Gateway = stringValues(a)[0]
-				}
+				h.Gateway = stringValues(a)[0]
 			case "inetNetworkDynamicRange":
-				{
-					h.DynamicRange = stringValues(a)[0]
-				}
-			case "dn":
-				{
-					h.Dn = stringValues(a)[0]
-				}
+				h.DynamicRange = stringValues(a)[0]
 			}
 		}
 
@@ -900,26 +824,16 @@ func (i *LDAPInventory) ListInet6Networks() ([]Inet6Network, error) {
 	// log.Tracef("search response: %+v", searchResult)
 
 	for _, e := range searchResult.Entries {
-		h := Inet6Network{}
+		h := Inet6Network{Dn: e.DN}
 
 		for _, a := range e.Attributes {
 			switch a.Name {
 			case "cn":
-				{
-					h.Name = stringValues(a)[0]
-				}
+				h.Name = stringValues(a)[0]
 			case "inet6NetworkPrefix":
-				{
-					h.Prefix = stringValues(a)[0]
-				}
+				h.Prefix = stringValues(a)[0]
 			case "inet6NetworkGateway":
-				{
-					h.Gateway = stringValues(a)[0]
-				}
-			case "dn":
-				{
-					h.Dn = stringValues(a)[0]
-				}
+				h.Gateway = stringValues(a)[0]
 			}
 		}
 
@@ -1084,74 +998,46 @@ func (i *LDAPInventory) ListZigbeeDevices() ([]ZigbeeDevice, error) {
 	// log.Tracef("search response: %+v", searchResult)
 
 	for _, e := range searchResult.Entries {
-		h := ZigbeeDevice{}
+		h := ZigbeeDevice{Dn: e.DN}
 
 		for _, a := range e.Attributes {
 			switch a.Name {
 			case "cn":
-				{
-					h.Name = stringValues(a)[0]
-				}
+				h.Name = stringValues(a)[0]
 			case "zigbeeDeviceDescription":
-				{
-					h.Description = stringValues(a)[0]
-				}
-			case "dn":
-				{
-					h.Dn = stringValues(a)[0]
-				}
+				h.Description = stringValues(a)[0]
 			case "zigbeeDeviceLastSeen":
-				{
-					attrs := []time.Time{}
+				attrs := []time.Time{}
 
-					for _, v := range stringValues(a) {
-						t, err := time.Parse(time.RFC3339, v)
-						if err != nil {
-							log.Errorf("unable to parse time: %s", err)
-							continue
-						}
-
-						attrs = append(attrs, t)
+				for _, v := range stringValues(a) {
+					t, err := time.Parse(time.RFC3339, v)
+					if err != nil {
+						log.Errorf("unable to parse time: %s", err)
+						continue
 					}
 
-					h.LastSeen = timestamppb.New(attrs[0])
+					attrs = append(attrs, t)
 				}
+
+				h.LastSeen = timestamppb.New(attrs[0])
 			case "zigbeeDeviceIotZone":
-				{
-					h.IotZone = stringValues(a)[0]
-				}
+				h.IotZone = stringValues(a)[0]
 			case "zigbeeDeviceType":
-				{
-					h.Type = stringValues(a)[0]
-				}
+				h.Type = stringValues(a)[0]
 			case "zigbeeDeviceSoftwareBuildId":
-				{
-					h.SoftwareBuildId = stringValues(a)[0]
-				}
+				h.SoftwareBuildId = stringValues(a)[0]
 			case "zigbeeDeviceDateCode":
-				{
-					h.DateCode = stringValues(a)[0]
-				}
+				h.DateCode = stringValues(a)[0]
 			case "zigbeeDeviceModel":
-				{
-					h.Model = stringValues(a)[0]
-				}
+				h.Model = stringValues(a)[0]
 			case "zigbeeDeviceVendor":
-				{
-					h.Vendor = stringValues(a)[0]
-				}
+				h.Vendor = stringValues(a)[0]
 			case "zigbeeDeviceManufacturerName":
-				{
-					h.ManufacturerName = stringValues(a)[0]
-				}
+				h.ManufacturerName = stringValues(a)[0]
 			case "zigbeeDevicePowerSource":
-				{
-					h.PowerSource = stringValues(a)[0]
-				}
+				h.PowerSource = stringValues(a)[0]
 			case "zigbeeDeviceModelId":
-				{
-					h.ModelId = stringValues(a)[0]
-				}
+				h.ModelId = stringValues(a)[0]
 			}
 		}
 
@@ -1276,22 +1162,14 @@ func (i *LDAPInventory) ListIOTZones() ([]IOTZone, error) {
 	// log.Tracef("search response: %+v", searchResult)
 
 	for _, e := range searchResult.Entries {
-		h := IOTZone{}
+		h := IOTZone{Dn: e.DN}
 
 		for _, a := range e.Attributes {
 			switch a.Name {
 			case "cn":
-				{
-					h.Name = stringValues(a)[0]
-				}
+				h.Name = stringValues(a)[0]
 			case "iotZoneDescription":
-				{
-					h.Description = stringValues(a)[0]
-				}
-			case "dn":
-				{
-					h.Dn = stringValues(a)[0]
-				}
+				h.Description = stringValues(a)[0]
 			}
 		}
 

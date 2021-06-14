@@ -1,7 +1,0 @@
----
-endpoint: 'http://rftoy1.example.com'
-rooms:
-  - name: living
-    ids: [4,5,6]
-  - name: porch
-    ids: [8,9]

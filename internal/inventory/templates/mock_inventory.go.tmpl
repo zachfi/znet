@@ -14,6 +14,9 @@ type MockInventory struct {
   List{{.GetName}}Response []{{.GetName}}
   List{{.GetName}}Err error
   Create{{.GetName}}Calls map[string]int
+  Update{{.GetName}}Calls map[string]int
+  Update{{.GetName}}Response *{{.GetName}}
+  Update{{.GetName}}Err error
         {{- end }}
     {{- end }}
 }
@@ -59,9 +62,18 @@ func (i *MockInventory) List{{.GetName}}s() ([]{{.GetName}}, error) {
   return i.List{{.GetName}}Response, nil
 }
 
-func (i *MockInventory) Update{{.GetName}}(*{{.GetName}}) (*{{.GetName}}, error) {
+func (i *MockInventory) Update{{.GetName}}(x *{{.GetName}}) (*{{.GetName}}, error) {
+  if len(i.Update{{.GetName}}Calls) == 0 {
+    i.Update{{.GetName}}Calls = make(map[string]int)
+  }
 
-  return nil, nil
+  i.Update{{.GetName}}Calls[x.Name]++
+
+  if i.Update{{.GetName}}Err != nil {
+    return nil, i.Update{{.GetName}}Err
+  }
+
+  return i.Update{{.GetName}}Response, nil
 }
 
         {{- end }}

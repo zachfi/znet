@@ -6,7 +6,6 @@ import "fmt"
 type LightsConfig struct {
 	Rooms       []LightsRoom `yaml:"rooms"`
 	Hue         *HueConfig   `yaml:"hue,omitempty"`
-	RFToy       *RFToyConfig `yaml:"rftoy,omitempty"`
 	PartyColors []string     `yaml:"party_colors,omitempty"`
 }
 
@@ -28,11 +27,6 @@ type LightsRoom struct {
 type HueConfig struct {
 	Endpoint string `yaml:"endpoint"`
 	User     string `yaml:"user"`
-}
-
-// RFToyConfig is the configuration for an RFToy device.
-type RFToyConfig struct {
-	Endpoint string `yaml:"endpoint,omitempty"`
 }
 
 // Room return the Room object for a room given by name.

@@ -12,23 +12,22 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-{{/* The resulting Go code, not the template here */}}
-{{- $messages := list "Inet6Network" "InetNetwork" "L3Network" "NetworkHost" "NetworkID" "ZigbeeDevice" "IOTZone" }}
-    {{- range .File.MessageType }}
-      {{- if has .GetName $messages }}
-{{- $typename := (.GetName|snakeCase)}}
+	{{- $messages := list "Inet6Network" "InetNetwork" "L3Network" "NetworkHost" "NetworkID" "ZigbeeDevice" "IOTZone" }}
+	{{- range .File.MessageType }}
+		{{- if has .GetName $messages }}
+			{{- $typename := (.GetName|snakeCase)}}
 
 var default{{.GetName}}Attributes = []string{
 	{{- range $i, $message := .GetField }}
-    {{- $attr := list $typename (.GetJsonName |snakeCase) | join "_" | lowerCamelCase}}
-    {{- if has .GetJsonName (list "cn" "macAddress" "dn") }}
+		{{- $attr := list $typename (.GetJsonName |snakeCase) | join "_" | lowerCamelCase}}
+		{{- if has .GetJsonName (list "cn" "macAddress" "dn") }}
 	"{{.GetJsonName}}",
-    {{- else if has .GetJsonName (list "name") }}
-      "cn",
-    {{- else }}
-	"{{$attr}}",
-    {{- end }}
-  {{- end }}
+		{{- else if has .GetJsonName (list "name") }}
+	"cn",
+		{{- else }}
+			"{{$attr}}",
+		{{- end }}
+	{{- end }}
 }
 
 // Create{{.GetName}} creates a new LDAP entry by the received name.
@@ -140,22 +139,22 @@ func (i *LDAPInventory) Update{{.GetName}}(x *{{.GetName}}) (*{{.GetName}}, erro
 
 // Fetch{{.GetName}} will retrieve a {{.GetName}} by name.
 func (i *LDAPInventory) Fetch{{.GetName}}(name string) (*{{.GetName}}, error) {
-  {{- $varname := .GetName|snakeCase|lowerCamelCase}}
+	{{- $varname := .GetName|snakeCase|lowerCamelCase}}
 
-  results, err := i.List{{.GetName}}s()
-  if err != nil {
-    return nil, err
-  }
+	results, err := i.List{{.GetName}}s()
+	if err != nil {
+		return nil, err
+	}
 
-  if results != nil {
-    for _, x := range results {
-      if x.Name == name {
-        return &x, nil
-      }
-    }
-  }
+	if results != nil {
+		for _, x := range results {
+			if x.Name == name {
+				return &x, nil
+			}
+		}
+	}
 
-  return nil, fmt.Errorf("{{$varname}} not found: %s", name)
+	return nil, fmt.Errorf("{{$varname}} not found: %s", name)
 }
 
 // List{{.GetName}}s retrieves all existing LDAP entries.
@@ -196,13 +195,13 @@ func (i *LDAPInventory) List{{.GetName}}s() ([]{{.GetName}}, error) {
 	// log.Tracef("search response: %+v", searchResult)
 
 	for _, e := range searchResult.Entries {
-		h := {{.GetName}}{}
+		h := {{.GetName}}{Dn: e.DN}
 
 		for _, a := range e.Attributes {
 			switch a.Name {
 
-  {{- range $i, $message := .GetField }}
-    {{- $attr := list $typename (.GetJsonName |snakeCase) | join "_" | lowerCamelCase}}
+	{{- range $i, $message := .GetField }}
+		{{- $attr := list $typename (.GetJsonName |snakeCase) | join "_" | lowerCamelCase}}
 		{{- $method := "" }}
 		{{- if eq .GetLabel.String "REPEATED" }}
       {{- /* TODO Trying to work out the details here about type references */}}
@@ -210,51 +209,55 @@ func (i *LDAPInventory) List{{.GetName}}s() ([]{{.GetName}}, error) {
 		{{- else }}
 			{{- $method = "Replace" }}
 		{{- end }}
-      {{- if has .GetJsonName (list "macAddress" "dn")}}
+		{{- if has .GetJsonName (list "macAddress")}}
 			case "{{.GetJsonName}}":
-      {{- else if has .GetJsonName (list "name")}}
+		{{- else if has .GetJsonName (list "dn")}}
+		{{- else if has .GetJsonName (list "name")}}
 			case "cn":
-      {{- else }}
+		{{- else }}
 			case "{{$attr}}":
-      {{- end }}
-				{
-    {{- if eq .GetType.String "TYPE_STRING" }}
-        {{- if eq .GetLabel.String "LABEL_REPEATED" }}
-					attrs := []string{}
-					attrs = append(attrs, stringValues(a)...)
-					h.{{.GetName | camelCase}} = attrs
-        {{- else }}
+		{{- end }}
+
+		{{- if eq .GetType.String "TYPE_STRING" }}
+			{{- if eq .GetLabel.String "LABEL_REPEATED" }}
+				attrs := []string{}
+				attrs = append(attrs, stringValues(a)...)
+				h.{{.GetName | camelCase}} = attrs
+			{{- else }}
+				{{- if has .GetJsonName (list "dn")}}
+				{{- else }}
 					h.{{.GetName | camelCase}} = stringValues(a)[0]
-        {{- end }}
-    {{- else if eq .GetType.String "TYPE_BOOL" }}
-        {{- if eq .GetLabel.String "LABEL_REPEATED" }}
-					attrs := []string{}
-					attrs = append(attrs, boolValues(a)...)
-					h.{{.GetName | camelCase}} = attrs
-        {{- else }}
-          v := boolValues(a)[0]
-          h.{{.GetName | camelCase}} = v
-        {{- end }}
+				{{- end }}
+			{{- end }}
+		{{- else if eq .GetType.String "TYPE_BOOL" }}
+			{{- if eq .GetLabel.String "LABEL_REPEATED" }}
+				attrs := []string{}
+				attrs = append(attrs, boolValues(a)...)
+				h.{{.GetName | camelCase}} = attrs
+			{{- else }}
+				v := boolValues(a)[0]
+				h.{{.GetName | camelCase}} = v
+			{{- end }}
 		{{- else if eq .GetType.String "TYPE_MESSAGE" }}
 			{{- if eq .GetTypeName ".google.protobuf.Timestamp" }}
-					attrs := []time.Time{}
+				attrs := []time.Time{}
 
-          for _, v := range stringValues(a) {
-            t, err := time.Parse(time.RFC3339, v)
-            if err != nil {
-              log.Errorf("unable to parse time: %s", err)
-              continue
-            }
+				for _, v := range stringValues(a) {
+					t, err := time.Parse(time.RFC3339, v)
+					if err != nil {
+						log.Errorf("unable to parse time: %s", err)
+						continue
+					}
 
-            attrs = append(attrs, t)
-          }
+					attrs = append(attrs, t)
+				}
 
-					h.{{.GetName | camelCase}} = timestamppb.New(attrs[0])
+				h.{{.GetName | camelCase}} = timestamppb.New(attrs[0])
 			{{- end }}
 		{{- else }}
-          // unknown attribute type: {{.GetType}}
-    {{- end }}
-				}
+		// unknown attribute type: {{.GetType}}
+		{{- end }}
+
   {{- end }}
 			}
 		}
