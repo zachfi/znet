@@ -18,31 +18,24 @@ require (
 	github.com/johanbrandhorst/certify v1.8.1
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 	github.com/lib/pq v1.9.0 // indirect
-	github.com/magiconair/properties v1.8.4 // indirect
 	github.com/mattn/go-isatty v0.0.13 // indirect
 	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/mitchellh/mapstructure v1.4.0 // indirect
 	github.com/mpvl/unique v0.0.0-20150818121801-cbe035fff7de
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo v1.14.2 // indirect
 	github.com/onsi/gomega v1.10.4 // indirect
-	github.com/pelletier/go-toml v1.8.1 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.11.0
 	github.com/prometheus/common v0.29.0
 	github.com/scottdware/go-junos v0.0.0-20200809143445-1805793fac10
 	github.com/sirupsen/logrus v1.8.0
 	github.com/smartystreets/assertions v1.0.0 // indirect
-	github.com/spf13/afero v1.5.1 // indirect
-	github.com/spf13/cast v1.3.1 // indirect
 	github.com/spf13/cobra v1.1.3
-	github.com/spf13/jwalterweatherman v1.1.0 // indirect
-	github.com/spf13/viper v1.7.1
+	github.com/spf13/viper v1.8.0
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a
 	golang.org/x/sys v0.0.0-20210611083646-a4fc73990273 // indirect
-	google.golang.org/genproto v0.0.0-20201203001206-6486ece9c497 // indirect
 	google.golang.org/grpc v1.38.0
 	google.golang.org/protobuf v1.26.0
 	gopkg.in/ini.v1 v1.62.0

@@ -1,4 +1,4 @@
-# cloud.google.com/go v0.65.0
+# cloud.google.com/go v0.81.0
 cloud.google.com/go/compute/metadata
 cloud.google.com/go/iam
 cloud.google.com/go/kms/apiv1
@@ -248,7 +248,7 @@ github.com/go-ole/go-ole/oleutil
 github.com/go-sql-driver/mysql
 # github.com/go-test/deep v1.0.7
 github.com/go-test/deep
-# github.com/gogo/protobuf v1.3.1
+# github.com/gogo/protobuf v1.3.2
 github.com/gogo/protobuf/proto
 github.com/gogo/protobuf/sortkeys
 # github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e
@@ -505,7 +505,7 @@ github.com/linode/linodego
 # github.com/magefile/mage v1.10.0
 github.com/magefile/mage/mg
 github.com/magefile/mage/sh
-# github.com/magiconair/properties v1.8.4
+# github.com/magiconair/properties v1.8.5
 github.com/magiconair/properties
 # github.com/mattn/go-colorable v0.1.8
 github.com/mattn/go-colorable
@@ -527,7 +527,7 @@ github.com/mitchellh/copystructure
 github.com/mitchellh/go-homedir
 # github.com/mitchellh/go-testing-interface v1.14.0
 github.com/mitchellh/go-testing-interface
-# github.com/mitchellh/mapstructure v1.4.0
+# github.com/mitchellh/mapstructure v1.4.1
 github.com/mitchellh/mapstructure
 # github.com/mitchellh/reflectwalk v1.0.1
 github.com/mitchellh/reflectwalk
@@ -551,7 +551,7 @@ github.com/oracle/oci-go-sdk/keymanagement
 github.com/packethost/packngo
 # github.com/patrickmn/go-cache v2.1.0+incompatible
 github.com/patrickmn/go-cache
-# github.com/pelletier/go-toml v1.8.1
+# github.com/pelletier/go-toml v1.9.3
 github.com/pelletier/go-toml
 # github.com/petermattis/goid v0.0.0-20180202154549-b0b1615b78e5
 github.com/petermattis/goid
@@ -623,7 +623,7 @@ github.com/softlayer/softlayer-go/filter
 github.com/softlayer/softlayer-go/services
 github.com/softlayer/softlayer-go/session
 github.com/softlayer/softlayer-go/sl
-# github.com/spf13/afero v1.5.1
+# github.com/spf13/afero v1.6.0
 github.com/spf13/afero
 github.com/spf13/afero/mem
 # github.com/spf13/cast v1.3.1
@@ -634,7 +634,7 @@ github.com/spf13/cobra
 github.com/spf13/jwalterweatherman
 # github.com/spf13/pflag v1.0.5
 github.com/spf13/pflag
-# github.com/spf13/viper v1.7.1
+# github.com/spf13/viper v1.8.0
 github.com/spf13/viper
 # github.com/stretchr/testify v1.7.0
 github.com/stretchr/testify/assert
@@ -672,7 +672,7 @@ github.com/xanzy/ssh-agent
 github.com/ziutek/telnet
 # go.etcd.io/bbolt v1.3.5
 go.etcd.io/bbolt
-# go.opencensus.io v0.22.4
+# go.opencensus.io v0.23.0
 go.opencensus.io
 go.opencensus.io/internal
 go.opencensus.io/internal/tagencoding
@@ -690,7 +690,7 @@ go.opencensus.io/trace
 go.opencensus.io/trace/internal
 go.opencensus.io/trace/propagation
 go.opencensus.io/trace/tracestate
-# go.uber.org/atomic v1.6.0
+# go.uber.org/atomic v1.7.0
 go.uber.org/atomic
 # golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a
 golang.org/x/crypto/blake2b
@@ -764,12 +764,13 @@ golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 # golang.org/x/time v0.0.0-20200630173020-3af7569d3a1e
 golang.org/x/time/rate
-# google.golang.org/api v0.30.0
+# google.golang.org/api v0.44.0
 google.golang.org/api/compute/v1
 google.golang.org/api/googleapi
 google.golang.org/api/googleapi/transport
 google.golang.org/api/internal
 google.golang.org/api/internal/gensupport
+google.golang.org/api/internal/impersonate
 google.golang.org/api/internal/third_party/uritemplates
 google.golang.org/api/iterator
 google.golang.org/api/option
@@ -778,7 +779,8 @@ google.golang.org/api/transport/cert
 google.golang.org/api/transport/grpc
 google.golang.org/api/transport/http
 google.golang.org/api/transport/http/internal/propagation
-# google.golang.org/appengine v1.6.6
+google.golang.org/api/transport/internal/dca
+# google.golang.org/appengine v1.6.7
 google.golang.org/appengine
 google.golang.org/appengine/internal
 google.golang.org/appengine/internal/app_identity
@@ -791,7 +793,7 @@ google.golang.org/appengine/internal/socket
 google.golang.org/appengine/internal/urlfetch
 google.golang.org/appengine/socket
 google.golang.org/appengine/urlfetch
-# google.golang.org/genproto v0.0.0-20201203001206-6486ece9c497
+# google.golang.org/genproto v0.0.0-20210602131652-f16073e35f0c
 google.golang.org/genproto/googleapis/api
 google.golang.org/genproto/googleapis/api/annotations
 google.golang.org/genproto/googleapis/api/distribution
