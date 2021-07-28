@@ -11,8 +11,8 @@ require (
 	github.com/go-ldap/ldap/v3 v3.3.0
 	github.com/golang/protobuf v1.5.2
 	github.com/hashicorp/vault v1.7.3
-	github.com/hashicorp/vault/api v1.1.0
-	github.com/hashicorp/vault/sdk v0.2.1-0.20210614231108-a35199734e5f
+	github.com/hashicorp/vault/api v1.1.1
+	github.com/hashicorp/vault/sdk v0.2.1
 	github.com/imdario/mergo v0.3.12
 	github.com/jarcoal/httpmock v1.0.8 // indirect
 	github.com/johanbrandhorst/certify v1.8.1
