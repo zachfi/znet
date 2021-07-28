@@ -5,7 +5,7 @@ go 1.15
 require (
 	github.com/Masterminds/sprig/v3 v3.2.2
 	github.com/client9/misspell v0.3.4
-	github.com/git-chglog/git-chglog v0.14.2
+	github.com/git-chglog/git-chglog v0.15.0
 	github.com/golangci/golangci-lint v1.41.1
 	github.com/goreleaser/goreleaser v0.170.0
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0 // indirect
