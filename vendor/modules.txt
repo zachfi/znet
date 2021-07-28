@@ -145,6 +145,8 @@ github.com/c-bata/go-prompt/internal/bisect
 github.com/c-bata/go-prompt/internal/debug
 github.com/c-bata/go-prompt/internal/strings
 github.com/c-bata/go-prompt/internal/term
+# github.com/cenkalti/backoff/v3 v3.0.0
+github.com/cenkalti/backoff/v3
 # github.com/cespare/xxhash/v2 v2.1.1
 github.com/cespare/xxhash/v2
 # github.com/circonus-labs/circonus-gometrics v2.3.1+incompatible
@@ -258,7 +260,6 @@ github.com/golang/protobuf/proto
 github.com/golang/protobuf/ptypes
 github.com/golang/protobuf/ptypes/any
 github.com/golang/protobuf/ptypes/duration
-github.com/golang/protobuf/ptypes/struct
 github.com/golang/protobuf/ptypes/timestamp
 # github.com/golang/snappy v0.0.2
 github.com/golang/snappy
@@ -409,9 +410,9 @@ github.com/hashicorp/vault/vault/cluster
 github.com/hashicorp/vault/vault/quotas
 github.com/hashicorp/vault/vault/replication
 github.com/hashicorp/vault/vault/seal
-# github.com/hashicorp/vault/api v1.1.0
+# github.com/hashicorp/vault/api v1.1.1
 github.com/hashicorp/vault/api
-# github.com/hashicorp/vault/sdk v0.2.1-0.20210614231108-a35199734e5f
+# github.com/hashicorp/vault/sdk v0.2.1
 github.com/hashicorp/vault/sdk/database/dbplugin
 github.com/hashicorp/vault/sdk/database/dbplugin/v5
 github.com/hashicorp/vault/sdk/database/dbplugin/v5/proto
