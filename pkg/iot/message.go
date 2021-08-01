@@ -5,9 +5,11 @@ import (
 )
 
 type ZigbeeMessage struct {
-	Battery     int    `json:"battery,omitempty"`
-	LinkQuality int    `json:"linkquality,omitempty"`
 	Action      string `json:"action,omitempty"`
+	Battery     int    `json:"battery,omitempty"`
+	Illuminance int    `json:"illuminance,omitempty"`
+	LinkQuality int    `json:"linkquality,omitempty"`
+	Occupancy   bool   `json:"occupancy,omitempty"`
 	Voltage     int    `json:"voltage,omitempty"`
 }
 
