@@ -296,7 +296,7 @@ func (l *Server) ReportIOTDevice(ctx context.Context, request *inventory.IOTDevi
 
 func (l *Server) SetIOTServer(iotServer *iot.Server) error {
 	if l.iotServer != nil {
-		log.Debugf("replaceing iotServer on telemetryServer")
+		log.Debugf("replacing iotServer on telemetryServer")
 	}
 
 	l.iotServer = iotServer
@@ -374,8 +374,9 @@ func (l *Server) handleZigbeeReport(request *inventory.IOTDevice) error {
 
 		result, err := l.inventory.FetchZigbeeDevice(x.Name)
 		if err != nil {
-			log.Error(err)
-			_, err = l.inventory.CreateZigbeeDevice(x)
+			log.Warn(err)
+
+			result, err = l.inventory.CreateZigbeeDevice(x)
 			if err != nil {
 				return err
 			}
