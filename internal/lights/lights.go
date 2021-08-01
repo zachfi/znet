@@ -55,7 +55,7 @@ func (l *Lights) ActionHandler(action *iot.Action) error {
 
 	room := l.getRoom(action.Zone)
 	if room == nil {
-		return ErrRoomNotFound
+		return fmt.Errorf("%w: %s", ErrRoomNotFound, action.Zone)
 	}
 
 	log.WithFields(log.Fields{
