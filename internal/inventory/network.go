@@ -39,7 +39,7 @@ func (i *LDAPInventory) CreateNetworkHost(x *NetworkHost) (*NetworkHost, error) 
 
 	var err error
 
-	dn := fmt.Sprintf("cn=%s,ou=network,%s", x.Name, i.config.BaseDN)
+	dn := fmt.Sprintf("cn=%s,ou=network,ou=zigbee,%s", x.Name, i.config.BaseDN)
 	x.Dn = dn
 
 	a := ldap.NewAddRequest(dn, []ldap.Control{})
@@ -250,7 +250,7 @@ func (i *LDAPInventory) CreateNetworkID(x *NetworkID) (*NetworkID, error) {
 
 	var err error
 
-	dn := fmt.Sprintf("cn=%s,ou=network,%s", x.Name, i.config.BaseDN)
+	dn := fmt.Sprintf("cn=%s,ou=network,ou=zigbee,%s", x.Name, i.config.BaseDN)
 	x.Dn = dn
 
 	a := ldap.NewAddRequest(dn, []ldap.Control{})
@@ -427,7 +427,7 @@ func (i *LDAPInventory) CreateL3Network(x *L3Network) (*L3Network, error) {
 
 	var err error
 
-	dn := fmt.Sprintf("cn=%s,ou=network,%s", x.Name, i.config.BaseDN)
+	dn := fmt.Sprintf("cn=%s,ou=network,ou=zigbee,%s", x.Name, i.config.BaseDN)
 	x.Dn = dn
 
 	a := ldap.NewAddRequest(dn, []ldap.Control{})
@@ -580,7 +580,7 @@ func (i *LDAPInventory) CreateInetNetwork(x *InetNetwork) (*InetNetwork, error) 
 
 	var err error
 
-	dn := fmt.Sprintf("cn=%s,ou=network,%s", x.Name, i.config.BaseDN)
+	dn := fmt.Sprintf("cn=%s,ou=network,ou=zigbee,%s", x.Name, i.config.BaseDN)
 	x.Dn = dn
 
 	a := ldap.NewAddRequest(dn, []ldap.Control{})
@@ -723,7 +723,7 @@ func (i *LDAPInventory) CreateInet6Network(x *Inet6Network) (*Inet6Network, erro
 
 	var err error
 
-	dn := fmt.Sprintf("cn=%s,ou=network,%s", x.Name, i.config.BaseDN)
+	dn := fmt.Sprintf("cn=%s,ou=network,ou=zigbee,%s", x.Name, i.config.BaseDN)
 	x.Dn = dn
 
 	a := ldap.NewAddRequest(dn, []ldap.Control{})
@@ -870,7 +870,7 @@ func (i *LDAPInventory) CreateZigbeeDevice(x *ZigbeeDevice) (*ZigbeeDevice, erro
 
 	var err error
 
-	dn := fmt.Sprintf("cn=%s,ou=network,%s", x.Name, i.config.BaseDN)
+	dn := fmt.Sprintf("cn=%s,ou=network,ou=zigbee,%s", x.Name, i.config.BaseDN)
 	x.Dn = dn
 
 	a := ldap.NewAddRequest(dn, []ldap.Control{})
@@ -1064,7 +1064,7 @@ func (i *LDAPInventory) CreateIOTZone(x *IOTZone) (*IOTZone, error) {
 
 	var err error
 
-	dn := fmt.Sprintf("cn=%s,ou=network,%s", x.Name, i.config.BaseDN)
+	dn := fmt.Sprintf("cn=%s,ou=network,ou=zigbee,%s", x.Name, i.config.BaseDN)
 	x.Dn = dn
 
 	a := ldap.NewAddRequest(dn, []ldap.Control{})
