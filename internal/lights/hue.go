@@ -229,7 +229,7 @@ func (l hueLight) getGroup(groupName string) (*huego.Group, error) {
 		}
 	}
 
-	return &huego.Group{}, fmt.Errorf("group %s not found", groupName)
+	return &huego.Group{}, fmt.Errorf("hue group %s not found", groupName)
 }
 
 // getLight calls the Hue bridge and looks for a light, that, when normalized,
@@ -251,5 +251,5 @@ func (l hueLight) getLight(lightName string) (*huego.Light, error) {
 
 	}
 
-	return &huego.Light{}, fmt.Errorf("light %s not found", lightName)
+	return &huego.Light{}, fmt.Errorf("hue light %s not found", lightName)
 }
