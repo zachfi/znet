@@ -120,13 +120,6 @@ func (s *Server) startRPCListener() error {
 		return err
 	}
 
-	hue, err := lights.NewHueLight(s.config.Lights)
-	if err != nil {
-		log.Error(err)
-	} else {
-		lightsServer.AddHandler(hue)
-	}
-
 	zigbee, err := lights.NewZigbeeLight(s.config, s.mqttClient, s.invClient)
 	if err != nil {
 		log.Error(err)
