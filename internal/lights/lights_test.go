@@ -334,7 +334,9 @@ func TestActionHandler(t *testing.T) {
 		l.AddHandler(h)
 
 		err = l.ActionHandler(tc.action)
-		require.Equal(t, tc.err, err)
+		if tc.err != nil {
+			require.Contains(t, err.Error(), tc.err.Error())
+		}
 
 		require.Equal(t, tc.mock, h)
 	}
