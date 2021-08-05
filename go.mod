@@ -9,7 +9,7 @@ require (
 	github.com/eclipse/paho.mqtt.golang v1.3.5
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/go-ldap/ldap/v3 v3.3.0
-	github.com/hashicorp/vault v1.8.0
+	github.com/hashicorp/vault v1.8.1
 	github.com/hashicorp/vault/api v1.1.2-0.20210713235431-1fc8af4c041f
 	github.com/hashicorp/vault/sdk v0.2.2-0.20210713235431-1fc8af4c041f
 	github.com/imdario/mergo v0.3.12
