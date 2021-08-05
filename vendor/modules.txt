@@ -388,7 +388,7 @@ github.com/hashicorp/raft-autopilot
 github.com/hashicorp/raft-boltdb/v2
 # github.com/hashicorp/raft-snapshot v1.0.3
 github.com/hashicorp/raft-snapshot
-# github.com/hashicorp/vault v1.8.0
+# github.com/hashicorp/vault v1.8.1
 github.com/hashicorp/vault/audit
 github.com/hashicorp/vault/builtin/plugin
 github.com/hashicorp/vault/command/server
