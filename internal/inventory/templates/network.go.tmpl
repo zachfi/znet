@@ -43,7 +43,7 @@ func (i *LDAPInventory) Create{{.GetName}}(x *{{.GetName}}) (*{{.GetName}}, erro
 
   var err error
 
-	dn := fmt.Sprintf("cn=%s,ou=network,ou=zigbee,%s", x.Name, i.config.BaseDN)
+	dn := fmt.Sprintf("cn=%s,ou=zigbee,ou=network,%s", x.Name, i.config.BaseDN)
   x.Dn = dn
 
 	a := ldap.NewAddRequest(dn, []ldap.Control{})
