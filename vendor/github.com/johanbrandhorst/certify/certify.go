@@ -99,11 +99,12 @@ func (c *Certify) GetCertificate(hello *tls.ClientHelloInfo) (cert *tls.Certific
 		name = strings.Split(name, ":")[0]
 	}
 
-	return c.getOrRenewCert(name)
+	ctx := getRequestContext(hello)
+	return c.getOrRenewCert(ctx, name)
 }
 
 // GetClientCertificate implements the GetClientCertificate TLS config hook.
-func (c *Certify) GetClientCertificate(_ *tls.CertificateRequestInfo) (cert *tls.Certificate, err error) {
+func (c *Certify) GetClientCertificate(cri *tls.CertificateRequestInfo) (cert *tls.Certificate, err error) {
 	c.initOnce.Do(c.init)
 	defer func() {
 		if err != nil {
@@ -113,11 +114,12 @@ func (c *Certify) GetClientCertificate(_ *tls.CertificateRequestInfo) (cert *tls
 			return
 		}
 	}()
-	return c.getOrRenewCert(c.CommonName)
+	ctx := getClientRequestContext(cri)
+	return c.getOrRenewCert(ctx, c.CommonName)
 }
 
-func (c *Certify) getOrRenewCert(name string) (*tls.Certificate, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), c.IssueTimeout)
+func (c *Certify) getOrRenewCert(ctx context.Context, name string) (*tls.Certificate, error) {
+	ctx, cancel := context.WithTimeout(ctx, c.IssueTimeout)
 	defer cancel()
 
 	cert, err := c.Cache.Get(ctx, name)
@@ -136,8 +138,8 @@ func (c *Certify) getOrRenewCert(name string) (*tls.Certificate, error) {
 		return nil, err
 	}
 
-	// De-duplicate simultaneous requests
-	ch := c.issueGroup.DoChan("issue", func() (interface{}, error) {
+	// De-duplicate simultaneous requests for the same name
+	ch := c.issueGroup.DoChan(name, func() (interface{}, error) {
 		c.Logger.Debug("Requesting new certificate from issuer")
 		conf := c.CertConfig.Clone()
 		conf.appendName(name)
