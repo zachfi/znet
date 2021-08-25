@@ -14,28 +14,27 @@ require (
 	github.com/hashicorp/vault/sdk v0.2.2-0.20210713235431-1fc8af4c041f
 	github.com/imdario/mergo v0.3.12
 	github.com/jarcoal/httpmock v1.0.8 // indirect
-	github.com/johanbrandhorst/certify v1.8.1
+	github.com/johanbrandhorst/certify v1.9.0
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 	github.com/lib/pq v1.9.0 // indirect
 	github.com/mattn/go-isatty v0.0.13 // indirect
 	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
+	github.com/moby/sys/mount v0.2.0 // indirect
 	github.com/mpvl/unique v0.0.0-20150818121801-cbe035fff7de
 	github.com/olekukonko/tablewriter v0.0.5
-	github.com/onsi/ginkgo v1.14.2 // indirect
-	github.com/onsi/gomega v1.10.4 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.11.0
 	github.com/prometheus/common v0.30.0
 	github.com/scottdware/go-junos v0.0.0-20200809143445-1805793fac10
-	github.com/sirupsen/logrus v1.8.0
+	github.com/sirupsen/logrus v1.8.1
 	github.com/smartystreets/assertions v1.0.0 // indirect
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.8.1
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a
 	golang.org/x/sys v0.0.0-20210611083646-a4fc73990273 // indirect
-	google.golang.org/grpc v1.39.0
+	google.golang.org/grpc v1.40.0
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/ini.v1 v1.62.0
 	gopkg.in/yaml.v2 v2.4.0
