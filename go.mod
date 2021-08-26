@@ -4,7 +4,6 @@ go 1.13
 
 require (
 	github.com/amimof/huego v1.2.0
-	github.com/antchfx/htmlquery v1.2.3
 	github.com/blang/semver/v4 v4.0.0
 	github.com/c-bata/go-prompt v0.2.6
 	github.com/eclipse/paho.mqtt.golang v1.3.5
@@ -14,7 +13,6 @@ require (
 	github.com/hashicorp/vault v1.8.1
 	github.com/hashicorp/vault/api v1.1.2-0.20210713235431-1fc8af4c041f
 	github.com/hashicorp/vault/sdk v0.2.2-0.20210713235431-1fc8af4c041f
-	github.com/iancoleman/strcase v0.2.0
 	github.com/imdario/mergo v0.3.12
 	github.com/jarcoal/httpmock v1.0.8 // indirect
 	github.com/johanbrandhorst/certify v1.9.0
