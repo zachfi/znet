@@ -229,7 +229,14 @@ func TestReadZigbeeMessage(t *testing.T) {
 		},
 		{
 			ObjectID: "bridge",
-			Payload:  []byte(`{"message":"Update available for '0x001777090899e9c9'","meta":{"device":"0x001777090899e9c9","status":"available"},"type":"ota_update"}`),
+			Payload: []byte(`{
+				"message":"Update available for '0x001777090899e9c9'",
+				"meta":{
+					"device":"0x001777090899e9c9",
+					"status":"available"
+				},
+				"type":"ota_update"
+			}`),
 			Endpoint: []string{"log"},
 			Obj: ZigbeeBridgeLog{
 				Message: "Update available for '0x001777090899e9c9'",
