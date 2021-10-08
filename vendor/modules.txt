@@ -83,6 +83,10 @@ github.com/aliyun/alibaba-cloud-sdk-go/sdk/utils
 github.com/aliyun/alibaba-cloud-sdk-go/services/kms
 # github.com/amimof/huego v1.2.0
 github.com/amimof/huego
+# github.com/antchfx/htmlquery v1.2.4
+github.com/antchfx/htmlquery
+# github.com/antchfx/xpath v1.2.0
+github.com/antchfx/xpath
 # github.com/armon/go-metrics v0.3.7
 github.com/armon/go-metrics
 github.com/armon/go-metrics/circonus
@@ -186,7 +190,7 @@ github.com/emirpasic/gods/lists/arraylist
 github.com/emirpasic/gods/trees
 github.com/emirpasic/gods/trees/binaryheap
 github.com/emirpasic/gods/utils
-# github.com/fatih/color v1.11.0
+# github.com/fatih/color v1.13.0
 github.com/fatih/color
 # github.com/form3tech-oss/jwt-go v3.2.2+incompatible
 github.com/form3tech-oss/jwt-go
@@ -269,7 +273,7 @@ github.com/golang/protobuf/ptypes
 github.com/golang/protobuf/ptypes/any
 github.com/golang/protobuf/ptypes/duration
 github.com/golang/protobuf/ptypes/timestamp
-# github.com/golang/snappy v0.0.2
+# github.com/golang/snappy v0.0.4
 github.com/golang/snappy
 # github.com/google/go-cmp v0.5.6
 github.com/google/go-cmp/cmp
@@ -326,11 +330,11 @@ github.com/hashicorp/go-discover/provider/softlayer
 github.com/hashicorp/go-discover/provider/tencentcloud
 github.com/hashicorp/go-discover/provider/triton
 github.com/hashicorp/go-discover/provider/vsphere
-# github.com/hashicorp/go-hclog v0.16.1
+# github.com/hashicorp/go-hclog v0.16.2
 github.com/hashicorp/go-hclog
 # github.com/hashicorp/go-immutable-radix v1.3.0
 github.com/hashicorp/go-immutable-radix
-# github.com/hashicorp/go-kms-wrapping v0.5.16
+# github.com/hashicorp/go-kms-wrapping v0.6.7
 github.com/hashicorp/go-kms-wrapping
 github.com/hashicorp/go-kms-wrapping/internal/xor
 github.com/hashicorp/go-kms-wrapping/wrappers/aead
@@ -358,6 +362,8 @@ github.com/hashicorp/go-raftchunking/types
 github.com/hashicorp/go-retryablehttp
 # github.com/hashicorp/go-rootcerts v1.0.2
 github.com/hashicorp/go-rootcerts
+# github.com/hashicorp/go-secure-stdlib/awsutil v0.1.2
+github.com/hashicorp/go-secure-stdlib/awsutil
 # github.com/hashicorp/go-sockaddr v1.0.2
 github.com/hashicorp/go-sockaddr
 # github.com/hashicorp/go-uuid v1.0.2
@@ -388,7 +394,7 @@ github.com/hashicorp/raft-autopilot
 github.com/hashicorp/raft-boltdb/v2
 # github.com/hashicorp/raft-snapshot v1.0.3
 github.com/hashicorp/raft-snapshot
-# github.com/hashicorp/vault v1.8.1
+# github.com/hashicorp/vault v1.8.4
 github.com/hashicorp/vault/audit
 github.com/hashicorp/vault/builtin/plugin
 github.com/hashicorp/vault/command/server
@@ -423,14 +429,13 @@ github.com/hashicorp/vault/vault/replication
 github.com/hashicorp/vault/vault/seal
 # github.com/hashicorp/vault/api v1.1.2-0.20210713235431-1fc8af4c041f
 github.com/hashicorp/vault/api
-# github.com/hashicorp/vault/sdk v0.2.2-0.20210713235431-1fc8af4c041f
+# github.com/hashicorp/vault/sdk v0.2.2-0.20211005222123-93e045565e4a
 github.com/hashicorp/vault/sdk/database/dbplugin
 github.com/hashicorp/vault/sdk/database/dbplugin/v5
 github.com/hashicorp/vault/sdk/database/dbplugin/v5/proto
 github.com/hashicorp/vault/sdk/database/helper/connutil
 github.com/hashicorp/vault/sdk/database/helper/dbutil
 github.com/hashicorp/vault/sdk/framework
-github.com/hashicorp/vault/sdk/helper/awsutil
 github.com/hashicorp/vault/sdk/helper/base62
 github.com/hashicorp/vault/sdk/helper/certutil
 github.com/hashicorp/vault/sdk/helper/compressutil
@@ -467,6 +472,8 @@ github.com/hashicorp/vic/pkg/vsphere/tags
 github.com/hashicorp/yamux
 # github.com/huandu/xstrings v1.3.2
 github.com/huandu/xstrings
+# github.com/iancoleman/strcase v0.2.0
+github.com/iancoleman/strcase
 # github.com/imdario/mergo v0.3.12
 github.com/imdario/mergo
 # github.com/inconshreveable/mousetrap v1.0.0
@@ -510,7 +517,7 @@ github.com/keybase/go-crypto/openpgp/errors
 github.com/keybase/go-crypto/openpgp/packet
 github.com/keybase/go-crypto/openpgp/s2k
 github.com/keybase/go-crypto/rsa
-# github.com/lib/pq v1.9.0
+# github.com/lib/pq v1.10.3
 github.com/lib/pq
 github.com/lib/pq/oid
 github.com/lib/pq/scram
@@ -518,9 +525,9 @@ github.com/lib/pq/scram
 github.com/linode/linodego
 # github.com/magiconair/properties v1.8.5
 github.com/magiconair/properties
-# github.com/mattn/go-colorable v0.1.8
+# github.com/mattn/go-colorable v0.1.11
 github.com/mattn/go-colorable
-# github.com/mattn/go-isatty v0.0.13
+# github.com/mattn/go-isatty v0.0.14
 github.com/mattn/go-isatty
 # github.com/mattn/go-runewidth v0.0.13
 github.com/mattn/go-runewidth
@@ -554,7 +561,7 @@ github.com/nicolai86/scaleway-sdk
 github.com/oklog/run
 # github.com/olekukonko/tablewriter v0.0.5
 github.com/olekukonko/tablewriter
-# github.com/oracle/oci-go-sdk v12.5.0+incompatible
+# github.com/oracle/oci-go-sdk v13.1.0+incompatible
 github.com/oracle/oci-go-sdk/common
 github.com/oracle/oci-go-sdk/common/auth
 github.com/oracle/oci-go-sdk/keymanagement
@@ -652,7 +659,7 @@ github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
 # github.com/subosito/gotenv v1.2.0
 github.com/subosito/gotenv
-# github.com/tencentcloud/tencentcloud-sdk-go v3.0.171+incompatible
+# github.com/tencentcloud/tencentcloud-sdk-go v3.0.83+incompatible
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/errors
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/http
@@ -735,6 +742,9 @@ golang.org/x/crypto/ssh/terminal
 golang.org/x/net/bpf
 golang.org/x/net/context
 golang.org/x/net/context/ctxhttp
+golang.org/x/net/html
+golang.org/x/net/html/atom
+golang.org/x/net/html/charset
 golang.org/x/net/http/httpguts
 golang.org/x/net/http2
 golang.org/x/net/http2/hpack
@@ -760,7 +770,7 @@ golang.org/x/oauth2/jwt
 golang.org/x/sync/errgroup
 golang.org/x/sync/semaphore
 golang.org/x/sync/singleflight
-# golang.org/x/sys v0.0.0-20210611083646-a4fc73990273
+# golang.org/x/sys v0.0.0-20210927094055-39ccf1dd6fa6
 golang.org/x/sys/cpu
 golang.org/x/sys/execabs
 golang.org/x/sys/internal/unsafeheader
@@ -772,8 +782,20 @@ golang.org/x/term
 # golang.org/x/text v0.3.6
 golang.org/x/text/encoding
 golang.org/x/text/encoding/charmap
+golang.org/x/text/encoding/htmlindex
 golang.org/x/text/encoding/internal
 golang.org/x/text/encoding/internal/identifier
+golang.org/x/text/encoding/japanese
+golang.org/x/text/encoding/korean
+golang.org/x/text/encoding/simplifiedchinese
+golang.org/x/text/encoding/traditionalchinese
+golang.org/x/text/encoding/unicode
+golang.org/x/text/internal/language
+golang.org/x/text/internal/language/compact
+golang.org/x/text/internal/tag
+golang.org/x/text/internal/utf8internal
+golang.org/x/text/language
+golang.org/x/text/runes
 golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
