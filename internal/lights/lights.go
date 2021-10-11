@@ -13,6 +13,11 @@ import (
 	"github.com/xaque208/znet/pkg/iot"
 )
 
+const (
+	brightnessLow  = 100
+	brightnessHigh = 254
+)
+
 // Lights holds the information necessary to communicate with lighting
 // equipment, and the configuration to add a bit of context.
 type Lights struct {
@@ -66,17 +71,17 @@ func (l *Lights) ActionHandler(action *iot.Action) error {
 	}).Debug("room action")
 
 	request := &LightGroupRequest{
-		Brightness: 254,
+		Brightness: brightnessHigh,
 		Color:      "#ffffff",
 		Colors:     l.config.PartyColors,
 		Name:       room.Name,
 	}
 
 	switch action.Event {
-	case "single":
+	case "single", "press":
 		_, err := l.Toggle(ctx, request)
 		return err
-	case "double":
+	case "on", "double", "tap", "rotate_right", "wakeup", "slide":
 		_, err := l.On(ctx, request)
 		if err != nil {
 			return err
@@ -89,14 +94,14 @@ func (l *Lights) ActionHandler(action *iot.Action) error {
 
 		_, err = l.SetColor(ctx, request)
 		return err
-	case "triple":
+	case "off", "triple":
 		_, err := l.Off(ctx, request)
 		return err
-	case "quadruple":
+	case "quadruple", "flip90", "flip180", "fall":
 		_, err := l.RandomColor(ctx, request)
 		return err
-	case "hold", "release":
-		request.Brightness = 110
+	case "hold", "release", "rotate_left":
+		request.Brightness = brightnessLow
 		_, err := l.Dim(ctx, request)
 		return err
 	case "many":

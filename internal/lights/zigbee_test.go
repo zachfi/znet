@@ -32,31 +32,31 @@ func TestZigbeeLight_New(t *testing.T) {
 		},
 	}
 
-	l.On("group1")
+	require.NoError(t, l.On("group1"))
 	require.Equal(t, "zigbee2mqtt/testdevice1/set", mqttClient.LastPublishTopic)
 	require.Equal(t, `{"state":"ON","transition":0.5}`, mqttClient.LastPublishPayload)
 
-	l.Off("group1")
+	require.NoError(t, l.Off("group1"))
 	require.Equal(t, "zigbee2mqtt/testdevice1/set", mqttClient.LastPublishTopic)
 	require.Equal(t, `{"state":"OFF","transition":0.5}`, mqttClient.LastPublishPayload)
 
-	l.Dim("group1", 123)
+	require.NoError(t, l.Dim("group1", 123))
 	require.Equal(t, "zigbee2mqtt/testdevice1/set", mqttClient.LastPublishTopic)
 	require.Equal(t, `{"brightness":123,"transition":0.5}`, mqttClient.LastPublishPayload)
 
-	l.Alert("group1")
+	require.NoError(t, l.Alert("group1"))
 	require.Equal(t, "zigbee2mqtt/testdevice1/set", mqttClient.LastPublishTopic)
 	require.Equal(t, `{"effect":"blink","transition":0.1}`, mqttClient.LastPublishPayload)
 
-	l.SetColor("group1", "#006c7f")
+	require.NoError(t, l.SetColor("group1", "#006c7f"))
 	require.Equal(t, "zigbee2mqtt/testdevice1/set", mqttClient.LastPublishTopic)
 	require.Equal(t, `{"color":{"hex":"#006c7f"},"transition":0.5}`, mqttClient.LastPublishPayload)
 
-	l.RandomColor("group1", []string{"#006c7f"})
+	require.NoError(t, l.RandomColor("group1", []string{"#006c7f"}))
 	require.Equal(t, "zigbee2mqtt/testdevice1/set", mqttClient.LastPublishTopic)
 	require.Equal(t, `{"color":{"hex":"#006c7f"},"transition":0.5}`, mqttClient.LastPublishPayload)
 
-	l.Toggle("group1")
+	require.NoError(t, l.Toggle("group1"))
 	require.Equal(t, "zigbee2mqtt/testdevice1/set", mqttClient.LastPublishTopic)
 	require.Equal(t, `{"state":"TOGGLE","transition":0.5}`, mqttClient.LastPublishPayload)
 

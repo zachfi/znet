@@ -16,7 +16,16 @@ func TestZigbeeBridgeLog(t *testing.T) {
 		Obj     ZigbeeBridgeLog
 	}{
 		{
-			[]byte(`{"message":"interview_successful","meta":{"description":"Hue white A60 bulb E27","friendly_name":"0x0017880102be373d","model":"9290011370","supported":true,"vendor":"Philips"},"type":"pairing"}`),
+			[]byte(`{
+				"message":"interview_successful",
+				"meta":{
+					"description":"Hue white A60 bulb E27",
+					"friendly_name":"0x0017880102be373d",
+					"model":"9290011370",
+					"supported":true,
+					"vendor":"Philips"
+				},"type":"pairing"
+			}`),
 			ZigbeeBridgeLog{
 				Type:    "pairing",
 				Message: "interview_successful",
@@ -40,7 +49,36 @@ func TestZigbeeBridgeLog(t *testing.T) {
 			},
 		},
 		{
-			[]byte(`{"message":[{"dateCode":"20190608","friendly_name":"Coordinator","ieeeAddr":"0x00124b0014d91d6b","lastSeen":1612129344843,"networkAddress":0,"softwareBuildID":"zStack12","type":"Coordinator"},{"dateCode":"20200327","description":"Hue white and color ambiance E26/E27","friendly_name":"0x001788010898e9c1","hardwareVersion":1,"ieeeAddr":"0x001788010898e9c1","lastSeen":1612127953195,"manufacturerID":4107,"manufacturerName":"Philips","model":"9290022166","modelID":"LCA003","networkAddress":36588,"powerSource":"Mains (single phase)","softwareBuildID":"1.65.11_hB798F2B","type":"Router","vendor":"Philips"}],"type":"devices"}`),
+			[]byte(`{
+					"message":[
+						{
+							"dateCode":"20190608",
+							"friendly_name":"Coordinator",
+							"ieeeAddr":"0x00124b0014d91d6b",
+							"lastSeen":1612129344843,
+							"networkAddress":0,
+							"softwareBuildID":"zStack12",
+							"type":"Coordinator"
+						},{
+							"dateCode":"20200327",
+							"description":"Hue white and color ambiance E26/E27",
+							"friendly_name":"0x001788010898e9c1",
+							"hardwareVersion":1,
+							"ieeeAddr":"0x001788010898e9c1",
+							"lastSeen":1612127953195,
+							"manufacturerID":4107,
+							"manufacturerName":"Philips",
+							"model":"9290022166",
+							"modelID":"LCA003",
+							"networkAddress":36588,
+							"powerSource":"Mains (single phase)",
+							"softwareBuildID":"1.65.11_hB798F2B",
+							"type":"Router",
+							"vendor":"Philips"
+						}
+					],
+					"type":"devices"
+				}`),
 			ZigbeeBridgeLog{
 				Type: "devices",
 				Message: ZigbeeBridgeMessageDevices{

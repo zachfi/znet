@@ -67,6 +67,7 @@ type SecurityPolicy struct {
 type SecurityZoneInterface struct {
 	Name           string   `yaml:"name"`
 	SystemServices []string `yaml:"system_services"`
+	Protocols      []string `yaml:"protocols"`
 }
 
 // SecurityNATRuleSet is a set of NAT rules.
@@ -140,9 +141,13 @@ type StaticRoutes struct {
 
 // StaticRoute is a static route object.
 type StaticRoute struct {
-	Prefix  string `yaml:"prefix"`
-	NextHop string `yaml:"next_hop"`
-	Discard bool   `yaml:"discard"`
+	Discard                    bool   `yaml:"discard"`
+	NextHop                    string `yaml:"next_hop"`
+	Preference                 int    `yaml:"preference"`
+	Prefix                     string `yaml:"prefix"`
+	QualifiedNextHopInterface  string `yaml:"qualified_next_hop_interface"`
+	QualifiedNextHopPreference int    `yaml:"qualified_next_hop_preference"`
+	QualifiedNextHop           string `yaml:"qualified_next_hop"`
 }
 
 // BGPGroup is a group of BGP neighbors.
@@ -160,6 +165,7 @@ type RouterAdvertisement struct {
 	Interface string `yaml:"interface"`
 	DNSServer string `yaml:"dns_server"`
 	Prefix    string `yaml:"prefix"`
+	Managed   bool   `yaml:"managed"`
 }
 
 // IRBInterface is an Integrated Bridging and Routing interface for a Juniper router.

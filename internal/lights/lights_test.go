@@ -363,7 +363,6 @@ func TestAlert(t *testing.T) {
 
 		_, err = l.On(ctx, groupName)
 		require.NoError(t, err)
-		// TODO
 		require.Equal(t, tc.Handler, h)
 
 		_, err = l.Off(ctx, groupName)

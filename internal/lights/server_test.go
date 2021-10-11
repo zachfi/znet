@@ -41,8 +41,8 @@ func TestServer(t *testing.T) {
 	RegisterLightsServer(s, l)
 
 	go func() {
-		if err := s.Serve(lis); err != nil {
-			log.Fatalf("Server exited with error: %v", err)
+		if srvError := s.Serve(lis); err != nil {
+			log.Fatalf("Server exited with error: %v", srvError)
 		}
 	}()
 
@@ -50,7 +50,7 @@ func TestServer(t *testing.T) {
 
 	ctx := context.Background()
 	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithInsecure())
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 	require.NoError(t, err)
 	require.NotNil(t, conn)
 
@@ -72,7 +72,7 @@ func TestServer(t *testing.T) {
 		{
 			Call: client.Off,
 			Handler: &MockLight{
-				// TODO fix this cary over from the previous itteration of the loop so we don't have to check the accumulation of the results here.
+				// the mock has already been modified, so we accumulate.
 				OnCalls:  map[string]int{"dungeon": 1},
 				OffCalls: map[string]int{"dungeon": 1},
 			},
