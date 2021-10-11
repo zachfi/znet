@@ -4,6 +4,7 @@ go 1.13
 
 require (
 	github.com/amimof/huego v1.2.0
+	github.com/antchfx/htmlquery v1.2.4
 	github.com/blang/semver/v4 v4.0.0
 	github.com/c-bata/go-prompt v0.2.6
 	github.com/containerd/continuity v0.0.0-20200710164510-efbc4488d8fe // indirect
@@ -12,7 +13,6 @@ require (
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/go-ldap/ldap/v3 v3.4.1
 	github.com/go-test/deep v1.0.7 // indirect
-	github.com/golang/protobuf v1.5.2
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-hclog v0.16.2 // indirect
@@ -21,6 +21,7 @@ require (
 	github.com/hashicorp/hcl v1.0.1-vault-3 // indirect
 	github.com/hashicorp/vault/api v1.1.2-0.20210713235431-1fc8af4c041f
 	github.com/hashicorp/vault/sdk v0.2.2-0.20211005222123-93e045565e4a
+	github.com/iancoleman/strcase v0.2.0
 	github.com/imdario/mergo v0.3.12
 	github.com/jarcoal/httpmock v1.0.8 // indirect
 	github.com/johanbrandhorst/certify v1.9.0
