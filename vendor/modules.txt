@@ -381,7 +381,7 @@ google.golang.org/protobuf/types/descriptorpb
 google.golang.org/protobuf/types/known/anypb
 google.golang.org/protobuf/types/known/durationpb
 google.golang.org/protobuf/types/known/timestamppb
-# gopkg.in/ini.v1 v1.62.0
+# gopkg.in/ini.v1 v1.63.2
 gopkg.in/ini.v1
 # gopkg.in/square/go-jose.v2 v2.5.1
 gopkg.in/square/go-jose.v2
