@@ -15,12 +15,15 @@
 package cmd
 
 import (
+	"os"
 	"strings"
 
+	"github.com/go-kit/log"
+	"github.com/go-kit/log/level"
 	homedir "github.com/mitchellh/go-homedir"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/xaque208/znet/znet"
 )
 
 var cfgFile string
@@ -33,12 +36,26 @@ var Version string
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "znet",
-	Short: "znet",
-	Long: `ZNet 
+	Short: "zNet",
+	Long: `zNet 
 
-Run commands on a ZNet RPC.
+Run zNet.
 `,
-	//	Run: func(cmd *cobra.Command, args []string) { },
+	Run: runZnet,
+}
+
+func runZnet(cmd *cobra.Command, args []string) {
+	initLogger()
+
+	logger := newLogger()
+
+	z, err := znet.NewZnet(cfgFile, logger)
+	if err != nil {
+		level.Error(logger).Log("msg", "failed to create Znet", "err", err)
+		os.Exit(1)
+	}
+
+	z.Run()
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

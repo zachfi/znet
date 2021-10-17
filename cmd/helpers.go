@@ -1,6 +1,11 @@
 package cmd
 
-import log "github.com/sirupsen/logrus"
+import (
+	"os"
+
+	kitlog "github.com/go-kit/log"
+	log "github.com/sirupsen/logrus"
+)
 
 func initLogger() {
 	formatter := log.TextFormatter{
@@ -20,4 +25,9 @@ func initLogger() {
 	log.WithFields(log.Fields{
 		"version": Version,
 	}).Info("starting")
+}
+
+func newLogger() kitlog.Logger {
+	logger := kitlog.NewLogfmtLogger(kitlog.NewSyncWriter(os.Stderr))
+	return logger
 }
