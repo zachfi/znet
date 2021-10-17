@@ -5,9 +5,13 @@ type zoneState int
 const (
 	On zoneState = iota
 	Off
+	OffTimer
 	Color
 	RandomColor
 	Dim
+	NightVision
+	EveningVision
+	MorningVision
 )
 
 func (s zoneState) String() string {
@@ -17,5 +21,8 @@ func (s zoneState) String() string {
 		"Color",
 		"RandomColor",
 		"Dim",
+		"NightVision",
+		"EveningVision",
+		"MorningVision",
 	}[s]
 }
