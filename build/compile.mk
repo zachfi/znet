@@ -35,7 +35,7 @@ proto-grpc:
 		internal/astro/astro.proto \
 		internal/agent/agent.proto \
 		internal/lights/lights.proto \
-		internal/timer/timer.proto \
+		internal/timer/named/named.proto \
 		internal/inventory/inventory.proto \
 		internal/telemetry/telemetry.proto
 	@protoc -I internal/inventory/ -I ./ \

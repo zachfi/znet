@@ -1,8 +1,9 @@
+
 syntax = "proto3";
 
 package timer;
 
-option go_package = "internal/timer";
+option go_package = "internal/timer/named";
 
 import "google/protobuf/timestamp.proto";
 
@@ -13,7 +14,7 @@ message NamedTimeStamp {
   google.protobuf.Timestamp time = 2;
 }
 
-service Timer {
-  rpc NamedTimer(NamedTimeStamp) returns (Empty);
+service Named {
+  rpc Observe(NamedTimeStamp) returns (Empty);
+  rpc Schedule(NamedTimeStamp) returns (Empty);
 }
-
