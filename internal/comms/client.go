@@ -50,3 +50,22 @@ func StandardRPCClient(serverAddress string, cfg config.Config) *grpc.ClientConn
 
 	return conn
 }
+
+func SlimRPCClient(serverAddress string) *grpc.ClientConn {
+	var opts []grpc.DialOption
+
+	opts = append(opts, grpc.WithInsecure())
+	// opts = append(opts, grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
+	// opts = append(opts, grpc.WithBlock())
+
+	log.WithFields(log.Fields{
+		"server_address": serverAddress,
+	}).Debug("dialing gRPC")
+
+	conn, err := grpc.Dial(serverAddress, opts...)
+	if err != nil {
+		log.Errorf("failed dialing gRPC: %s", err)
+	}
+
+	return conn
+}
