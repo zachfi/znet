@@ -18,11 +18,11 @@ import (
 	"os"
 	"strings"
 
-	"github.com/go-kit/log"
 	"github.com/go-kit/log/level"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/xaque208/znet/pkg/util"
 	"github.com/xaque208/znet/znet"
 )
 
@@ -45,17 +45,24 @@ Run zNet.
 }
 
 func runZnet(cmd *cobra.Command, args []string) {
-	initLogger()
+	logger := util.NewLogger()
 
-	logger := newLogger()
+	cfg, err := znet.LoadConfig(cfgFile)
+	if err != nil {
+		level.Error(logger).Log("msg", "failed to load config file", "err", err)
+		os.Exit(1)
+	}
 
-	z, err := znet.NewZnet(cfgFile, logger)
+	z, err := znet.New(cfg)
 	if err != nil {
 		level.Error(logger).Log("msg", "failed to create Znet", "err", err)
 		os.Exit(1)
 	}
 
-	z.Run()
+	if err := z.Run(); err != nil {
+		level.Error(logger).Log("msg", "error running zNet", "err", err)
+		os.Exit(1)
+	}
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -63,8 +70,11 @@ func runZnet(cmd *cobra.Command, args []string) {
 func Execute(version string) {
 	Version = version
 
+	logger := util.NewLogger()
+
 	if err := rootCmd.Execute(); err != nil {
-		log.Fatal(err)
+		level.Error(logger).Log("msg", "failed to execute", "err", err)
+		os.Exit(1)
 	}
 }
 
@@ -75,26 +85,12 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Increase verbosity")
 	rootCmd.PersistentFlags().BoolVarP(&trace, "trace", "", false, "Trace level verbosity")
 
-	formatter := log.TextFormatter{
-		DisableQuote:     true,
-		DisableTimestamp: true,
-	}
-
-	log.SetFormatter(&formatter)
-
-	if trace {
-		log.SetLevel(log.TraceLevel)
-	} else if verbose {
-		log.SetLevel(log.DebugLevel)
-	} else {
-		log.SetLevel(log.InfoLevel)
-	}
-
 	rootCmd.AddCommand(inventoryCommand)
 }
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
+	logger := util.NewLogger()
 
 	if cfgFile != "" {
 		// Use config file from the flag.
@@ -103,7 +99,8 @@ func initConfig() {
 		// Find home directory.
 		home, err := homedir.Dir()
 		if err != nil {
-			log.Fatal(err)
+			level.Error(logger).Log("msg", "failed to get homedir", "err", err)
+			os.Exit(1)
 		}
 
 		// Search config in home directory with name ".znet" (without extension).
@@ -117,7 +114,7 @@ func initConfig() {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		log.Debugf("using config file: %s", viper.ConfigFileUsed())
+		level.Debug(logger).Log("msg", "using config file", "file", viper.ConfigFileUsed())
 		cfgFile = viper.ConfigFileUsed()
 	}
 }
