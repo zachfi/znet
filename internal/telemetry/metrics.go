@@ -1,9 +1,12 @@
 package telemetry
 
-import "github.com/prometheus/client_golang/prometheus"
+import (
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
+)
 
 var (
-	telemetryIOTUnhandledReport = prometheus.NewCounterVec(prometheus.CounterOpts{
+	telemetryIOTUnhandledReport = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "rpc_telemetry_unhandled_object_report",
 		Help: "The total number of notice calls that include an unhandled object ID.",
 	}, []string{"object_id", "component"})
@@ -57,7 +60,7 @@ var (
 
 func init() {
 	prometheus.MustRegister(
-		telemetryIOTUnhandledReport,
+		// telemetryIOTUnhandledReport,
 		telemetryIOTReport,
 		telemetryIOTBatteryPercent,
 		telemetryIOTLinkQuality,
