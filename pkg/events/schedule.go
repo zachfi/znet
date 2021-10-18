@@ -3,13 +3,16 @@ package events
 import (
 	"fmt"
 	"sort"
+	"strings"
 	"time"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/go-kit/log"
+	"github.com/go-kit/log/level"
 )
 
 // Scheduler holds timeSlice objects and provides an methods to update them..
 type Scheduler struct {
+	logger    log.Logger
 	timeSlice *TimeSlice
 }
 
@@ -17,9 +20,10 @@ type Scheduler struct {
 type TimeSlice map[time.Time][]string
 
 // NewScheduler returns a new Scheduler.
-func NewScheduler() *Scheduler {
+func NewScheduler(logger log.Logger) *Scheduler {
 	return &Scheduler{
 		timeSlice: &TimeSlice{},
+		logger:    logger,
 	}
 }
 
@@ -29,13 +33,14 @@ func (s *Scheduler) All() TimeSlice {
 }
 
 func (s *Scheduler) Report() {
-	fields := log.Fields{}
+	fields := []interface{}{"msg", "events"}
 
 	for k, v := range *s.timeSlice {
-		fields[k.Format(time.RFC3339)] = v
+		fields = append(fields, k.Format(time.RFC3339))
+		fields = append(fields, strings.Join(v, ","))
 	}
 
-	log.WithFields(fields).Debug("events")
+	level.Info(s.logger).Log(fields...)
 }
 
 // Next determines the next occurring event in the series.
@@ -98,14 +103,17 @@ func (s *Scheduler) WaitForNext() []string {
 
 	// Send past events under 30 seconds old.
 	if time.Since(*next) > time.Duration(30)*time.Second {
-		log.Warnf("sending past event: %s : %s", next, time.Since(*next))
+		level.Warn(s.logger).Log("msg", "sending past event",
+			"next", next,
+			"since", time.Since(*next),
+		)
 		return s.NamesForTime(*next)
 	}
 
-	log.WithFields(log.Fields{
-		"next":  time.Until(*next),
-		"names": s.NamesForTime(*next),
-	}).Info("scheduler waiting")
+	level.Info(s.logger).Log("msg", "scheduler waiting",
+		"next", time.Until(*next),
+		"names", strings.Join(s.NamesForTime(*next), ","),
+	)
 
 	ti := time.NewTimer(time.Until(*next))
 	<-ti.C
@@ -141,10 +149,10 @@ func (s *Scheduler) Set(t time.Time, name string) error {
 		(*s.timeSlice)[t] = make([]string, 0)
 	}
 
-	log.WithFields(log.Fields{
-		"name": name,
-		"time": t,
-	}).Debug("scheduler scheduling event")
+	level.Debug(s.logger).Log("msg", "scheduling event",
+		"name", name,
+		"time", t,
+	)
 
 	timeHasName := func(names []string) bool {
 		for _, n := range names {
