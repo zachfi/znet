@@ -10,43 +10,47 @@ import (
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
-	"github.com/prometheus/client_golang/prometheus"
+	"github.com/grafana/dskit/services"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
-	"github.com/xaque208/znet/internal/astro"
 	"github.com/xaque208/znet/internal/comms"
 	"github.com/xaque208/znet/internal/config"
 	"github.com/xaque208/znet/internal/inventory"
 	"github.com/xaque208/znet/internal/lights"
 	"github.com/xaque208/znet/internal/telemetry"
-	"github.com/xaque208/znet/internal/timer"
 	"github.com/xaque208/znet/pkg/iot"
 )
 
 // Server is a Server.
 type Server struct {
-	sync.Mutex
-	config        *config.Config
-	grpcServer    *grpc.Server
-	httpServer    *http.Server
-	NewHTTPServer comms.HTTPServerFunc
-	NewRPCServer  comms.RPCServerFunc
+	services.Service
+
+	cfg Config
+
+	mutex sync.Mutex
+
+	// Old config
+	config     *config.Config
+	grpcServer *grpc.Server
+	httpServer *http.Server
+	// NewHTTPServer comms.HTTPServerFunc
+	// NewRPCServer  comms.RPCServerFunc
 
 	mqttClient mqtt.Client
 	invClient  inventory.Inventory
 }
 
 func init() {
-	prometheus.MustRegister(
-		eventTotal,
-		executionDuration,
-		executionExitStatus,
-
-		tempCoef,
-		waterTempCoef,
-	)
+	// prometheus.MustRegister(
+	// 	eventTotal,
+	// 	executionDuration,
+	// 	executionExitStatus,
+	//
+	// 	tempCoef,
+	// 	waterTempCoef,
+	// )
 }
 
 // New creates a new Server composed of the received information.
@@ -55,17 +59,17 @@ func New(cfg *config.Config) (*Server, error) {
 		return nil, fmt.Errorf("unable to build znet Server with nil HTTP config")
 	}
 
-	if cfg.RPC == nil {
-		return nil, fmt.Errorf("unable to build znet Server with nil RPC config")
-	}
+	// if cfg.RPC == nil {
+	// 	return nil, fmt.Errorf("unable to build znet Server with nil RPC config")
+	// }
 
-	if cfg.Vault == nil {
-		return nil, fmt.Errorf("unable to build znet Server with nil Vault config")
-	}
+	// if cfg.Vault == nil {
+	// 	return nil, fmt.Errorf("unable to build znet Server with nil Vault config")
+	// }
 
-	if cfg.TLS == nil {
-		return nil, fmt.Errorf("unable to build znet Server with nil TLS config")
-	}
+	// if cfg.TLS == nil {
+	// 	return nil, fmt.Errorf("unable to build znet Server with nil TLS config")
+	// }
 
 	return &Server{
 		config: cfg,
@@ -76,8 +80,8 @@ func New(cfg *config.Config) (*Server, error) {
 }
 
 func (s *Server) startRPCListener() error {
-	s.Lock()
-	defer s.Unlock()
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 
 	var err error
 
@@ -129,15 +133,6 @@ func (s *Server) startRPCListener() error {
 
 	lights.RegisterLightsServer(s.grpcServer, lightsServer)
 
-	//
-	// astroServer
-	astroServer, err := astro.NewAstro(s.config, lightsServer)
-	if err != nil {
-		return err
-	}
-
-	astro.RegisterAstroServer(s.grpcServer, astroServer)
-
 	// iotServer
 	iotServer, err := iot.NewServer(s.mqttClient)
 	if err != nil {
@@ -160,15 +155,6 @@ func (s *Server) startRPCListener() error {
 
 	telemetry.RegisterTelemetryServer(s.grpcServer, telemetryServer)
 
-	//
-	// timerServer
-	timerServer, err := timer.NewServer(lightsServer)
-	if err != nil {
-		return err
-	}
-
-	timer.RegisterTimerServer(s.grpcServer, timerServer)
-
 	go func() {
 		lis, err := net.Listen("tcp", s.config.RPC.ListenAddress)
 		if err != nil {
@@ -185,8 +171,8 @@ func (s *Server) startRPCListener() error {
 }
 
 func (s *Server) startHTTPListener() error {
-	s.Lock()
-	defer s.Unlock()
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 
 	if s.httpServer == nil {
 		httpServer, err := s.NewHTTPServer(s.config)
