@@ -7,8 +7,12 @@ import (
 	"github.com/pkg/errors"
 	"github.com/weaveworks/common/server"
 	"github.com/xaque208/znet/internal/config"
-	"github.com/xaque208/znet/internal/timer"
 	"github.com/xaque208/znet/modules/harvester"
+	"github.com/xaque208/znet/modules/inventory"
+	"github.com/xaque208/znet/modules/lights"
+	"github.com/xaque208/znet/modules/telemetry"
+	"github.com/xaque208/znet/modules/timer"
+	"github.com/xaque208/znet/pkg/iot"
 	"gopkg.in/yaml.v2"
 )
 
@@ -21,6 +25,10 @@ type Config struct {
 	// modules
 	Server    server.Config    `yaml:"server,omitempty"`
 	Harvester harvester.Config `yaml:"harvester"`
+	Inventory inventory.Config `yaml:"inventory"`
+	IOT       iot.Config       `yaml:"iot"`
+	Lights    lights.Config    `yaml:"lights"`
+	Telemetry telemetry.Config `yaml:"telemetry"`
 	Timer     timer.Config     `yaml:"timer"`
 
 	RPC *config.RPCConfig `yaml:"rpc,omitempty"`
