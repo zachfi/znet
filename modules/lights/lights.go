@@ -1,7 +1,7 @@
 package lights
 
 import (
-	context "context"
+	"context"
 	"fmt"
 	"sort"
 	sync "sync"
@@ -39,11 +39,28 @@ var defaultColorPool = []string{"#006c7f", "#e32636", "#b0bf1a"}
 // NewLights creates and returns a new Lights object based on the received
 // configuration.
 func New(cfg Config, logger log.Logger) (*Lights, error) {
-	return &Lights{
+	l := &Lights{
 		cfg:    &cfg,
 		logger: log.With(logger, "module", "lights"),
 		zones:  &Zones{},
-	}, nil
+	}
+
+	l.Service = services.NewBasicService(l.starting, l.running, l.stopping)
+
+	return l, nil
+}
+
+func (l *Lights) starting(ctx context.Context) error {
+	return nil
+}
+
+func (l *Lights) running(ctx context.Context) error {
+	<-ctx.Done()
+	return nil
+}
+
+func (l *Lights) stopping(_ error) error {
+	return nil
 }
 
 // AddHandler is used to register the received Handler.
