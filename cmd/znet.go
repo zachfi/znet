@@ -26,9 +26,13 @@ import (
 	"github.com/xaque208/znet/znet"
 )
 
-var cfgFile string
-var verbose bool
-var trace bool
+var (
+	cfgFile string
+	target  string
+
+	verbose bool
+	trace   bool
+)
 
 // Version is the version of the project
 var Version string
@@ -82,6 +86,7 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.znet.yaml)")
+	rootCmd.PersistentFlags().StringVarP(&target, "target", "t", "all", "Run a specific module")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Increase verbosity")
 	rootCmd.PersistentFlags().BoolVarP(&trace, "trace", "", false, "Trace level verbosity")
 
