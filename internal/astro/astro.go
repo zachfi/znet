@@ -14,7 +14,7 @@ import (
 	"github.com/prometheus/client_golang/api"
 	v1 "github.com/prometheus/client_golang/api/prometheus/v1"
 	"github.com/prometheus/common/model"
-	"github.com/xaque208/znet/internal/lights"
+	"github.com/xaque208/znet/modules/lights"
 	"github.com/xaque208/znet/pkg/events"
 	grpc "google.golang.org/grpc"
 )

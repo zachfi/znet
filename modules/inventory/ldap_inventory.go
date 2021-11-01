@@ -39,7 +39,7 @@ func NewLDAPInventory(cfg Config, logger log.Logger) (*LDAPInventory, error) {
 	return i, nil
 }
 
-func (i *LDAPInventory) stopping() {
+func (i *LDAPInventory) Stop() {
 	i.ldapClient.Close()
 }
 

@@ -2,6 +2,8 @@
 package inventory
 
 import (
+	"context"
+
 	"github.com/go-kit/log"
 	"github.com/grafana/dskit/services"
 )
@@ -25,10 +27,27 @@ func NewLDAPServer(cfg Config, logger log.Logger) (*Server, error) {
 		return nil, err
 	}
 
-	return &Server{
+	s := &Server{
 		inventory: invClient,
 		logger:    logger,
-	}, nil
+	}
+
+	s.Service = services.NewBasicService(s.starting, s.running, s.stopping)
+
+	return s, nil
+}
+
+func (s *Server) starting(ctx context.Context) error {
+	return nil
+}
+
+func (s *Server) running(ctx context.Context) error {
+	<-ctx.Done()
+	return nil
+}
+
+func (s *Server) stopping(_ error) error {
+	return nil
 }
 
 // .File.Service Inventory

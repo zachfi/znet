@@ -17,9 +17,9 @@ import (
 
 	"github.com/xaque208/znet/internal/comms"
 	"github.com/xaque208/znet/internal/config"
-	"github.com/xaque208/znet/internal/inventory"
-	"github.com/xaque208/znet/internal/lights"
-	"github.com/xaque208/znet/internal/telemetry"
+	"github.com/xaque208/znet/modules/inventory"
+	"github.com/xaque208/znet/modules/lights"
+	"github.com/xaque208/znet/modules/telemetry"
 	"github.com/xaque208/znet/pkg/iot"
 )
 
