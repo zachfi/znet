@@ -6,10 +6,11 @@ import (
 	"sort"
 	sync "sync"
 
+	"github.com/go-kit/log"
+	"github.com/go-kit/log/level"
+	"github.com/grafana/dskit/services"
 	"github.com/mpvl/unique"
-	log "github.com/sirupsen/logrus"
 
-	"github.com/xaque208/znet/internal/config"
 	"github.com/xaque208/znet/pkg/iot"
 )
 
@@ -22,8 +23,13 @@ const (
 // equipment, and the configuration to add a bit of context.
 type Lights struct {
 	UnimplementedLightsServer
+
+	services.Service
+	cfg *Config
+
+	logger log.Logger
+
 	sync.Mutex
-	config   *config.LightsConfig
 	handlers []Handler
 	zones    *Zones
 }
@@ -32,13 +38,10 @@ var defaultColorPool = []string{"#006c7f", "#e32636", "#b0bf1a"}
 
 // NewLights creates and returns a new Lights object based on the received
 // configuration.
-func NewLights(cfg *config.LightsConfig) (*Lights, error) {
-	if cfg == nil {
-		return nil, ErrNilConfig
-	}
-
+func New(cfg Config, logger log.Logger) (*Lights, error) {
 	return &Lights{
-		config: cfg,
+		cfg:    &cfg,
+		logger: log.With(logger, "module", "lights"),
 		zones:  &Zones{},
 	}, nil
 }
@@ -63,17 +66,17 @@ func (l *Lights) ActionHandler(action *iot.Action) error {
 		return fmt.Errorf("%w: %s", ErrRoomNotFound, action.Zone)
 	}
 
-	log.WithFields(log.Fields{
-		"room_name": room.Name,
-		"zone":      action.Zone,
-		"device":    action.Device,
-		"event":     action.Event,
-	}).Debug("room action")
+	level.Debug(l.logger).Log("msg", "room action",
+		"room_name", room.Name,
+		"zone", action.Zone,
+		"device", action.Device,
+		"event", action.Event,
+	)
 
 	request := &LightGroupRequest{
 		Brightness: brightnessHigh,
 		Color:      "#ffffff",
-		Colors:     l.config.PartyColors,
+		Colors:     l.cfg.PartyColors,
 		Name:       room.Name,
 	}
 
@@ -112,12 +115,12 @@ func (l *Lights) ActionHandler(action *iot.Action) error {
 	}
 }
 
-func (l *Lights) getRoom(name string) *config.LightsRoom {
-	if l.config == nil {
+func (l *Lights) getRoom(name string) *LightsRoom {
+	if l.cfg == nil {
 		return nil
 	}
 
-	for _, room := range l.config.Rooms {
+	for _, room := range l.cfg.Rooms {
 		if room.Name == name {
 			return &room
 		}
@@ -132,15 +135,15 @@ func (l *Lights) getRoom(name string) *config.LightsRoom {
 func (l *Lights) configuredEventNames() ([]string, error) {
 	names := []string{}
 
-	if l.config == nil {
+	if l.cfg == nil {
 		return nil, ErrNilConfig
 	}
 
-	if l.config.Rooms == nil || len(l.config.Rooms) == 0 {
+	if l.cfg.Rooms == nil || len(l.cfg.Rooms) == 0 {
 		return nil, ErrNoRoomsConfigured
 	}
 
-	for _, r := range l.config.Rooms {
+	for _, r := range l.cfg.Rooms {
 		names = append(names, r.On...)
 		names = append(names, r.Off...)
 		names = append(names, r.Alert...)
@@ -177,7 +180,7 @@ func (l *Lights) NamedTimerHandler(ctx context.Context, e string) error {
 }
 
 func (l *Lights) SetRoomForEvent(ctx context.Context, event string) error {
-	for _, room := range l.config.Rooms {
+	for _, room := range l.cfg.Rooms {
 		for _, o := range room.On {
 			if o == event {
 				req := &LightGroupRequest{Name: room.Name}
@@ -219,7 +222,7 @@ func (l *Lights) Alert(ctx context.Context, req *LightGroupRequest) (*LightRespo
 	for _, h := range l.handlers {
 		err := h.Alert(req.Name)
 		if err != nil {
-			log.Error(err)
+			level.Error(l.logger).Log("err", err.Error())
 		}
 	}
 
@@ -281,7 +284,7 @@ func (l *Lights) RandomColor(ctx context.Context, req *LightGroupRequest) (*Ligh
 	var colors []string
 
 	if len(req.Colors) == 0 {
-		log.Debug("using default colors")
+		level.Debug(l.logger).Log("msg", "using default colors")
 		colors = defaultColorPool
 	} else {
 		colors = req.Colors
@@ -324,7 +327,7 @@ func (l *Lights) Toggle(ctx context.Context, req *LightGroupRequest) (*LightResp
 	for _, h := range l.handlers {
 		err := h.Toggle(req.Name)
 		if err != nil {
-			log.Error(err)
+			level.Error(l.logger).Log("err", err.Error())
 		}
 	}
 

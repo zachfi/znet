@@ -95,10 +95,3 @@ type VaultConfig struct {
 	CACert     string `yaml:"ca_cert,omitempty"`
 	LoginName  string `yaml:"login_name,omitempty"`
 }
-
-type MQTTConfig struct {
-	URL      string `yaml:"url,omitempty"`
-	Topic    string `yaml:"topic,omitempty"`
-	Username string `yaml:"username,omitempty"`
-	Password string `yaml:"password,omitempty"`
-}

@@ -4,16 +4,15 @@ package lights
 
 import (
 	context "context"
-	"log"
 	"net"
 	"testing"
 
+	"github.com/go-kit/log"
 	"github.com/stretchr/testify/require"
 	grpc "google.golang.org/grpc"
 	"google.golang.org/grpc/test/bufconn"
 
 	"github.com/xaque208/znet/internal/comms"
-	"github.com/xaque208/znet/internal/config"
 )
 
 const bufSize = 1024 * 1024
@@ -33,7 +32,7 @@ func TestServer(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, s)
 
-	l, err := NewLights(&config.LightsConfig{})
+	l, err := New(Config{}, log.NewNopLogger())
 	require.NoError(t, err)
 
 	l.AddHandler(h)
@@ -42,7 +41,7 @@ func TestServer(t *testing.T) {
 
 	go func() {
 		if srvError := s.Serve(lis); err != nil {
-			log.Fatalf("Server exited with error: %v", srvError)
+			t.Errorf("Server exited with error: %v", srvError)
 		}
 	}()
 

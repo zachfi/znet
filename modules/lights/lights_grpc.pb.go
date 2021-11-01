@@ -313,5 +313,5 @@ var Lights_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "internal/lights/lights.proto",
+	Metadata: "modules/lights/lights.proto",
 }

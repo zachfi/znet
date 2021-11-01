@@ -8,21 +8,20 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/xaque208/znet/internal/config"
-	"github.com/xaque208/znet/internal/inventory"
+	"github.com/xaque208/znet/modules/inventory"
 )
 
 type zigbeeLight struct {
-	config     *config.LightsConfig
+	cfg        *Config
 	inv        inventory.Inventory
 	mqttClient mqtt.Client
 }
 
 const defaultTransitionTime = 0.5
 
-func NewZigbeeLight(cfg *config.Config, mqttClient mqtt.Client, inv inventory.Inventory) (Handler, error) {
+func NewZigbeeLight(cfg Config, mqttClient mqtt.Client, inv inventory.Inventory) (Handler, error) {
 	return &zigbeeLight{
-		config:     cfg.Lights,
+		cfg:        &cfg,
 		inv:        inv,
 		mqttClient: mqttClient,
 	}, nil

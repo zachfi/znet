@@ -6,23 +6,17 @@ import (
 
 	"github.com/amimof/huego"
 	log "github.com/sirupsen/logrus"
-
-	"github.com/xaque208/znet/internal/config"
 )
 
 type hueLight struct {
-	config *config.LightsConfig
-	hue    *huego.Bridge
+	cfg *Config
+	hue *huego.Bridge
 }
 
-func NewHueLight(cfg *config.LightsConfig) (Handler, error) {
-	if cfg.Hue == nil {
-		return nil, fmt.Errorf("unable to create new hue light with nil config")
-	}
-
+func NewHueLight(cfg Config) (Handler, error) {
 	h := hueLight{
-		config: cfg,
-		hue:    huego.New(cfg.Hue.Endpoint, cfg.Hue.User),
+		cfg: &cfg,
+		hue: huego.New(cfg.Hue.Endpoint, cfg.Hue.User),
 	}
 
 	return h, nil
@@ -101,7 +95,7 @@ func (l hueLight) Off(groupName string) error {
 
 // Dim modifies the brightness of a light group.
 func (l hueLight) Dim(groupName string, brightness int32) error {
-	room, err := l.config.Room(groupName)
+	room, err := l.cfg.Room(groupName)
 	if err != nil {
 		log.Error(err)
 	}

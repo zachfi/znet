@@ -13,7 +13,7 @@ import (
 )
 
 func TestNewLights(t *testing.T) {
-	l, err := NewLights(nil)
+	l, err := New(nil)
 	require.Error(t, err, ErrNilConfig)
 	require.Nil(t, l)
 
