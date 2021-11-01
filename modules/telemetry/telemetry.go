@@ -7,18 +7,26 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-kit/log"
+	"github.com/go-kit/log/level"
+	"github.com/grafana/dskit/services"
 	"github.com/prometheus/client_golang/prometheus"
-	log "github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/xaque208/znet/internal/inventory"
-	"github.com/xaque208/znet/internal/lights"
+	"github.com/xaque208/znet/modules/inventory"
+	"github.com/xaque208/znet/modules/lights"
 	"github.com/xaque208/znet/pkg/iot"
 )
 
-type Server struct {
+type Telemetry struct {
 	UnimplementedTelemetryServer
+
+	services.Service
+	cfg *Config
+
+	logger log.Logger
+
 	inventory  inventory.Inventory
 	keeper     thingKeeper
 	lights     *lights.Lights
@@ -28,16 +36,18 @@ type Server struct {
 
 type thingKeeper map[string]map[string]string
 
-// NewServer returns a new Server.
-func NewServer(inv inventory.Inventory, lig *lights.Lights) (*Server, error) {
-	s := &Server{
+func New(cfg Config, logger log.Logger, inv inventory.Inventory, lig *lights.Lights) (*Telemetry, error) {
+	s := &Telemetry{
+		cfg:    &cfg,
+		logger: log.With(logger, "module", "telemetry"),
+
 		inventory:  inv,
 		keeper:     make(thingKeeper),
 		lights:     lig,
 		seenThings: make(map[string]time.Time),
 	}
 
-	go func(s *Server) {
+	go func(s *Telemetry) {
 		for {
 			// Make a copy
 			tMap := make(map[string]time.Time)
@@ -48,9 +58,9 @@ func NewServer(inv inventory.Inventory, lig *lights.Lights) (*Server, error) {
 			// Expire the old entries
 			for k, v := range tMap {
 				if time.Since(v) > (300 * time.Second) {
-					log.WithFields(log.Fields{
-						"device": k,
-					}).Info("expiring")
+					level.Info(s.logger).Log("msg", "expiring",
+						"device", k,
+					)
 
 					airHeatindex.Delete(prometheus.Labels{"device": k})
 					airHumidity.Delete(prometheus.Labels{"device": k})
@@ -67,11 +77,26 @@ func NewServer(inv inventory.Inventory, lig *lights.Lights) (*Server, error) {
 		}
 	}(s)
 
+	s.Service = services.NewBasicService(s.starting, s.running, s.stopping)
+
 	return s, nil
 }
 
+func (s *Telemetry) starting(ctx context.Context) error {
+	return nil
+}
+
+func (s *Telemetry) running(ctx context.Context) error {
+	<-ctx.Done()
+	return nil
+}
+
+func (s *Telemetry) stopping(_ error) error {
+	return nil
+}
+
 // storeThingLabel records the received key/value pair for the given node ID.
-func (l *Server) storeThingLabel(nodeID string, key, value string) {
+func (l *Telemetry) storeThingLabel(nodeID string, key, value string) {
 	if len(l.keeper) == 0 {
 		l.keeper = make(thingKeeper)
 	}
@@ -85,7 +110,7 @@ func (l *Server) storeThingLabel(nodeID string, key, value string) {
 	}
 }
 
-func (l *Server) nodeLabels(nodeID string) map[string]string {
+func (l *Telemetry) nodeLabels(nodeID string) map[string]string {
 	if nodeLabelMap, ok := l.keeper[nodeID]; ok {
 		return nodeLabelMap
 	}
@@ -94,7 +119,7 @@ func (l *Server) nodeLabels(nodeID string) map[string]string {
 }
 
 // hasLabels checks to see if the keeper has all of the received labels for the given node ID.
-func (l *Server) hasLabels(nodeID string, labels []string) bool {
+func (l *Telemetry) hasLabels(nodeID string, labels []string) bool {
 	nodeLabels := l.nodeLabels(nodeID)
 
 	nodeHasLabel := func(nodeLabels map[string]string, label string) bool {
@@ -117,7 +142,7 @@ func (l *Server) hasLabels(nodeID string, labels []string) bool {
 	return true
 }
 
-func (l *Server) findMACs(macs []string) ([]*inventory.NetworkHost, []*inventory.NetworkID, error) {
+func (l *Telemetry) findMACs(macs []string) ([]*inventory.NetworkHost, []*inventory.NetworkID, error) {
 	var keepHosts []*inventory.NetworkHost
 	var keepIds []*inventory.NetworkID
 
@@ -162,14 +187,7 @@ func (l *Server) findMACs(macs []string) ([]*inventory.NetworkHost, []*inventory
 	return keepHosts, keepIds, nil
 }
 
-func (l *Server) ReportNetworkID(ctx context.Context, request *inventory.NetworkID) (*inventory.Empty, error) {
-	log.WithFields(log.Fields{
-		"name":                       request.Name,
-		"ip_address":                 request.IpAddress,
-		"reporting_source":           request.ReportingSource,
-		"reporting_source_interface": request.ReportingSourceInterface,
-	}).Trace("inventory.NetworkID report")
-
+func (l *Telemetry) ReportNetworkID(ctx context.Context, request *inventory.NetworkID) (*inventory.Empty, error) {
 	if request.Name == "" {
 		return &inventory.Empty{}, fmt.Errorf("unable to fetch inventory.NetworkID with empty name")
 	}
@@ -184,7 +202,7 @@ func (l *Server) ReportNetworkID(ctx context.Context, request *inventory.Network
 		for _, x := range ids {
 			err = l.inventory.UpdateTimestamp(x.Dn, "networkHost")
 			if err != nil {
-				log.Error(err)
+				level.Error(l.logger).Log("err", err.Error())
 			}
 		}
 		return &inventory.Empty{}, nil
@@ -194,7 +212,6 @@ func (l *Server) ReportNetworkID(ctx context.Context, request *inventory.Network
 
 	// update the lastSeen for nettworkIds
 	if len(ids) > 0 {
-		log.Debugf("ids found for report: %+v", ids)
 		for _, id := range ids {
 			if id.Dn != "" {
 				x := &inventory.NetworkID{
@@ -214,7 +231,9 @@ func (l *Server) ReportNetworkID(ctx context.Context, request *inventory.Network
 		}
 	}
 
-	log.Debugf("existing mac not found: %+v", request.MacAddress)
+	level.Debug(l.logger).Log("msg", "existing mac not found",
+		"mac", request.MacAddress,
+	)
 
 	x := &inventory.NetworkID{
 		Name:                     request.Name,
@@ -236,21 +255,13 @@ func (l *Server) ReportNetworkID(ctx context.Context, request *inventory.Network
 	return &inventory.Empty{}, nil
 }
 
-func (l *Server) ReportIOTDevice(ctx context.Context, request *inventory.IOTDevice) (*inventory.Empty, error) {
+func (l *Telemetry) ReportIOTDevice(ctx context.Context, request *inventory.IOTDevice) (*inventory.Empty, error) {
 
 	var err error
 
 	if request.DeviceDiscovery == nil {
 		return nil, fmt.Errorf("unable to receive IOTDevice with nil DeviceDiscovery")
 	}
-
-	log.WithFields(log.Fields{
-		"component": request.DeviceDiscovery.Component,
-		"node_id":   request.DeviceDiscovery.NodeId,
-		"object_id": request.DeviceDiscovery.ObjectId,
-		"endpoint":  request.DeviceDiscovery.Endpoint,
-		"message":   string(request.DeviceDiscovery.Message),
-	}).Trace("inventory.IOTDevice report")
 
 	discovery := request.DeviceDiscovery
 
@@ -294,9 +305,9 @@ func (l *Server) ReportIOTDevice(ctx context.Context, request *inventory.IOTDevi
 	return &inventory.Empty{}, nil
 }
 
-func (l *Server) SetIOTServer(iotServer *iot.Server) error {
+func (l *Telemetry) SetIOTServer(iotServer *iot.Server) error {
 	if l.iotServer != nil {
-		log.Debugf("replacing iotServer on telemetryServer")
+		level.Debug(l.logger).Log("replacing iotServer on telemetryServer")
 	}
 
 	l.iotServer = iotServer
@@ -304,7 +315,7 @@ func (l *Server) SetIOTServer(iotServer *iot.Server) error {
 	return nil
 }
 
-func (l *Server) handleZigbeeReport(request *inventory.IOTDevice) error {
+func (l *Telemetry) handleZigbeeReport(request *inventory.IOTDevice) error {
 	if request == nil {
 		return fmt.Errorf("unable to read zigbee report from nil request")
 	}
@@ -374,7 +385,7 @@ func (l *Server) handleZigbeeReport(request *inventory.IOTDevice) error {
 
 		result, err := l.inventory.FetchZigbeeDevice(x.Name)
 		if err != nil {
-			log.Warn(err)
+			level.Warn(l.logger).Log("msg", err.Error())
 
 			result, err = l.inventory.CreateZigbeeDevice(x)
 			if err != nil {
@@ -391,7 +402,7 @@ func (l *Server) handleZigbeeReport(request *inventory.IOTDevice) error {
 
 			err = l.lights.ActionHandler(action)
 			if err != nil {
-				log.Error(err)
+				level.Error(l.logger).Log("err", err.Error())
 			}
 		}
 	}
@@ -399,7 +410,7 @@ func (l *Server) handleZigbeeReport(request *inventory.IOTDevice) error {
 	return nil
 }
 
-func (l *Server) handleZigbeeDevices(m iot.ZigbeeBridgeMessageDevices) error {
+func (l *Telemetry) handleZigbeeDevices(m iot.ZigbeeBridgeMessageDevices) error {
 	now := time.Now()
 
 	for _, d := range m {
@@ -425,30 +436,30 @@ func (l *Server) handleZigbeeDevices(m iot.ZigbeeBridgeMessageDevices) error {
 
 		_, err := l.inventory.FetchZigbeeDevice(x.Name)
 		if err != nil {
-			log.Error(err)
+			level.Error(l.logger).Log("err", err.Error())
 			createResult, err := l.inventory.CreateZigbeeDevice(x)
 			if err != nil {
 				return err
 			}
 
-			log.WithFields(log.Fields{
-				"name":   createResult.Name,
-				"vendor": createResult.Vendor,
-				"model":  createResult.Model,
-				"zone":   createResult.IotZone,
-			}).Debug("createResult")
+			level.Debug(l.logger).Log("msg", "create result",
+				"name", createResult.Name,
+				"vendor", createResult.Vendor,
+				"model", createResult.Model,
+				"zone", createResult.IotZone,
+			)
 		}
 	}
 
 	return nil
 }
 
-func (l *Server) handleZigbeeDeviceUpdate(m iot.ZigbeeBridgeLog) error {
+func (l *Telemetry) handleZigbeeDeviceUpdate(m iot.ZigbeeBridgeLog) error {
 	// zigbee2mqtt/bridge/request/device/ota_update/update
-	log.WithFields(log.Fields{
-		"device": m.Meta["device"],
-		"status": m.Meta["status"],
-	}).Debug("upgrade report")
+	level.Debug(l.logger).Log("msg", "upgrade report",
+		"device", m.Meta["device"],
+		"status", m.Meta["status"],
+	)
 
 	req := &iot.UpdateRequest{
 		Device: m.Meta["device"].(string),
@@ -457,14 +468,14 @@ func (l *Server) handleZigbeeDeviceUpdate(m iot.ZigbeeBridgeLog) error {
 	go func() {
 		_, err := l.iotServer.UpdateDevice(context.Background(), req)
 		if err != nil {
-			log.Error()
+			level.Error(l.logger).Log("err", err.Error())
 		}
 	}()
 
 	return nil
 }
 
-func (l *Server) handleLEDReport(request *inventory.IOTDevice) error {
+func (l *Telemetry) handleLEDReport(request *inventory.IOTDevice) error {
 	if request == nil {
 		return fmt.Errorf("unable to read led report from nil request")
 	}
@@ -489,7 +500,7 @@ func (l *Server) handleLEDReport(request *inventory.IOTDevice) error {
 	return nil
 }
 
-func (l *Server) handleWaterReport(request *inventory.IOTDevice) error {
+func (l *Telemetry) handleWaterReport(request *inventory.IOTDevice) error {
 	if request == nil {
 		return fmt.Errorf("unable to read water report from nil request")
 	}
@@ -512,7 +523,7 @@ func (l *Server) handleWaterReport(request *inventory.IOTDevice) error {
 	return nil
 }
 
-func (l *Server) handleAirReport(request *inventory.IOTDevice) error {
+func (l *Telemetry) handleAirReport(request *inventory.IOTDevice) error {
 	if request == nil {
 		return fmt.Errorf("unable to read air report from nil request")
 	}
@@ -544,7 +555,7 @@ func (l *Server) handleAirReport(request *inventory.IOTDevice) error {
 	return nil
 }
 
-func (l *Server) handleWifiReport(request *inventory.IOTDevice) error {
+func (l *Telemetry) handleWifiReport(request *inventory.IOTDevice) error {
 	if request == nil {
 		return fmt.Errorf("unable to read wifi report from nil request")
 	}

@@ -2,9 +2,9 @@ syntax = "proto3";
 
 package telemetry;
 
-option go_package = "github.com/xaque208/znet/internal/telemetry";
+option go_package = "github.com/xaque208/znet/modules/telemetry";
 
-import "internal/inventory/inventory.proto";
+import "modules/inventory/inventory.proto";
 
 service Telemetry {
   rpc ReportIOTDevice(inventory.IOTDevice) returns (inventory.Empty);

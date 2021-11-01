@@ -4,7 +4,7 @@ package telemetry
 
 import (
 	context "context"
-	inventory "github.com/xaque208/znet/internal/inventory"
+	inventory "github.com/xaque208/znet/modules/inventory"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -134,5 +134,5 @@ var Telemetry_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "internal/telemetry/telemetry.proto",
+	Metadata: "modules/telemetry/telemetry.proto",
 }
