@@ -12,8 +12,11 @@ import (
 	"github.com/weaveworks/common/server"
 	"github.com/weaveworks/common/signals"
 
-	"github.com/xaque208/znet/internal/timer"
 	"github.com/xaque208/znet/modules/harvester"
+	"github.com/xaque208/znet/modules/inventory"
+	"github.com/xaque208/znet/modules/lights"
+	"github.com/xaque208/znet/modules/telemetry"
+	"github.com/xaque208/znet/modules/timer"
 	"github.com/xaque208/znet/pkg/util"
 )
 
@@ -33,9 +36,14 @@ type Znet struct {
 	logger log.Logger
 
 	// Modules.
+	server *server.Server
+
+	telemetry *telemetry.Telemetry
 	harvester *harvester.Harvester
-	server    *server.Server
 	timer     *timer.Timer
+
+	inventory *inventory.Server
+	lights    *lights.Lights
 
 	ModuleManager *modules.Manager
 	serviceMap    map[string]services.Service

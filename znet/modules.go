@@ -11,9 +11,13 @@ import (
 	"github.com/weaveworks/common/server"
 	"github.com/xaque208/znet/internal/astro"
 	"github.com/xaque208/znet/internal/comms"
-	"github.com/xaque208/znet/internal/timer"
-	"github.com/xaque208/znet/internal/timer/named"
 	"github.com/xaque208/znet/modules/harvester"
+	"github.com/xaque208/znet/modules/inventory"
+	"github.com/xaque208/znet/modules/lights"
+	"github.com/xaque208/znet/modules/telemetry"
+	"github.com/xaque208/znet/modules/timer"
+	"github.com/xaque208/znet/modules/timer/named"
+	"github.com/xaque208/znet/pkg/iot"
 )
 
 type module int
@@ -21,10 +25,13 @@ type module int
 const (
 	Server string = "server"
 
-	// Harvester string = "harvester"
-	Timer string = "timer"
+	Harvester string = "harvester"
+	Timer     string = "timer"
 
-	// Telemetry string = "telemetry"
+	Telemetry string = "telemetry"
+	IOT       string = "iot"
+	Lights    string = "lights"
+	Inventory string = "inventory"
 
 	// TODO currently we are using openweathermap_exporter as a source of data
 	// for astro data when sending events to the server.  Perhaps it makes more
@@ -40,28 +47,31 @@ const (
 func (z *Znet) setupModuleManager() error {
 	mm := modules.NewManager(z.logger)
 	mm.RegisterModule(Server, z.initServer, modules.UserInvisibleModule)
-	// mm.RegisterModule(Harvester, z.initHarvester)
+	mm.RegisterModule(Harvester, z.initHarvester)
+	mm.RegisterModule(Telemetry, z.initTelemetry)
 	mm.RegisterModule(Timer, z.initTimer)
+	mm.RegisterModule(Lights, z.initLights)
+	// mm.RegisterModule(IOT, z.initIot)
+	mm.RegisterModule(Inventory, z.initInventory)
 	mm.RegisterModule(All, nil)
 
 	deps := map[string][]string{
 		// Server:       nil,
 
-		// Timer: {Server, Lights},
-		// IOT: {Server},
-		// Inventory: {Server},
-		// Lights: {Server},
+		// IOT:       {Server},
+		Inventory: {Server},
+		Lights:    {Server},
 		// Astro: {Server},
-		// Telemetry: {Server, IOT, Lights},
+		Telemetry: {Server, Inventory, Lights},
 
 		// TODO
 		// gitwatch:       nil,
 		// build:       nil,
 		// agent:       nil,
 
-		// Harvester: {Server},
-		Timer: {Server},
-		All:   {Server, Timer},
+		Harvester: {Server},
+		Timer:     {Server},
+		All:       {Server, Telemetry, Timer, Harvester},
 	}
 
 	for mod, targets := range deps {
@@ -75,8 +85,70 @@ func (z *Znet) setupModuleManager() error {
 	return nil
 }
 
-func (z *Znet) initTimer() (services.Service, error) {
+func (z *Znet) initLights() (services.Service, error) {
+	invClient, err := inventory.NewLDAPInventory(z.cfg.Inventory, z.logger)
+	if err != nil {
+		return nil, err
+	}
 
+	mqttClient, err := iot.NewMQTTClient(z.cfg.IOT.MQTT)
+	if err != nil {
+		return nil, err
+	}
+
+	s, err := lights.New(z.cfg.Lights, z.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	zigbee, err := lights.NewZigbeeLight(z.cfg.Lights, mqttClient, invClient)
+	if err != nil {
+		return nil, err
+	}
+
+	s.AddHandler(zigbee)
+
+	lights.RegisterLightsServer(z.Server.GRPC, s)
+	z.lights = s
+
+	return s, nil
+}
+
+func (z *Znet) initIot() (services.Service, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (z *Znet) initInventory() (services.Service, error) {
+	i, err := inventory.NewLDAPServer(z.cfg.Inventory, z.logger)
+
+	if err != nil {
+		return nil, err
+	}
+
+	inventory.RegisterInventoryServer(z.Server.GRPC, i)
+
+	z.inventory = i
+	return i, nil
+}
+
+func (z *Znet) initTelemetry() (services.Service, error) {
+	invClient, err := inventory.NewLDAPInventory(z.cfg.Inventory, z.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	t, err := telemetry.New(z.cfg.Telemetry, z.logger, invClient, z.lights)
+	if err != nil {
+		return nil, err
+	}
+
+	telemetry.RegisterTelemetryServer(z.Server.GRPC, t)
+
+	z.telemetry = t
+	return t, nil
+}
+
+func (z *Znet) initTimer() (services.Service, error) {
 	conn := comms.SlimRPCClient(z.cfg.RPC.ServerAddress)
 
 	t, err := timer.New(z.cfg.Timer, z.logger, conn)
@@ -92,7 +164,9 @@ func (z *Znet) initTimer() (services.Service, error) {
 }
 
 func (z *Znet) initHarvester() (services.Service, error) {
-	h, err := harvester.New(z.cfg.Harvester)
+	conn := comms.SlimRPCClient(z.cfg.RPC.ServerAddress)
+
+	h, err := harvester.New(z.cfg.Harvester, z.logger, conn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create harvester")
 	}
