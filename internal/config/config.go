@@ -47,10 +47,10 @@ type Config struct {
 	// Environments *[]EnvironmentConfig `yaml:"environments,omitempty"`
 	GitWatch *GitWatchConfig `yaml:"gitwatch,omitempty"`
 	HTTP     *HTTPConfig     `yaml:"http,omitempty"`
-	LDAP     *LDAPConfig     `yaml:"ldap,omitempty"`
-	Lights   *LightsConfig   `yaml:"lights,omitempty"`
-	MQTT     *MQTTConfig     `yaml:"mqtt,omitempty"`
-	Network  *NetworkConfig  `yaml:"network,omitempty"`
+	// LDAP     *LDAPConfig     `yaml:"ldap,omitempty"`
+	// Lights  *LightsConfig  `yaml:"lights,omitempty"`
+	// MQTT    *MQTTConfig    `yaml:"mqtt,omitempty"`
+	Network *NetworkConfig `yaml:"network,omitempty"`
 
 	TLS *TLSConfig `yaml:"tls,omitempty"`
 
