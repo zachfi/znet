@@ -34,16 +34,16 @@ proto-grpc:
 		pkg/iot/iot.proto \
 		internal/astro/astro.proto \
 		internal/agent/agent.proto \
-		internal/lights/lights.proto \
-		internal/timer/named/named.proto \
-		internal/inventory/inventory.proto \
-		internal/telemetry/telemetry.proto
-	@protoc -I internal/inventory/ -I ./ \
-		--gotemplate_out=template_dir=internal/inventory/templates,debug=false,single-package-mode=true,all=true:internal/inventory \
-		internal/inventory/inventory.proto
-	@protoc -I internal/inventory/ -I ./ \
+		modules/lights/lights.proto \
+		modules/timer/named/named.proto \
+		modules/inventory/inventory.proto \
+		modules/telemetry/telemetry.proto
+	@protoc -I modules/inventory/ -I ./ \
+		--gotemplate_out=template_dir=modules/inventory/templates,debug=false,single-package-mode=true,all=true:modules/inventory \
+		modules/inventory/inventory.proto
+	@protoc -I modules/inventory/ -I ./ \
 		--gotemplate_out=template_dir=cmd/templates,debug=false,single-package-mode=true,all=true:cmd \
-		internal/inventory/inventory.proto
+		modules/inventory/inventory.proto
 
 compile-all: deps-only
 	@echo "=== $(PROJECT_NAME) === [ compile          ]: building commands:"
