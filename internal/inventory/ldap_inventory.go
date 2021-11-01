@@ -7,49 +7,53 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-kit/log"
+	"github.com/go-kit/log/level"
 	ldap "github.com/go-ldap/ldap/v3"
-	log "github.com/sirupsen/logrus"
-
-	"github.com/xaque208/znet/internal/config"
+	"github.com/pkg/errors"
 )
 
 // LDAPInventory holds hte coniguration and clients necessary to retrieve information from data sources.
 type LDAPInventory struct {
-	config *config.LDAPConfig
-	conn   *ldap.Conn
-	mux    sync.Mutex
+	cfg *Config
+
+	logger log.Logger
+
+	ldapClient *ldap.Conn
+	mux        sync.Mutex
 }
 
 // NewLDAPInventory returns a new Inventory object from the received config.
-func NewLDAPInventory(cfg *config.LDAPConfig) (Inventory, error) {
-	conn, err := NewLDAPClient(cfg)
+func NewLDAPInventory(cfg Config, logger log.Logger) (*LDAPInventory, error) {
+	ldapClient, err := NewLDAPClient(cfg, logger)
 	if err != nil {
-		return nil, fmt.Errorf("failed LDAP connection: %s", err)
+		return nil, errors.Wrap(err, "failed LDAP connection")
 	}
 
-	var i Inventory = &LDAPInventory{
-		config: cfg,
-		conn:   conn,
+	i := &LDAPInventory{
+		cfg:        &cfg,
+		logger:     logger,
+		ldapClient: ldapClient,
 	}
 
 	return i, nil
 }
 
-// Close closes the LDAP client.
-func (i *LDAPInventory) Close() {
-	i.conn.Close()
+func (i *LDAPInventory) stopping() {
+	i.ldapClient.Close()
 }
 
 func (i *LDAPInventory) reconnect() error {
 	// Make sure old connection if definitely closed
 	i.mux.Lock()
 	defer i.mux.Unlock()
-	i.conn.Close()
+	i.ldapClient.Close()
 
+	// TODO verify TLS
 	// Connect to LDAP
 	l, err := ldap.DialTLS(
 		"tcp",
-		fmt.Sprintf("%s:%d", i.config.Host, 636),
+		fmt.Sprintf("%s:%d", i.cfg.Host, 636),
 		&tls.Config{InsecureSkipVerify: true},
 	)
 	if err != nil {
@@ -59,17 +63,16 @@ func (i *LDAPInventory) reconnect() error {
 	l.SetTimeout(15 * time.Second)
 
 	// First bind with a read only user
-	err = l.Bind(i.config.BindDN, i.config.BindPW)
+	err = l.Bind(i.cfg.BindDN, i.cfg.BindPW)
 	if err != nil {
 		return err
 	}
 
-	i.conn = l
+	i.ldapClient = l
 	return nil
 }
 
 func (i *LDAPInventory) SetAttribute(dn, attributeName, attributeValue string, replace bool) error {
-	log.Tracef("SetAttribute: %s: %s=%s", dn, attributeName, attributeValue)
 
 	modify := ldap.NewModifyRequest(dn, nil)
 	if replace {
@@ -78,7 +81,7 @@ func (i *LDAPInventory) SetAttribute(dn, attributeName, attributeValue string, r
 		modify.Add(attributeName, []string{attributeValue})
 	}
 
-	err := i.conn.Modify(modify)
+	err := i.ldapClient.Modify(modify)
 	if err != nil {
 		return err
 	}
@@ -94,7 +97,8 @@ func (i *LDAPInventory) UpdateTimestamp(dn string, object string) error {
 }
 
 // NewLDAPClient constructs an LDAP client to return.
-func NewLDAPClient(cfg *config.LDAPConfig) (*ldap.Conn, error) {
+func NewLDAPClient(cfg Config, logger log.Logger) (*ldap.Conn, error) {
+	logger = log.With(logger, "ldap", "client")
 
 	if cfg.BindDN == "" || cfg.BindPW == "" || cfg.BaseDN == "" {
 		return nil, fmt.Errorf("incomplete LDAP credentials, need [BindDN, BindPW, BaseDN]")
@@ -124,7 +128,7 @@ func NewLDAPClient(cfg *config.LDAPConfig) (*ldap.Conn, error) {
 			<-t.C
 
 			if l.IsClosing() {
-				log.Debug("reconnecting to LDAP...")
+				level.Debug(logger).Log("msg", "reconnecting to LDAP")
 				var err error
 				l.Close()
 
@@ -134,12 +138,12 @@ func NewLDAPClient(cfg *config.LDAPConfig) (*ldap.Conn, error) {
 					&tls.Config{InsecureSkipVerify: true},
 				)
 				if err != nil {
-					log.Error(err)
+					level.Error(logger).Log("err", err)
 				}
 
 				err = l.Bind(cfg.BindDN, cfg.BindPW)
 				if err != nil {
-					log.Error(err)
+					level.Error(logger).Log("err", err)
 				}
 			}
 		}
@@ -158,13 +162,13 @@ func stringValues(a *ldap.EntryAttribute) []string {
 	return values
 }
 
-func boolValues(a *ldap.EntryAttribute) []bool {
+func boolValues(a *ldap.EntryAttribute, logger log.Logger) []bool {
 	var values []bool
 
 	for _, b := range a.ByteValues {
 		v, err := strconv.ParseBool(string(b))
 		if err != nil {
-			log.Errorf("unable to parse bool: %+v", err)
+			level.Error(logger).Log("err", err)
 		}
 
 		values = append(values, v)

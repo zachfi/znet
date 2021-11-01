@@ -1,16 +1,33 @@
 // Code generated, do not edit
 package inventory
 
+import (
+	"github.com/go-kit/log"
+	"github.com/grafana/dskit/services"
+)
+
 // Server
 type Server struct {
 	UnimplementedInventoryServer
+
+	services.Service
+	cfg *Config
+
+	logger log.Logger
+
 	inventory Inventory
 }
 
 // NewServer is used to return a new Server, which implements the inventory RPC server.
-func NewLDAPServer(invClient Inventory) (*Server, error) {
+func NewLDAPServer(cfg Config, logger log.Logger) (*Server, error) {
+	invClient, err := NewLDAPInventory(cfg, logger)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Server{
 		inventory: invClient,
+		logger:    logger,
 	}, nil
 }
 

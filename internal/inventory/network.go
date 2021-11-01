@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/go-kit/log/level"
 	ldap "github.com/go-ldap/ldap/v3"
-	log "github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -39,16 +39,16 @@ func (i *LDAPInventory) CreateNetworkHost(x *NetworkHost) (*NetworkHost, error) 
 
 	var err error
 
-	dn := fmt.Sprintf("cn=%s,ou=zigbee,ou=network,%s", x.Name, i.config.BaseDN)
+	dn := fmt.Sprintf("cn=%s,ou=zigbee,ou=network,%s", x.Name, i.cfg.BaseDN)
 	x.Dn = dn
 
 	a := ldap.NewAddRequest(dn, []ldap.Control{})
 	a.Attribute("objectClass", []string{"networkHost", "top"})
 	a.Attribute("cn", []string{x.Name})
 
-	log.Debugf("creating new networkHost: %+v", a)
+	level.Debug(i.logger).Log("msg", "creating new networkHost", "class", fmt.Sprintf("%+v", a))
 
-	err = i.conn.Add(a)
+	err = i.ldapClient.Add(a)
 	if err != nil {
 		return nil, err
 	}
@@ -106,9 +106,9 @@ func (i *LDAPInventory) UpdateNetworkHost(x *NetworkHost) (*NetworkHost, error) 
 		a.Replace("networkHostLastSeen", []string{x.LastSeen.AsTime().Format(time.RFC3339)})
 	}
 
-	log.Debugf("updating networkHost: %+v", a)
+	level.Debug(i.logger).Log("msg", "updating networkHost", "class", fmt.Sprintf("%+v", a))
 
-	err = i.conn.Modify(a)
+	err = i.ldapClient.Modify(a)
 	if err != nil {
 		return nil, err
 	}
@@ -138,13 +138,13 @@ func (i *LDAPInventory) FetchNetworkHost(name string) (*NetworkHost, error) {
 // ListNetworkHosts retrieves all existing LDAP entries.
 // nolint:gocyclo
 func (i *LDAPInventory) ListNetworkHosts() ([]NetworkHost, error) {
-	if i.conn == nil {
+	if i.ldapClient == nil {
 		return nil, fmt.Errorf("unable to ListNetworkHosts() with nil LDAP client")
 	}
 
 	var xxx []NetworkHost
 	searchRequest := ldap.NewSearchRequest(
-		i.config.BaseDN,
+		i.cfg.BaseDN,
 		ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
 		"(&(objectClass=networkHost)(cn=*))",
 		defaultNetworkHostAttributes,
@@ -155,9 +155,9 @@ func (i *LDAPInventory) ListNetworkHosts() ([]NetworkHost, error) {
 	attempts := 0
 	for attempts < 3 {
 		attempts += 1
-		sr, err := i.conn.Search(searchRequest)
+		sr, err := i.ldapClient.Search(searchRequest)
 		if err != nil && ldap.IsErrorWithCode(err, 200) {
-			log.Info("connection is closed, trying to reconnect...")
+			level.Info(i.logger).Log("msg", "connection is closed, trying to reconnect")
 			if err = i.reconnect(); err != nil {
 				return nil, err
 			}
@@ -192,7 +192,7 @@ func (i *LDAPInventory) ListNetworkHosts() ([]NetworkHost, error) {
 			case "networkHostDescription":
 				h.Description = stringValues(a)[0]
 			case "networkHostWatch":
-				v := boolValues(a)[0]
+				v := boolValues(a, i.logger)[0]
 				h.Watch = v
 			case "networkHostInetAddress":
 				attrs := []string{}
@@ -212,7 +212,7 @@ func (i *LDAPInventory) ListNetworkHosts() ([]NetworkHost, error) {
 				for _, v := range stringValues(a) {
 					t, err := time.Parse(time.RFC3339, v)
 					if err != nil {
-						log.Errorf("unable to parse time: %s", err)
+						level.Error(i.logger).Log("msg", "unable to parse time", "err", err)
 						continue
 					}
 
@@ -250,16 +250,16 @@ func (i *LDAPInventory) CreateNetworkID(x *NetworkID) (*NetworkID, error) {
 
 	var err error
 
-	dn := fmt.Sprintf("cn=%s,ou=zigbee,ou=network,%s", x.Name, i.config.BaseDN)
+	dn := fmt.Sprintf("cn=%s,ou=zigbee,ou=network,%s", x.Name, i.cfg.BaseDN)
 	x.Dn = dn
 
 	a := ldap.NewAddRequest(dn, []ldap.Control{})
 	a.Attribute("objectClass", []string{"networkId", "top"})
 	a.Attribute("cn", []string{x.Name})
 
-	log.Debugf("creating new networkId: %+v", a)
+	level.Debug(i.logger).Log("msg", "creating new networkId", "class", fmt.Sprintf("%+v", a))
 
-	err = i.conn.Add(a)
+	err = i.ldapClient.Add(a)
 	if err != nil {
 		return nil, err
 	}
@@ -295,9 +295,9 @@ func (i *LDAPInventory) UpdateNetworkID(x *NetworkID) (*NetworkID, error) {
 		a.Replace("networkIdLastSeen", []string{x.LastSeen.AsTime().Format(time.RFC3339)})
 	}
 
-	log.Debugf("updating networkId: %+v", a)
+	level.Debug(i.logger).Log("msg", "updating networkId", "class", fmt.Sprintf("%+v", a))
 
-	err = i.conn.Modify(a)
+	err = i.ldapClient.Modify(a)
 	if err != nil {
 		return nil, err
 	}
@@ -327,13 +327,13 @@ func (i *LDAPInventory) FetchNetworkID(name string) (*NetworkID, error) {
 // ListNetworkIDs retrieves all existing LDAP entries.
 // nolint:gocyclo
 func (i *LDAPInventory) ListNetworkIDs() ([]NetworkID, error) {
-	if i.conn == nil {
+	if i.ldapClient == nil {
 		return nil, fmt.Errorf("unable to ListNetworkIDs() with nil LDAP client")
 	}
 
 	var xxx []NetworkID
 	searchRequest := ldap.NewSearchRequest(
-		i.config.BaseDN,
+		i.cfg.BaseDN,
 		ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
 		"(&(objectClass=networkId)(cn=*))",
 		defaultNetworkIDAttributes,
@@ -344,9 +344,9 @@ func (i *LDAPInventory) ListNetworkIDs() ([]NetworkID, error) {
 	attempts := 0
 	for attempts < 3 {
 		attempts += 1
-		sr, err := i.conn.Search(searchRequest)
+		sr, err := i.ldapClient.Search(searchRequest)
 		if err != nil && ldap.IsErrorWithCode(err, 200) {
-			log.Info("connection is closed, trying to reconnect...")
+			level.Info(i.logger).Log("msg", "connection is closed, trying to reconnect")
 			if err = i.reconnect(); err != nil {
 				return nil, err
 			}
@@ -388,7 +388,7 @@ func (i *LDAPInventory) ListNetworkIDs() ([]NetworkID, error) {
 				for _, v := range stringValues(a) {
 					t, err := time.Parse(time.RFC3339, v)
 					if err != nil {
-						log.Errorf("unable to parse time: %s", err)
+						level.Error(i.logger).Log("msg", "unable to parse time", "err", err)
 						continue
 					}
 
@@ -427,16 +427,16 @@ func (i *LDAPInventory) CreateL3Network(x *L3Network) (*L3Network, error) {
 
 	var err error
 
-	dn := fmt.Sprintf("cn=%s,ou=zigbee,ou=network,%s", x.Name, i.config.BaseDN)
+	dn := fmt.Sprintf("cn=%s,ou=zigbee,ou=network,%s", x.Name, i.cfg.BaseDN)
 	x.Dn = dn
 
 	a := ldap.NewAddRequest(dn, []ldap.Control{})
 	a.Attribute("objectClass", []string{"l3Network", "top"})
 	a.Attribute("cn", []string{x.Name})
 
-	log.Debugf("creating new l3Network: %+v", a)
+	level.Debug(i.logger).Log("msg", "creating new l3Network", "class", fmt.Sprintf("%+v", a))
 
-	err = i.conn.Add(a)
+	err = i.ldapClient.Add(a)
 	if err != nil {
 		return nil, err
 	}
@@ -469,9 +469,9 @@ func (i *LDAPInventory) UpdateL3Network(x *L3Network) (*L3Network, error) {
 		a.Replace("l3NetworkDescription", []string{x.Description})
 	}
 
-	log.Debugf("updating l3Network: %+v", a)
+	level.Debug(i.logger).Log("msg", "updating l3Network", "class", fmt.Sprintf("%+v", a))
 
-	err = i.conn.Modify(a)
+	err = i.ldapClient.Modify(a)
 	if err != nil {
 		return nil, err
 	}
@@ -501,13 +501,13 @@ func (i *LDAPInventory) FetchL3Network(name string) (*L3Network, error) {
 // ListL3Networks retrieves all existing LDAP entries.
 // nolint:gocyclo
 func (i *LDAPInventory) ListL3Networks() ([]L3Network, error) {
-	if i.conn == nil {
+	if i.ldapClient == nil {
 		return nil, fmt.Errorf("unable to ListL3Networks() with nil LDAP client")
 	}
 
 	var xxx []L3Network
 	searchRequest := ldap.NewSearchRequest(
-		i.config.BaseDN,
+		i.cfg.BaseDN,
 		ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
 		"(&(objectClass=l3Network)(cn=*))",
 		defaultL3NetworkAttributes,
@@ -518,9 +518,9 @@ func (i *LDAPInventory) ListL3Networks() ([]L3Network, error) {
 	attempts := 0
 	for attempts < 3 {
 		attempts += 1
-		sr, err := i.conn.Search(searchRequest)
+		sr, err := i.ldapClient.Search(searchRequest)
 		if err != nil && ldap.IsErrorWithCode(err, 200) {
-			log.Info("connection is closed, trying to reconnect...")
+			level.Info(i.logger).Log("msg", "connection is closed, trying to reconnect")
 			if err = i.reconnect(); err != nil {
 				return nil, err
 			}
@@ -580,16 +580,16 @@ func (i *LDAPInventory) CreateInetNetwork(x *InetNetwork) (*InetNetwork, error) 
 
 	var err error
 
-	dn := fmt.Sprintf("cn=%s,ou=zigbee,ou=network,%s", x.Name, i.config.BaseDN)
+	dn := fmt.Sprintf("cn=%s,ou=zigbee,ou=network,%s", x.Name, i.cfg.BaseDN)
 	x.Dn = dn
 
 	a := ldap.NewAddRequest(dn, []ldap.Control{})
 	a.Attribute("objectClass", []string{"inetNetwork", "top"})
 	a.Attribute("cn", []string{x.Name})
 
-	log.Debugf("creating new inetNetwork: %+v", a)
+	level.Debug(i.logger).Log("msg", "creating new inetNetwork", "class", fmt.Sprintf("%+v", a))
 
-	err = i.conn.Add(a)
+	err = i.ldapClient.Add(a)
 	if err != nil {
 		return nil, err
 	}
@@ -619,9 +619,9 @@ func (i *LDAPInventory) UpdateInetNetwork(x *InetNetwork) (*InetNetwork, error) 
 		a.Replace("inetNetworkDynamicRange", []string{x.DynamicRange})
 	}
 
-	log.Debugf("updating inetNetwork: %+v", a)
+	level.Debug(i.logger).Log("msg", "updating inetNetwork", "class", fmt.Sprintf("%+v", a))
 
-	err = i.conn.Modify(a)
+	err = i.ldapClient.Modify(a)
 	if err != nil {
 		return nil, err
 	}
@@ -651,13 +651,13 @@ func (i *LDAPInventory) FetchInetNetwork(name string) (*InetNetwork, error) {
 // ListInetNetworks retrieves all existing LDAP entries.
 // nolint:gocyclo
 func (i *LDAPInventory) ListInetNetworks() ([]InetNetwork, error) {
-	if i.conn == nil {
+	if i.ldapClient == nil {
 		return nil, fmt.Errorf("unable to ListInetNetworks() with nil LDAP client")
 	}
 
 	var xxx []InetNetwork
 	searchRequest := ldap.NewSearchRequest(
-		i.config.BaseDN,
+		i.cfg.BaseDN,
 		ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
 		"(&(objectClass=inetNetwork)(cn=*))",
 		defaultInetNetworkAttributes,
@@ -668,9 +668,9 @@ func (i *LDAPInventory) ListInetNetworks() ([]InetNetwork, error) {
 	attempts := 0
 	for attempts < 3 {
 		attempts += 1
-		sr, err := i.conn.Search(searchRequest)
+		sr, err := i.ldapClient.Search(searchRequest)
 		if err != nil && ldap.IsErrorWithCode(err, 200) {
-			log.Info("connection is closed, trying to reconnect...")
+			level.Info(i.logger).Log("msg", "connection is closed, trying to reconnect")
 			if err = i.reconnect(); err != nil {
 				return nil, err
 			}
@@ -723,16 +723,16 @@ func (i *LDAPInventory) CreateInet6Network(x *Inet6Network) (*Inet6Network, erro
 
 	var err error
 
-	dn := fmt.Sprintf("cn=%s,ou=zigbee,ou=network,%s", x.Name, i.config.BaseDN)
+	dn := fmt.Sprintf("cn=%s,ou=zigbee,ou=network,%s", x.Name, i.cfg.BaseDN)
 	x.Dn = dn
 
 	a := ldap.NewAddRequest(dn, []ldap.Control{})
 	a.Attribute("objectClass", []string{"inet6Network", "top"})
 	a.Attribute("cn", []string{x.Name})
 
-	log.Debugf("creating new inet6Network: %+v", a)
+	level.Debug(i.logger).Log("msg", "creating new inet6Network", "class", fmt.Sprintf("%+v", a))
 
-	err = i.conn.Add(a)
+	err = i.ldapClient.Add(a)
 	if err != nil {
 		return nil, err
 	}
@@ -759,9 +759,9 @@ func (i *LDAPInventory) UpdateInet6Network(x *Inet6Network) (*Inet6Network, erro
 		a.Replace("inet6NetworkGateway", []string{x.Gateway})
 	}
 
-	log.Debugf("updating inet6Network: %+v", a)
+	level.Debug(i.logger).Log("msg", "updating inet6Network", "class", fmt.Sprintf("%+v", a))
 
-	err = i.conn.Modify(a)
+	err = i.ldapClient.Modify(a)
 	if err != nil {
 		return nil, err
 	}
@@ -791,13 +791,13 @@ func (i *LDAPInventory) FetchInet6Network(name string) (*Inet6Network, error) {
 // ListInet6Networks retrieves all existing LDAP entries.
 // nolint:gocyclo
 func (i *LDAPInventory) ListInet6Networks() ([]Inet6Network, error) {
-	if i.conn == nil {
+	if i.ldapClient == nil {
 		return nil, fmt.Errorf("unable to ListInet6Networks() with nil LDAP client")
 	}
 
 	var xxx []Inet6Network
 	searchRequest := ldap.NewSearchRequest(
-		i.config.BaseDN,
+		i.cfg.BaseDN,
 		ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
 		"(&(objectClass=inet6Network)(cn=*))",
 		defaultInet6NetworkAttributes,
@@ -808,9 +808,9 @@ func (i *LDAPInventory) ListInet6Networks() ([]Inet6Network, error) {
 	attempts := 0
 	for attempts < 3 {
 		attempts += 1
-		sr, err := i.conn.Search(searchRequest)
+		sr, err := i.ldapClient.Search(searchRequest)
 		if err != nil && ldap.IsErrorWithCode(err, 200) {
-			log.Info("connection is closed, trying to reconnect...")
+			level.Info(i.logger).Log("msg", "connection is closed, trying to reconnect")
 			if err = i.reconnect(); err != nil {
 				return nil, err
 			}
@@ -870,16 +870,16 @@ func (i *LDAPInventory) CreateZigbeeDevice(x *ZigbeeDevice) (*ZigbeeDevice, erro
 
 	var err error
 
-	dn := fmt.Sprintf("cn=%s,ou=zigbee,ou=network,%s", x.Name, i.config.BaseDN)
+	dn := fmt.Sprintf("cn=%s,ou=zigbee,ou=network,%s", x.Name, i.cfg.BaseDN)
 	x.Dn = dn
 
 	a := ldap.NewAddRequest(dn, []ldap.Control{})
 	a.Attribute("objectClass", []string{"zigbeeDevice", "top"})
 	a.Attribute("cn", []string{x.Name})
 
-	log.Debugf("creating new zigbeeDevice: %+v", a)
+	level.Debug(i.logger).Log("msg", "creating new zigbeeDevice", "class", fmt.Sprintf("%+v", a))
 
-	err = i.conn.Add(a)
+	err = i.ldapClient.Add(a)
 	if err != nil {
 		return nil, err
 	}
@@ -933,9 +933,9 @@ func (i *LDAPInventory) UpdateZigbeeDevice(x *ZigbeeDevice) (*ZigbeeDevice, erro
 		a.Replace("zigbeeDeviceModelId", []string{x.ModelId})
 	}
 
-	log.Debugf("updating zigbeeDevice: %+v", a)
+	level.Debug(i.logger).Log("msg", "updating zigbeeDevice", "class", fmt.Sprintf("%+v", a))
 
-	err = i.conn.Modify(a)
+	err = i.ldapClient.Modify(a)
 	if err != nil {
 		return nil, err
 	}
@@ -965,13 +965,13 @@ func (i *LDAPInventory) FetchZigbeeDevice(name string) (*ZigbeeDevice, error) {
 // ListZigbeeDevices retrieves all existing LDAP entries.
 // nolint:gocyclo
 func (i *LDAPInventory) ListZigbeeDevices() ([]ZigbeeDevice, error) {
-	if i.conn == nil {
+	if i.ldapClient == nil {
 		return nil, fmt.Errorf("unable to ListZigbeeDevices() with nil LDAP client")
 	}
 
 	var xxx []ZigbeeDevice
 	searchRequest := ldap.NewSearchRequest(
-		i.config.BaseDN,
+		i.cfg.BaseDN,
 		ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
 		"(&(objectClass=zigbeeDevice)(cn=*))",
 		defaultZigbeeDeviceAttributes,
@@ -982,9 +982,9 @@ func (i *LDAPInventory) ListZigbeeDevices() ([]ZigbeeDevice, error) {
 	attempts := 0
 	for attempts < 3 {
 		attempts += 1
-		sr, err := i.conn.Search(searchRequest)
+		sr, err := i.ldapClient.Search(searchRequest)
 		if err != nil && ldap.IsErrorWithCode(err, 200) {
-			log.Info("connection is closed, trying to reconnect...")
+			level.Info(i.logger).Log("msg", "connection is closed, trying to reconnect")
 			if err = i.reconnect(); err != nil {
 				return nil, err
 			}
@@ -1012,7 +1012,7 @@ func (i *LDAPInventory) ListZigbeeDevices() ([]ZigbeeDevice, error) {
 				for _, v := range stringValues(a) {
 					t, err := time.Parse(time.RFC3339, v)
 					if err != nil {
-						log.Errorf("unable to parse time: %s", err)
+						level.Error(i.logger).Log("msg", "unable to parse time", "err", err)
 						continue
 					}
 
@@ -1064,16 +1064,16 @@ func (i *LDAPInventory) CreateIOTZone(x *IOTZone) (*IOTZone, error) {
 
 	var err error
 
-	dn := fmt.Sprintf("cn=%s,ou=zigbee,ou=network,%s", x.Name, i.config.BaseDN)
+	dn := fmt.Sprintf("cn=%s,ou=zigbee,ou=network,%s", x.Name, i.cfg.BaseDN)
 	x.Dn = dn
 
 	a := ldap.NewAddRequest(dn, []ldap.Control{})
 	a.Attribute("objectClass", []string{"iotZone", "top"})
 	a.Attribute("cn", []string{x.Name})
 
-	log.Debugf("creating new iotZone: %+v", a)
+	level.Debug(i.logger).Log("msg", "creating new iotZone", "class", fmt.Sprintf("%+v", a))
 
-	err = i.conn.Add(a)
+	err = i.ldapClient.Add(a)
 	if err != nil {
 		return nil, err
 	}
@@ -1097,9 +1097,9 @@ func (i *LDAPInventory) UpdateIOTZone(x *IOTZone) (*IOTZone, error) {
 		a.Replace("iotZoneDescription", []string{x.Description})
 	}
 
-	log.Debugf("updating iotZone: %+v", a)
+	level.Debug(i.logger).Log("msg", "updating iotZone", "class", fmt.Sprintf("%+v", a))
 
-	err = i.conn.Modify(a)
+	err = i.ldapClient.Modify(a)
 	if err != nil {
 		return nil, err
 	}
@@ -1129,13 +1129,13 @@ func (i *LDAPInventory) FetchIOTZone(name string) (*IOTZone, error) {
 // ListIOTZones retrieves all existing LDAP entries.
 // nolint:gocyclo
 func (i *LDAPInventory) ListIOTZones() ([]IOTZone, error) {
-	if i.conn == nil {
+	if i.ldapClient == nil {
 		return nil, fmt.Errorf("unable to ListIOTZones() with nil LDAP client")
 	}
 
 	var xxx []IOTZone
 	searchRequest := ldap.NewSearchRequest(
-		i.config.BaseDN,
+		i.cfg.BaseDN,
 		ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
 		"(&(objectClass=iotZone)(cn=*))",
 		defaultIOTZoneAttributes,
@@ -1146,9 +1146,9 @@ func (i *LDAPInventory) ListIOTZones() ([]IOTZone, error) {
 	attempts := 0
 	for attempts < 3 {
 		attempts += 1
-		sr, err := i.conn.Search(searchRequest)
+		sr, err := i.ldapClient.Search(searchRequest)
 		if err != nil && ldap.IsErrorWithCode(err, 200) {
-			log.Info("connection is closed, trying to reconnect...")
+			level.Info(i.logger).Log("msg", "connection is closed, trying to reconnect")
 			if err = i.reconnect(); err != nil {
 				return nil, err
 			}

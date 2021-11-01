@@ -8,7 +8,7 @@ import (
 	"time"
 
 	ldap "github.com/go-ldap/ldap/v3"
-	log "github.com/sirupsen/logrus"
+	"github.com/go-kit/log/level"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -43,7 +43,7 @@ func (i *LDAPInventory) Create{{.GetName}}(x *{{.GetName}}) (*{{.GetName}}, erro
 
   var err error
 
-	dn := fmt.Sprintf("cn=%s,ou=zigbee,ou=network,%s", x.Name, i.config.BaseDN)
+	dn := fmt.Sprintf("cn=%s,ou=zigbee,ou=network,%s", x.Name, i.cfg.BaseDN)
   x.Dn = dn
 
 	a := ldap.NewAddRequest(dn, []ldap.Control{})
@@ -58,9 +58,9 @@ func (i *LDAPInventory) Create{{.GetName}}(x *{{.GetName}}) (*{{.GetName}}, erro
     {{- end }}
   {{- end }}
 
-	log.Debugf("creating new {{$objectClass}}: %+v", a)
+  level.Debug(i.logger).Log("msg", "creating new {{$objectClass}}", "class", fmt.Sprintf("%+v", a))
 
-	err = i.conn.Add(a)
+	err = i.ldapClient.Add(a)
 	if err != nil {
 		return nil, err
 	}
@@ -127,9 +127,9 @@ func (i *LDAPInventory) Update{{.GetName}}(x *{{.GetName}}) (*{{.GetName}}, erro
 		{{- end }}
   {{- end }}
 
-	log.Debugf("updating {{$objectClass}}: %+v", a)
+  level.Debug(i.logger).Log("msg", "updating {{$objectClass}}", "class", fmt.Sprintf("%+v", a))
 
-	err = i.conn.Modify(a)
+	err = i.ldapClient.Modify(a)
 	if err != nil {
 		return nil, err
 	}
@@ -160,7 +160,7 @@ func (i *LDAPInventory) Fetch{{.GetName}}(name string) (*{{.GetName}}, error) {
 // List{{.GetName}}s retrieves all existing LDAP entries.
 // nolint:gocyclo
 func (i *LDAPInventory) List{{.GetName}}s() ([]{{.GetName}}, error) {
-	if i.conn == nil {
+	if i.ldapClient == nil {
 		return nil, fmt.Errorf("unable to List{{.GetName}}s() with nil LDAP client")
 	}
 
@@ -168,7 +168,7 @@ func (i *LDAPInventory) List{{.GetName}}s() ([]{{.GetName}}, error) {
 
 	{{- $objectClass := .GetName | kebabCase | lowerCamelCase }}
 	searchRequest := ldap.NewSearchRequest(
-		i.config.BaseDN,
+		i.cfg.BaseDN,
 		ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
 		"(&(objectClass={{$objectClass}})(cn=*))",
     default{{.GetName}}Attributes,
@@ -179,9 +179,9 @@ func (i *LDAPInventory) List{{.GetName}}s() ([]{{.GetName}}, error) {
   attempts := 0
   for attempts < 3 {
     attempts += 1
-    sr, err := i.conn.Search(searchRequest)
+    sr, err := i.ldapClient.Search(searchRequest)
     if err != nil && ldap.IsErrorWithCode(err, 200) {
-      log.Info("connection is closed, trying to reconnect...")
+      level.Info(i.logger).Log("msg", "connection is closed, trying to reconnect")
       if err = i.reconnect(); err != nil {
         return nil, err
       }
@@ -232,10 +232,10 @@ func (i *LDAPInventory) List{{.GetName}}s() ([]{{.GetName}}, error) {
 		{{- else if eq .GetType.String "TYPE_BOOL" }}
 			{{- if eq .GetLabel.String "LABEL_REPEATED" }}
 				attrs := []string{}
-				attrs = append(attrs, boolValues(a)...)
+				attrs = append(attrs, boolValues(a, i.logger)...)
 				h.{{.GetName | camelCase}} = attrs
 			{{- else }}
-				v := boolValues(a)[0]
+				v := boolValues(a, i.logger)[0]
 				h.{{.GetName | camelCase}} = v
 			{{- end }}
 		{{- else if eq .GetType.String "TYPE_MESSAGE" }}
@@ -245,7 +245,7 @@ func (i *LDAPInventory) List{{.GetName}}s() ([]{{.GetName}}, error) {
 				for _, v := range stringValues(a) {
 					t, err := time.Parse(time.RFC3339, v)
 					if err != nil {
-						log.Errorf("unable to parse time: %s", err)
+					  level.Error(i.logger).Log("msg", "unable to parse time", "err", err)
 						continue
 					}
 
