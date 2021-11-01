@@ -250,5 +250,5 @@ var Inventory_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
-	Metadata: "internal/inventory/inventory.proto",
+	Metadata: "modules/inventory/inventory.proto",
 }
