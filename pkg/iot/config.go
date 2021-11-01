@@ -1,7 +1,7 @@
 package iot
 
 type Config struct {
-	MQTT *MQTTConfig `yaml:"mqtt,omitempty"`
+	MQTT MQTTConfig `yaml:"mqtt,omitempty"`
 }
 
 type MQTTConfig struct {
