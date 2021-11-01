@@ -7,7 +7,7 @@ import (
 	"github.com/go-kit/log"
 	"github.com/pkg/errors"
 	"github.com/xaque208/znet/internal/astro"
-	"github.com/xaque208/znet/internal/timer/named"
+	"github.com/xaque208/znet/modules/timer/named"
 	"google.golang.org/grpc"
 
 	"github.com/grafana/dskit/services"
@@ -29,6 +29,7 @@ type Timer struct {
 }
 
 func New(cfg Config, logger log.Logger, conn *grpc.ClientConn) (*Timer, error) {
+
 	var err error
 	subservices := []services.Service(nil)
 

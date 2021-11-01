@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/xaque208/znet/internal/config"
-	"github.com/xaque208/znet/internal/lights"
+	"github.com/xaque208/znet/modules/lights"
 )
 
 func TestServer(t *testing.T) {

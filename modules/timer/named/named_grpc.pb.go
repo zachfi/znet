@@ -133,5 +133,5 @@ var Named_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "internal/timer/named/named.proto",
+	Metadata: "modules/timer/named/named.proto",
 }
