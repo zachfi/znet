@@ -36,7 +36,7 @@ type Znet struct {
 	logger log.Logger
 
 	// Modules.
-	server *server.Server
+	// server *server.Server
 
 	telemetry *telemetry.Telemetry
 	harvester *harvester.Harvester
