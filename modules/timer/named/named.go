@@ -66,6 +66,10 @@ func (t *Named) Schedule(ctx context.Context, req *NamedTimeStamp) (*Empty, erro
 }
 
 func (n *Named) starting(ctx context.Context) error {
+	if len(n.cfg.Events) == 0 && len(n.cfg.RepeatEvents) == 0 {
+		return fmt.Errorf("no Events or RepeatEvents config")
+	}
+
 	return nil
 }
 
