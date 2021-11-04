@@ -3,13 +3,14 @@
 package telemetry
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"testing"
 
+	"github.com/go-kit/log"
 	"github.com/stretchr/testify/require"
 
-	"github.com/xaque208/znet/internal/config"
 	"github.com/xaque208/znet/modules/inventory"
 	"github.com/xaque208/znet/modules/lights"
 	"github.com/xaque208/znet/pkg/iot"
@@ -18,21 +19,31 @@ import (
 var zigbeeDeviceName string = "0x00158d0004238a81"
 
 func TestNewServer(t *testing.T) {
+	t.Parallel()
+
+	buf := &bytes.Buffer{}
+	logger := log.NewLogfmtLogger(buf)
+
 	l := &lights.Lights{}
 	h := &lights.MockLight{}
 	l.AddHandler(h)
 
-	s, err := NewServer(&inventory.MockInventory{}, l)
+	s, err := New(Config{}, logger, &inventory.MockInventory{}, l)
 	require.NoError(t, err)
 	require.NotNil(t, s)
 }
 
 func TestReportIOTDevice_nilDiscovery(t *testing.T) {
+	t.Parallel()
+
+	buf := &bytes.Buffer{}
+	logger := log.NewLogfmtLogger(buf)
+
 	l := &lights.Lights{}
 	h := &lights.MockLight{}
 	l.AddHandler(h)
 
-	s, err := NewServer(&inventory.MockInventory{}, l)
+	s, err := New(Config{}, logger, &inventory.MockInventory{}, l)
 	require.NoError(t, err)
 	require.NotNil(t, s)
 
@@ -44,6 +55,11 @@ func TestReportIOTDevice_nilDiscovery(t *testing.T) {
 }
 
 func TestReportIOTDevice_lights_handling(t *testing.T) {
+	t.Parallel()
+
+	buf := &bytes.Buffer{}
+	logger := log.NewLogfmtLogger(buf)
+
 	testCases := []struct {
 		Handler *lights.MockLight
 		Req     *inventory.IOTDevice
@@ -120,9 +136,9 @@ func TestReportIOTDevice_lights_handling(t *testing.T) {
 
 	for _, tc := range testCases {
 
-		lightsConfig := &config.LightsConfig{
+		lightsConfig := lights.Config{
 			PartyColors: []string{"#f33333"},
-			Rooms: []config.LightsRoom{
+			Rooms: []lights.LightsRoom{
 				{
 					Name: "dungeon",
 				},
@@ -130,7 +146,7 @@ func TestReportIOTDevice_lights_handling(t *testing.T) {
 		}
 
 		// l := &lights.Lights{}
-		l, err := lights.NewLights(lightsConfig)
+		l, err := lights.New(lightsConfig, logger)
 		require.NoError(t, err)
 		require.NotNil(t, l)
 		h := &lights.MockLight{}
@@ -142,7 +158,7 @@ func TestReportIOTDevice_lights_handling(t *testing.T) {
 			IotZone: "dungeon",
 		}
 
-		s, err := NewServer(i, l)
+		s, err := New(Config{}, logger, i, l)
 		require.NoError(t, err)
 		require.NotNil(t, s)
 		response, err := s.ReportIOTDevice(context.Background(), tc.Req)
@@ -160,6 +176,11 @@ func TestReportIOTDevice_lights_handling(t *testing.T) {
 }
 
 func TestReportIOTDevice_bridge_state(t *testing.T) {
+	t.Parallel()
+
+	buf := &bytes.Buffer{}
+	logger := log.NewLogfmtLogger(buf)
+
 	testCases := []struct {
 		Req *inventory.IOTDevice
 		Inv *inventory.MockInventory
@@ -244,9 +265,9 @@ func TestReportIOTDevice_bridge_state(t *testing.T) {
 
 	for _, tc := range testCases {
 
-		lightsConfig := &config.LightsConfig{
+		lightsConfig := lights.Config{
 			PartyColors: []string{"#f33333"},
-			Rooms: []config.LightsRoom{
+			Rooms: []lights.LightsRoom{
 				{
 					Name: "dungeon",
 				},
@@ -254,7 +275,7 @@ func TestReportIOTDevice_bridge_state(t *testing.T) {
 		}
 
 		// l := &lights.Lights{}
-		l, err := lights.NewLights(lightsConfig)
+		l, err := lights.New(lightsConfig, logger)
 		require.NoError(t, err)
 		require.NotNil(t, l)
 
@@ -273,7 +294,7 @@ func TestReportIOTDevice_bridge_state(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, iotServer)
 
-		s, err := NewServer(i, l)
+		s, err := New(Config{}, logger, i, l)
 		require.NoError(t, err)
 		require.NotNil(t, s)
 
