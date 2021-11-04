@@ -7,7 +7,6 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/xaque208/znet/internal/config"
 	"github.com/xaque208/znet/modules/inventory"
 	"github.com/xaque208/znet/pkg/iot"
 )
@@ -21,7 +20,7 @@ func TestZigbeeLight_New(t *testing.T) {
 	invClient := &inventory.MockInventory{}
 	mqttClient := &iot.MockClient{}
 
-	l, err := NewZigbeeLight(&config.Config{}, mqttClient, invClient)
+	l, err := NewZigbeeLight(Config{}, mqttClient, invClient)
 	require.NoError(t, err)
 	require.NotNil(t, l)
 
@@ -29,6 +28,9 @@ func TestZigbeeLight_New(t *testing.T) {
 		{
 			IotZone: "group1",
 			Name:    "testdevice1",
+			Vendor:  "Philips",
+			Type:    "Router",
+			ModelId: "LCA003",
 		},
 	}
 
@@ -59,5 +61,33 @@ func TestZigbeeLight_New(t *testing.T) {
 	require.NoError(t, l.Toggle("group1"))
 	require.Equal(t, "zigbee2mqtt/testdevice1/set", mqttClient.LastPublishTopic)
 	require.Equal(t, `{"state":"TOGGLE","transition":0.5}`, mqttClient.LastPublishPayload)
+
+}
+
+func TestIsLightDevice(t *testing.T) {
+
+	cases := []struct {
+		d            inventory.ZigbeeDevice
+		isLight      bool
+		isColorLight bool
+	}{
+		{
+			d: inventory.ZigbeeDevice{
+				Vendor:  "Philips",
+				Type:    "Router",
+				ModelId: "LCA003",
+			},
+			isLight:      true,
+			isColorLight: true,
+		},
+	}
+
+	for _, tc := range cases {
+		light := isLightDevice(tc.d)
+		require.Equal(t, tc.isLight, light)
+
+		color := isColorLightDevice(tc.d)
+		require.Equal(t, tc.isColorLight, color)
+	}
 
 }

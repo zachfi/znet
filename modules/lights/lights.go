@@ -101,7 +101,7 @@ func (l *Lights) ActionHandler(action *iot.Action) error {
 	case "single", "press":
 		_, err := l.Toggle(ctx, request)
 		return err
-	case "on", "double", "tap", "rotate_right", "wakeup", "slide":
+	case "on", "double", "tap", "rotate_right", "slide":
 		_, err := l.On(ctx, request)
 		if err != nil {
 			return err
@@ -127,6 +127,8 @@ func (l *Lights) ActionHandler(action *iot.Action) error {
 	case "many":
 		_, err := l.Alert(ctx, request)
 		return err
+	case "wakeup": // do nothing
+		return nil
 	default:
 		return fmt.Errorf("%s: %w", action.Event, ErrUnknownActionEvent)
 	}

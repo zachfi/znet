@@ -3,36 +3,42 @@
 package lights
 
 import (
+	"bytes"
 	context "context"
 	"testing"
 
+	"github.com/go-kit/log"
 	"github.com/stretchr/testify/require"
 
-	"github.com/xaque208/znet/internal/config"
 	"github.com/xaque208/znet/pkg/iot"
 )
 
 func TestNewLights(t *testing.T) {
-	l, err := New(nil)
-	require.Error(t, err, ErrNilConfig)
-	require.Nil(t, l)
+	t.Parallel()
 
-	// with config
-	c := &config.LightsConfig{
-		Rooms: []config.LightsRoom{},
+	buf := &bytes.Buffer{}
+	logger := log.NewLogfmtLogger(buf)
+
+	c := Config{
+		Rooms: []LightsRoom{},
 	}
 
-	l, err = NewLights(c)
+	l, err := New(c, logger)
 	require.NoError(t, err)
 	require.NotNil(t, l)
 }
 
 func TestAddHandler(t *testing.T) {
-	c := &config.LightsConfig{
-		Rooms: []config.LightsRoom{},
+	t.Parallel()
+
+	buf := &bytes.Buffer{}
+	logger := log.NewLogfmtLogger(buf)
+
+	c := Config{
+		Rooms: []LightsRoom{},
 	}
 
-	l, err := NewLights(c)
+	l, err := New(c, logger)
 	require.NoError(t, err)
 	require.NotNil(t, l)
 
@@ -44,27 +50,31 @@ func TestAddHandler(t *testing.T) {
 }
 
 func TestConfiguredEventNames(t *testing.T) {
+	t.Parallel()
+
+	buf := &bytes.Buffer{}
+	logger := log.NewLogfmtLogger(buf)
 
 	cases := []struct {
-		config *config.LightsConfig
+		config Config
 		names  []string
 		err    error
 	}{
 		{
-			config: nil,
+			config: Config{},
 			names:  nil,
-			err:    ErrNilConfig,
+			err:    ErrNoRoomsConfigured,
 		},
 		{
-			config: &config.LightsConfig{
-				Rooms: []config.LightsRoom{},
+			config: Config{
+				Rooms: []LightsRoom{},
 			},
 			names: nil,
 			err:   ErrNoRoomsConfigured,
 		},
 		{
-			config: &config.LightsConfig{
-				Rooms: []config.LightsRoom{
+			config: Config{
+				Rooms: []LightsRoom{
 					{
 						On:  []string{"one"},
 						Off: []string{"two"},
@@ -77,41 +87,39 @@ func TestConfiguredEventNames(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		l, err := NewLights(tc.config)
-		if tc.config == nil {
-			require.Error(t, err, ErrNilConfig)
-			require.Nil(t, l)
-			continue
-		} else {
-			require.NoError(t, err)
-			require.NotNil(t, l)
-		}
+		l, err := New(tc.config, logger)
+		require.NoError(t, err)
+		require.NotNil(t, l)
 
 		names, err := l.configuredEventNames()
 		require.Equal(t, tc.err, err)
 		require.Equal(t, tc.names, names)
-
 	}
 
 }
 
 func TestNamedTimerHandler(t *testing.T) {
+	t.Parallel()
+
+	buf := &bytes.Buffer{}
+	logger := log.NewLogfmtLogger(buf)
+
 	cases := map[string]struct {
 		event  string
 		mock   *MockLight
 		err    error
-		config *config.LightsConfig
+		config Config
 	}{
 		"no config": {
-			config: &config.LightsConfig{},
+			config: Config{},
 			event:  "Now",
 			mock:   &MockLight{},
 			err:    ErrNoRoomsConfigured,
 		},
 		"On": {
 			event: "Later",
-			config: &config.LightsConfig{
-				Rooms: []config.LightsRoom{
+			config: Config{
+				Rooms: []LightsRoom{
 					{
 						Name: "zone1",
 						On:   []string{"Later"},
@@ -124,8 +132,8 @@ func TestNamedTimerHandler(t *testing.T) {
 		},
 		"Off": {
 			event: "Later",
-			config: &config.LightsConfig{
-				Rooms: []config.LightsRoom{
+			config: Config{
+				Rooms: []LightsRoom{
 					{
 						Name: "zone1",
 						Off:  []string{"Later"},
@@ -138,8 +146,8 @@ func TestNamedTimerHandler(t *testing.T) {
 		},
 		"Dim": {
 			event: "Later",
-			config: &config.LightsConfig{
-				Rooms: []config.LightsRoom{
+			config: Config{
+				Rooms: []LightsRoom{
 					{
 						Name: "zone1",
 						Dim:  []string{"Later"},
@@ -152,8 +160,8 @@ func TestNamedTimerHandler(t *testing.T) {
 		},
 		"Alert": {
 			event: "Later",
-			config: &config.LightsConfig{
-				Rooms: []config.LightsRoom{
+			config: Config{
+				Rooms: []LightsRoom{
 					{
 						Name:  "zone1",
 						Alert: []string{"Later"},
@@ -166,8 +174,8 @@ func TestNamedTimerHandler(t *testing.T) {
 		},
 		"unknown event": {
 			event: "Later",
-			config: &config.LightsConfig{
-				Rooms: []config.LightsRoom{
+			config: Config{
+				Rooms: []LightsRoom{
 					{
 						Name: "zone1",
 					},
@@ -181,7 +189,7 @@ func TestNamedTimerHandler(t *testing.T) {
 	for _, tc := range cases {
 		h := &MockLight{}
 
-		l, err := NewLights(tc.config)
+		l, err := New(tc.config, logger)
 		require.NoError(t, err)
 
 		l.AddHandler(h)
@@ -195,21 +203,26 @@ func TestNamedTimerHandler(t *testing.T) {
 }
 
 func TestActionHandler(t *testing.T) {
+	t.Parallel()
+
+	buf := &bytes.Buffer{}
+	logger := log.NewLogfmtLogger(buf)
+
 	cases := map[string]struct {
 		action *iot.Action
 		mock   *MockLight
 		err    error
-		config *config.LightsConfig
+		config Config
 	}{
 		"no config": {
-			config: &config.LightsConfig{},
+			config: Config{},
 			action: &iot.Action{},
 			mock:   &MockLight{},
 			err:    ErrRoomNotFound,
 		},
 		"simple toggle": {
-			config: &config.LightsConfig{
-				Rooms: []config.LightsRoom{
+			config: Config{
+				Rooms: []LightsRoom{
 					{
 						Name: "zone",
 						On:   []string{"one"},
@@ -230,8 +243,8 @@ func TestActionHandler(t *testing.T) {
 				Event: "double",
 				Zone:  "zone1",
 			},
-			config: &config.LightsConfig{
-				Rooms: []config.LightsRoom{
+			config: Config{
+				Rooms: []LightsRoom{
 					{
 						Name: "zone1",
 					},
@@ -248,8 +261,8 @@ func TestActionHandler(t *testing.T) {
 				Event: "triple",
 				Zone:  "zone1",
 			},
-			config: &config.LightsConfig{
-				Rooms: []config.LightsRoom{
+			config: Config{
+				Rooms: []LightsRoom{
 					{
 						Name: "zone1",
 					},
@@ -264,8 +277,8 @@ func TestActionHandler(t *testing.T) {
 				Event: "quadruple",
 				Zone:  "zone1",
 			},
-			config: &config.LightsConfig{
-				Rooms: []config.LightsRoom{
+			config: Config{
+				Rooms: []LightsRoom{
 					{
 						Name: "zone1",
 					},
@@ -280,8 +293,8 @@ func TestActionHandler(t *testing.T) {
 				Event: "hold",
 				Zone:  "zone1",
 			},
-			config: &config.LightsConfig{
-				Rooms: []config.LightsRoom{
+			config: Config{
+				Rooms: []LightsRoom{
 					{
 						Name: "zone1",
 					},
@@ -296,8 +309,8 @@ func TestActionHandler(t *testing.T) {
 				Event: "release",
 				Zone:  "zone1",
 			},
-			config: &config.LightsConfig{
-				Rooms: []config.LightsRoom{
+			config: Config{
+				Rooms: []LightsRoom{
 					{
 						Name: "zone1",
 					},
@@ -312,8 +325,8 @@ func TestActionHandler(t *testing.T) {
 				Event: "many",
 				Zone:  "zone1",
 			},
-			config: &config.LightsConfig{
-				Rooms: []config.LightsRoom{
+			config: Config{
+				Rooms: []LightsRoom{
 					{
 						Name: "zone1",
 					},
@@ -328,7 +341,7 @@ func TestActionHandler(t *testing.T) {
 	for _, tc := range cases {
 		h := &MockLight{}
 
-		l, err := NewLights(tc.config)
+		l, err := New(tc.config, logger)
 		require.NoError(t, err)
 
 		l.AddHandler(h)
@@ -344,6 +357,10 @@ func TestActionHandler(t *testing.T) {
 }
 
 func TestAlert(t *testing.T) {
+	t.Parallel()
+
+	buf := &bytes.Buffer{}
+	logger := log.NewLogfmtLogger(buf)
 
 	testCases := []struct {
 		Handler *MockLight
@@ -351,7 +368,7 @@ func TestAlert(t *testing.T) {
 
 	for _, tc := range testCases {
 		h := &MockLight{}
-		l, err := NewLights(&config.LightsConfig{})
+		l, err := New(Config{}, logger)
 		require.NoError(t, err)
 
 		l.AddHandler(h)

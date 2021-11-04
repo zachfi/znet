@@ -34,6 +34,10 @@ func (l zigbeeLight) Toggle(groupName string) error {
 	}
 
 	for i := range devices {
+		if !isLightDevice(devices[i]) {
+			continue
+		}
+
 		if devices[i].IotZone != groupName {
 			continue
 		}
@@ -63,6 +67,10 @@ func (l zigbeeLight) Alert(groupName string) error {
 	}
 
 	for i := range devices {
+		if !isLightDevice(devices[i]) {
+			continue
+		}
+
 		if devices[i].IotZone != groupName {
 			continue
 		}
@@ -90,6 +98,10 @@ func (l zigbeeLight) On(groupName string) error {
 	}
 
 	for i := range devices {
+		if !isLightDevice(devices[i]) {
+			continue
+		}
+
 		if devices[i].IotZone != groupName {
 			continue
 		}
@@ -118,6 +130,10 @@ func (l zigbeeLight) Off(groupName string) error {
 	}
 
 	for i := range devices {
+		if !isLightDevice(devices[i]) {
+			continue
+		}
+
 		if devices[i].IotZone != groupName {
 			continue
 		}
@@ -146,6 +162,10 @@ func (l zigbeeLight) Dim(groupName string, brightness int32) error {
 	}
 
 	for i := range devices {
+		if !isLightDevice(devices[i]) {
+			continue
+		}
+
 		if devices[i].IotZone != groupName {
 			continue
 		}
@@ -175,6 +195,10 @@ func (l zigbeeLight) SetColor(groupName string, hex string) error {
 	}
 
 	for i := range devices {
+		if !isColorLightDevice(devices[i]) {
+			continue
+		}
+
 		if devices[i].IotZone != groupName {
 			continue
 		}
@@ -206,6 +230,10 @@ func (l zigbeeLight) RandomColor(groupName string, hex []string) error {
 	}
 
 	for i := range devices {
+		if !isColorLightDevice(devices[i]) {
+			continue
+		}
+
 		if devices[i].IotZone != groupName {
 			continue
 		}
@@ -228,4 +256,26 @@ func (l zigbeeLight) RandomColor(groupName string, hex []string) error {
 	}
 
 	return nil
+}
+
+func isLightDevice(z inventory.ZigbeeDevice) bool {
+	switch z.Vendor {
+	case "Philips":
+		if z.Type == "Router" {
+			return true
+		}
+	}
+
+	return false
+}
+
+func isColorLightDevice(z inventory.ZigbeeDevice) bool {
+	switch z.Vendor {
+	case "Philips":
+		if z.ModelId == "LCA003" {
+			return true
+		}
+	}
+
+	return false
 }
