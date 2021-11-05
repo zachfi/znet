@@ -24,8 +24,6 @@ github.com/ProtonMail/go-crypto/openpgp/packet
 github.com/ProtonMail/go-crypto/openpgp/s2k
 # github.com/acomagu/bufpipe v1.0.3
 github.com/acomagu/bufpipe
-# github.com/amimof/huego v1.2.0
-github.com/amimof/huego
 # github.com/antchfx/htmlquery v1.2.4
 github.com/antchfx/htmlquery
 # github.com/antchfx/xpath v1.2.0
@@ -350,7 +348,7 @@ github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
 # github.com/subosito/gotenv v1.2.0
 github.com/subosito/gotenv
-# github.com/uber/jaeger-client-go v2.28.0+incompatible
+# github.com/uber/jaeger-client-go v2.29.1+incompatible
 github.com/uber/jaeger-client-go
 github.com/uber/jaeger-client-go/config
 github.com/uber/jaeger-client-go/internal/baggage

@@ -4,7 +4,6 @@ go 1.13
 
 require (
 	github.com/HdrHistogram/hdrhistogram-go v1.0.1 // indirect
-	github.com/amimof/huego v1.2.0
 	github.com/antchfx/htmlquery v1.2.4
 	github.com/armon/go-metrics v0.3.6 // indirect
 	github.com/blang/semver/v4 v4.0.0
@@ -17,6 +16,7 @@ require (
 	github.com/go-ldap/ldap/v3 v3.4.1
 	github.com/go-test/deep v1.0.7 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
+	github.com/golang/protobuf v1.5.2
 	github.com/grafana/dskit v0.0.0-20211015163529-3a65fbdcfc45
 	github.com/grpc-ecosystem/go-grpc-middleware v1.2.2 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
@@ -28,7 +28,6 @@ require (
 	github.com/hashicorp/vault/sdk v0.2.2-0.20211005222123-93e045565e4a
 	github.com/iancoleman/strcase v0.2.0
 	github.com/imdario/mergo v0.3.12
-	github.com/jarcoal/httpmock v1.0.8 // indirect
 	github.com/johanbrandhorst/certify v1.9.0
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 	github.com/lib/pq v1.10.3 // indirect
@@ -38,7 +37,9 @@ require (
 	github.com/mpvl/unique v0.0.0-20150818121801-cbe035fff7de
 	github.com/oklog/run v1.1.0 // indirect
 	github.com/olekukonko/tablewriter v0.0.5
+	github.com/opentracing-contrib/go-grpc v0.0.0-20210225150812-73cb765af46e
 	github.com/opentracing-contrib/go-stdlib v1.0.0 // indirect
+	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.11.0
 	github.com/prometheus/common v0.32.1
@@ -48,6 +49,7 @@ require (
 	github.com/spf13/viper v1.9.0
 	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/stretchr/testify v1.7.0
+	github.com/uber/jaeger-client-go v2.29.1+incompatible
 	github.com/uber/jaeger-lib v2.4.1+incompatible // indirect
 	github.com/weaveworks/common v0.0.0-20211015155308-ebe5bdc2c89e
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5
