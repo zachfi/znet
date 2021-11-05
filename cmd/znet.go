@@ -32,8 +32,9 @@ import (
 )
 
 var (
-	cfgFile string
-	target  string
+	cfgFile         string
+	target          string
+	tracingEndpoint string
 
 	verbose bool
 	trace   bool
@@ -124,6 +125,9 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&target, "target", "t", "all", "Run a specific module")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Increase verbosity")
 	rootCmd.PersistentFlags().BoolVarP(&trace, "trace", "", false, "Trace level verbosity")
+	rootCmd.PersistentFlags().StringVarP(&tracingEndpoint, "tracing-endpoint", "", "", "Jaeger reporter endpoint URL")
+
+	rootCmd.MarkFlagRequired("tracing-endpoint")
 
 	rootCmd.AddCommand(inventoryCommand)
 }
