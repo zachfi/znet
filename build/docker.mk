@@ -16,5 +16,8 @@ docker-login:
 	@echo "=== $(PROJECT_NAME) === [ docker-login     ]: username: '$$DOCKER_USERNAME'"
 	@echo ${DOCKER_PASSWORD} | $(DOCKER) login -u ${DOCKER_USERNAME} --password-stdin
 
+docker:
+	docker build -t xaque208/znet .
+
 
 .PHONY: docker-login

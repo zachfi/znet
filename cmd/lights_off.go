@@ -15,15 +15,7 @@
 package cmd
 
 import (
-	"context"
-
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-	"google.golang.org/grpc"
-
-	"github.com/xaque208/znet/internal/lights"
-	"github.com/xaque208/znet/znet"
 )
 
 // offCmd represents the off command
@@ -36,53 +28,53 @@ and usage of using your command. For example:
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
-	Run: off,
+	// Run: off,
 }
 
-func init() {
-	lightsCmd.AddCommand(offCmd)
-}
+// func init() {
+// 	lightsCmd.AddCommand(offCmd)
+// }
 
-func off(cmd *cobra.Command, args []string) {
-	if verbose {
-		log.SetLevel(log.DebugLevel)
-	} else {
-		log.SetLevel(log.WarnLevel)
-	}
+// func off(cmd *cobra.Command, args []string) {
+// 	if verbose {
+// 		log.SetLevel(log.DebugLevel)
+// 	} else {
+// 		log.SetLevel(log.WarnLevel)
+// 	}
 
-	z, err := znet.NewZnet(cfgFile)
-	if err != nil {
-		log.Error(err)
-	}
+// 	z, err := znet.NewZnet(cfgFile)
+// 	if err != nil {
+// 		log.Error(err)
+// 	}
 
-	z.Config.RPC.ServerAddress = viper.GetString("rpc.server_address")
+// 	z.Config.RPC.ServerAddress = viper.GetString("rpc.server_address")
 
-	var opts []grpc.DialOption
-	opts = append(opts, grpc.WithInsecure())
+// 	var opts []grpc.DialOption
+// 	opts = append(opts, grpc.WithInsecure())
 
-	conn, err := grpc.Dial(z.Config.RPC.ServerAddress, opts...)
-	if err != nil {
-		log.Error(err)
-	}
+// 	conn, err := grpc.Dial(z.Config.RPC.ServerAddress, opts...)
+// 	if err != nil {
+// 		log.Error(err)
+// 	}
 
-	defer func() {
-		err = conn.Close()
-		if err != nil {
-			log.Error(err)
-		}
-	}()
+// 	defer func() {
+// 		err = conn.Close()
+// 		if err != nil {
+// 			log.Error(err)
+// 		}
+// 	}()
 
-	lc := lights.NewLightsClient(conn)
+// 	lc := lights.NewLightsClient(conn)
 
-	req := &lights.LightGroupRequest{
-		Name: roomName,
-	}
+// 	req := &lights.LightGroupRequest{
+// 		Name: roomName,
+// 	}
 
-	res, err := lc.Off(context.Background(), req)
-	if err != nil {
-		log.Error(err)
-	}
+// 	res, err := lc.Off(context.Background(), req)
+// 	if err != nil {
+// 		log.Error(err)
+// 	}
 
-	log.Infof("RPC Response: %+v", res)
+// 	log.Infof("RPC Response: %+v", res)
 
-}
+// }

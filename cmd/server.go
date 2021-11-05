@@ -15,17 +15,7 @@
 package cmd
 
 import (
-	"os"
-	"os/signal"
-	"strings"
-	"syscall"
-
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-
-	"github.com/xaque208/znet/internal/config"
-	"github.com/xaque208/znet/znet"
 )
 
 // serverCmd represents the listen command
@@ -36,7 +26,7 @@ var serverCmd = &cobra.Command{
 
 `,
 	Example: "znet server -v --trace",
-	Run:     server,
+	// Run:     server,
 }
 
 var listenAddr string
@@ -49,61 +39,61 @@ func init() {
 	serverCmd.PersistentFlags().StringVarP(&rpcListenAddr, "rpc", "r", ":8800", "Specify RPC listen address")
 }
 
-func server(cmd *cobra.Command, args []string) {
-	initLogger()
+// func server(cmd *cobra.Command, args []string) {
+// 	initLogger()
 
-	// Handle environment variables
-	replacer := strings.NewReplacer(".", "_")
-	viper.SetEnvKeyReplacer(replacer)
+// 	// Handle environment variables
+// 	replacer := strings.NewReplacer(".", "_")
+// 	viper.SetEnvKeyReplacer(replacer)
 
-	viper.AutomaticEnv()
+// 	viper.AutomaticEnv()
 
-	z, err := znet.NewZnet(cfgFile)
-	if err != nil {
-		log.Fatal(err)
-	}
+// 	z, err := znet.NewZnet(cfgFile)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
 
-	viper.SetDefault("http.listen_address", listenAddr)
-	viper.SetDefault("rpc.listen_address", rpcListenAddr)
+// 	viper.SetDefault("http.listen_address", listenAddr)
+// 	viper.SetDefault("rpc.listen_address", rpcListenAddr)
 
-	if z.Config.RPC == nil {
-		z.Config.RPC = &config.RPCConfig{}
-	}
+// 	if z.Config.RPC == nil {
+// 		z.Config.RPC = &config.RPCConfig{}
+// 	}
 
-	z.Config.RPC.ListenAddress = viper.GetString("rpc.listen_address")
+// 	z.Config.RPC.ListenAddress = viper.GetString("rpc.listen_address")
 
-	if z.Config.HTTP == nil {
-		z.Config.HTTP = &config.HTTPConfig{}
-	}
+// 	if z.Config.HTTP == nil {
+// 		z.Config.HTTP = &config.HTTPConfig{}
+// 	}
 
-	z.Config.HTTP.ListenAddress = viper.GetString("http.listen_address")
+// 	z.Config.HTTP.ListenAddress = viper.GetString("http.listen_address")
 
-	sigs := make(chan os.Signal, 1)
-	done := make(chan bool, 1)
+// 	sigs := make(chan os.Signal, 1)
+// 	done := make(chan bool, 1)
 
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+// 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
-	go func() {
-		sig := <-sigs
-		log.Warnf("caught signal: %s", sig.String())
+// 	go func() {
+// 		sig := <-sigs
+// 		log.Warnf("caught signal: %s", sig.String())
 
-		done <- true
-	}()
+// 		done <- true
+// 	}()
 
-	server, err := znet.NewServer(z.Config)
-	if err != nil {
-		log.Fatal(err)
-	}
+// 	server, err := znet.NewServer(z.Config)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
 
-	err = server.Start(z)
-	if err != nil {
-		log.Error(err)
-	}
+// 	err = server.Start(z)
+// 	if err != nil {
+// 		log.Error(err)
+// 	}
 
-	<-done
+// 	<-done
 
-	err = server.Stop()
-	if err != nil {
-		log.Error(err)
-	}
-}
+// 	err = server.Stop()
+// 	if err != nil {
+// 		log.Error(err)
+// 	}
+// }
