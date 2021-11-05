@@ -56,7 +56,7 @@ func (e *Server) ListNetworkHosts(req *Empty, stream Inventory_ListNetworkHostsS
 	// .Method.InputType .inventory.Empty
 	// .Method.OutputType .inventory.NetworkHost
 
-	results, err := e.inventory.ListNetworkHosts()
+	results, err := e.inventory.ListNetworkHosts(stream.Context())
 	if err != nil {
 		return err
 	}
@@ -106,7 +106,7 @@ func (e *Server) ListNetworkIDs(req *Empty, stream Inventory_ListNetworkIDsServe
 	// .Method.InputType .inventory.Empty
 	// .Method.OutputType .inventory.NetworkID
 
-	results, err := e.inventory.ListNetworkIDs()
+	results, err := e.inventory.ListNetworkIDs(stream.Context())
 	if err != nil {
 		return err
 	}
@@ -148,7 +148,7 @@ func (e *Server) ListZigbeeDevices(req *Empty, stream Inventory_ListZigbeeDevice
 	// .Method.InputType .inventory.Empty
 	// .Method.OutputType .inventory.ZigbeeDevice
 
-	results, err := e.inventory.ListZigbeeDevices()
+	results, err := e.inventory.ListZigbeeDevices(stream.Context())
 	if err != nil {
 		return err
 	}

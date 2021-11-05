@@ -10,6 +10,7 @@ import (
 	"github.com/go-kit/log/level"
 	"github.com/grafana/dskit/services"
 	"github.com/mpvl/unique"
+	"github.com/opentracing/opentracing-go"
 
 	"github.com/xaque208/znet/pkg/iot"
 )
@@ -74,8 +75,11 @@ func (l *Lights) AddHandler(h Handler) {
 // ActionHandler is called when an action is requested against a light group.
 // The action speciefies the a button press and a room to give enough context
 // for how to change the behavior of the lights in response to the action.
-func (l *Lights) ActionHandler(action *iot.Action) error {
-	ctx, cancel := context.WithCancel(context.Background())
+func (l *Lights) ActionHandler(ctx context.Context, action *iot.Action) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "Lights.ActionHandler")
+	defer span.Finish()
+
+	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
 	room := l.getRoom(action.Zone)
@@ -239,7 +243,7 @@ func (l *Lights) SetRoomForEvent(ctx context.Context, event string) error {
 // Alert calls Alert() on each handler.
 func (l *Lights) Alert(ctx context.Context, req *LightGroupRequest) (*LightResponse, error) {
 	for _, h := range l.handlers {
-		err := h.Alert(req.Name)
+		err := h.Alert(ctx, req.Name)
 		if err != nil {
 			level.Error(l.logger).Log("err", err.Error())
 		}
@@ -252,12 +256,12 @@ func (l *Lights) Alert(ctx context.Context, req *LightGroupRequest) (*LightRespo
 func (l *Lights) Dim(ctx context.Context, req *LightGroupRequest) (*LightResponse, error) {
 	z := l.zones.GetZone(req.Name)
 
-	err := z.Dim(req.Brightness)
+	err := z.Dim(ctx, req.Brightness)
 	if err != nil {
 		return nil, err
 	}
 
-	err = z.Handle(req.Name, l.handlers...)
+	err = z.Handle(ctx, req.Name, l.handlers...)
 	if err != nil {
 		return nil, err
 	}
@@ -269,12 +273,12 @@ func (l *Lights) Dim(ctx context.Context, req *LightGroupRequest) (*LightRespons
 func (l *Lights) Off(ctx context.Context, req *LightGroupRequest) (*LightResponse, error) {
 	z := l.zones.GetZone(req.Name)
 
-	err := z.Off()
+	err := z.Off(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	err = z.Handle(req.Name, l.handlers...)
+	err = z.Handle(ctx, req.Name, l.handlers...)
 	if err != nil {
 		return nil, err
 	}
@@ -286,12 +290,12 @@ func (l *Lights) Off(ctx context.Context, req *LightGroupRequest) (*LightRespons
 func (l *Lights) On(ctx context.Context, req *LightGroupRequest) (*LightResponse, error) {
 	z := l.zones.GetZone(req.Name)
 
-	err := z.On()
+	err := z.On(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	err = z.Handle(req.Name, l.handlers...)
+	err = z.Handle(ctx, req.Name, l.handlers...)
 	if err != nil {
 		return nil, err
 	}
@@ -310,12 +314,12 @@ func (l *Lights) RandomColor(ctx context.Context, req *LightGroupRequest) (*Ligh
 	}
 
 	z := l.zones.GetZone(req.Name)
-	err := z.RandomColor(colors)
+	err := z.RandomColor(ctx, colors)
 	if err != nil {
 		return nil, err
 	}
 
-	err = z.Handle(req.Name, l.handlers...)
+	err = z.Handle(ctx, req.Name, l.handlers...)
 	if err != nil {
 		return nil, err
 	}
@@ -329,12 +333,12 @@ func (l *Lights) SetColor(ctx context.Context, req *LightGroupRequest) (*LightRe
 	}
 
 	z := l.zones.GetZone(req.Name)
-	err := z.SetColor(req.Color)
+	err := z.SetColor(ctx, req.Color)
 	if err != nil {
 		return nil, err
 	}
 
-	err = z.Handle(req.Name, l.handlers...)
+	err = z.Handle(ctx, req.Name, l.handlers...)
 	if err != nil {
 		return nil, err
 	}
@@ -343,11 +347,16 @@ func (l *Lights) SetColor(ctx context.Context, req *LightGroupRequest) (*LightRe
 }
 
 func (l *Lights) Toggle(ctx context.Context, req *LightGroupRequest) (*LightResponse, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "Lights.Toggle")
+	defer span.Finish()
+
 	for _, h := range l.handlers {
-		err := h.Toggle(req.Name)
+		handlerSpan, handlerCtx := opentracing.StartSpanFromContext(ctx, fmt.Sprintf("%T.Toggle()", h))
+		err := h.Toggle(handlerCtx, req.Name)
 		if err != nil {
 			level.Error(l.logger).Log("err", err.Error())
 		}
+		handlerSpan.Finish()
 	}
 
 	return &LightResponse{}, nil

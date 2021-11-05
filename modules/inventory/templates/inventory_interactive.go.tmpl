@@ -5,6 +5,7 @@ package inventory
 import (
 	"strings"
 	"os"
+	"context"
 
 	prompt "github.com/c-bata/go-prompt"
 	log "github.com/sirupsen/logrus"
@@ -18,6 +19,8 @@ type InventoryInteractive struct {
 }
 
 func (i *InventoryInteractive) Executor(in string) {
+  ctx := context.Background()
+
 	in = strings.TrimSpace(in)
 	blocks := strings.Split(in, " ")
 
@@ -35,7 +38,7 @@ func (i *InventoryInteractive) Executor(in string) {
 			{{- $typeName := (.GetName|snakeCase)}}
 			{{- $commandName := (.GetName)}}
 		case "{{$typeName}}":
-			i.print{{$commandName}}s()
+			i.print{{$commandName}}s(ctx)
 		{{- end }}
 	{{- end }}
 		}
@@ -51,7 +54,7 @@ func (i *InventoryInteractive) Executor(in string) {
 			{{- $typeName := (.GetName|snakeCase)}}
 			{{- $commandName := (.GetName)}}
 		case "{{$typeName}}":
-			i, err := i.Inventory.Fetch{{$commandName}}(item)
+			i, err := i.Inventory.Fetch{{$commandName}}(ctx, item)
 			if err != nil {
 				log.Error(err)
 			}
@@ -75,7 +78,7 @@ func (i *InventoryInteractive) Executor(in string) {
 			{{- $typeName := (.GetName|snakeCase)}}
 			{{- $commandName := (.GetName)}}
 		case "{{$typeName}}":
-			err := i.set{{$commandName}}Attribute(node, attr, val)
+			err := i.set{{$commandName}}Attribute(ctx, node, attr, val)
 			if err != nil {
 				log.Error(err)
 			}
@@ -87,6 +90,8 @@ func (i *InventoryInteractive) Executor(in string) {
 }
 
 func (i *InventoryInteractive) Completer(d prompt.Document) []prompt.Suggest {
+  ctx := context.Background()
+
 	blocks := strings.Split(d.CurrentLine(), " ")
 
 	objects := []prompt.Suggest{
@@ -128,7 +133,7 @@ func (i *InventoryInteractive) Completer(d prompt.Document) []prompt.Suggest {
       {{- $typeName := (.GetName|snakeCase)}}
       {{- $commandName := (.GetName)}}
 			case "{{$typeName}}":
-        return i.suggest{{$commandName}}(d)
+        return i.suggest{{$commandName}}(ctx, d)
     {{- end }}
   {{- end }}
 			}
@@ -144,7 +149,7 @@ func (i *InventoryInteractive) Completer(d prompt.Document) []prompt.Suggest {
         {{- $typeName := (.GetName|snakeCase)}}
         {{- $commandName := (.GetName)}}
         case "{{$typeName}}":
-          return i.suggest{{$commandName}}(d)
+          return i.suggest{{$commandName}}(ctx, d)
       {{- end }}
     {{- end }}
         }
@@ -157,7 +162,7 @@ func (i *InventoryInteractive) Completer(d prompt.Document) []prompt.Suggest {
         {{- $typeName := (.GetName|snakeCase)}}
         {{- $commandName := (.GetName)}}
         case "{{$typeName}}":
-          return i.suggest{{$commandName}}Attributes(d)
+          return i.suggest{{$commandName}}Attributes(ctx, d)
       {{- end }}
     {{- end }}
         }
@@ -171,8 +176,8 @@ func (i *InventoryInteractive) Completer(d prompt.Document) []prompt.Suggest {
     {{- if has .GetName $messages }}
       {{- $typeName := (.GetName|snakeCase)}}
       {{- $commandName := (.GetName)}}
-func (i *InventoryInteractive) print{{$commandName}}s() {
-  results, err := i.Inventory.List{{$commandName}}s()
+func (i *InventoryInteractive) print{{$commandName}}s(ctx context.Context) {
+  results, err := i.Inventory.List{{$commandName}}s(ctx)
   if err != nil {
     log.Error(err)
   }
@@ -225,9 +230,9 @@ func (i *InventoryInteractive) print{{$commandName}}s() {
     {{- if has .GetName $messages }}
       {{- $typeName := (.GetName|snakeCase)}}
       {{- $commandName := (.GetName)}}
-func (i *InventoryInteractive) suggest{{$commandName}}(d prompt.Document) []prompt.Suggest {
+func (i *InventoryInteractive) suggest{{$commandName}}(ctx context.Context, d prompt.Document) []prompt.Suggest {
   sugg := []prompt.Suggest{}
-  results, err := i.Inventory.List{{$commandName}}s()
+  results, err := i.Inventory.List{{$commandName}}s(ctx)
   if err != nil {
     log.Error(err)
     return []prompt.Suggest{}
@@ -240,7 +245,7 @@ func (i *InventoryInteractive) suggest{{$commandName}}(d prompt.Document) []prom
   return prompt.FilterHasPrefix(sugg, d.GetWordBeforeCursor(), true)
 }
 
-func (i *InventoryInteractive) suggest{{$commandName}}Attributes(d prompt.Document) []prompt.Suggest {
+func (i *InventoryInteractive) suggest{{$commandName}}Attributes(ctx context.Context, d prompt.Document) []prompt.Suggest {
 sugg := []prompt.Suggest{
 	{{- range .Field }}
 		{{- if eq .GetType.String "TYPE_STRING" }}
@@ -255,8 +260,8 @@ sugg := []prompt.Suggest{
 	return prompt.FilterHasPrefix(sugg, d.GetWordBeforeCursor(), true)
 }
 
-func (i *InventoryInteractive) set{{$commandName}}Attribute(node, attr, val string) error {
-	x, err := i.Inventory.Fetch{{$commandName}}(node)
+func (i *InventoryInteractive) set{{$commandName}}Attribute(ctx context.Context, node, attr, val string) error {
+	x, err := i.Inventory.Fetch{{$commandName}}(ctx, node)
 	if err != nil {
 		return err
 	}
@@ -273,7 +278,7 @@ func (i *InventoryInteractive) set{{$commandName}}Attribute(node, attr, val stri
 	{{- end }}
 	}
 
-	x, err = i.Inventory.Update{{$commandName}}(x)
+	x, err = i.Inventory.Update{{$commandName}}(ctx, x)
 	if err != nil {
 		return err
 	}

@@ -1,6 +1,7 @@
 package inventory
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"strconv"
@@ -53,7 +54,7 @@ func (i *LDAPInventory) reconnect() error {
 	// Connect to LDAP
 	l, err := ldap.DialTLS(
 		"tcp",
-		fmt.Sprintf("%s:%d", i.cfg.Host, 636),
+		fmt.Sprintf("%s:%d", i.cfg.LDAP.Host, 636),
 		&tls.Config{InsecureSkipVerify: true},
 	)
 	if err != nil {
@@ -63,7 +64,7 @@ func (i *LDAPInventory) reconnect() error {
 	l.SetTimeout(15 * time.Second)
 
 	// First bind with a read only user
-	err = l.Bind(i.cfg.BindDN, i.cfg.BindPW)
+	err = l.Bind(i.cfg.LDAP.BindDN, i.cfg.LDAP.BindPW)
 	if err != nil {
 		return err
 	}
@@ -89,7 +90,7 @@ func (i *LDAPInventory) SetAttribute(dn, attributeName, attributeValue string, r
 	return nil
 }
 
-func (i *LDAPInventory) UpdateTimestamp(dn string, object string) error {
+func (i *LDAPInventory) UpdateTimestamp(ctx context.Context, dn string, object string) error {
 	now := time.Now()
 
 	objectName := fmt.Sprintf("%sLastSeen", object)
@@ -100,13 +101,13 @@ func (i *LDAPInventory) UpdateTimestamp(dn string, object string) error {
 func NewLDAPClient(cfg Config, logger log.Logger) (*ldap.Conn, error) {
 	logger = log.With(logger, "ldap", "client")
 
-	if cfg.BindDN == "" || cfg.BindPW == "" || cfg.BaseDN == "" {
+	if cfg.LDAP.BindDN == "" || cfg.LDAP.BindPW == "" || cfg.LDAP.BaseDN == "" {
 		return nil, fmt.Errorf("incomplete LDAP credentials, need [BindDN, BindPW, BaseDN]")
 	}
 
 	l, err := ldap.DialTLS(
 		"tcp",
-		fmt.Sprintf("%s:%d", cfg.Host, 636),
+		fmt.Sprintf("%s:%d", cfg.LDAP.Host, 636),
 		&tls.Config{InsecureSkipVerify: true},
 	)
 	if err != nil {
@@ -116,7 +117,7 @@ func NewLDAPClient(cfg Config, logger log.Logger) (*ldap.Conn, error) {
 	l.SetTimeout(15 * time.Second)
 
 	// First bind with a read only user
-	err = l.Bind(cfg.BindDN, cfg.BindPW)
+	err = l.Bind(cfg.LDAP.BindDN, cfg.LDAP.BindPW)
 	if err != nil {
 		return nil, err
 	}
@@ -134,14 +135,14 @@ func NewLDAPClient(cfg Config, logger log.Logger) (*ldap.Conn, error) {
 
 				l, err = ldap.DialTLS(
 					"tcp",
-					fmt.Sprintf("%s:%d", cfg.Host, 636),
+					fmt.Sprintf("%s:%d", cfg.LDAP.Host, 636),
 					&tls.Config{InsecureSkipVerify: true},
 				)
 				if err != nil {
 					level.Error(logger).Log("err", err)
 				}
 
-				err = l.Bind(cfg.BindDN, cfg.BindPW)
+				err = l.Bind(cfg.LDAP.BindDN, cfg.LDAP.BindPW)
 				if err != nil {
 					level.Error(logger).Log("err", err)
 				}

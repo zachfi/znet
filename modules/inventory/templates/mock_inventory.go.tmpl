@@ -3,6 +3,8 @@
 // Code generated, do not edit
 package inventory
 
+import "context"
+
 
 type MockInventory struct {
 {{- $messages := list "Inet6Network" "InetNetwork" "L3Network" "NetworkHost" "NetworkID" "ZigbeeDevice" "IOTZone" }}
@@ -21,7 +23,7 @@ type MockInventory struct {
     {{- end }}
 }
 
-func (i *MockInventory) UpdateTimestamp(string, string) error {
+func (i *MockInventory) UpdateTimestamp(context.Context, string, string) error {
 
   return nil
 }
@@ -39,7 +41,7 @@ func (i *MockInventory) Create{{.GetName}}(x *{{.GetName}}) (*{{.GetName}}, erro
   return x, nil
 }
 
-func (i *MockInventory) Fetch{{.GetName}}(name string) (*{{.GetName}}, error) {
+func (i *MockInventory) Fetch{{.GetName}}(_ context.Context, name string) (*{{.GetName}}, error) {
   if len(i.Fetch{{.GetName}}Calls) == 0 {
     i.Fetch{{.GetName}}Calls = make(map[string]int)
   }
@@ -62,7 +64,7 @@ func (i *MockInventory) List{{.GetName}}s() ([]{{.GetName}}, error) {
   return i.List{{.GetName}}Response, nil
 }
 
-func (i *MockInventory) Update{{.GetName}}(x *{{.GetName}}) (*{{.GetName}}, error) {
+func (i *MockInventory) Update{{.GetName}}(_ context.Context, x *{{.GetName}}) (*{{.GetName}}, error) {
   if len(i.Update{{.GetName}}Calls) == 0 {
     i.Update{{.GetName}}Calls = make(map[string]int)
   }

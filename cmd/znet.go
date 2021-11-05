@@ -17,6 +17,11 @@ package cmd
 import (
 	"os"
 	"strings"
+	"time"
+
+	"github.com/opentracing/opentracing-go"
+	jaegerConfig "github.com/uber/jaeger-client-go/config"
+	jaegerLogger "github.com/uber/jaeger-client-go/log"
 
 	"github.com/go-kit/log/level"
 	homedir "github.com/mitchellh/go-homedir"
@@ -41,7 +46,7 @@ var Version string
 var rootCmd = &cobra.Command{
 	Use:   "znet",
 	Short: "zNet",
-	Long: `zNet 
+	Long: `zNet
 
 Run zNet.
 `,
@@ -50,6 +55,36 @@ Run zNet.
 
 func runZnet(cmd *cobra.Command, args []string) {
 	logger := util.NewLogger()
+
+	// jaegerCfg, err := jaegerConfig.FromEnv()
+	// if err != nil {
+	// 	level.Error(logger).Log("msg", "failed to get jaegerCfg from environment", "err", err)
+	// 	os.Exit(1)
+	// }
+
+	jaegerCfg := jaegerConfig.Configuration{
+		Sampler: &jaegerConfig.SamplerConfig{
+			Type:  "const",
+			Param: 1,
+		},
+		Reporter: &jaegerConfig.ReporterConfig{
+			LogSpans:            true,
+			BufferFlushInterval: 1 * time.Second,
+			CollectorEndpoint:   "http://10.42.0.44:14268/api/traces",
+		},
+	}
+
+	tracer, closer, err := jaegerCfg.New(
+		"znet",
+		jaegerConfig.Logger(jaegerLogger.StdLogger),
+	)
+	if err != nil {
+		level.Error(logger).Log("msg", "failed to create new tracer", "err", err)
+		os.Exit(1)
+	}
+	defer closer.Close()
+
+	opentracing.SetGlobalTracer(tracer)
 
 	cfg, err := znet.LoadConfig(cfgFile)
 	if err != nil {

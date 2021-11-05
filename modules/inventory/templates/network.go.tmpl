@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"strconv"
 	"time"
+	"context"
+
+	"github.com/opentracing/opentracing-go"
 
 	ldap "github.com/go-ldap/ldap/v3"
 	"github.com/go-kit/log/level"
@@ -31,10 +34,13 @@ var default{{.GetName}}Attributes = []string{
 }
 
 // Create{{.GetName}} creates a new LDAP entry by the received name.
-func (i *LDAPInventory) Create{{.GetName}}(x *{{.GetName}}) (*{{.GetName}}, error) {
+func (i *LDAPInventory) Create{{.GetName}}(ctx context.Context, x *{{.GetName}}) (*{{.GetName}}, error) {
   if x == nil {
     return nil, fmt.Errorf("unable to create nil {{.GetName}}")
   }
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "Create{{.GetName}}")
+	defer span.Finish()
 
 	{{- $objectClass := .GetName | kebabCase | lowerCamelCase }}
   if x.Name == "" {
@@ -43,7 +49,7 @@ func (i *LDAPInventory) Create{{.GetName}}(x *{{.GetName}}) (*{{.GetName}}, erro
 
   var err error
 
-	dn := fmt.Sprintf("cn=%s,ou=zigbee,ou=network,%s", x.Name, i.cfg.BaseDN)
+	dn := fmt.Sprintf("cn=%s,ou=zigbee,ou=network,%s", x.Name, i.cfg.LDAP.BaseDN)
   x.Dn = dn
 
 	a := ldap.NewAddRequest(dn, []ldap.Control{})
@@ -60,19 +66,24 @@ func (i *LDAPInventory) Create{{.GetName}}(x *{{.GetName}}) (*{{.GetName}}, erro
 
   level.Debug(i.logger).Log("msg", "creating new {{$objectClass}}", "class", fmt.Sprintf("%+v", a))
 
+  ldapClientSpan, _ := opentracing.StartSpanFromContext(ctx, "ldapClient.Add")
 	err = i.ldapClient.Add(a)
 	if err != nil {
 		return nil, err
 	}
+  ldapClientSpan.Finish()
 
-	return i.Update{{.GetName}}(x)
+	return i.Update{{.GetName}}(ctx, x)
 }
 
 // Update{{.GetName}} updates an existing LDAP entry, retrieved by name.
-func (i *LDAPInventory) Update{{.GetName}}(x *{{.GetName}}) (*{{.GetName}}, error) {
+func (i *LDAPInventory) Update{{.GetName}}(ctx context.Context, x *{{.GetName}}) (*{{.GetName}}, error) {
   if x == nil {
     return nil, fmt.Errorf("unable to update nil {{.GetName}}")
   }
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "Update{{.GetName}}")
+	defer span.Finish()
 
 	{{- $objectClass := .GetName | kebabCase | lowerCamelCase }}
 	if x.Dn == "" {
@@ -129,19 +140,24 @@ func (i *LDAPInventory) Update{{.GetName}}(x *{{.GetName}}) (*{{.GetName}}, erro
 
   level.Debug(i.logger).Log("msg", "updating {{$objectClass}}", "class", fmt.Sprintf("%+v", a))
 
+	ldapClientSpan, _ := opentracing.StartSpanFromContext(ctx, "ldapClient.Modify")
 	err = i.ldapClient.Modify(a)
 	if err != nil {
 		return nil, err
 	}
+	ldapClientSpan.Finish()
 
-	return i.Fetch{{.GetName}}(x.Name)
+	return i.Fetch{{.GetName}}(ctx, x.Name)
 }
 
 // Fetch{{.GetName}} will retrieve a {{.GetName}} by name.
-func (i *LDAPInventory) Fetch{{.GetName}}(name string) (*{{.GetName}}, error) {
+func (i *LDAPInventory) Fetch{{.GetName}}(ctx context.Context, name string) (*{{.GetName}}, error) {
 	{{- $varname := .GetName|snakeCase|lowerCamelCase}}
 
-	results, err := i.List{{.GetName}}s()
+	span, ctx := opentracing.StartSpanFromContext(ctx, "Fetch{{.GetName}}")
+	defer span.Finish()
+
+	results, err := i.List{{.GetName}}s(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -159,16 +175,19 @@ func (i *LDAPInventory) Fetch{{.GetName}}(name string) (*{{.GetName}}, error) {
 
 // List{{.GetName}}s retrieves all existing LDAP entries.
 // nolint:gocyclo
-func (i *LDAPInventory) List{{.GetName}}s() ([]{{.GetName}}, error) {
+func (i *LDAPInventory) List{{.GetName}}s(ctx context.Context) ([]{{.GetName}}, error) {
 	if i.ldapClient == nil {
 		return nil, fmt.Errorf("unable to List{{.GetName}}s() with nil LDAP client")
 	}
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "List{{.GetName}}")
+	defer span.Finish()
 
   var xxx []{{.GetName}}
 
 	{{- $objectClass := .GetName | kebabCase | lowerCamelCase }}
 	searchRequest := ldap.NewSearchRequest(
-		i.cfg.BaseDN,
+		i.cfg.LDAP.BaseDN,
 		ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
 		"(&(objectClass={{$objectClass}})(cn=*))",
     default{{.GetName}}Attributes,
@@ -179,7 +198,9 @@ func (i *LDAPInventory) List{{.GetName}}s() ([]{{.GetName}}, error) {
   attempts := 0
   for attempts < 3 {
     attempts += 1
+    ldapClientSpan, _ := opentracing.StartSpanFromContext(ctx, "ldapClient.Search")
     sr, err := i.ldapClient.Search(searchRequest)
+    ldapClientSpan.Finish()
     if err != nil && ldap.IsErrorWithCode(err, 200) {
       level.Info(i.logger).Log("msg", "connection is closed, trying to reconnect")
       if err = i.reconnect(); err != nil {
