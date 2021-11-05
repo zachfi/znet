@@ -346,7 +346,7 @@ func TestActionHandler(t *testing.T) {
 
 		l.AddHandler(h)
 
-		err = l.ActionHandler(tc.action)
+		err = l.ActionHandler(context.Background(), tc.action)
 		if tc.err != nil {
 			require.Contains(t, err.Error(), tc.err.Error())
 		}

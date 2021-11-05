@@ -3,6 +3,7 @@
 package lights
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -20,6 +21,8 @@ func TestZigbeeLight_New(t *testing.T) {
 	invClient := &inventory.MockInventory{}
 	mqttClient := &iot.MockClient{}
 
+	ctx := context.Background()
+
 	l, err := NewZigbeeLight(Config{}, mqttClient, invClient)
 	require.NoError(t, err)
 	require.NotNil(t, l)
@@ -34,31 +37,31 @@ func TestZigbeeLight_New(t *testing.T) {
 		},
 	}
 
-	require.NoError(t, l.On("group1"))
+	require.NoError(t, l.On(ctx, "group1"))
 	require.Equal(t, "zigbee2mqtt/testdevice1/set", mqttClient.LastPublishTopic)
 	require.Equal(t, `{"state":"ON","transition":0.5}`, mqttClient.LastPublishPayload)
 
-	require.NoError(t, l.Off("group1"))
+	require.NoError(t, l.Off(ctx, "group1"))
 	require.Equal(t, "zigbee2mqtt/testdevice1/set", mqttClient.LastPublishTopic)
 	require.Equal(t, `{"state":"OFF","transition":0.5}`, mqttClient.LastPublishPayload)
 
-	require.NoError(t, l.Dim("group1", 123))
+	require.NoError(t, l.Dim(ctx, "group1", 123))
 	require.Equal(t, "zigbee2mqtt/testdevice1/set", mqttClient.LastPublishTopic)
 	require.Equal(t, `{"brightness":123,"transition":0.5}`, mqttClient.LastPublishPayload)
 
-	require.NoError(t, l.Alert("group1"))
+	require.NoError(t, l.Alert(ctx, "group1"))
 	require.Equal(t, "zigbee2mqtt/testdevice1/set", mqttClient.LastPublishTopic)
 	require.Equal(t, `{"effect":"blink","transition":0.1}`, mqttClient.LastPublishPayload)
 
-	require.NoError(t, l.SetColor("group1", "#006c7f"))
+	require.NoError(t, l.SetColor(ctx, "group1", "#006c7f"))
 	require.Equal(t, "zigbee2mqtt/testdevice1/set", mqttClient.LastPublishTopic)
 	require.Equal(t, `{"color":{"hex":"#006c7f"},"transition":0.5}`, mqttClient.LastPublishPayload)
 
-	require.NoError(t, l.RandomColor("group1", []string{"#006c7f"}))
+	require.NoError(t, l.RandomColor(ctx, "group1", []string{"#006c7f"}))
 	require.Equal(t, "zigbee2mqtt/testdevice1/set", mqttClient.LastPublishTopic)
 	require.Equal(t, `{"color":{"hex":"#006c7f"},"transition":0.5}`, mqttClient.LastPublishPayload)
 
-	require.NoError(t, l.Toggle("group1"))
+	require.NoError(t, l.Toggle(ctx, "group1"))
 	require.Equal(t, "zigbee2mqtt/testdevice1/set", mqttClient.LastPublishTopic)
 	require.Equal(t, `{"state":"TOGGLE","transition":0.5}`, mqttClient.LastPublishPayload)
 
@@ -83,10 +86,10 @@ func TestIsLightDevice(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		light := isLightDevice(tc.d)
+		light := isLightDevice(&tc.d)
 		require.Equal(t, tc.isLight, light)
 
-		color := isColorLightDevice(tc.d)
+		color := isColorLightDevice(&tc.d)
 		require.Equal(t, tc.isColorLight, color)
 	}
 
