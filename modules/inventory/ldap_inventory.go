@@ -50,7 +50,6 @@ func (i *LDAPInventory) reconnect() error {
 	defer i.mux.Unlock()
 	i.ldapClient.Close()
 
-	// TODO verify TLS
 	// Connect to LDAP
 	l, err := ldap.DialTLS(
 		"tcp",
@@ -129,7 +128,7 @@ func NewLDAPClient(cfg Config, logger log.Logger) (*ldap.Conn, error) {
 			<-t.C
 
 			if l.IsClosing() {
-				level.Debug(logger).Log("msg", "reconnecting to LDAP")
+				_ = level.Debug(logger).Log("msg", "reconnecting to LDAP")
 				var err error
 				l.Close()
 
@@ -139,12 +138,12 @@ func NewLDAPClient(cfg Config, logger log.Logger) (*ldap.Conn, error) {
 					&tls.Config{InsecureSkipVerify: true},
 				)
 				if err != nil {
-					level.Error(logger).Log("err", err)
+					_ = level.Error(logger).Log("err", err)
 				}
 
 				err = l.Bind(cfg.LDAP.BindDN, cfg.LDAP.BindPW)
 				if err != nil {
-					level.Error(logger).Log("err", err)
+					_ = level.Error(logger).Log("err", err)
 				}
 			}
 		}
@@ -169,7 +168,7 @@ func boolValues(a *ldap.EntryAttribute, logger log.Logger) []bool {
 	for _, b := range a.ByteValues {
 		v, err := strconv.ParseBool(string(b))
 		if err != nil {
-			level.Error(logger).Log("err", err)
+			_ = level.Error(logger).Log("err", err)
 		}
 
 		values = append(values, v)

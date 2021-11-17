@@ -8,10 +8,11 @@ import (
 	"github.com/go-kit/log/level"
 	"github.com/grafana/dskit/services"
 	"github.com/pkg/errors"
+	"google.golang.org/grpc"
+
 	"github.com/xaque208/znet/modules/inventory"
 	"github.com/xaque208/znet/modules/telemetry"
 	"github.com/xaque208/znet/pkg/iot"
-	"google.golang.org/grpc"
 )
 
 type Harvester struct {
@@ -48,7 +49,7 @@ func (h *Harvester) running(ctx context.Context) error {
 	var onMessageReceived mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 		topicPath, err := iot.ParseTopicPath(msg.Topic())
 		if err != nil {
-			level.Error(h.logger).Log("err", errors.Wrap(err, "failed to parse topic path"))
+			_ = level.Error(h.logger).Log("err", errors.Wrap(err, "failed to parse topic path"))
 			return
 		}
 
@@ -66,7 +67,7 @@ func (h *Harvester) running(ctx context.Context) error {
 
 		_, err = h.telemetryClient.ReportIOTDevice(context.Background(), iotDevice)
 		if err != nil {
-			level.Error(h.logger).Log("err", err.Error())
+			_ = level.Error(h.logger).Log("err", err.Error())
 		}
 	}
 
@@ -77,7 +78,7 @@ func (h *Harvester) running(ctx context.Context) error {
 		token := c.Subscribe(h.cfg.MQTT.Topic, 0, onMessageReceived)
 		token.Wait()
 		if token.Error() != nil {
-			level.Error(h.logger).Log("err", token.Error())
+			_ = level.Error(h.logger).Log("err", token.Error())
 		}
 	}
 
@@ -89,9 +90,9 @@ func (h *Harvester) running(ctx context.Context) error {
 	mqttClient := mqtt.NewClient(mqttOpts)
 
 	if token := mqttClient.Connect(); token.Wait() && token.Error() != nil {
-		level.Error(h.logger).Log("err", token.Error())
+		_ = level.Error(h.logger).Log("err", token.Error())
 	} else {
-		level.Debug(h.logger).Log("msg", "mqtt connected", "url", h.cfg.MQTT.URL)
+		_ = level.Debug(h.logger).Log("msg", "mqtt connected", "url", h.cfg.MQTT.URL)
 	}
 
 	// 	log.WithFields(log.Fields{

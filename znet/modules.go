@@ -9,6 +9,7 @@ import (
 	"github.com/grafana/dskit/services"
 	"github.com/pkg/errors"
 	"github.com/weaveworks/common/server"
+
 	"github.com/xaque208/znet/internal/astro"
 	"github.com/xaque208/znet/internal/comms"
 	"github.com/xaque208/znet/modules/harvester"
@@ -19,8 +20,6 @@ import (
 	"github.com/xaque208/znet/modules/timer/named"
 	"github.com/xaque208/znet/pkg/iot"
 )
-
-type module int
 
 const (
 	Server string = "server"
@@ -33,11 +32,11 @@ const (
 	Lights    string = "lights"
 	Inventory string = "inventory"
 
-	// TODO currently we are using openweathermap_exporter as a source of data
+	// currently we are using openweathermap_exporter as a source of data
 	// for astro data when sending events to the server.  Perhaps it makes more
 	// sense to include the exporter as a module, and then we can either
 	// reference internal values, or provide RPC modules for requesting the
-	// information necessary.  Without this, there is a requried coordination
+	// information necessary.  Without this, there is a required coordination
 	// between the exporter (another project), and the znet.
 	// Weather string = "telemetry"
 
@@ -51,23 +50,15 @@ func (z *Znet) setupModuleManager() error {
 	mm.RegisterModule(Telemetry, z.initTelemetry)
 	mm.RegisterModule(Timer, z.initTimer)
 	mm.RegisterModule(Lights, z.initLights)
-	// mm.RegisterModule(IOT, z.initIot)
 	mm.RegisterModule(Inventory, z.initInventory)
 	mm.RegisterModule(All, nil)
 
 	deps := map[string][]string{
 		// Server:       nil,
 
-		// IOT:       {Server},
 		Inventory: {Server},
 		Lights:    {Server},
-		// Astro: {Server},
 		Telemetry: {Server, Inventory, Lights},
-
-		// TODO
-		// gitwatch:       nil,
-		// build:       nil,
-		// agent:       nil,
 
 		Harvester: {Server},
 		Timer:     {Server},
@@ -112,10 +103,6 @@ func (z *Znet) initLights() (services.Service, error) {
 	z.lights = s
 
 	return s, nil
-}
-
-func (z *Znet) initIot() (services.Service, error) {
-	return nil, fmt.Errorf("not implemented")
 }
 
 func (z *Znet) initInventory() (services.Service, error) {
@@ -229,7 +216,7 @@ func (z *Znet) initServer() (services.Service, error) {
 
 		// if not closed yet, wait until server stops.
 		<-serverDone
-		level.Info(z.logger).Log("msg", "server stopped")
+		_ = level.Info(z.logger).Log("msg", "server stopped")
 		return nil
 	}
 

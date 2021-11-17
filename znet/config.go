@@ -6,6 +6,8 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/weaveworks/common/server"
+	"gopkg.in/yaml.v2"
+
 	"github.com/xaque208/znet/internal/config"
 	"github.com/xaque208/znet/modules/harvester"
 	"github.com/xaque208/znet/modules/inventory"
@@ -13,7 +15,6 @@ import (
 	"github.com/xaque208/znet/modules/telemetry"
 	"github.com/xaque208/znet/modules/timer"
 	"github.com/xaque208/znet/pkg/iot"
-	"gopkg.in/yaml.v2"
 )
 
 type Config struct {

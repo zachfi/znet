@@ -47,7 +47,7 @@ func (z *Zone) SetColor(ctx context.Context, color string) error {
 }
 
 func (z *Zone) SetState(ctx context.Context, state zoneState) error {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "zone.SetState")
+	span, _ := opentracing.StartSpanFromContext(ctx, "zone.SetState")
 	defer span.Finish()
 
 	z.lock.Lock()

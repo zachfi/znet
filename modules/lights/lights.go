@@ -87,7 +87,7 @@ func (l *Lights) ActionHandler(ctx context.Context, action *iot.Action) error {
 		return fmt.Errorf("%w: %s", ErrRoomNotFound, action.Zone)
 	}
 
-	level.Debug(l.logger).Log("msg", "room action",
+	_ = level.Debug(l.logger).Log("msg", "room action",
 		"room_name", room.Name,
 		"zone", action.Zone,
 		"device", action.Device,
@@ -138,7 +138,7 @@ func (l *Lights) ActionHandler(ctx context.Context, action *iot.Action) error {
 	}
 }
 
-func (l *Lights) getRoom(name string) *LightsRoom {
+func (l *Lights) getRoom(name string) *Room {
 	if l.cfg == nil {
 		return nil
 	}
@@ -245,7 +245,7 @@ func (l *Lights) Alert(ctx context.Context, req *LightGroupRequest) (*LightRespo
 	for _, h := range l.handlers {
 		err := h.Alert(ctx, req.Name)
 		if err != nil {
-			level.Error(l.logger).Log("err", err.Error())
+			_ = level.Error(l.logger).Log("err", err.Error())
 		}
 	}
 
@@ -307,7 +307,7 @@ func (l *Lights) RandomColor(ctx context.Context, req *LightGroupRequest) (*Ligh
 	var colors []string
 
 	if len(req.Colors) == 0 {
-		level.Debug(l.logger).Log("msg", "using default colors")
+		_ = level.Debug(l.logger).Log("msg", "using default colors")
 		colors = defaultColorPool
 	} else {
 		colors = req.Colors
@@ -354,7 +354,7 @@ func (l *Lights) Toggle(ctx context.Context, req *LightGroupRequest) (*LightResp
 		handlerSpan, handlerCtx := opentracing.StartSpanFromContext(ctx, fmt.Sprintf("%T.Toggle()", h))
 		err := h.Toggle(handlerCtx, req.Name)
 		if err != nil {
-			level.Error(l.logger).Log("err", err.Error())
+			_ = level.Error(l.logger).Log("err", err.Error())
 		}
 		handlerSpan.Finish()
 	}

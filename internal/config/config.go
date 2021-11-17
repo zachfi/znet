@@ -54,7 +54,6 @@ type Config struct {
 
 	TLS *TLSConfig `yaml:"tls,omitempty"`
 
-	// TODO move elsewhere
 	RPC   *RPCConfig   `yaml:"rpc,omitempty"`
 	Vault *VaultConfig `yaml:"vault,omitempty"`
 }

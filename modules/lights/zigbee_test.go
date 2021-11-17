@@ -70,12 +70,12 @@ func TestZigbeeLight_New(t *testing.T) {
 func TestIsLightDevice(t *testing.T) {
 
 	cases := []struct {
-		d            inventory.ZigbeeDevice
+		d            *inventory.ZigbeeDevice
 		isLight      bool
 		isColorLight bool
 	}{
 		{
-			d: inventory.ZigbeeDevice{
+			d: &inventory.ZigbeeDevice{
 				Vendor:  "Philips",
 				Type:    "Router",
 				ModelId: "LCA003",
@@ -86,10 +86,10 @@ func TestIsLightDevice(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		light := isLightDevice(&tc.d)
+		light := isLightDevice(tc.d)
 		require.Equal(t, tc.isLight, light)
 
-		color := isColorLightDevice(&tc.d)
+		color := isColorLightDevice(tc.d)
 		require.Equal(t, tc.isColorLight, color)
 	}
 

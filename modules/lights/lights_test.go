@@ -20,7 +20,7 @@ func TestNewLights(t *testing.T) {
 	logger := log.NewLogfmtLogger(buf)
 
 	c := Config{
-		Rooms: []LightsRoom{},
+		Rooms: []Room{},
 	}
 
 	l, err := New(c, logger)
@@ -35,7 +35,7 @@ func TestAddHandler(t *testing.T) {
 	logger := log.NewLogfmtLogger(buf)
 
 	c := Config{
-		Rooms: []LightsRoom{},
+		Rooms: []Room{},
 	}
 
 	l, err := New(c, logger)
@@ -67,14 +67,14 @@ func TestConfiguredEventNames(t *testing.T) {
 		},
 		{
 			config: Config{
-				Rooms: []LightsRoom{},
+				Rooms: []Room{},
 			},
 			names: nil,
 			err:   ErrNoRoomsConfigured,
 		},
 		{
 			config: Config{
-				Rooms: []LightsRoom{
+				Rooms: []Room{
 					{
 						On:  []string{"one"},
 						Off: []string{"two"},
@@ -119,7 +119,7 @@ func TestNamedTimerHandler(t *testing.T) {
 		"On": {
 			event: "Later",
 			config: Config{
-				Rooms: []LightsRoom{
+				Rooms: []Room{
 					{
 						Name: "zone1",
 						On:   []string{"Later"},
@@ -133,7 +133,7 @@ func TestNamedTimerHandler(t *testing.T) {
 		"Off": {
 			event: "Later",
 			config: Config{
-				Rooms: []LightsRoom{
+				Rooms: []Room{
 					{
 						Name: "zone1",
 						Off:  []string{"Later"},
@@ -147,7 +147,7 @@ func TestNamedTimerHandler(t *testing.T) {
 		"Dim": {
 			event: "Later",
 			config: Config{
-				Rooms: []LightsRoom{
+				Rooms: []Room{
 					{
 						Name: "zone1",
 						Dim:  []string{"Later"},
@@ -161,7 +161,7 @@ func TestNamedTimerHandler(t *testing.T) {
 		"Alert": {
 			event: "Later",
 			config: Config{
-				Rooms: []LightsRoom{
+				Rooms: []Room{
 					{
 						Name:  "zone1",
 						Alert: []string{"Later"},
@@ -175,7 +175,7 @@ func TestNamedTimerHandler(t *testing.T) {
 		"unknown event": {
 			event: "Later",
 			config: Config{
-				Rooms: []LightsRoom{
+				Rooms: []Room{
 					{
 						Name: "zone1",
 					},
@@ -222,7 +222,7 @@ func TestActionHandler(t *testing.T) {
 		},
 		"simple toggle": {
 			config: Config{
-				Rooms: []LightsRoom{
+				Rooms: []Room{
 					{
 						Name: "zone",
 						On:   []string{"one"},
@@ -244,7 +244,7 @@ func TestActionHandler(t *testing.T) {
 				Zone:  "zone1",
 			},
 			config: Config{
-				Rooms: []LightsRoom{
+				Rooms: []Room{
 					{
 						Name: "zone1",
 					},
@@ -262,7 +262,7 @@ func TestActionHandler(t *testing.T) {
 				Zone:  "zone1",
 			},
 			config: Config{
-				Rooms: []LightsRoom{
+				Rooms: []Room{
 					{
 						Name: "zone1",
 					},
@@ -278,7 +278,7 @@ func TestActionHandler(t *testing.T) {
 				Zone:  "zone1",
 			},
 			config: Config{
-				Rooms: []LightsRoom{
+				Rooms: []Room{
 					{
 						Name: "zone1",
 					},
@@ -294,7 +294,7 @@ func TestActionHandler(t *testing.T) {
 				Zone:  "zone1",
 			},
 			config: Config{
-				Rooms: []LightsRoom{
+				Rooms: []Room{
 					{
 						Name: "zone1",
 					},
@@ -310,7 +310,7 @@ func TestActionHandler(t *testing.T) {
 				Zone:  "zone1",
 			},
 			config: Config{
-				Rooms: []LightsRoom{
+				Rooms: []Room{
 					{
 						Name: "zone1",
 					},
@@ -326,7 +326,7 @@ func TestActionHandler(t *testing.T) {
 				Zone:  "zone1",
 			},
 			config: Config{
-				Rooms: []LightsRoom{
+				Rooms: []Room{
 					{
 						Name: "zone1",
 					},

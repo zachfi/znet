@@ -40,7 +40,7 @@ func (s *Scheduler) Report() {
 		fields = append(fields, strings.Join(v, ","))
 	}
 
-	level.Info(s.logger).Log(fields...)
+	_ = level.Info(s.logger).Log(fields...)
 }
 
 // Next determines the next occurring event in the series.
@@ -103,14 +103,14 @@ func (s *Scheduler) WaitForNext() []string {
 
 	// Send past events under 30 seconds old.
 	if time.Since(*next) > time.Duration(30)*time.Second {
-		level.Warn(s.logger).Log("msg", "sending past event",
+		_ = level.Warn(s.logger).Log("msg", "sending past event",
 			"next", next,
 			"since", time.Since(*next),
 		)
 		return s.NamesForTime(*next)
 	}
 
-	level.Info(s.logger).Log("msg", "scheduler waiting",
+	_ = level.Info(s.logger).Log("msg", "scheduler waiting",
 		"next", time.Until(*next),
 		"names", strings.Join(s.NamesForTime(*next), ","),
 	)
@@ -149,7 +149,7 @@ func (s *Scheduler) Set(t time.Time, name string) error {
 		(*s.timeSlice)[t] = make([]string, 0)
 	}
 
-	level.Debug(s.logger).Log("msg", "scheduling event",
+	_ = level.Debug(s.logger).Log("msg", "scheduling event",
 		"name", name,
 		"time", t,
 	)

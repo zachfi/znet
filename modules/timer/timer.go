@@ -6,9 +6,10 @@ import (
 
 	"github.com/go-kit/log"
 	"github.com/pkg/errors"
+	"google.golang.org/grpc"
+
 	"github.com/xaque208/znet/internal/astro"
 	"github.com/xaque208/znet/modules/timer/named"
-	"google.golang.org/grpc"
 
 	"github.com/grafana/dskit/services"
 )

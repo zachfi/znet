@@ -16,7 +16,7 @@ import (
 	"github.com/xaque208/znet/pkg/iot"
 )
 
-var zigbeeDeviceName string = "0x00158d0004238a81"
+var zigbeeDeviceName = "0x00158d0004238a81"
 
 func TestNewServer(t *testing.T) {
 	t.Parallel()
@@ -138,7 +138,7 @@ func TestReportIOTDevice_lights_handling(t *testing.T) {
 
 		lightsConfig := lights.Config{
 			PartyColors: []string{"#f33333"},
-			Rooms: []lights.LightsRoom{
+			Rooms: []lights.Room{
 				{
 					Name: "dungeon",
 				},
@@ -267,7 +267,7 @@ func TestReportIOTDevice_bridge_state(t *testing.T) {
 
 		lightsConfig := lights.Config{
 			PartyColors: []string{"#f33333"},
-			Rooms: []lights.LightsRoom{
+			Rooms: []lights.Room{
 				{
 					Name: "dungeon",
 				},
@@ -312,7 +312,7 @@ func TestReportIOTDevice_bridge_state(t *testing.T) {
 
 }
 
-var sampleDevices []byte = []byte(`[
+var sampleDevices = []byte(`[
   {
     "dateCode": "20190608",
     "friendly_name": "Coordinator",

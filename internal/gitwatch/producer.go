@@ -52,7 +52,7 @@ func (e *EventProducer) Connect(ctx context.Context, conn *grpc.ClientConn) erro
 
 	e.conn = conn
 
-	var interval int = 600
+	interval := 600
 
 	if e.config.Interval > 0 {
 		interval = e.config.Interval

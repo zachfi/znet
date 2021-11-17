@@ -9,9 +9,10 @@ import (
 	"github.com/go-kit/log/level"
 	"github.com/grafana/dskit/services"
 	"github.com/pkg/errors"
-	"github.com/xaque208/znet/pkg/events"
 	grpc "google.golang.org/grpc"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
+
+	"github.com/xaque208/znet/pkg/events"
 )
 
 type Named struct {
@@ -65,40 +66,36 @@ func (t *Named) Schedule(ctx context.Context, req *NamedTimeStamp) (*Empty, erro
 	return nil, nil
 }
 
-func (n *Named) starting(ctx context.Context) error {
-	if len(n.cfg.Events) == 0 && len(n.cfg.RepeatEvents) == 0 {
+func (t *Named) starting(ctx context.Context) error {
+	if len(t.cfg.Events) == 0 && len(t.cfg.RepeatEvents) == 0 {
 		return fmt.Errorf("no Events or RepeatEvents config")
 	}
 
 	return nil
 }
 
-func (n *Named) running(ctx context.Context) error {
-	err := n.Connect(ctx)
+func (t *Named) running(ctx context.Context) error {
+	err := t.Connect(ctx)
 	if err != nil {
 		return errors.Wrap(err, "unable to Connect named")
 	}
 
-	for {
-		select {
-		case <-ctx.Done():
-			return nil
-		}
-	}
+	<-ctx.Done()
+	return nil
 }
 
-func (n *Named) stopping(_ error) error {
+func (t *Named) stopping(_ error) error {
 	return nil
 }
 
 //connect implements evenets.Producer
-func (n *Named) Connect(ctx context.Context) error {
-	n.logger.Log("msg", "starting eventProducer")
+func (t *Named) Connect(ctx context.Context) error {
+	_ = t.logger.Log("msg", "starting eventProducer")
 
 	go func() {
-		err := n.scheduler(ctx)
+		err := t.scheduler(ctx)
 		if err != nil {
-			level.Error(n.logger).Log("msg", "scheduler failed",
+			_ = level.Error(t.logger).Log("msg", "scheduler failed",
 				"err", err,
 			)
 		}
@@ -107,17 +104,17 @@ func (n *Named) Connect(ctx context.Context) error {
 	return nil
 }
 
-func (n *Named) scheduler(ctx context.Context) error {
-	namedClient := NewNamedClient(n.conn)
+func (t *Named) scheduler(ctx context.Context) error {
+	namedClient := NewNamedClient(t.conn)
 
 	go func() {
 		for {
-			for _, repeatEvent := range n.cfg.RepeatEvents {
-				times := n.sch.TimesForName(repeatEvent.Produce)
+			for _, repeatEvent := range t.cfg.RepeatEvents {
+				times := t.sch.TimesForName(repeatEvent.Produce)
 				if len(times) == 0 {
-					err := n.scheduleRepeatEvents(n.sch, repeatEvent)
+					err := t.scheduleRepeatEvents(t.sch, repeatEvent)
 					if err != nil {
-						level.Error(n.logger).Log("msg", "failed to schedule repeat events",
+						_ = level.Error(t.logger).Log("msg", "failed to schedule repeat events",
 							"repeatEvent", repeatEvent.Produce,
 							"err", err,
 						)
@@ -125,11 +122,11 @@ func (n *Named) scheduler(ctx context.Context) error {
 				}
 			}
 
-			for _, event := range n.cfg.Events {
-				if len(n.sch.TimesForName(event.Produce)) == 0 {
-					err := n.scheduleEvents(event)
+			for _, event := range t.cfg.Events {
+				if len(t.sch.TimesForName(event.Produce)) == 0 {
+					err := t.scheduleEvents(event)
 					if err != nil {
-						level.Error(n.logger).Log("msg", "failed to schedul events",
+						_ = level.Error(t.logger).Log("msg", "failed to schedul events",
 							"event", event.Produce,
 							"err", err,
 						)
@@ -137,9 +134,9 @@ func (n *Named) scheduler(ctx context.Context) error {
 				}
 			}
 
-			n.sch.Report()
+			t.sch.Report()
 
-			names := n.sch.WaitForNext()
+			names := t.sch.WaitForNext()
 
 			if len(names) == 0 {
 				continue
@@ -148,29 +145,29 @@ func (n *Named) scheduler(ctx context.Context) error {
 			for _, name := range names {
 				_, err := namedClient.Observe(ctx, &NamedTimeStamp{Name: name, Time: timestamppb.Now()})
 				if err != nil {
-					level.Error(n.logger).Log("msg", "failed to Observe", "name", name, "err", err)
+					_ = level.Error(t.logger).Log("msg", "failed to Observe", "name", name, "err", err)
 				}
 
-				n.sch.Step()
+				t.sch.Step()
 			}
 		}
 	}()
 
-	level.Debug(n.logger).Log("msg", "timer scheduler started",
-		"repeated_events", len(n.cfg.RepeatEvents),
-		"events", len(n.cfg.Events),
+	_ = level.Debug(t.logger).Log("msg", "timer scheduler started",
+		"repeated_events", len(t.cfg.RepeatEvents),
+		"events", len(t.cfg.Events),
 	)
 
 	<-ctx.Done()
-	level.Debug(n.logger).Log("msg", "scheduler done")
+	_ = level.Debug(t.logger).Log("msg", "scheduler done")
 
 	return nil
 }
 
-func (n *Named) scheduleRepeatEvents(scheduledEvents *events.Scheduler, v RepeatEventConfig) error {
+func (t *Named) scheduleRepeatEvents(scheduledEvents *events.Scheduler, v RepeatEventConfig) error {
 
 	// Stop calculating events beyond this time.
-	end := time.Now().Add(time.Duration(n.cfg.FutureLimit) * time.Second)
+	end := time.Now().Add(time.Duration(t.cfg.FutureLimit) * time.Second)
 
 	next := time.Now()
 	for {
@@ -191,19 +188,19 @@ func (n *Named) scheduleRepeatEvents(scheduledEvents *events.Scheduler, v Repeat
 
 	return nil
 }
-func (n *Named) scheduleEvents(v EventConfig) error {
-	loc, err := time.LoadLocation(n.cfg.TimeZone)
+func (t *Named) scheduleEvents(v EventConfig) error {
+	loc, err := time.LoadLocation(t.cfg.TimeZone)
 	if err != nil {
 		return err
 	}
 
-	t, err := time.ParseInLocation("15:04:05", v.Time, loc)
+	timestamp, err := time.ParseInLocation("15:04:05", v.Time, loc)
 	if err != nil {
 		return err
 	}
 
 	now := time.Now()
-	d := time.Date(now.Year(), now.Month(), now.Day(), t.Hour(), t.Minute(), t.Second(), 0, loc)
+	d := time.Date(now.Year(), now.Month(), now.Day(), timestamp.Hour(), timestamp.Minute(), timestamp.Second(), 0, loc)
 
 	weekDayMatch := func(days []string) bool {
 		for _, d := range days {
@@ -222,7 +219,7 @@ func (n *Named) scheduleEvents(v EventConfig) error {
 	timeRemaining := time.Until(d)
 
 	if timeRemaining > 0 {
-		err = n.sch.Set(d, v.Produce)
+		err = t.sch.Set(d, v.Produce)
 		if err != nil {
 			return err
 		}

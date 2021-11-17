@@ -59,7 +59,7 @@ func New(cfg Config, logger log.Logger, inv inventory.Inventory, lig *lights.Lig
 			// Expire the old entries
 			for k, v := range tMap {
 				if time.Since(v) > (300 * time.Second) {
-					level.Info(s.logger).Log("msg", "expiring",
+					_ = level.Info(s.logger).Log("msg", "expiring",
 						"device", k,
 					)
 
@@ -83,16 +83,16 @@ func New(cfg Config, logger log.Logger, inv inventory.Inventory, lig *lights.Lig
 	return s, nil
 }
 
-func (s *Telemetry) starting(ctx context.Context) error {
+func (l *Telemetry) starting(ctx context.Context) error {
 	return nil
 }
 
-func (s *Telemetry) running(ctx context.Context) error {
+func (l *Telemetry) running(ctx context.Context) error {
 	<-ctx.Done()
 	return nil
 }
 
-func (s *Telemetry) stopping(_ error) error {
+func (l *Telemetry) stopping(_ error) error {
 	return nil
 }
 
@@ -203,7 +203,7 @@ func (l *Telemetry) ReportNetworkID(ctx context.Context, request *inventory.Netw
 		for _, x := range ids {
 			err = l.inventory.UpdateTimestamp(ctx, x.Dn, "networkHost")
 			if err != nil {
-				level.Error(l.logger).Log("err", err.Error())
+				_ = level.Error(l.logger).Log("err", err.Error())
 			}
 		}
 		return &inventory.Empty{}, nil
@@ -232,7 +232,7 @@ func (l *Telemetry) ReportNetworkID(ctx context.Context, request *inventory.Netw
 		}
 	}
 
-	level.Debug(l.logger).Log("msg", "existing mac not found",
+	_ = level.Debug(l.logger).Log("msg", "existing mac not found",
 		"mac", request.MacAddress,
 	)
 
@@ -308,7 +308,7 @@ func (l *Telemetry) ReportIOTDevice(ctx context.Context, request *inventory.IOTD
 
 func (l *Telemetry) SetIOTServer(iotServer *iot.Server) error {
 	if l.iotServer != nil {
-		level.Debug(l.logger).Log("replacing iotServer on telemetryServer")
+		_ = level.Debug(l.logger).Log("replacing iotServer on telemetryServer")
 	}
 
 	l.iotServer = iotServer
@@ -389,7 +389,7 @@ func (l *Telemetry) handleZigbeeReport(ctx context.Context, request *inventory.I
 
 		result, err := l.inventory.FetchZigbeeDevice(ctx, x.Name)
 		if err != nil {
-			level.Warn(l.logger).Log("msg", err.Error())
+			_ = level.Warn(l.logger).Log("msg", err.Error())
 
 			result, err = l.inventory.CreateZigbeeDevice(ctx, x)
 			if err != nil {
@@ -406,7 +406,7 @@ func (l *Telemetry) handleZigbeeReport(ctx context.Context, request *inventory.I
 
 			err = l.lights.ActionHandler(ctx, action)
 			if err != nil {
-				level.Error(l.logger).Log("err", err.Error())
+				_ = level.Error(l.logger).Log("err", err.Error())
 			}
 		}
 	}
@@ -443,13 +443,13 @@ func (l *Telemetry) handleZigbeeDevices(ctx context.Context, m iot.ZigbeeBridgeM
 
 		_, err := l.inventory.FetchZigbeeDevice(ctx, x.Name)
 		if err != nil {
-			level.Error(l.logger).Log("err", err.Error())
+			_ = level.Error(l.logger).Log("err", err.Error())
 			createResult, err := l.inventory.CreateZigbeeDevice(ctx, x)
 			if err != nil {
 				return err
 			}
 
-			level.Debug(l.logger).Log("msg", "create result",
+			_ = level.Debug(l.logger).Log("msg", "create result",
 				"name", createResult.Name,
 				"vendor", createResult.Vendor,
 				"model", createResult.Model,
@@ -466,7 +466,7 @@ func (l *Telemetry) handleZigbeeDeviceUpdate(ctx context.Context, m iot.ZigbeeBr
 	defer span.Finish()
 
 	// zigbee2mqtt/bridge/request/device/ota_update/update
-	level.Debug(l.logger).Log("msg", "upgrade report",
+	_ = level.Debug(l.logger).Log("msg", "upgrade report",
 		"device", m.Meta["device"],
 		"status", m.Meta["status"],
 	)
@@ -476,9 +476,9 @@ func (l *Telemetry) handleZigbeeDeviceUpdate(ctx context.Context, m iot.ZigbeeBr
 	}
 
 	go func() {
-		_, err := l.iotServer.UpdateDevice(context.Background(), req)
+		_, err := l.iotServer.UpdateDevice(ctx, req)
 		if err != nil {
-			level.Error(l.logger).Log("err", err.Error())
+			_ = level.Error(l.logger).Log("err", err.Error())
 		}
 	}()
 

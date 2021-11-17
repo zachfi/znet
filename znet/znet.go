@@ -114,13 +114,9 @@ func (z *Znet) Run() error {
 		return fmt.Errorf("failed to start service manager %w", err)
 	}
 
-	// TODO setup http handlers
-	// z.Server.HTTP.Path("/ready").Handler(z.readyHandler(sm))
-	// grpc_health_v1.RegisterHealthServer(z.Server.GRPC, healthcheck.New(sm))
-
 	// Listen for events from this manager, and log them.
-	healthy := func() { level.Info(z.logger).Log("msg", "zNet started") }
-	stopped := func() { level.Info(z.logger).Log("msg", "zNet stopped") }
+	healthy := func() { _ = level.Info(z.logger).Log("msg", "zNet started") }
+	stopped := func() { _ = level.Info(z.logger).Log("msg", "zNet stopped") }
 	serviceFailed := func(service services.Service) {
 		// if any service fails, stop everything
 		sm.StopAsync()
@@ -129,15 +125,15 @@ func (z *Znet) Run() error {
 		for m, s := range serviceMap {
 			if s == service {
 				if service.FailureCase() == modules.ErrStopProcess {
-					level.Info(z.logger).Log("msg", "received stop signal via return error", "module", m, "err", service.FailureCase())
+					_ = level.Info(z.logger).Log("msg", "received stop signal via return error", "module", m, "err", service.FailureCase())
 				} else {
-					level.Error(z.logger).Log("msg", "module failed", "module", m, "err", service.FailureCase())
+					_ = level.Error(z.logger).Log("msg", "module failed", "module", m, "err", service.FailureCase())
 				}
 				return
 			}
 		}
 
-		level.Error(z.logger).Log("msg", "module failed", "module", "unknown", "err", service.FailureCase())
+		_ = level.Error(z.logger).Log("msg", "module failed", "module", "unknown", "err", service.FailureCase())
 	}
 	sm.AddListener(services.NewManagerListener(healthy, stopped, serviceFailed))
 

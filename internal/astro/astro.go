@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	sync "sync"
 	"time"
 
 	"github.com/go-kit/log"
@@ -14,9 +13,10 @@ import (
 	"github.com/prometheus/client_golang/api"
 	v1 "github.com/prometheus/client_golang/api/prometheus/v1"
 	"github.com/prometheus/common/model"
+	grpc "google.golang.org/grpc"
+
 	"github.com/xaque208/znet/modules/lights"
 	"github.com/xaque208/znet/pkg/events"
-	grpc "google.golang.org/grpc"
 )
 
 type Astro struct {
@@ -24,7 +24,6 @@ type Astro struct {
 	services.Service
 
 	logger log.Logger
-	mutex  sync.Mutex
 
 	cfg *Config
 
@@ -71,12 +70,8 @@ func (a *Astro) running(ctx context.Context) error {
 		return errors.Wrap(err, "unable to Connect astro")
 	}
 
-	for {
-		select {
-		case <-ctx.Done():
-			return nil
-		}
-	}
+	<-ctx.Done()
+	return nil
 }
 
 func (a *Astro) stopping(_ error) error {
@@ -85,12 +80,12 @@ func (a *Astro) stopping(_ error) error {
 
 // Connect implements events.Producer
 func (a *Astro) Connect(ctx context.Context) error {
-	a.logger.Log("msg", "starting eventProducer")
+	_ = a.logger.Log("msg", "starting eventProducer")
 
 	go func() {
 		err := a.scheduler(ctx)
 		if err != nil {
-			level.Error(a.logger).Log("msg", "scheduler failed",
+			_ = level.Error(a.logger).Log("msg", "scheduler failed",
 				"err", err,
 			)
 		}
@@ -106,7 +101,7 @@ func (a *Astro) scheduleEvents(ctx context.Context, sch *events.Scheduler) error
 
 	client, err := api.NewClient(clientConf)
 	if err != nil {
-		level.Error(a.logger).Log("msg", "failed to create a prometheus api client",
+		_ = level.Error(a.logger).Log("msg", "failed to create a prometheus api client",
 			"err", err,
 		)
 	}
@@ -129,7 +124,7 @@ func (a *Astro) scheduleEvents(ctx context.Context, sch *events.Scheduler) error
 
 		err = sch.Set(sunriseTime, "Sunrise")
 		if err != nil {
-			level.Error(a.logger).Log("msg", "failed to set Sunrise",
+			_ = level.Error(a.logger).Log("msg", "failed to set Sunrise",
 				"time", sunriseTime,
 				"err", err,
 			)
@@ -142,7 +137,7 @@ func (a *Astro) scheduleEvents(ctx context.Context, sch *events.Scheduler) error
 
 		err = sch.Set(sunsetTime, "Sunset")
 		if err != nil {
-			level.Error(a.logger).Log("msg", "failed to set Sunset",
+			_ = level.Error(a.logger).Log("msg", "failed to set Sunset",
 				"time", sunsetTime,
 				"err", err,
 			)
@@ -152,7 +147,7 @@ func (a *Astro) scheduleEvents(ctx context.Context, sch *events.Scheduler) error
 
 		err = sch.Set(preSunset, "PreSunset")
 		if err != nil {
-			level.Error(a.logger).Log("msg", "failed to set PreSunset",
+			_ = level.Error(a.logger).Log("msg", "failed to set PreSunset",
 				"time", preSunset,
 				"err", err,
 			)
@@ -165,7 +160,7 @@ func (a *Astro) scheduleEvents(ctx context.Context, sch *events.Scheduler) error
 func (a *Astro) scheduler(ctx context.Context) error {
 	err := a.scheduleEvents(ctx, a.sch)
 	if err != nil {
-		level.Error(a.logger).Log("msg", "failed to schedule events",
+		_ = level.Error(a.logger).Log("msg", "failed to schedule events",
 			"err", err,
 		)
 	}
@@ -179,7 +174,7 @@ func (a *Astro) scheduler(ctx context.Context) error {
 			if len(names) == 0 {
 				dur := 1 * time.Hour
 
-				level.Debug(a.logger).Log("msg", "no astro names",
+				_ = level.Debug(a.logger).Log("msg", "no astro names",
 					"retry", dur,
 				)
 				time.Sleep(dur)
@@ -192,26 +187,26 @@ func (a *Astro) scheduler(ctx context.Context) error {
 				case "Sunrise":
 					_, err := astroClient.Sunrise(ctx, &Empty{})
 					if err != nil {
-						level.Error(a.logger).Log("msg", "failed to call Sunrise",
+						_ = level.Error(a.logger).Log("msg", "failed to call Sunrise",
 							"err", err,
 						)
 					}
 				case "Sunset":
 					_, err := astroClient.Sunset(ctx, &Empty{})
 					if err != nil {
-						level.Error(a.logger).Log("msg", "failed to call Sunset",
+						_ = level.Error(a.logger).Log("msg", "failed to call Sunset",
 							"err", err,
 						)
 					}
 				case "PreSunset":
 					_, err := astroClient.PreSunset(ctx, &Empty{})
 					if err != nil {
-						level.Error(a.logger).Log("msg", "failed to call PreSunset",
+						_ = level.Error(a.logger).Log("msg", "failed to call PreSunset",
 							"err", err,
 						)
 					}
 				default:
-					level.Warn(a.logger).Log("msg", "unknown event name",
+					_ = level.Warn(a.logger).Log("msg", "unknown event name",
 						"event", n,
 					)
 				}
@@ -222,7 +217,7 @@ func (a *Astro) scheduler(ctx context.Context) error {
 	}()
 
 	<-ctx.Done()
-	level.Debug(a.logger).Log("msg", "scheduler done")
+	_ = level.Debug(a.logger).Log("msg", "scheduler done")
 
 	return nil
 }
@@ -238,7 +233,7 @@ func (a *Astro) queryForTime(c context.Context, client api.Client, query string)
 	}
 
 	if len(warnings) > 0 {
-		level.Warn(a.logger).Log("msg", "warnings from prometheus",
+		_ = level.Warn(a.logger).Log("msg", "warnings from prometheus",
 			"warnings", warnings,
 		)
 	}
@@ -250,7 +245,7 @@ func (a *Astro) queryForTime(c context.Context, client api.Client, query string)
 			for _, elem := range vectorVal {
 				i, err := strconv.ParseInt(elem.Value.String(), 10, 64)
 				if err != nil {
-					level.Error(a.logger).Log("msg", "failed to parse int",
+					_ = level.Error(a.logger).Log("msg", "failed to parse int",
 						"err", err,
 					)
 					continue

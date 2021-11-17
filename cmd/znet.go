@@ -27,6 +27,7 @@ import (
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
 	"github.com/xaque208/znet/pkg/util"
 	"github.com/xaque208/znet/znet"
 )
@@ -57,13 +58,8 @@ Run zNet.
 func runZnet(cmd *cobra.Command, args []string) {
 	logger := util.NewLogger()
 
-	// jaegerCfg, err := jaegerConfig.FromEnv()
-	// if err != nil {
-	// 	level.Error(logger).Log("msg", "failed to get jaegerCfg from environment", "err", err)
-	// 	os.Exit(1)
-	// }
-
 	jaegerCfg := jaegerConfig.Configuration{
+		ServiceName: "znet",
 		Sampler: &jaegerConfig.SamplerConfig{
 			Type:  "const",
 			Param: 1,
@@ -71,16 +67,16 @@ func runZnet(cmd *cobra.Command, args []string) {
 		Reporter: &jaegerConfig.ReporterConfig{
 			LogSpans:            true,
 			BufferFlushInterval: 1 * time.Second,
-			CollectorEndpoint:   "http://10.42.0.44:14268/api/traces",
+			CollectorEndpoint:   tracingEndpoint,
 		},
 	}
 
-	tracer, closer, err := jaegerCfg.New(
-		"znet",
+	tracer, closer, err := jaegerCfg.NewTracer(
 		jaegerConfig.Logger(jaegerLogger.StdLogger),
 	)
+
 	if err != nil {
-		level.Error(logger).Log("msg", "failed to create new tracer", "err", err)
+		_ = level.Error(logger).Log("msg", "failed to create new tracer", "err", err)
 		os.Exit(1)
 	}
 	defer closer.Close()
@@ -89,18 +85,18 @@ func runZnet(cmd *cobra.Command, args []string) {
 
 	cfg, err := znet.LoadConfig(cfgFile)
 	if err != nil {
-		level.Error(logger).Log("msg", "failed to load config file", "err", err)
+		_ = level.Error(logger).Log("msg", "failed to load config file", "err", err)
 		os.Exit(1)
 	}
 
 	z, err := znet.New(cfg)
 	if err != nil {
-		level.Error(logger).Log("msg", "failed to create Znet", "err", err)
+		_ = level.Error(logger).Log("msg", "failed to create Znet", "err", err)
 		os.Exit(1)
 	}
 
 	if err := z.Run(); err != nil {
-		level.Error(logger).Log("msg", "error running zNet", "err", err)
+		_ = level.Error(logger).Log("msg", "error running zNet", "err", err)
 		os.Exit(1)
 	}
 }
@@ -113,7 +109,7 @@ func Execute(version string) {
 	logger := util.NewLogger()
 
 	if err := rootCmd.Execute(); err != nil {
-		level.Error(logger).Log("msg", "failed to execute", "err", err)
+		_ = level.Error(logger).Log("msg", "failed to execute", "err", err)
 		os.Exit(1)
 	}
 }
@@ -127,7 +123,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&trace, "trace", "", false, "Trace level verbosity")
 	rootCmd.PersistentFlags().StringVarP(&tracingEndpoint, "tracing-endpoint", "", "", "Jaeger reporter endpoint URL")
 
-	rootCmd.MarkFlagRequired("tracing-endpoint")
+	_ = rootCmd.MarkFlagRequired("tracing-endpoint")
 
 	rootCmd.AddCommand(inventoryCommand)
 }
@@ -143,7 +139,7 @@ func initConfig() {
 		// Find home directory.
 		home, err := homedir.Dir()
 		if err != nil {
-			level.Error(logger).Log("msg", "failed to get homedir", "err", err)
+			_ = level.Error(logger).Log("msg", "failed to get homedir", "err", err)
 			os.Exit(1)
 		}
 
@@ -158,7 +154,7 @@ func initConfig() {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		level.Debug(logger).Log("msg", "using config file", "file", viper.ConfigFileUsed())
+		_ = level.Debug(logger).Log("msg", "using config file", "file", viper.ConfigFileUsed())
 		cfgFile = viper.ConfigFileUsed()
 	}
 }
