@@ -9,13 +9,10 @@ import (
 )
 
 func TestNewZnet(t *testing.T) {
-	cfgFileNoExists := "../testdata/doesnotexist.yaml"
-	z, err := NewZnet(cfgFileNoExists)
-	require.Error(t, err, "failed to load config")
-	require.Nil(t, z)
-
 	cfgFile := "../testdata/config.yaml"
-	z, err = NewZnet(cfgFile)
+	cfg, err := LoadConfig(cfgFile)
+	require.NoError(t, err)
+	z, err := New(cfg)
 	require.NoError(t, err)
 	require.NotNil(t, z)
 }

@@ -9,17 +9,6 @@ import (
 	"github.com/xaque208/znet/internal/config"
 )
 
-// getEnvironmentConfig receives a slice of environment configurations and returns the one that matches the given name.
-func getEnvironmentConfig(environments []config.EnvironmentConfig, envName string) (*config.EnvironmentConfig, error) {
-	for _, e := range environments {
-		if e.Name == envName {
-			return &e, nil
-		}
-	}
-
-	return nil, fmt.Errorf("no environment found: %s", envName)
-}
-
 // LoadEnvironment reads reads environment variables out of vault for return.
 func LoadEnvironment(cfg *config.VaultConfig, e *config.EnvironmentConfig) (map[string]string, error) {
 

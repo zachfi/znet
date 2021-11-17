@@ -42,20 +42,20 @@ func loadYamlFile(filename string, d interface{}) error {
 
 // Config stores the items that are required to configure this project.
 type Config struct {
-	Agent        *AgentConfig         `yaml:"agent,omitempty"`
-	Astro        *AstroConfig         `yaml:"astro,omitempty"`
-	Builder      *BuilderConfig       `yaml:"builder,omitempty"`
-	Environments *[]EnvironmentConfig `yaml:"environments,omitempty"`
-	GitWatch     *GitWatchConfig      `yaml:"gitwatch,omitempty"`
-	HTTP         *HTTPConfig          `yaml:"http,omitempty"`
-	LDAP         *LDAPConfig          `yaml:"ldap,omitempty"`
-	Lights       *LightsConfig        `yaml:"lights,omitempty"`
-	MQTT         *MQTTConfig          `yaml:"mqtt,omitempty"`
-	Network      *NetworkConfig       `yaml:"network,omitempty"`
-	RPC          *RPCConfig           `yaml:"rpc,omitempty"`
-	Timer        *TimerConfig         `yaml:"timer,omitempty"`
-	TLS          *TLSConfig           `yaml:"tls,omitempty"`
-	Vault        *VaultConfig         `yaml:"vault,omitempty"`
+	Agent   *AgentConfig   `yaml:"agent,omitempty"`
+	Builder *BuilderConfig `yaml:"builder,omitempty"`
+	// Environments *[]EnvironmentConfig `yaml:"environments,omitempty"`
+	GitWatch *GitWatchConfig `yaml:"gitwatch,omitempty"`
+	HTTP     *HTTPConfig     `yaml:"http,omitempty"`
+	// LDAP     *LDAPConfig     `yaml:"ldap,omitempty"`
+	// Lights  *LightsConfig  `yaml:"lights,omitempty"`
+	// MQTT    *MQTTConfig    `yaml:"mqtt,omitempty"`
+	Network *NetworkConfig `yaml:"network,omitempty"`
+
+	TLS *TLSConfig `yaml:"tls,omitempty"`
+
+	RPC   *RPCConfig   `yaml:"rpc,omitempty"`
+	Vault *VaultConfig `yaml:"vault,omitempty"`
 }
 
 // EnvironmentConfig is the environment configuration.
@@ -93,11 +93,4 @@ type VaultConfig struct {
 	ClientCert string `yaml:"client_cert,omitempty"`
 	CACert     string `yaml:"ca_cert,omitempty"`
 	LoginName  string `yaml:"login_name,omitempty"`
-}
-
-type MQTTConfig struct {
-	URL      string `yaml:"url,omitempty"`
-	Topic    string `yaml:"topic,omitempty"`
-	Username string `yaml:"username,omitempty"`
-	Password string `yaml:"password,omitempty"`
 }

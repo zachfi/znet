@@ -34,16 +34,16 @@ proto-grpc:
 		pkg/iot/iot.proto \
 		internal/astro/astro.proto \
 		internal/agent/agent.proto \
-		internal/lights/lights.proto \
-		internal/timer/timer.proto \
-		internal/inventory/inventory.proto \
-		internal/telemetry/telemetry.proto
-	@protoc -I internal/inventory/ -I ./ \
-		--gotemplate_out=template_dir=internal/inventory/templates,debug=false,single-package-mode=true,all=true:internal/inventory \
-		internal/inventory/inventory.proto
-	@protoc -I internal/inventory/ -I ./ \
+		modules/lights/lights.proto \
+		modules/timer/named/named.proto \
+		modules/inventory/inventory.proto \
+		modules/telemetry/telemetry.proto
+	@protoc -I modules/inventory/ -I ./ \
+		--gotemplate_out=template_dir=modules/inventory/templates,debug=false,single-package-mode=true,all=true:modules/inventory \
+		modules/inventory/inventory.proto
+	@protoc -I modules/inventory/ -I ./ \
 		--gotemplate_out=template_dir=cmd/templates,debug=false,single-package-mode=true,all=true:cmd \
-		internal/inventory/inventory.proto
+		modules/inventory/inventory.proto
 
 compile-all: deps-only
 	@echo "=== $(PROJECT_NAME) === [ compile          ]: building commands:"
@@ -59,7 +59,7 @@ compile-all: deps-only
 compile-only: deps-only
 	@echo "=== $(PROJECT_NAME) === [ compile          ]: building commands:"
 	@mkdir -p $(BUILD_DIR)/$(GOOS)
-	GOOS=$(GOOS) $(GO) build -ldflags=$(LDFLAGS) -o $(BUILD_DIR)/$(GOOS)/$(PROJECT_NAME) . ; 
+	CGO_ENABLED=0 GOOS=$(GOOS) $(GO) build -ldflags=$(LDFLAGS) -o $(BUILD_DIR)/$(GOOS)/$(PROJECT_NAME) . ; 
 	@# @for b in $(BINS); do \
 	# 	echo "=== $(PROJECT_NAME) === [ compile          ]:     $(BUILD_DIR)$(GOOS)/$$b"; \
 	# 	BUILD_FILES=`find $(SRCDIR)/cmd/$$b -type f -name "*.go"` ; \

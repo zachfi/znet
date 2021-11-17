@@ -4,6 +4,8 @@ import (
 	"crypto/tls"
 	"strings"
 
+	otgrpc "github.com/opentracing-contrib/go-grpc"
+	"github.com/opentracing/opentracing-go"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -38,6 +40,25 @@ func StandardRPCClient(serverAddress string, cfg config.Config) *grpc.ClientConn
 	// opts = append(opts, grpc.WithInsecure())
 	opts = append(opts, grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
 	// opts = append(opts, grpc.WithBlock())
+	opts = append(opts, grpc.WithUnaryInterceptor(otgrpc.OpenTracingClientInterceptor(opentracing.GlobalTracer())))
+	opts = append(opts, grpc.WithStreamInterceptor(otgrpc.OpenTracingStreamClientInterceptor(opentracing.GlobalTracer())))
+
+	conn, err := grpc.Dial(serverAddress, opts...)
+	if err != nil {
+		log.Errorf("failed dialing gRPC: %s", err)
+	}
+
+	return conn
+}
+
+func SlimRPCClient(serverAddress string) *grpc.ClientConn {
+	var opts []grpc.DialOption
+
+	opts = append(opts, grpc.WithInsecure())
+	// opts = append(opts, grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
+	// opts = append(opts, grpc.WithBlock())
+	opts = append(opts, grpc.WithUnaryInterceptor(otgrpc.OpenTracingClientInterceptor(opentracing.GlobalTracer())))
+	opts = append(opts, grpc.WithStreamInterceptor(otgrpc.OpenTracingStreamClientInterceptor(opentracing.GlobalTracer())))
 
 	log.WithFields(log.Fields{
 		"server_address": serverAddress,

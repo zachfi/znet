@@ -15,22 +15,7 @@
 package cmd
 
 import (
-	"context"
-	"io"
-	"time"
-
-	"github.com/scottdware/go-junos"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-
-	"github.com/xaque208/znet/internal/comms"
-	"github.com/xaque208/znet/internal/config"
-	"github.com/xaque208/znet/internal/inventory"
-	"github.com/xaque208/znet/pkg/netconfig"
-	"github.com/xaque208/znet/znet"
 )
 
 var commit bool
@@ -44,7 +29,7 @@ var netconfigCmd = &cobra.Command{
 	Short:   "Configure Junos Devices",
 	Long:    "Configure the network",
 	Example: "znet netconfig",
-	Run:     runNetconfig,
+	// Run:     runNetconfig,
 }
 
 func init() {
@@ -56,94 +41,94 @@ func init() {
 	netconfigCmd.PersistentFlags().IntVarP(&confirm, "confirm", "", 0, "Number of minutes at which the config will be rolled back")
 }
 
-func runNetconfig(cmd *cobra.Command, args []string) {
-	initLogger()
+// func runNetconfig(cmd *cobra.Command, args []string) {
+// 	initLogger()
 
-	z, err := znet.NewZnet(cfgFile)
-	if err != nil {
-		log.Fatal(err)
-	}
+// 	z, err := znet.NewZnet(cfgFile)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
 
-	z.Config.RPC.ServerAddress = viper.GetString("rpc.server_address")
+// 	z.Config.RPC.ServerAddress = viper.GetString("rpc.server_address")
 
-	cfg := &config.Config{
-		Vault: z.Config.Vault,
-		TLS:   z.Config.TLS,
-	}
+// 	cfg := &config.Config{
+// 		Vault: z.Config.Vault,
+// 		TLS:   z.Config.TLS,
+// 	}
 
-	conn := comms.StandardRPCClient(z.Config.RPC.ServerAddress, *cfg)
-	defer func() {
-		err = conn.Close()
-		if err != nil {
-			log.Error(err)
-		}
-	}()
+// 	conn := comms.StandardRPCClient(z.Config.RPC.ServerAddress, *cfg)
+// 	defer func() {
+// 		err = conn.Close()
+// 		if err != nil {
+// 			log.Error(err)
+// 		}
+// 	}()
 
-	// Load the network data.
-	configDir := viper.GetString("netconfig.configdir")
+// 	// Load the network data.
+// 	configDir := viper.GetString("netconfig.configdir")
 
-	inventoryClient := inventory.NewInventoryClient(conn)
+// 	inventoryClient := inventory.NewInventoryClient(conn)
 
-	var stream inventory.Inventory_ListNetworkHostsClient
+// 	var stream inventory.Inventory_ListNetworkHostsClient
 
-	ctx := context.Background()
+// 	ctx := context.Background()
 
-	for {
-		stream, err = inventoryClient.ListNetworkHosts(ctx, &inventory.Empty{})
-		if err != nil {
-			switch status.Code(err) {
-			case codes.Unavailable:
-				time.Sleep(3 * time.Second)
-				continue
-			default:
-				log.Error(err)
-			}
-		}
-		break
-	}
+// 	for {
+// 		stream, err = inventoryClient.ListNetworkHosts(ctx, &inventory.Empty{})
+// 		if err != nil {
+// 			switch status.Code(err) {
+// 			case codes.Unavailable:
+// 				time.Sleep(3 * time.Second)
+// 				continue
+// 			default:
+// 				log.Error(err)
+// 			}
+// 		}
+// 		break
+// 	}
 
-	hosts := []*inventory.NetworkHost{}
+// 	hosts := []*inventory.NetworkHost{}
 
-	for {
-		var d *inventory.NetworkHost
+// 	for {
+// 		var d *inventory.NetworkHost
 
-		d, err = stream.Recv()
-		if err != nil {
-			if err == io.EOF {
-				break
-			}
+// 		d, err = stream.Recv()
+// 		if err != nil {
+// 			if err == io.EOF {
+// 				break
+// 			}
 
-			switch status.Code(err) {
-			case codes.OK:
-				log.Info("ok")
-				continue
-			default:
-				log.Error(err)
-			}
-		}
+// 			switch status.Code(err) {
+// 			case codes.OK:
+// 				log.Info("ok")
+// 				continue
+// 			default:
+// 				log.Error(err)
+// 			}
+// 		}
 
-		hosts = append(hosts, d)
-	}
+// 		hosts = append(hosts, d)
+// 	}
 
-	if len(hosts) == 0 {
-		log.Fatalf("zero hosts to configure")
-	}
+// 	if len(hosts) == 0 {
+// 		log.Fatalf("zero hosts to configure")
+// 	}
 
-	auth := &junos.AuthMethod{
-		Username:   viper.GetString("network.junos.username"),
-		PrivateKey: viper.GetString("network.junos.keyfile"),
-	}
+// 	auth := &junos.AuthMethod{
+// 		Username:   viper.GetString("network.junos.username"),
+// 		PrivateKey: viper.GetString("network.junos.keyfile"),
+// 	}
 
-	log.Debugf("auth: %+v", auth)
+// 	log.Debugf("auth: %+v", auth)
 
-	nc, err := netconfig.NewNetConfig(configDir, hosts, auth, z.Environment)
-	if err != nil {
-		log.Fatal(err)
-	}
+// 	nc, err := netconfig.NewNetConfig(configDir, hosts, auth, z.Environment)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
 
-	err = nc.ConfigureNetwork(commit, confirm, diff)
-	if err != nil {
-		log.Error(err)
-	}
+// 	err = nc.ConfigureNetwork(commit, confirm, diff)
+// 	if err != nil {
+// 		log.Error(err)
+// 	}
 
-}
+// }

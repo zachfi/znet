@@ -1,0 +1,163 @@
+{{- if eq .File.GetName "inventory.proto"}}
+// Code generated, do not edit
+package inventory
+
+import (
+	"context"
+
+	"github.com/go-kit/log"
+	"github.com/grafana/dskit/services"
+)
+
+// Server
+type Server struct {
+  UnimplementedInventoryServer
+
+	services.Service
+	cfg *Config
+
+	logger log.Logger
+
+	inventory Inventory
+}
+
+// NewServer is used to return a new Server, which implements the inventory RPC server.
+func NewLDAPServer(cfg Config, logger log.Logger) (*Server, error) {
+	invClient, err := NewLDAPInventory(cfg, logger)
+	if err != nil {
+		return nil, err
+	}
+
+	s := &Server{
+		inventory: invClient,
+		logger:    logger,
+	}
+
+	s.Service = services.NewBasicService(s.starting, s.running, s.stopping)
+
+  return s, nil
+}
+
+func (s *Server) starting(ctx context.Context) error {
+	return nil
+}
+
+func (s *Server) running(ctx context.Context) error {
+	<-ctx.Done()
+	return nil
+}
+
+func (s *Server) stopping(_ error) error {
+	return nil
+}
+
+
+  {{- $messageType := .File.MessageType }}
+  {{- range .File.Service }}
+    {{- $serviceName := .GetName }}
+    {{- if eq $serviceName "Inventory"}}
+    // .File.Service {{.GetName}}
+      {{- range .Method }}
+        {{- $methodName := .GetName }}
+        {{- /* The streaming check likely should be checking if the name begins with List.  A new pattern should exist for Update/Delete, etc */}}
+        {{- if .ServerStreaming}}
+func (e *Server) {{.Name}}(req *{{.InputType|trimPrefix ".inventory."}}, stream {{$serviceName}}_{{$methodName}}Server) error {
+  // .Method.Name {{.Name}}
+  // .Method.InputType {{.InputType}}
+  // .Method.OutputType {{.OutputType}}
+
+	results, err := e.inventory.{{.Name}}(stream.Context())
+	if err != nil {
+		return err
+	}
+          {{ $outputType := .OutputType|trimPrefix ".inventory."}}
+
+  // outputType: {{$outputType}}
+	if results != nil {
+		for _, r := range results {
+			xxx := &{{$outputType}}{}
+      {{- range $messageType }}
+        {{- /* Only deal with the current type when looping through all messages */}}
+        {{- if eq ($outputType|trimPrefix "inventory.") .GetName}}
+          {{- range .Field }}
+            {{- if eq .GetType.String "TYPE_STRING" }}
+              {{- if eq .GetLabel.String "LABEL_REPEATED" }}
+
+      {{- /* Deref the pointer for repeated fields*/}}
+      if r.{{.Name|camelCase}} != nil {
+        xxx.{{.Name|camelCase}} = r.{{.Name|camelCase}} // {{.GetType.String}}
+      }
+              {{- else }}
+      xxx.{{.Name|camelCase}} = r.{{.Name|camelCase}} // {{.GetType.String}}
+              {{- end }}
+            {{- else }}
+            // Unhandled Type
+            // name: {{.GetName}}
+            // type: {{.GetType.String}}
+            // label: {{.GetLabel.String}}
+            {{- end }}
+          {{- end }}
+        {{- end }}
+      {{- end }}
+
+      if err := stream.Send(xxx); err != nil {
+        return err
+      }
+		}
+	}
+
+  return nil
+}
+        {{- end }}
+      {{ end }}
+    {{- end }}
+  {{- end }}
+
+// func (r *Server) ListNetworkHosts_example(ctx context.Context, request *Empty) (*SearchResponse, error) {
+// 	response := &SearchResponse{}
+// 
+// 	hosts, err := r.inventory.ListNetworkHosts()
+// 	if err != nil {
+// 		return response, err
+// 	}
+// 
+// 	if hosts != nil {
+// 		for _, h := range *hosts {
+// 			host := &NetworkHost{
+// 				Description:     h.Description,
+// 				Dn:              h.Dn,
+// 				Domain:          h.Domain,
+// 				Group:           h.Group,
+// 				Name:            h.Name,
+// 				OperatingSystem: h.OperatingSystem,
+// 				Platform:        h.Platform,
+// 				Role:            h.Role,
+// 				Type:            h.Type,
+// 			}
+// 
+// 			if h.InetAddress != nil {
+// 				host.InetAddress = h.InetAddress
+// 			}
+// 
+// 			if h.Inet6Address != nil {
+// 				host.Inet6Address = h.Inet6Address
+// 			}
+// 
+// 			if h.MacAddress != nil {
+// 				host.MacAddress = h.MacAddress
+// 			}
+// 			if h.LastSeen != nil {
+// 				lastSeen, err := ptypes.TimestampProto(h.LastSeen)
+// 				if err != nil {
+// 					log.Error(err)
+// 				}
+// 				host.LastSeen = lastSeen
+// 			}
+// 
+// 			response.Hosts = append(response.Hosts, host)
+// 		}
+// 	}
+// 
+// 	return response, nil
+// }
+{{- end }}

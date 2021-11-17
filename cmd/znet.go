@@ -15,17 +15,31 @@
 package cmd
 
 import (
+	"os"
 	"strings"
+	"time"
 
+	"github.com/opentracing/opentracing-go"
+	jaegerConfig "github.com/uber/jaeger-client-go/config"
+	jaegerLogger "github.com/uber/jaeger-client-go/log"
+
+	"github.com/go-kit/log/level"
 	homedir "github.com/mitchellh/go-homedir"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
+	"github.com/xaque208/znet/pkg/util"
+	"github.com/xaque208/znet/znet"
 )
 
-var cfgFile string
-var verbose bool
-var trace bool
+var (
+	cfgFile         string
+	target          string
+	tracingEndpoint string
+
+	verbose bool
+	trace   bool
+)
 
 // Version is the version of the project
 var Version string
@@ -33,12 +47,58 @@ var Version string
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "znet",
-	Short: "znet",
-	Long: `ZNet 
+	Short: "zNet",
+	Long: `zNet
 
-Run commands on a ZNet RPC.
+Run zNet.
 `,
-	//	Run: func(cmd *cobra.Command, args []string) { },
+	Run: runZnet,
+}
+
+func runZnet(cmd *cobra.Command, args []string) {
+	logger := util.NewLogger()
+
+	jaegerCfg := jaegerConfig.Configuration{
+		ServiceName: "znet",
+		Sampler: &jaegerConfig.SamplerConfig{
+			Type:  "const",
+			Param: 1,
+		},
+		Reporter: &jaegerConfig.ReporterConfig{
+			LogSpans:            true,
+			BufferFlushInterval: 1 * time.Second,
+			CollectorEndpoint:   tracingEndpoint,
+		},
+	}
+
+	tracer, closer, err := jaegerCfg.NewTracer(
+		jaegerConfig.Logger(jaegerLogger.StdLogger),
+	)
+
+	if err != nil {
+		_ = level.Error(logger).Log("msg", "failed to create new tracer", "err", err)
+		os.Exit(1)
+	}
+	defer closer.Close()
+
+	opentracing.SetGlobalTracer(tracer)
+
+	cfg, err := znet.LoadConfig(cfgFile)
+	if err != nil {
+		_ = level.Error(logger).Log("msg", "failed to load config file", "err", err)
+		os.Exit(1)
+	}
+
+	z, err := znet.New(cfg)
+	if err != nil {
+		_ = level.Error(logger).Log("msg", "failed to create Znet", "err", err)
+		os.Exit(1)
+	}
+
+	if err := z.Run(); err != nil {
+		_ = level.Error(logger).Log("msg", "error running zNet", "err", err)
+		os.Exit(1)
+	}
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -46,8 +106,11 @@ Run commands on a ZNet RPC.
 func Execute(version string) {
 	Version = version
 
+	logger := util.NewLogger()
+
 	if err := rootCmd.Execute(); err != nil {
-		log.Fatal(err)
+		_ = level.Error(logger).Log("msg", "failed to execute", "err", err)
+		os.Exit(1)
 	}
 }
 
@@ -55,29 +118,19 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.znet.yaml)")
+	rootCmd.PersistentFlags().StringVarP(&target, "target", "t", "all", "Run a specific module")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Increase verbosity")
 	rootCmd.PersistentFlags().BoolVarP(&trace, "trace", "", false, "Trace level verbosity")
+	rootCmd.PersistentFlags().StringVarP(&tracingEndpoint, "tracing-endpoint", "", "", "Jaeger reporter endpoint URL")
 
-	formatter := log.TextFormatter{
-		DisableQuote:     true,
-		DisableTimestamp: true,
-	}
-
-	log.SetFormatter(&formatter)
-
-	if trace {
-		log.SetLevel(log.TraceLevel)
-	} else if verbose {
-		log.SetLevel(log.DebugLevel)
-	} else {
-		log.SetLevel(log.InfoLevel)
-	}
+	_ = rootCmd.MarkFlagRequired("tracing-endpoint")
 
 	rootCmd.AddCommand(inventoryCommand)
 }
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
+	logger := util.NewLogger()
 
 	if cfgFile != "" {
 		// Use config file from the flag.
@@ -86,7 +139,8 @@ func initConfig() {
 		// Find home directory.
 		home, err := homedir.Dir()
 		if err != nil {
-			log.Fatal(err)
+			_ = level.Error(logger).Log("msg", "failed to get homedir", "err", err)
+			os.Exit(1)
 		}
 
 		// Search config in home directory with name ".znet" (without extension).
@@ -100,7 +154,7 @@ func initConfig() {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		log.Debugf("using config file: %s", viper.ConfigFileUsed())
+		_ = level.Debug(logger).Log("msg", "using config file", "file", viper.ConfigFileUsed())
 		cfgFile = viper.ConfigFileUsed()
 	}
 }

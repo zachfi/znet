@@ -8,8 +8,6 @@ import (
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	log "github.com/sirupsen/logrus"
-
-	"github.com/xaque208/znet/internal/config"
 )
 
 type TopicPath struct {
@@ -172,11 +170,7 @@ func ReadMessage(objectID string, payload []byte, endpoint ...string) (interface
 	return nil, nil
 }
 
-func NewMQTTClient(cfg *config.MQTTConfig) (mqtt.Client, error) {
-	if cfg == nil {
-		return nil, fmt.Errorf("unable to new MQTT client with nil config")
-	}
-
+func NewMQTTClient(cfg MQTTConfig) (mqtt.Client, error) {
 	var mqttClient mqtt.Client
 
 	mqttOpts := mqtt.NewClientOptions()
