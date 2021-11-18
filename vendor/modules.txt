@@ -147,7 +147,7 @@ github.com/golang/snappy
 github.com/gorilla/mux
 # github.com/gorilla/websocket v1.4.2
 github.com/gorilla/websocket
-# github.com/grafana/dskit v0.0.0-20211015163529-3a65fbdcfc45
+# github.com/grafana/dskit v0.0.0-20211113174231-da2041a688dc
 github.com/grafana/dskit/modules
 github.com/grafana/dskit/services
 # github.com/grpc-ecosystem/go-grpc-middleware v1.2.2
