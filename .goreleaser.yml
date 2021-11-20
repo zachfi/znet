@@ -48,8 +48,6 @@ dockers:
       - "xaque208/znet:{{ .Tag }}"
       - "xaque208/znet:v{{ .Major }}.{{ .Minor }}"
       - "xaque208/znet:latest"
-    binaries:
-      - znet
     build_flag_templates:
       - "--pull"
       - "--label=repository=https://github.com/xaque208/znet"
