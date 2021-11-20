@@ -1,6 +1,7 @@
 package znet
 
 import (
+	"flag"
 	"io/ioutil"
 	"path/filepath"
 
@@ -61,4 +62,9 @@ func loadYamlFile(filename string, d interface{}) error {
 	}
 
 	return nil
+}
+
+func (c *Config) RegisterFlagsAndApplyDefaults(prefix string, f *flag.FlagSet) {
+	c.Target = All
+	f.StringVar(&c.Target, "target", All, "target module")
 }
