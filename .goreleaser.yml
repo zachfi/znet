@@ -9,7 +9,7 @@ before:
 
 builds:
   - id: znet
-    # dir: cmd/znet
+    dir: cmd/znet
     binary: znet
     env:
       - CGO_ENABLED=0
