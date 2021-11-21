@@ -20,6 +20,7 @@ type zigbeeLight struct {
 }
 
 const defaultTransitionTime = 0.5
+const slowTransitionTime = 5
 
 func NewZigbeeLight(cfg Config, mqttClient mqtt.Client, inv inventory.Inventory) (Handler, error) {
 	return &zigbeeLight{
@@ -99,6 +100,7 @@ func (l zigbeeLight) Alert(ctx context.Context, groupName string) error {
 	}
 	return nil
 }
+
 func (l zigbeeLight) On(ctx context.Context, groupName string) error {
 	span, _ := opentracing.StartSpanFromContext(ctx, "zigbeeLight.On")
 	defer span.Finish()
@@ -274,6 +276,44 @@ func (l zigbeeLight) RandomColor(ctx context.Context, groupName string, hex []st
 			"color": map[string]string{
 				"hex": hex[rand.Intn(len(hex))],
 			},
+		}
+
+		m, err := json.Marshal(message)
+		if err != nil {
+			log.Error(err)
+			continue
+		}
+
+		l.mqttClient.Publish(topic, byte(0), false, string(m))
+		deviceSpan.Finish()
+	}
+
+	return nil
+}
+
+func (l zigbeeLight) SetTemp(ctx context.Context, groupName string, temp int32) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "zigbeeLight.SetTemp")
+	defer span.Finish()
+
+	devices, err := l.inv.ListZigbeeDevices(ctx)
+	if err != nil {
+		return err
+	}
+
+	for i := range devices {
+		deviceSpan, _ := opentracing.StartSpanFromContext(ctx, devices[i].Name)
+		if !isColorLightDevice(&devices[i]) {
+			continue
+		}
+
+		if devices[i].IotZone != groupName {
+			continue
+		}
+
+		topic := fmt.Sprintf("zigbee2mqtt/%s/set", devices[i].Name)
+		message := map[string]interface{}{
+			"transition": slowTransitionTime,
+			"color_temp": temp,
 		}
 
 		m, err := json.Marshal(message)

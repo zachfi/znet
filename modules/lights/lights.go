@@ -18,6 +18,10 @@ import (
 const (
 	brightnessLow  = 100
 	brightnessHigh = 254
+
+	nightTemp   = 500
+	eveningTemp = 300
+	morningTemp = 100
 )
 
 // Lights holds the information necessary to communicate with lighting
@@ -153,7 +157,7 @@ func (l *Lights) getRoom(name string) *Room {
 }
 
 // configuredEventNames is a collection of events that are configured in the
-// lighting config.  These event names determin all the epossible event names
+// lighting config.  These event names determin all the possible event names
 // that will be responded to.
 func (l *Lights) configuredEventNames() ([]string, error) {
 	names := []string{}
@@ -206,8 +210,11 @@ func (l *Lights) SetRoomForEvent(ctx context.Context, event string) error {
 	for _, room := range l.cfg.Rooms {
 		for _, o := range room.On {
 			if o == event {
-				req := &LightGroupRequest{Name: room.Name}
-				_, err := l.On(ctx, req)
+				_, err := l.On(ctx,
+					&LightGroupRequest{
+						Name:  room.Name,
+						State: ZoneState_ON,
+					})
 				return err
 			}
 		}

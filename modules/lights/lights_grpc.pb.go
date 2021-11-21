@@ -19,12 +19,9 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type LightsClient interface {
 	Alert(ctx context.Context, in *LightGroupRequest, opts ...grpc.CallOption) (*LightResponse, error)
-	Dim(ctx context.Context, in *LightGroupRequest, opts ...grpc.CallOption) (*LightResponse, error)
-	Off(ctx context.Context, in *LightGroupRequest, opts ...grpc.CallOption) (*LightResponse, error)
-	On(ctx context.Context, in *LightGroupRequest, opts ...grpc.CallOption) (*LightResponse, error)
-	RandomColor(ctx context.Context, in *LightGroupRequest, opts ...grpc.CallOption) (*LightResponse, error)
-	SetColor(ctx context.Context, in *LightGroupRequest, opts ...grpc.CallOption) (*LightResponse, error)
+	// rpc SetColor(LightGroupRequest) returns (LightResponse);
 	Toggle(ctx context.Context, in *LightGroupRequest, opts ...grpc.CallOption) (*LightResponse, error)
+	SetState(ctx context.Context, in *ZoneStateRequest, opts ...grpc.CallOption) (*ZoneStateResponse, error)
 }
 
 type lightsClient struct {
@@ -44,54 +41,18 @@ func (c *lightsClient) Alert(ctx context.Context, in *LightGroupRequest, opts ..
 	return out, nil
 }
 
-func (c *lightsClient) Dim(ctx context.Context, in *LightGroupRequest, opts ...grpc.CallOption) (*LightResponse, error) {
-	out := new(LightResponse)
-	err := c.cc.Invoke(ctx, "/lights.Lights/Dim", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *lightsClient) Off(ctx context.Context, in *LightGroupRequest, opts ...grpc.CallOption) (*LightResponse, error) {
-	out := new(LightResponse)
-	err := c.cc.Invoke(ctx, "/lights.Lights/Off", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *lightsClient) On(ctx context.Context, in *LightGroupRequest, opts ...grpc.CallOption) (*LightResponse, error) {
-	out := new(LightResponse)
-	err := c.cc.Invoke(ctx, "/lights.Lights/On", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *lightsClient) RandomColor(ctx context.Context, in *LightGroupRequest, opts ...grpc.CallOption) (*LightResponse, error) {
-	out := new(LightResponse)
-	err := c.cc.Invoke(ctx, "/lights.Lights/RandomColor", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *lightsClient) SetColor(ctx context.Context, in *LightGroupRequest, opts ...grpc.CallOption) (*LightResponse, error) {
-	out := new(LightResponse)
-	err := c.cc.Invoke(ctx, "/lights.Lights/SetColor", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *lightsClient) Toggle(ctx context.Context, in *LightGroupRequest, opts ...grpc.CallOption) (*LightResponse, error) {
 	out := new(LightResponse)
 	err := c.cc.Invoke(ctx, "/lights.Lights/Toggle", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *lightsClient) SetState(ctx context.Context, in *ZoneStateRequest, opts ...grpc.CallOption) (*ZoneStateResponse, error) {
+	out := new(ZoneStateResponse)
+	err := c.cc.Invoke(ctx, "/lights.Lights/SetState", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -103,12 +64,9 @@ func (c *lightsClient) Toggle(ctx context.Context, in *LightGroupRequest, opts .
 // for forward compatibility
 type LightsServer interface {
 	Alert(context.Context, *LightGroupRequest) (*LightResponse, error)
-	Dim(context.Context, *LightGroupRequest) (*LightResponse, error)
-	Off(context.Context, *LightGroupRequest) (*LightResponse, error)
-	On(context.Context, *LightGroupRequest) (*LightResponse, error)
-	RandomColor(context.Context, *LightGroupRequest) (*LightResponse, error)
-	SetColor(context.Context, *LightGroupRequest) (*LightResponse, error)
+	// rpc SetColor(LightGroupRequest) returns (LightResponse);
 	Toggle(context.Context, *LightGroupRequest) (*LightResponse, error)
+	SetState(context.Context, *ZoneStateRequest) (*ZoneStateResponse, error)
 	mustEmbedUnimplementedLightsServer()
 }
 
@@ -119,23 +77,11 @@ type UnimplementedLightsServer struct {
 func (UnimplementedLightsServer) Alert(context.Context, *LightGroupRequest) (*LightResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Alert not implemented")
 }
-func (UnimplementedLightsServer) Dim(context.Context, *LightGroupRequest) (*LightResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Dim not implemented")
-}
-func (UnimplementedLightsServer) Off(context.Context, *LightGroupRequest) (*LightResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Off not implemented")
-}
-func (UnimplementedLightsServer) On(context.Context, *LightGroupRequest) (*LightResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method On not implemented")
-}
-func (UnimplementedLightsServer) RandomColor(context.Context, *LightGroupRequest) (*LightResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RandomColor not implemented")
-}
-func (UnimplementedLightsServer) SetColor(context.Context, *LightGroupRequest) (*LightResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetColor not implemented")
-}
 func (UnimplementedLightsServer) Toggle(context.Context, *LightGroupRequest) (*LightResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Toggle not implemented")
+}
+func (UnimplementedLightsServer) SetState(context.Context, *ZoneStateRequest) (*ZoneStateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetState not implemented")
 }
 func (UnimplementedLightsServer) mustEmbedUnimplementedLightsServer() {}
 
@@ -168,96 +114,6 @@ func _Lights_Alert_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Lights_Dim_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LightGroupRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(LightsServer).Dim(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/lights.Lights/Dim",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LightsServer).Dim(ctx, req.(*LightGroupRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Lights_Off_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LightGroupRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(LightsServer).Off(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/lights.Lights/Off",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LightsServer).Off(ctx, req.(*LightGroupRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Lights_On_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LightGroupRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(LightsServer).On(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/lights.Lights/On",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LightsServer).On(ctx, req.(*LightGroupRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Lights_RandomColor_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LightGroupRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(LightsServer).RandomColor(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/lights.Lights/RandomColor",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LightsServer).RandomColor(ctx, req.(*LightGroupRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Lights_SetColor_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LightGroupRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(LightsServer).SetColor(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/lights.Lights/SetColor",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LightsServer).SetColor(ctx, req.(*LightGroupRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Lights_Toggle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(LightGroupRequest)
 	if err := dec(in); err != nil {
@@ -276,6 +132,24 @@ func _Lights_Toggle_Handler(srv interface{}, ctx context.Context, dec func(inter
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Lights_SetState_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ZoneStateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LightsServer).SetState(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/lights.Lights/SetState",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LightsServer).SetState(ctx, req.(*ZoneStateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Lights_ServiceDesc is the grpc.ServiceDesc for Lights service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -288,28 +162,12 @@ var Lights_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Lights_Alert_Handler,
 		},
 		{
-			MethodName: "Dim",
-			Handler:    _Lights_Dim_Handler,
-		},
-		{
-			MethodName: "Off",
-			Handler:    _Lights_Off_Handler,
-		},
-		{
-			MethodName: "On",
-			Handler:    _Lights_On_Handler,
-		},
-		{
-			MethodName: "RandomColor",
-			Handler:    _Lights_RandomColor_Handler,
-		},
-		{
-			MethodName: "SetColor",
-			Handler:    _Lights_SetColor_Handler,
-		},
-		{
 			MethodName: "Toggle",
 			Handler:    _Lights_Toggle_Handler,
+		},
+		{
+			MethodName: "SetState",
+			Handler:    _Lights_SetState_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

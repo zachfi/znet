@@ -17,7 +17,7 @@ func NewZone() *Zone {
 
 type Zone struct {
 	lock       *sync.Mutex
-	state      zoneState
+	state      ZoneState
 	brightness int32
 	color      string
 	colorPool  []string
@@ -25,28 +25,28 @@ type Zone struct {
 
 func (z *Zone) Dim(ctx context.Context, brightness int32) error {
 	z.brightness = brightness
-	return z.SetState(ctx, Dim)
+	return z.SetState(ctx, ZoneState_DIM)
 }
 
 func (z *Zone) Off(ctx context.Context) error {
-	return z.SetState(ctx, Off)
+	return z.SetState(ctx, ZoneState_OFF)
 }
 
 func (z *Zone) On(ctx context.Context) error {
-	return z.SetState(ctx, On)
-}
-
-func (z *Zone) RandomColor(ctx context.Context, colors []string) error {
-	z.colorPool = colors
-	return z.SetState(ctx, RandomColor)
+	return z.SetState(ctx, ZoneState_ON)
 }
 
 func (z *Zone) SetColor(ctx context.Context, color string) error {
 	z.color = color
-	return z.SetState(ctx, Color)
+	return z.SetState(ctx, ZoneState_COLOR)
 }
 
-func (z *Zone) SetState(ctx context.Context, state zoneState) error {
+func (z *Zone) RandomColor(ctx context.Context, colors []string) error {
+	z.colorPool = colors
+	return z.SetState(ctx, ZoneState_RANDOMCOLOR)
+}
+
+func (z *Zone) SetState(ctx context.Context, state ZoneState) error {
 	span, _ := opentracing.StartSpanFromContext(ctx, "zone.SetState")
 	defer span.Finish()
 
@@ -54,6 +54,9 @@ func (z *Zone) SetState(ctx context.Context, state zoneState) error {
 	defer z.lock.Unlock()
 
 	z.state = state
+
+	// TODO
+	// return z.Handle()
 
 	return nil
 }
@@ -63,39 +66,60 @@ func (z *Zone) Handle(ctx context.Context, name string, handlers ...Handler) err
 	defer span.Finish()
 
 	switch z.state {
-	case Off:
-		for _, h := range handlers {
-			err := h.Off(ctx, name)
-			if err != nil {
-				return fmt.Errorf("%s off: %w", name, ErrHandlerFailed)
-			}
-		}
-	case On:
+	case ZoneState_ON:
 		for _, h := range handlers {
 			err := h.On(ctx, name)
 			if err != nil {
 				return fmt.Errorf("%s on: %w", name, ErrHandlerFailed)
 			}
 		}
-	case Color:
+	case ZoneState_OFF:
+		for _, h := range handlers {
+			err := h.Off(ctx, name)
+			if err != nil {
+				return fmt.Errorf("%s on: %w", name, ErrHandlerFailed)
+			}
+		}
+	case ZoneState_COLOR:
 		for _, h := range handlers {
 			err := h.SetColor(ctx, name, z.color)
 			if err != nil {
 				return fmt.Errorf("%s color: %w", name, ErrHandlerFailed)
 			}
 		}
-	case RandomColor:
+	case ZoneState_RANDOMCOLOR:
 		for _, h := range handlers {
 			err := h.RandomColor(ctx, name, z.colorPool)
 			if err != nil {
 				return fmt.Errorf("%s random color: %w", name, ErrHandlerFailed)
 			}
 		}
-	case Dim:
+	case ZoneState_DIM:
 		for _, h := range handlers {
 			err := h.Dim(ctx, name, z.brightness)
 			if err != nil {
 				return fmt.Errorf("%s dim: %w", name, ErrHandlerFailed)
+			}
+		}
+	case ZoneState_NIGHTVISION:
+		for _, h := range handlers {
+			err := h.SetTemp(ctx, name, nightTemp)
+			if err != nil {
+				return fmt.Errorf("%s night: %w", name, ErrHandlerFailed)
+			}
+		}
+	case ZoneState_EVENINGVISION:
+		for _, h := range handlers {
+			err := h.SetTemp(ctx, name, eveningTemp)
+			if err != nil {
+				return fmt.Errorf("%s evening: %w", name, ErrHandlerFailed)
+			}
+		}
+	case ZoneState_MORNINGVISION:
+		for _, h := range handlers {
+			err := h.SetTemp(ctx, name, morningTemp)
+			if err != nil {
+				return fmt.Errorf("%s morning: %w", name, ErrHandlerFailed)
 			}
 		}
 	}
@@ -113,9 +137,6 @@ func (z *Zones) GetZone(name string) *Zone {
 		z.lock = new(sync.Mutex)
 	}
 
-	z.lock.Lock()
-	defer z.lock.Unlock()
-
 	if zone, ok := z.state[name]; ok {
 		// zone.Name = name
 		return zone
@@ -125,7 +146,9 @@ func (z *Zones) GetZone(name string) *Zone {
 		z.state = make(map[string]*Zone)
 	}
 
-	// z.state[name] = &Zone{Name: name}
+	z.lock.Lock()
+	defer z.lock.Unlock()
+
 	z.state[name] = NewZone()
 
 	return z.state[name]
