@@ -8,23 +8,45 @@ import (
 	"github.com/opentracing/opentracing-go"
 )
 
-func NewZone() *Zone {
+func NewZone(name string) *Zone {
 	z := &Zone{}
 	z.lock = new(sync.Mutex)
+	z.SetName(name)
 
 	return z
 }
 
 type Zone struct {
-	lock       *sync.Mutex
-	state      ZoneState
+	lock *sync.Mutex
+
+	name string
+
 	brightness int32
-	color      string
 	colorPool  []string
+	color      string
+	handlers   []Handler
+	state      ZoneState
+}
+
+func (z *Zone) SetName(name string) {
+	z.lock.Lock()
+	defer z.lock.Unlock()
+	z.name = name
+}
+
+func (z *Zone) Name() string {
+	return z.name
+}
+
+func (z *Zone) SetHandlers(handlers ...Handler) {
+	z.lock.Lock()
+	defer z.lock.Unlock()
+	z.handlers = handlers
 }
 
 func (z *Zone) Dim(ctx context.Context, brightness int32) error {
 	z.brightness = brightness
+
 	return z.SetState(ctx, ZoneState_DIM)
 }
 
@@ -55,10 +77,19 @@ func (z *Zone) SetState(ctx context.Context, state ZoneState) error {
 
 	z.state = state
 
-	// TODO
-	// return z.Handle()
+	return z.handle(ctx)
+}
 
-	return nil
+func (z *Zone) handle(ctx context.Context) error {
+	if z.name == "" {
+		return fmt.Errorf("unable to handle unnamed zone")
+	}
+
+	if len(z.handlers) == 0 {
+		return fmt.Errorf("no handlers for zone")
+	}
+
+	return z.Handle(ctx, z.name, z.handlers...)
 }
 
 func (z *Zone) Handle(ctx context.Context, name string, handlers ...Handler) error {
@@ -67,19 +98,9 @@ func (z *Zone) Handle(ctx context.Context, name string, handlers ...Handler) err
 
 	switch z.state {
 	case ZoneState_ON:
-		for _, h := range handlers {
-			err := h.On(ctx, name)
-			if err != nil {
-				return fmt.Errorf("%s on: %w", name, ErrHandlerFailed)
-			}
-		}
+		return handleOn(ctx, name, handlers...)
 	case ZoneState_OFF:
-		for _, h := range handlers {
-			err := h.Off(ctx, name)
-			if err != nil {
-				return fmt.Errorf("%s on: %w", name, ErrHandlerFailed)
-			}
-		}
+		return handleOff(ctx, name, handlers...)
 	case ZoneState_COLOR:
 		for _, h := range handlers {
 			err := h.SetColor(ctx, name, z.color)
@@ -128,8 +149,9 @@ func (z *Zone) Handle(ctx context.Context, name string, handlers ...Handler) err
 }
 
 type Zones struct {
-	lock  *sync.Mutex
-	state map[string]*Zone
+	lock   *sync.Mutex
+	state  map[string]*Zone
+	states []*Zone
 }
 
 func (z *Zones) GetZone(name string) *Zone {
@@ -137,19 +159,46 @@ func (z *Zones) GetZone(name string) *Zone {
 		z.lock = new(sync.Mutex)
 	}
 
+	for _, zone := range z.states {
+		if zone.Name() == name {
+			return zone
+		}
+	}
+
 	if zone, ok := z.state[name]; ok {
-		// zone.Name = name
 		return zone
 	}
 
-	if len(z.state) == 0 {
-		z.state = make(map[string]*Zone)
+	if len(z.states) == 0 {
+		z.states = make([]*Zone, 0)
 	}
 
 	z.lock.Lock()
 	defer z.lock.Unlock()
 
-	z.state[name] = NewZone()
+	zone := NewZone(name)
+	z.states = append(z.states, zone)
+	return zone
+}
 
-	return z.state[name]
+func handleOn(ctx context.Context, name string, handlers ...Handler) error {
+	for _, h := range handlers {
+		err := h.On(ctx, name)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func handleOff(ctx context.Context, name string, handlers ...Handler) error {
+	for _, h := range handlers {
+		err := h.Off(ctx, name)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
