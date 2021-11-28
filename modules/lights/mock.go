@@ -10,6 +10,7 @@ type MockLight struct {
 	RandomColorCalls map[string]int
 	SetColorCalls    map[string]int
 	ToggleCalls      map[string]int
+	SetTempCalls     map[string]int
 }
 
 func (m *MockLight) Alert(ctx context.Context, groupName string) error {
@@ -65,5 +66,13 @@ func (m *MockLight) Toggle(ctx context.Context, groupName string) error {
 		m.ToggleCalls = make(map[string]int)
 	}
 	m.ToggleCalls[groupName]++
+	return nil
+}
+
+func (m *MockLight) SetTemp(ctx context.Context, groupName string, temp int32) error {
+	if len(m.SetTempCalls) == 0 {
+		m.SetTempCalls = make(map[string]int)
+	}
+	m.SetTempCalls[groupName]++
 	return nil
 }

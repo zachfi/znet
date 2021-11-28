@@ -9,6 +9,18 @@ message State {
   int32 brightness = 2;
 }
 
+enum ZoneState {
+  ON = 0;
+  OFF = 1;
+  OFFTIMER = 2;
+  COLOR = 3;
+  RANDOMCOLOR = 4;
+  DIM = 5;
+  NIGHTVISION = 6;
+  EVENINGVISION = 7;
+  MORNINGVISION = 8;
+}
+
 message LightGroup {
   string type = 1;
   int32 id = 2;
@@ -29,6 +41,7 @@ message LightGroupRequest {
   string color = 2;
   repeated string colors = 3;
   int32 brightness = 4;
+  ZoneState state = 5;
 }
 
 message LightResponse {
@@ -36,13 +49,23 @@ message LightResponse {
   repeated LightGroup groups = 2;
 }
 
-service Lights {
-  rpc Alert(LightGroupRequest) returns (LightResponse);
-  rpc Dim(LightGroupRequest) returns (LightResponse);
-  rpc Off(LightGroupRequest) returns (LightResponse);
-  rpc On(LightGroupRequest) returns (LightResponse);
-  rpc RandomColor(LightGroupRequest) returns (LightResponse);
-  rpc SetColor(LightGroupRequest) returns (LightResponse);
-  rpc Toggle(LightGroupRequest) returns (LightResponse);
+message ZoneStateResponse{
+  string color = 1;
 }
 
+message ZoneStateRequest {
+  string name = 1;
+  ZoneState state = 5;
+}
+
+service Lights {
+  rpc Alert(LightGroupRequest) returns (LightResponse);
+  /* rpc Dim(LightGroupRequest) returns (LightResponse); */
+  /* rpc Off(LightGroupRequest) returns (LightResponse); */
+  /* rpc On(LightGroupRequest) returns (LightResponse); */
+  /* rpc RandomColor(LightGroupRequest) returns (LightResponse); */
+  /* rpc SetColor(LightGroupRequest) returns (LightResponse); */
+  rpc Toggle(LightGroupRequest) returns (LightResponse);
+
+  rpc SetState(ZoneStateRequest) returns(ZoneStateResponse);
+}

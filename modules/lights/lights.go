@@ -18,6 +18,10 @@ import (
 const (
 	brightnessLow  = 100
 	brightnessHigh = 254
+
+	nightTemp   = 500
+	eveningTemp = 300
+	morningTemp = 100
 )
 
 // Lights holds the information necessary to communicate with lighting
@@ -153,7 +157,7 @@ func (l *Lights) getRoom(name string) *Room {
 }
 
 // configuredEventNames is a collection of events that are configured in the
-// lighting config.  These event names determin all the epossible event names
+// lighting config.  These event names determin all the possible event names
 // that will be responded to.
 func (l *Lights) configuredEventNames() ([]string, error) {
 	names := []string{}
@@ -206,8 +210,11 @@ func (l *Lights) SetRoomForEvent(ctx context.Context, event string) error {
 	for _, room := range l.cfg.Rooms {
 		for _, o := range room.On {
 			if o == event {
-				req := &LightGroupRequest{Name: room.Name}
-				_, err := l.On(ctx, req)
+				_, err := l.On(ctx,
+					&LightGroupRequest{
+						Name:  room.Name,
+						State: ZoneState_ON,
+					})
 				return err
 			}
 		}
@@ -255,13 +262,9 @@ func (l *Lights) Alert(ctx context.Context, req *LightGroupRequest) (*LightRespo
 // Dim calls Dim() on each handler.
 func (l *Lights) Dim(ctx context.Context, req *LightGroupRequest) (*LightResponse, error) {
 	z := l.zones.GetZone(req.Name)
+	z.SetHandlers(l.handlers...)
 
 	err := z.Dim(ctx, req.Brightness)
-	if err != nil {
-		return nil, err
-	}
-
-	err = z.Handle(ctx, req.Name, l.handlers...)
 	if err != nil {
 		return nil, err
 	}
@@ -272,13 +275,9 @@ func (l *Lights) Dim(ctx context.Context, req *LightGroupRequest) (*LightRespons
 // Off calls Off() on each handler.
 func (l *Lights) Off(ctx context.Context, req *LightGroupRequest) (*LightResponse, error) {
 	z := l.zones.GetZone(req.Name)
+	z.SetHandlers(l.handlers...)
 
 	err := z.Off(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	err = z.Handle(ctx, req.Name, l.handlers...)
 	if err != nil {
 		return nil, err
 	}
@@ -289,13 +288,9 @@ func (l *Lights) Off(ctx context.Context, req *LightGroupRequest) (*LightRespons
 // On calls On() on each handler.
 func (l *Lights) On(ctx context.Context, req *LightGroupRequest) (*LightResponse, error) {
 	z := l.zones.GetZone(req.Name)
+	z.SetHandlers(l.handlers...)
 
 	err := z.On(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	err = z.Handle(ctx, req.Name, l.handlers...)
 	if err != nil {
 		return nil, err
 	}
@@ -314,12 +309,9 @@ func (l *Lights) RandomColor(ctx context.Context, req *LightGroupRequest) (*Ligh
 	}
 
 	z := l.zones.GetZone(req.Name)
-	err := z.RandomColor(ctx, colors)
-	if err != nil {
-		return nil, err
-	}
+	z.SetHandlers(l.handlers...)
 
-	err = z.Handle(ctx, req.Name, l.handlers...)
+	err := z.RandomColor(ctx, colors)
 	if err != nil {
 		return nil, err
 	}
@@ -333,12 +325,9 @@ func (l *Lights) SetColor(ctx context.Context, req *LightGroupRequest) (*LightRe
 	}
 
 	z := l.zones.GetZone(req.Name)
-	err := z.SetColor(ctx, req.Color)
-	if err != nil {
-		return nil, err
-	}
+	z.SetHandlers(l.handlers...)
 
-	err = z.Handle(ctx, req.Name, l.handlers...)
+	err := z.SetColor(ctx, req.Color)
 	if err != nil {
 		return nil, err
 	}

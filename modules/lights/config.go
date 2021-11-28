@@ -21,6 +21,13 @@ type Room struct {
 	Dim    []string `yaml:"dim"`
 	Alert  []string `yaml:"alert"`
 	Toggle []string `yaml:"toggle"`
+
+	States []StateSpec `yaml:"states"`
+}
+
+type StateSpec struct {
+	State ZoneState `yaml:"name"`
+	Event string    `yaml:"event"`
 }
 
 // HueConfig is the configuration for Philips Hue.
