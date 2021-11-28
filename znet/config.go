@@ -33,7 +33,7 @@ type Config struct {
 	Telemetry telemetry.Config `yaml:"telemetry"`
 	Timer     timer.Config     `yaml:"timer"`
 
-	RPC *config.RPCConfig `yaml:"rpc,omitempty"`
+	RPC config.RPCConfig `yaml:"rpc,omitempty"`
 }
 
 // LoadConfig receives a file path for a configuration to load.
