@@ -136,7 +136,7 @@ func (z *Znet) initTelemetry() (services.Service, error) {
 }
 
 func (z *Znet) initTimer() (services.Service, error) {
-	conn := comms.SlimRPCClient(z.cfg.RPC.ServerAddress)
+	conn := comms.SlimRPCClient(z.cfg.RPC.ServerAddress, z.logger)
 
 	t, err := timer.New(z.cfg.Timer, z.logger, conn)
 	if err != nil {
@@ -151,11 +151,11 @@ func (z *Znet) initTimer() (services.Service, error) {
 }
 
 func (z *Znet) initHarvester() (services.Service, error) {
-	conn := comms.SlimRPCClient(z.cfg.RPC.ServerAddress)
+	conn := comms.SlimRPCClient(z.cfg.RPC.ServerAddress, z.logger)
 
 	h, err := harvester.New(z.cfg.Harvester, z.logger, conn)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create harvester")
+		return nil, errors.Wrap(err, "failed to create harvester")
 	}
 
 	z.harvester = h
@@ -165,6 +165,8 @@ func (z *Znet) initHarvester() (services.Service, error) {
 func (z *Znet) initServer() (services.Service, error) {
 	z.cfg.Server.MetricsNamespace = metricsNamespace
 	z.cfg.Server.ExcludeRequestInLog = true
+
+	_ = level.Debug(z.logger).Log("z.cfg.Server", fmt.Sprintf("%+v", z.cfg.Server))
 
 	// cortex.DisableSignalHandling(&t.cfg.Server)
 

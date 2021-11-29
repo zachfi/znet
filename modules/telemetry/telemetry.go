@@ -11,6 +11,7 @@ import (
 	"github.com/go-kit/log/level"
 	"github.com/grafana/dskit/services"
 	"github.com/opentracing/opentracing-go"
+	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -257,11 +258,10 @@ func (l *Telemetry) ReportNetworkID(ctx context.Context, request *inventory.Netw
 }
 
 func (l *Telemetry) ReportIOTDevice(ctx context.Context, request *inventory.IOTDevice) (*inventory.Empty, error) {
-
 	var err error
 
 	if request.DeviceDiscovery == nil {
-		return nil, fmt.Errorf("unable to receive IOTDevice with nil DeviceDiscovery")
+		return nil, fmt.Errorf("unable to report IOTDevice with nil DeviceDiscovery")
 	}
 
 	discovery := request.DeviceDiscovery
@@ -274,7 +274,7 @@ func (l *Telemetry) ReportIOTDevice(ctx context.Context, request *inventory.IOTD
 	case "zigbee2mqtt":
 		err = l.handleZigbeeReport(ctx, request)
 		if err != nil {
-			return &inventory.Empty{}, err
+			return nil, errors.Wrap(err, "failed to handle zigbee report")
 		}
 	}
 
@@ -282,22 +282,22 @@ func (l *Telemetry) ReportIOTDevice(ctx context.Context, request *inventory.IOTD
 	case "wifi":
 		err = l.handleWifiReport(request)
 		if err != nil {
-			return &inventory.Empty{}, err
+			return nil, err
 		}
 	case "air":
 		err = l.handleAirReport(request)
 		if err != nil {
-			return &inventory.Empty{}, err
+			return nil, err
 		}
 	case "water":
 		err = l.handleWaterReport(request)
 		if err != nil {
-			return &inventory.Empty{}, err
+			return nil, err
 		}
 	case "led1", "led2":
 		err = l.handleLEDReport(request)
 		if err != nil {
-			return &inventory.Empty{}, err
+			return nil, err
 		}
 	default:
 		telemetryIOTUnhandledReport.WithLabelValues(discovery.ObjectId, discovery.Component).Inc()
@@ -328,7 +328,7 @@ func (l *Telemetry) handleZigbeeReport(ctx context.Context, request *inventory.I
 
 	msg, err := iot.ReadZigbeeMessage(discovery.ObjectId, discovery.Message, discovery.Endpoint...)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "error reading zigbee message")
 	}
 
 	if msg == nil {

@@ -4,9 +4,10 @@ import (
 	"crypto/tls"
 	"strings"
 
+	"github.com/go-kit/log"
+	"github.com/go-kit/log/level"
 	otgrpc "github.com/opentracing-contrib/go-grpc"
 	"github.com/opentracing/opentracing-go"
-	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
@@ -14,17 +15,17 @@ import (
 )
 
 // StandardRPCClient implements enough to get standard gRPC client connection.
-func StandardRPCClient(serverAddress string, cfg config.Config) *grpc.ClientConn {
+func StandardRPCClient(serverAddress string, cfg config.Config, logger log.Logger) *grpc.ClientConn {
 	var opts []grpc.DialOption
 
 	roots, err := CABundle(cfg.Vault)
 	if err != nil {
-		log.Error(err)
+		_ = level.Error(logger).Log("err", err)
 	}
 
 	c, err := newCertify(cfg.Vault, cfg.TLS)
 	if err != nil {
-		log.Error(err)
+		_ = level.Error(logger).Log("err", err)
 	}
 
 	serverName := strings.Split(serverAddress, ":")[0]
@@ -45,13 +46,13 @@ func StandardRPCClient(serverAddress string, cfg config.Config) *grpc.ClientConn
 
 	conn, err := grpc.Dial(serverAddress, opts...)
 	if err != nil {
-		log.Errorf("failed dialing gRPC: %s", err)
+		_ = level.Error(logger).Log("msg", "failed dialing gRPC", "err", err)
 	}
 
 	return conn
 }
 
-func SlimRPCClient(serverAddress string) *grpc.ClientConn {
+func SlimRPCClient(serverAddress string, logger log.Logger) *grpc.ClientConn {
 	var opts []grpc.DialOption
 
 	opts = append(opts, grpc.WithInsecure())
@@ -60,13 +61,11 @@ func SlimRPCClient(serverAddress string) *grpc.ClientConn {
 	opts = append(opts, grpc.WithUnaryInterceptor(otgrpc.OpenTracingClientInterceptor(opentracing.GlobalTracer())))
 	opts = append(opts, grpc.WithStreamInterceptor(otgrpc.OpenTracingStreamClientInterceptor(opentracing.GlobalTracer())))
 
-	log.WithFields(log.Fields{
-		"server_address": serverAddress,
-	}).Debug("dialing gRPC")
+	_ = level.Debug(logger).Log("msg", "dialing gRPC", "server_address", serverAddress)
 
 	conn, err := grpc.Dial(serverAddress, opts...)
 	if err != nil {
-		log.Errorf("failed dialing gRPC: %s", err)
+		_ = level.Error(logger).Log("msg", "failed dialing gRPC", "err", err)
 	}
 
 	return conn
