@@ -166,8 +166,6 @@ func (z *Znet) initServer() (services.Service, error) {
 	z.cfg.Server.MetricsNamespace = metricsNamespace
 	z.cfg.Server.ExcludeRequestInLog = true
 
-	_ = level.Debug(z.logger).Log("z.cfg.Server", fmt.Sprintf("%+v", z.cfg.Server))
-
 	// cortex.DisableSignalHandling(&t.cfg.Server)
 
 	server, err := server.New(z.cfg.Server)
