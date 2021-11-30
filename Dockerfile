@@ -4,4 +4,5 @@ RUN chmod 0700 /bin/znet
 RUN mkdir /var/znet
 RUN apk --update add ca-certificates
 RUN apk add libc6-compat
+RUN apk add tzdata
 ENTRYPOINT ["/bin/znet"]
