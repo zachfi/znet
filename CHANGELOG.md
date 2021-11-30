@@ -1,3 +1,10 @@
+<a name="v0.30.13"></a>
+## [v0.30.13] - 2021-11-29
+### Bug Fixes
+- **deps:** update module github.com/goreleaser/goreleaser to v1.1.0
+
+<a name="v0.30.12"></a>
+## [v0.30.12] - 2021-11-29
 <a name="v0.30.11"></a>
 ## [v0.30.11] - 2021-11-29
 <a name="v0.30.10"></a>
@@ -205,10 +212,10 @@
 ## [v0.28.6] - 2020-12-08
 <a name="v0.28.5"></a>
 ## [v0.28.5] - 2020-12-08
-<a name="v0.28.3"></a>
-## [v0.28.3] - 2020-12-06
 <a name="v0.28.4"></a>
 ## [v0.28.4] - 2020-12-06
+<a name="v0.28.3"></a>
+## [v0.28.3] - 2020-12-06
 ### Bug Fixes
 - **build:** adjust workflow syntax
 
@@ -604,36 +611,36 @@
 ### Features
 - **builder:** start a gitwatch builder
 
-<a name="v0.12.14"></a>
-## [v0.12.14] - 2020-04-24
+<a name="v0.12.19"></a>
+## [v0.12.19] - 2020-04-24
 <a name="v0.12.17"></a>
 ## [v0.12.17] - 2020-04-24
-<a name="v0.12.21"></a>
-## [v0.12.21] - 2020-04-24
-<a name="v0.12.22"></a>
-## [v0.12.22] - 2020-04-24
+<a name="v0.12.18"></a>
+## [v0.12.18] - 2020-04-24
 <a name="v0.12.15"></a>
 ## [v0.12.15] - 2020-04-24
 <a name="v0.12.20"></a>
 ## [v0.12.20] - 2020-04-24
+<a name="v0.12.21"></a>
+## [v0.12.21] - 2020-04-24
+<a name="v0.12.22"></a>
+## [v0.12.22] - 2020-04-24
+<a name="v0.12.14"></a>
+## [v0.12.14] - 2020-04-24
 <a name="v0.12.16"></a>
 ## [v0.12.16] - 2020-04-24
-<a name="v0.12.19"></a>
-## [v0.12.19] - 2020-04-24
-<a name="v0.12.18"></a>
-## [v0.12.18] - 2020-04-24
-<a name="v0.12.8"></a>
-## [v0.12.8] - 2020-04-24
 <a name="v0.12.9"></a>
 ## [v0.12.9] - 2020-04-24
 <a name="v0.12.13"></a>
 ## [v0.12.13] - 2020-04-24
+<a name="v0.12.12"></a>
+## [v0.12.12] - 2020-04-24
+<a name="v0.12.8"></a>
+## [v0.12.8] - 2020-04-24
 <a name="v0.12.10"></a>
 ## [v0.12.10] - 2020-04-24
 <a name="v0.12.11"></a>
 ## [v0.12.11] - 2020-04-24
-<a name="v0.12.12"></a>
-## [v0.12.12] - 2020-04-24
 <a name="v0.12.7"></a>
 ## [v0.12.7] - 2020-04-24
 <a name="v0.12.5"></a>
@@ -643,10 +650,10 @@
 ### Bug Fixes
 - **agent:** better error checking
 
-<a name="v0.12.4"></a>
-## [v0.12.4] - 2020-04-24
 <a name="v0.12.3"></a>
 ## [v0.12.3] - 2020-04-24
+<a name="v0.12.4"></a>
+## [v0.12.4] - 2020-04-24
 ### Features
 - **agent:** begin command execution result response
 
@@ -659,10 +666,10 @@
 ### Bug Fixes
 - **znet:** fix signal handling in a few places
 
-<a name="v0.11.14"></a>
-## [v0.11.14] - 2020-04-21
 <a name="v0.11.13"></a>
 ## [v0.11.13] - 2020-04-21
+<a name="v0.11.14"></a>
+## [v0.11.14] - 2020-04-21
 ### Documentation Updates
 - improve command help
 
@@ -878,7 +885,9 @@
 ## [v0.0.2] - 2018-09-03
 <a name="v0.0.1"></a>
 ## v0.0.1 - 2018-09-03
-[Unreleased]: https://github.com/xaque208/znet/compare/v0.30.11...HEAD
+[Unreleased]: https://github.com/xaque208/znet/compare/v0.30.13...HEAD
+[v0.30.13]: https://github.com/xaque208/znet/compare/v0.30.12...v0.30.13
+[v0.30.12]: https://github.com/xaque208/znet/compare/v0.30.11...v0.30.12
 [v0.30.11]: https://github.com/xaque208/znet/compare/v0.30.10...v0.30.11
 [v0.30.10]: https://github.com/xaque208/znet/compare/v0.30.9...v0.30.10
 [v0.30.9]: https://github.com/xaque208/znet/compare/v0.30.8...v0.30.9
@@ -907,9 +916,9 @@
 [v0.29.1]: https://github.com/xaque208/znet/compare/v0.29.0...v0.29.1
 [v0.29.0]: https://github.com/xaque208/znet/compare/v0.28.6...v0.29.0
 [v0.28.6]: https://github.com/xaque208/znet/compare/v0.28.5...v0.28.6
-[v0.28.5]: https://github.com/xaque208/znet/compare/v0.28.3...v0.28.5
-[v0.28.3]: https://github.com/xaque208/znet/compare/v0.28.4...v0.28.3
-[v0.28.4]: https://github.com/xaque208/znet/compare/v0.28.2...v0.28.4
+[v0.28.5]: https://github.com/xaque208/znet/compare/v0.28.4...v0.28.5
+[v0.28.4]: https://github.com/xaque208/znet/compare/v0.28.3...v0.28.4
+[v0.28.3]: https://github.com/xaque208/znet/compare/v0.28.2...v0.28.3
 [v0.28.2]: https://github.com/xaque208/znet/compare/v0.28.1...v0.28.2
 [v0.28.1]: https://github.com/xaque208/znet/compare/v0.28.0...v0.28.1
 [v0.28.0]: https://github.com/xaque208/znet/compare/v0.27.10...v0.28.0
@@ -999,32 +1008,32 @@
 [v0.13.3]: https://github.com/xaque208/znet/compare/v0.13.0...v0.13.3
 [v0.13.0]: https://github.com/xaque208/znet/compare/v0.13.2...v0.13.0
 [v0.13.2]: https://github.com/xaque208/znet/compare/v0.13.1...v0.13.2
-[v0.13.1]: https://github.com/xaque208/znet/compare/v0.12.14...v0.13.1
-[v0.12.14]: https://github.com/xaque208/znet/compare/v0.12.17...v0.12.14
-[v0.12.17]: https://github.com/xaque208/znet/compare/v0.12.21...v0.12.17
-[v0.12.21]: https://github.com/xaque208/znet/compare/v0.12.22...v0.12.21
-[v0.12.22]: https://github.com/xaque208/znet/compare/v0.12.15...v0.12.22
+[v0.13.1]: https://github.com/xaque208/znet/compare/v0.12.19...v0.13.1
+[v0.12.19]: https://github.com/xaque208/znet/compare/v0.12.17...v0.12.19
+[v0.12.17]: https://github.com/xaque208/znet/compare/v0.12.18...v0.12.17
+[v0.12.18]: https://github.com/xaque208/znet/compare/v0.12.15...v0.12.18
 [v0.12.15]: https://github.com/xaque208/znet/compare/v0.12.20...v0.12.15
-[v0.12.20]: https://github.com/xaque208/znet/compare/v0.12.16...v0.12.20
-[v0.12.16]: https://github.com/xaque208/znet/compare/v0.12.19...v0.12.16
-[v0.12.19]: https://github.com/xaque208/znet/compare/v0.12.18...v0.12.19
-[v0.12.18]: https://github.com/xaque208/znet/compare/v0.12.8...v0.12.18
-[v0.12.8]: https://github.com/xaque208/znet/compare/v0.12.9...v0.12.8
+[v0.12.20]: https://github.com/xaque208/znet/compare/v0.12.21...v0.12.20
+[v0.12.21]: https://github.com/xaque208/znet/compare/v0.12.22...v0.12.21
+[v0.12.22]: https://github.com/xaque208/znet/compare/v0.12.14...v0.12.22
+[v0.12.14]: https://github.com/xaque208/znet/compare/v0.12.16...v0.12.14
+[v0.12.16]: https://github.com/xaque208/znet/compare/v0.12.9...v0.12.16
 [v0.12.9]: https://github.com/xaque208/znet/compare/v0.12.13...v0.12.9
-[v0.12.13]: https://github.com/xaque208/znet/compare/v0.12.10...v0.12.13
+[v0.12.13]: https://github.com/xaque208/znet/compare/v0.12.12...v0.12.13
+[v0.12.12]: https://github.com/xaque208/znet/compare/v0.12.8...v0.12.12
+[v0.12.8]: https://github.com/xaque208/znet/compare/v0.12.10...v0.12.8
 [v0.12.10]: https://github.com/xaque208/znet/compare/v0.12.11...v0.12.10
-[v0.12.11]: https://github.com/xaque208/znet/compare/v0.12.12...v0.12.11
-[v0.12.12]: https://github.com/xaque208/znet/compare/v0.12.7...v0.12.12
+[v0.12.11]: https://github.com/xaque208/znet/compare/v0.12.7...v0.12.11
 [v0.12.7]: https://github.com/xaque208/znet/compare/v0.12.5...v0.12.7
 [v0.12.5]: https://github.com/xaque208/znet/compare/v0.12.6...v0.12.5
-[v0.12.6]: https://github.com/xaque208/znet/compare/v0.12.4...v0.12.6
-[v0.12.4]: https://github.com/xaque208/znet/compare/v0.12.3...v0.12.4
-[v0.12.3]: https://github.com/xaque208/znet/compare/v0.12.2...v0.12.3
+[v0.12.6]: https://github.com/xaque208/znet/compare/v0.12.3...v0.12.6
+[v0.12.3]: https://github.com/xaque208/znet/compare/v0.12.4...v0.12.3
+[v0.12.4]: https://github.com/xaque208/znet/compare/v0.12.2...v0.12.4
 [v0.12.2]: https://github.com/xaque208/znet/compare/v0.12.1...v0.12.2
 [v0.12.1]: https://github.com/xaque208/znet/compare/v0.12.0...v0.12.1
-[v0.12.0]: https://github.com/xaque208/znet/compare/v0.11.14...v0.12.0
-[v0.11.14]: https://github.com/xaque208/znet/compare/v0.11.13...v0.11.14
-[v0.11.13]: https://github.com/xaque208/znet/compare/v0.11.12...v0.11.13
+[v0.12.0]: https://github.com/xaque208/znet/compare/v0.11.13...v0.12.0
+[v0.11.13]: https://github.com/xaque208/znet/compare/v0.11.14...v0.11.13
+[v0.11.14]: https://github.com/xaque208/znet/compare/v0.11.12...v0.11.14
 [v0.11.12]: https://github.com/xaque208/znet/compare/v0.11.11...v0.11.12
 [v0.11.11]: https://github.com/xaque208/znet/compare/v0.11.9...v0.11.11
 [v0.11.9]: https://github.com/xaque208/znet/compare/v0.11.8...v0.11.9
