@@ -14,7 +14,6 @@ builds:
     env:
       - CGO_ENABLED=0
     goarm:
-      - 5
       - 6
       - 7
     goos:
