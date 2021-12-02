@@ -151,7 +151,7 @@ github.com/golang/snappy
 github.com/gorilla/mux
 # github.com/gorilla/websocket v1.4.2
 github.com/gorilla/websocket
-# github.com/grafana/dskit v0.0.0-20211126082719-84c6c63a1eb1
+# github.com/grafana/dskit v0.0.0-20211202064213-c026bbd1e878
 github.com/grafana/dskit/flagext
 github.com/grafana/dskit/modules
 github.com/grafana/dskit/services
