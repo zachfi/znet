@@ -50,7 +50,7 @@ message ZoneStateResponse{
 
 message ZoneStateRequest {
   string name = 1;
-  ZoneState state = 5;
+  ZoneState state = 2;
 }
 
 service Lights {
