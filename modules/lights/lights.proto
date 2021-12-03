@@ -2,12 +2,7 @@ syntax = "proto3";
 
 package lights;
 
-option go_package = "internal/lights";
-
-message State {
-  bool on = 1;
-  int32 brightness = 2;
-}
+option go_package = "modules/lights";
 
 enum ZoneState {
   ON = 0;
@@ -16,32 +11,32 @@ enum ZoneState {
   COLOR = 3;
   RANDOMCOLOR = 4;
   DIM = 5;
+
+  ////
   NIGHTVISION = 6;
   EVENINGVISION = 7;
   MORNINGVISION = 8;
+}
+
+enum ColorTemperature {
+  FIRSTLIGHT = 0;
+  MORNING = 1;
+  DAY = 2;
+  LATEAFTERNOON = 3;
+  EVENING = 4;
 }
 
 message LightGroup {
   string type = 1;
   int32 id = 2;
   string name = 3;
-  State state = 4;
-  repeated int32 lights = 5;
+  repeated int32 lights = 4;
 }
 
 message Light {
   string type = 1;
   int32 id = 2;
   string name = 3;
-  State state = 4;
-}
-
-message LightGroupRequest {
-  string name = 1;
-  string color = 2;
-  repeated string colors = 3;
-  int32 brightness = 4;
-  ZoneState state = 5;
 }
 
 message LightResponse {
@@ -59,13 +54,14 @@ message ZoneStateRequest {
 }
 
 service Lights {
-  rpc Alert(LightGroupRequest) returns (LightResponse);
+  /* rpc Alert(LightGroupRequest) returns (LightResponse); */
   /* rpc Dim(LightGroupRequest) returns (LightResponse); */
   /* rpc Off(LightGroupRequest) returns (LightResponse); */
   /* rpc On(LightGroupRequest) returns (LightResponse); */
   /* rpc RandomColor(LightGroupRequest) returns (LightResponse); */
   /* rpc SetColor(LightGroupRequest) returns (LightResponse); */
-  rpc Toggle(LightGroupRequest) returns (LightResponse);
+  /* rpc Toggle(LightGroupRequest) returns (LightResponse); */
 
   rpc SetState(ZoneStateRequest) returns(ZoneStateResponse);
+  /* rpc SetRoomForEvent(Empty) returns(Empty); */
 }

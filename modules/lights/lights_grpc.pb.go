@@ -18,9 +18,6 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type LightsClient interface {
-	Alert(ctx context.Context, in *LightGroupRequest, opts ...grpc.CallOption) (*LightResponse, error)
-	// rpc SetColor(LightGroupRequest) returns (LightResponse);
-	Toggle(ctx context.Context, in *LightGroupRequest, opts ...grpc.CallOption) (*LightResponse, error)
 	SetState(ctx context.Context, in *ZoneStateRequest, opts ...grpc.CallOption) (*ZoneStateResponse, error)
 }
 
@@ -30,24 +27,6 @@ type lightsClient struct {
 
 func NewLightsClient(cc grpc.ClientConnInterface) LightsClient {
 	return &lightsClient{cc}
-}
-
-func (c *lightsClient) Alert(ctx context.Context, in *LightGroupRequest, opts ...grpc.CallOption) (*LightResponse, error) {
-	out := new(LightResponse)
-	err := c.cc.Invoke(ctx, "/lights.Lights/Alert", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *lightsClient) Toggle(ctx context.Context, in *LightGroupRequest, opts ...grpc.CallOption) (*LightResponse, error) {
-	out := new(LightResponse)
-	err := c.cc.Invoke(ctx, "/lights.Lights/Toggle", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *lightsClient) SetState(ctx context.Context, in *ZoneStateRequest, opts ...grpc.CallOption) (*ZoneStateResponse, error) {
@@ -63,9 +42,6 @@ func (c *lightsClient) SetState(ctx context.Context, in *ZoneStateRequest, opts 
 // All implementations must embed UnimplementedLightsServer
 // for forward compatibility
 type LightsServer interface {
-	Alert(context.Context, *LightGroupRequest) (*LightResponse, error)
-	// rpc SetColor(LightGroupRequest) returns (LightResponse);
-	Toggle(context.Context, *LightGroupRequest) (*LightResponse, error)
 	SetState(context.Context, *ZoneStateRequest) (*ZoneStateResponse, error)
 	mustEmbedUnimplementedLightsServer()
 }
@@ -74,12 +50,6 @@ type LightsServer interface {
 type UnimplementedLightsServer struct {
 }
 
-func (UnimplementedLightsServer) Alert(context.Context, *LightGroupRequest) (*LightResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Alert not implemented")
-}
-func (UnimplementedLightsServer) Toggle(context.Context, *LightGroupRequest) (*LightResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Toggle not implemented")
-}
 func (UnimplementedLightsServer) SetState(context.Context, *ZoneStateRequest) (*ZoneStateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetState not implemented")
 }
@@ -94,42 +64,6 @@ type UnsafeLightsServer interface {
 
 func RegisterLightsServer(s grpc.ServiceRegistrar, srv LightsServer) {
 	s.RegisterService(&Lights_ServiceDesc, srv)
-}
-
-func _Lights_Alert_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LightGroupRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(LightsServer).Alert(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/lights.Lights/Alert",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LightsServer).Alert(ctx, req.(*LightGroupRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Lights_Toggle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LightGroupRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(LightsServer).Toggle(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/lights.Lights/Toggle",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LightsServer).Toggle(ctx, req.(*LightGroupRequest))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _Lights_SetState_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -157,14 +91,6 @@ var Lights_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "lights.Lights",
 	HandlerType: (*LightsServer)(nil),
 	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "Alert",
-			Handler:    _Lights_Alert_Handler,
-		},
-		{
-			MethodName: "Toggle",
-			Handler:    _Lights_Toggle_Handler,
-		},
 		{
 			MethodName: "SetState",
 			Handler:    _Lights_SetState_Handler,

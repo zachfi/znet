@@ -15,18 +15,11 @@ type Room struct {
 	IDs    []int  `yaml:"ids"`
 	HueIDs []int  `yaml:"hue"`
 
-	// Names of events
-	On     []string `yaml:"turn_on"`
-	Off    []string `yaml:"turn_off"`
-	Dim    []string `yaml:"dim"`
-	Alert  []string `yaml:"alert"`
-	Toggle []string `yaml:"toggle"`
-
 	States []StateSpec `yaml:"states"`
 }
 
 type StateSpec struct {
-	State ZoneState `yaml:"name"`
+	State ZoneState `yaml:"state"`
 	Event string    `yaml:"event"`
 }
 
