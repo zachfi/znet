@@ -47,8 +47,6 @@ func (s *StateSpec) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		}
 	}
 
-	fmt.Printf("s: %+v\n\n", s)
-
 	return nil
 }
 

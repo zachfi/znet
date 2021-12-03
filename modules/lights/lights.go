@@ -3,6 +3,7 @@ package lights
 import (
 	"context"
 	"sort"
+	"strings"
 	sync "sync"
 
 	"github.com/go-kit/log"
@@ -196,27 +197,13 @@ func (l *Lights) SetRoomForEvent(ctx context.Context, event string) error {
 	for _, zone := range l.cfg.Rooms {
 		z := l.zones.GetZone(zone.Name)
 		z.SetHandlers(l.handlers...)
+
 		for _, s := range zone.States {
-			switch s.Event {
-			case "on":
-				return z.SetState(ctx, ZoneState_ON)
-			case "off":
-				return z.SetState(ctx, ZoneState_OFF)
-			case "offtimer":
-				return z.SetState(ctx, ZoneState_OFFTIMER)
-			case "color":
-				return z.SetState(ctx, ZoneState_COLOR)
-			case "randomcolor":
-				return z.SetState(ctx, ZoneState_RANDOMCOLOR)
-			case "dim":
-				return z.SetState(ctx, ZoneState_DIM)
-			case "nightvision":
-				return z.SetState(ctx, ZoneState_NIGHTVISION)
-			case "eveningvision":
-				return z.SetState(ctx, ZoneState_EVENINGVISION)
-			case "morningvision":
-				return z.SetState(ctx, ZoneState_MORNINGVISION)
+			if !strings.EqualFold(event, s.Event) {
+				continue
 			}
+
+			return z.SetState(ctx, s.State)
 		}
 	}
 
