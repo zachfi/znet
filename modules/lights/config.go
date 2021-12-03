@@ -1,6 +1,8 @@
 package lights
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // Config is the configuration for Lights
 type Config struct {
@@ -21,6 +23,33 @@ type Room struct {
 type StateSpec struct {
 	State ZoneState `yaml:"state"`
 	Event string    `yaml:"event"`
+}
+
+// Implements the Unmarshaler interface of the yaml pkg.
+func (s *StateSpec) UnmarshalYAML(unmarshal func(interface{}) error) error {
+
+	var fm map[string]string
+	if err := unmarshal(&fm); err != nil {
+		return err
+	}
+
+	for k, v := range fm {
+		if k == "event" {
+			s.Event = v
+		}
+
+		if k == "state" {
+			if val, ok := ZoneState_value[v]; ok {
+				s.State = ZoneState(val)
+			} else {
+				return fmt.Errorf("cannot unmarshal '%s' into %T", v, s.State)
+			}
+		}
+	}
+
+	fmt.Printf("s: %+v\n\n", s)
+
+	return nil
 }
 
 // HueConfig is the configuration for Philips Hue.
