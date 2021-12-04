@@ -20,11 +20,14 @@ const (
 	brightnessLow  = 100
 	brightnessHigh = 254
 
-	nightTemp     = 500
-	eveningTemp   = 400
-	lateafternoon = 300
-	day           = 200
-	morningTemp   = 100
+	// nightTemp     = 500
+	eveningTemp = 400
+	// lateafternoon = 300
+	// day           = 200
+	morningTemp = 100
+
+	nightVisionColor = `#FF00FF`
+	defaultWhite     = `#FFFFFF`
 )
 
 // Lights holds the information necessary to communicate with lighting
@@ -52,6 +55,10 @@ func New(cfg Config, logger log.Logger) (*Lights, error) {
 		cfg:    &cfg,
 		logger: log.With(logger, "module", "lights"),
 		zones:  &Zones{},
+	}
+
+	if len(l.cfg.PartyColors) == 0 {
+		l.cfg.PartyColors = defaultColorPool
 	}
 
 	l.Service = services.NewBasicService(l.starting, l.running, l.stopping)
@@ -111,17 +118,18 @@ func (l *Lights) ActionHandler(ctx context.Context, action *iot.Action) error {
 	case "single", "press":
 		return z.Toggle(ctx)
 	case "on", "double", "tap", "rotate_right", "slide":
-		if err := z.On(ctx); err != nil {
-			return err
-		}
+		return z.On(ctx)
+		// if err := z.On(ctx); err != nil {
+		// 	return err
+		// }
 
-		return z.Dim(ctx, brightnessHigh)
+		// return nil
 	case "off", "triple":
 		return z.Off(ctx)
 	case "quadruple", "flip90", "flip180", "fall":
-		return z.RandomColor(ctx, z.colorPool)
+		return z.RandomColor(ctx, l.cfg.PartyColors)
 	case "hold", "release", "rotate_left":
-		return z.Dim(ctx, brightnessLow)
+		return z.SetBrightness(ctx, brightnessLow)
 	case "many":
 		return z.Alert(ctx)
 	case "wakeup": // do nothing
@@ -129,20 +137,6 @@ func (l *Lights) ActionHandler(ctx context.Context, action *iot.Action) error {
 	default:
 		return errors.Wrap(ErrUnknownActionEvent, action.Event)
 	}
-}
-
-func (l *Lights) getRoom(name string) *Room {
-	if l.cfg == nil {
-		return nil
-	}
-
-	for _, room := range l.cfg.Rooms {
-		if room.Name == name {
-			return &room
-		}
-	}
-
-	return nil
 }
 
 // configuredEventNames is a collection of events that are configured in the

@@ -76,8 +76,10 @@ func TestConfiguredEventNames(t *testing.T) {
 			config: Config{
 				Rooms: []Room{
 					{
-						On:  []string{"one"},
-						Off: []string{"two"},
+						States: []StateSpec{
+							{State: ZoneState_ON, Event: "one"},
+							{State: ZoneState_OFF, Event: "two"},
+						},
 					},
 				},
 			},
@@ -116,27 +118,34 @@ func TestNamedTimerHandler(t *testing.T) {
 			mock:   &MockLight{},
 			err:    ErrNoRoomsConfigured,
 		},
-		"On": {
+		"on": {
 			event: "Later",
 			config: Config{
 				Rooms: []Room{
 					{
 						Name: "zone1",
-						On:   []string{"Later"},
+						States: []StateSpec{
+							{State: ZoneState_ON, Event: "Later"},
+						},
 					},
 				},
 			},
 			mock: &MockLight{
-				OnCalls: map[string]int{"zone1": 1},
+				OnCalls:            map[string]int{"zone1": 1},
+				SetBrightnessCalls: map[string]int{"zone1": 1},
+				SetColorTempCalls:  map[string]int{"zone1": 1},
+				SetColorCalls:      map[string]int{"zone1": 1},
 			},
 		},
-		"Off": {
+		"off": {
 			event: "Later",
 			config: Config{
 				Rooms: []Room{
 					{
 						Name: "zone1",
-						Off:  []string{"Later"},
+						States: []StateSpec{
+							{State: ZoneState_OFF, Event: "Later"},
+						},
 					},
 				},
 			},
@@ -144,34 +153,38 @@ func TestNamedTimerHandler(t *testing.T) {
 				OffCalls: map[string]int{"zone1": 1},
 			},
 		},
-		"Dim": {
+		"brightnes": {
 			event: "Later",
 			config: Config{
 				Rooms: []Room{
 					{
 						Name: "zone1",
-						Dim:  []string{"Later"},
+						States: []StateSpec{
+							{State: ZoneState_DIM, Event: "Later"},
+						},
 					},
 				},
 			},
 			mock: &MockLight{
-				DimCalls: map[string]int{"zone1": 1},
+				SetBrightnessCalls: map[string]int{"zone1": 1},
 			},
 		},
-		"Alert": {
-			event: "Later",
-			config: Config{
-				Rooms: []Room{
-					{
-						Name:  "zone1",
-						Alert: []string{"Later"},
-					},
-				},
-			},
-			mock: &MockLight{
-				AlertCalls: map[string]int{"zone1": 1},
-			},
-		},
+		// "Alert": {
+		// 	event: "Later",
+		// 	config: Config{
+		// 		Rooms: []Room{
+		// 			{
+		// 				Name: "zone1",
+		// 				States: []StateSpec{
+		// 					{State: ZoneState_ALERT, Event: "Later"},
+		// 				},
+		// 			},
+		// 		},
+		// 	},
+		// 	mock: &MockLight{
+		// 		AlertCalls: map[string]int{"zone1": 1},
+		// 	},
+		// },
 		"unknown event": {
 			event: "Later",
 			config: Config{
@@ -218,15 +231,17 @@ func TestActionHandler(t *testing.T) {
 			config: Config{},
 			action: &iot.Action{},
 			mock:   &MockLight{},
-			err:    ErrRoomNotFound,
+			err:    ErrUnknownActionEvent,
 		},
 		"simple toggle": {
 			config: Config{
 				Rooms: []Room{
 					{
 						Name: "zone",
-						On:   []string{"one"},
-						Off:  []string{"two"},
+						States: []StateSpec{
+							{State: ZoneState_ON, Event: "one"},
+							{State: ZoneState_OFF, Event: "two"},
+						},
 					},
 				},
 			},
@@ -251,9 +266,10 @@ func TestActionHandler(t *testing.T) {
 				},
 			},
 			mock: &MockLight{
-				OnCalls:       map[string]int{"zone1": 1},
-				DimCalls:      map[string]int{"zone1": 1},
-				SetColorCalls: map[string]int{"zone1": 1},
+				OnCalls:            map[string]int{"zone1": 1},
+				SetBrightnessCalls: map[string]int{"zone1": 1},
+				SetColorCalls:      map[string]int{"zone1": 1},
+				SetColorTempCalls:  map[string]int{"zone1": 1},
 			},
 		},
 		"triple": {
@@ -301,7 +317,7 @@ func TestActionHandler(t *testing.T) {
 				},
 			},
 			mock: &MockLight{
-				DimCalls: map[string]int{"zone1": 1},
+				SetBrightnessCalls: map[string]int{"zone1": 1},
 			},
 		},
 		"release": {
@@ -317,7 +333,7 @@ func TestActionHandler(t *testing.T) {
 				},
 			},
 			mock: &MockLight{
-				DimCalls: map[string]int{"zone1": 1},
+				SetBrightnessCalls: map[string]int{"zone1": 1},
 			},
 		},
 		"many": {
@@ -348,72 +364,9 @@ func TestActionHandler(t *testing.T) {
 
 		err = l.ActionHandler(context.Background(), tc.action)
 		if tc.err != nil {
-			require.Contains(t, err.Error(), tc.err.Error())
+			require.Error(t, err, tc.err)
 		}
 
 		require.Equal(t, tc.mock, h)
 	}
-
-}
-
-func TestAlert(t *testing.T) {
-	t.Parallel()
-
-	buf := &bytes.Buffer{}
-	logger := log.NewLogfmtLogger(buf)
-
-	testCases := []struct {
-		Handler *MockLight
-	}{}
-
-	for _, tc := range testCases {
-		h := &MockLight{}
-		l, err := New(Config{}, logger)
-		require.NoError(t, err)
-
-		l.AddHandler(h)
-
-		groupName := &LightGroupRequest{
-			Name: "dungeon",
-		}
-		ctx := context.Background()
-
-		_, err = l.On(ctx, groupName)
-		require.NoError(t, err)
-		require.Equal(t, tc.Handler, h)
-
-		_, err = l.Off(ctx, groupName)
-		require.NoError(t, err)
-		require.Equal(t, 1, h.OffCalls)
-
-		_, err = l.Alert(ctx, groupName)
-		require.NoError(t, err)
-		require.Equal(t, 1, h.AlertCalls)
-
-		_, err = l.Dim(ctx, groupName)
-		require.NoError(t, err)
-		require.Equal(t, 1, h.DimCalls)
-
-		_, err = l.SetColor(ctx, groupName)
-		require.Error(t, err)
-		require.Equal(t, 0, h.SetColorCalls)
-		groupName.Color = "#ffffff"
-		_, err = l.SetColor(ctx, groupName)
-		require.NoError(t, err)
-		require.Equal(t, 1, h.SetColorCalls)
-
-		_, err = l.Toggle(ctx, groupName)
-		require.NoError(t, err)
-		require.Equal(t, 1, h.ToggleCalls)
-
-		_, err = l.RandomColor(ctx, groupName)
-		require.Error(t, err)
-		require.Equal(t, 0, h.RandomColorCalls)
-		groupName.Colors = []string{"#ffffff"}
-		_, err = l.RandomColor(ctx, groupName)
-		require.NoError(t, err)
-		require.Equal(t, 1, h.SetColorCalls)
-
-	}
-
 }

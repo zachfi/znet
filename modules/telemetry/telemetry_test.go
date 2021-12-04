@@ -60,12 +60,12 @@ func TestReportIOTDevice_lights_handling(t *testing.T) {
 	buf := &bytes.Buffer{}
 	logger := log.NewLogfmtLogger(buf)
 
-	testCases := []struct {
+	testCases := map[string]struct {
 		Handler *lights.MockLight
 		Req     *inventory.IOTDevice
 		Zone    string
 	}{
-		{
+		"double": {
 			Req: &inventory.IOTDevice{
 				DeviceDiscovery: &iot.DeviceDiscovery{
 					ObjectId:  zigbeeDeviceName,
@@ -75,12 +75,13 @@ func TestReportIOTDevice_lights_handling(t *testing.T) {
 			},
 			Zone: "dungeon",
 			Handler: &lights.MockLight{
-				OnCalls:       map[string]int{"dungeon": 1},
-				SetColorCalls: map[string]int{"dungeon": 1},
-				DimCalls:      map[string]int{"dungeon": 1},
+				OnCalls:            map[string]int{"dungeon": 1},
+				SetColorCalls:      map[string]int{"dungeon": 1},
+				SetColorTempCalls:  map[string]int{"dungeon": 1},
+				SetBrightnessCalls: map[string]int{"dungeon": 1},
 			},
 		},
-		{
+		"single": {
 			Req: &inventory.IOTDevice{
 				DeviceDiscovery: &iot.DeviceDiscovery{
 					ObjectId:  zigbeeDeviceName,
@@ -93,7 +94,7 @@ func TestReportIOTDevice_lights_handling(t *testing.T) {
 				ToggleCalls: map[string]int{"dungeon": 1},
 			},
 		},
-		{
+		"hold": {
 			Req: &inventory.IOTDevice{
 				DeviceDiscovery: &iot.DeviceDiscovery{
 					ObjectId:  zigbeeDeviceName,
@@ -103,10 +104,10 @@ func TestReportIOTDevice_lights_handling(t *testing.T) {
 			},
 			Zone: "dungeon",
 			Handler: &lights.MockLight{
-				DimCalls: map[string]int{"dungeon": 1},
+				SetBrightnessCalls: map[string]int{"dungeon": 1},
 			},
 		},
-		{
+		"quadruple": {
 			Req: &inventory.IOTDevice{
 				DeviceDiscovery: &iot.DeviceDiscovery{
 					ObjectId:  zigbeeDeviceName,
@@ -119,7 +120,7 @@ func TestReportIOTDevice_lights_handling(t *testing.T) {
 				RandomColorCalls: map[string]int{"dungeon": 1},
 			},
 		},
-		{
+		"triple": {
 			Req: &inventory.IOTDevice{
 				DeviceDiscovery: &iot.DeviceDiscovery{
 					ObjectId:  zigbeeDeviceName,
@@ -134,7 +135,8 @@ func TestReportIOTDevice_lights_handling(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testCases {
+	for name, tc := range testCases {
+		t.Logf("test: %s", name)
 
 		lightsConfig := lights.Config{
 			PartyColors: []string{"#f33333"},

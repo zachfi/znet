@@ -51,11 +51,11 @@ func (z *Zone) SetColorTemperature(ctx context.Context, colorTemp int32) error {
 	return z.SetState(ctx, ZoneState_DIM)
 }
 
-func (z *Zone) Dim(ctx context.Context, brightness int32) error {
+func (z *Zone) SetBrightness(ctx context.Context, brightness int32) error {
 	z.brightness = brightness
 
-	// return z.SetState(ctx, ZoneState_DIM)
-	return z.SetState(ctx, ZoneState_ON)
+	return z.SetState(ctx, ZoneState_DIM)
+	// return z.SetState(ctx, ZoneState_ON)
 }
 
 func (z *Zone) Off(ctx context.Context) error {
@@ -119,65 +119,44 @@ func (z *Zone) flush(ctx context.Context) error {
 		return fmt.Errorf("no handlers for zone")
 	}
 
-	return z.Flush(ctx, z.name, z.handlers...)
+	return z.Flush(ctx)
 }
 
 // Flush handles pushing the current state out to each of the hnadlers.
-func (z *Zone) Flush(ctx context.Context, name string, handlers ...Handler) error {
+func (z *Zone) Flush(ctx context.Context) error {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "zone.Handle")
 	defer span.Finish()
 
-	// TODO
-	// Get the color temperature from somewhere
-	// Set the color temperature
-
 	switch z.state {
 	case ZoneState_ON:
-		return handleOn(ctx, name, handlers...)
+		return z.handleOn(ctx)
 	case ZoneState_OFF:
-		return handleOff(ctx, name, handlers...)
+		return z.handleOff(ctx)
 	case ZoneState_COLOR:
-		for _, h := range handlers {
-			err := h.SetColor(ctx, name, z.color)
+		for _, h := range z.handlers {
+			err := h.SetColor(ctx, z.name, z.color)
 			if err != nil {
-				return fmt.Errorf("%s color: %w", name, ErrHandlerFailed)
+				return fmt.Errorf("%s color: %w", z.name, ErrHandlerFailed)
 			}
 		}
 	case ZoneState_RANDOMCOLOR:
-		for _, h := range handlers {
-			err := h.RandomColor(ctx, name, z.colorPool)
+		for _, h := range z.handlers {
+			err := h.RandomColor(ctx, z.name, z.colorPool)
 			if err != nil {
-				return fmt.Errorf("%s random color: %w", name, ErrHandlerFailed)
+				return fmt.Errorf("%s random color: %w", z.name, ErrHandlerFailed)
 			}
 		}
 	case ZoneState_DIM:
-		for _, h := range handlers {
-			err := h.Dim(ctx, name, z.brightness)
-			if err != nil {
-				return fmt.Errorf("%s dim: %w", name, ErrHandlerFailed)
-			}
-		}
+		return z.handleBrightness(ctx)
 	case ZoneState_NIGHTVISION:
-		for _, h := range handlers {
-			err := h.SetTemp(ctx, name, nightTemp)
-			if err != nil {
-				return fmt.Errorf("%s night: %w", name, ErrHandlerFailed)
-			}
-		}
+		z.color = nightVisionColor
+		return z.handleColor(ctx)
 	case ZoneState_EVENINGVISION:
-		for _, h := range handlers {
-			err := h.SetTemp(ctx, name, eveningTemp)
-			if err != nil {
-				return fmt.Errorf("%s evening: %w", name, ErrHandlerFailed)
-			}
-		}
+		z.colorTemp = eveningTemp
+		return z.handleColorTemperature(ctx)
 	case ZoneState_MORNINGVISION:
-		for _, h := range handlers {
-			err := h.SetTemp(ctx, name, morningTemp)
-			if err != nil {
-				return fmt.Errorf("%s morning: %w", name, ErrHandlerFailed)
-			}
-		}
+		z.colorTemp = morningTemp
+		return z.handleColorTemperature(ctx)
 	}
 
 	return nil
@@ -216,20 +195,34 @@ func (z *Zones) GetZone(name string) *Zone {
 	return zone
 }
 
-func handleOn(ctx context.Context, name string, handlers ...Handler) error {
-	for _, h := range handlers {
-		err := h.On(ctx, name)
+func (z *Zone) handleOn(ctx context.Context) error {
+	z.color = defaultWhite
+	z.brightness = brightnessHigh
+
+	for _, h := range z.handlers {
+		err := h.On(ctx, z.name)
 		if err != nil {
 			return err
 		}
 	}
 
-	return handleColorTemperature(ctx, name, handlers...)
+	err := z.handleBrightness(ctx)
+	if err != nil {
+		return err
+	}
+
+	err = z.handleColor(ctx)
+	if err != nil {
+		return err
+	}
+
+	return z.handleColorTemperature(ctx)
+
 }
 
-func handleOff(ctx context.Context, name string, handlers ...Handler) error {
-	for _, h := range handlers {
-		err := h.Off(ctx, name)
+func (z *Zone) handleOff(ctx context.Context) error {
+	for _, h := range z.handlers {
+		err := h.Off(ctx, z.name)
 		if err != nil {
 			return err
 		}
@@ -238,11 +231,33 @@ func handleOff(ctx context.Context, name string, handlers ...Handler) error {
 	return nil
 }
 
-func handleColorTemperature(ctx context.Context, name string, handlers ...Handler) error {
-	for _, h := range handlers {
-		err := h.SetTemp(ctx, name, eveningTemp)
+func (z *Zone) handleColorTemperature(ctx context.Context) error {
+	for _, h := range z.handlers {
+		err := h.SetColorTemp(ctx, z.name, z.colorTemp)
 		if err != nil {
 			return err
+		}
+	}
+
+	return nil
+}
+
+func (z *Zone) handleBrightness(ctx context.Context) error {
+	for _, h := range z.handlers {
+		err := h.SetBrightness(ctx, z.name, z.brightness)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (z *Zone) handleColor(ctx context.Context) error {
+	for _, h := range z.handlers {
+		err := h.SetColor(ctx, z.name, z.color)
+		if err != nil {
+			return fmt.Errorf("%s color: %w", z.name, ErrHandlerFailed)
 		}
 	}
 

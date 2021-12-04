@@ -45,7 +45,7 @@ func TestZigbeeLight_New(t *testing.T) {
 	require.Equal(t, "zigbee2mqtt/testdevice1/set", mqttClient.LastPublishTopic)
 	require.Equal(t, `{"state":"OFF","transition":0.5}`, mqttClient.LastPublishPayload)
 
-	require.NoError(t, l.Dim(ctx, "group1", 123))
+	require.NoError(t, l.SetBrightness(ctx, "group1", 123))
 	require.Equal(t, "zigbee2mqtt/testdevice1/set", mqttClient.LastPublishTopic)
 	require.Equal(t, `{"brightness":123,"transition":0.5}`, mqttClient.LastPublishPayload)
 

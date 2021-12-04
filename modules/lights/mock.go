@@ -3,14 +3,14 @@ package lights
 import "context"
 
 type MockLight struct {
-	AlertCalls       map[string]int
-	DimCalls         map[string]int
-	OffCalls         map[string]int
-	OnCalls          map[string]int
-	RandomColorCalls map[string]int
-	SetColorCalls    map[string]int
-	ToggleCalls      map[string]int
-	SetTempCalls     map[string]int
+	AlertCalls         map[string]int
+	OffCalls           map[string]int
+	OnCalls            map[string]int
+	RandomColorCalls   map[string]int
+	SetBrightnessCalls map[string]int
+	SetColorCalls      map[string]int
+	SetColorTempCalls  map[string]int
+	ToggleCalls        map[string]int
 }
 
 func (m *MockLight) Alert(ctx context.Context, groupName string) error {
@@ -21,11 +21,11 @@ func (m *MockLight) Alert(ctx context.Context, groupName string) error {
 	return nil
 }
 
-func (m *MockLight) Dim(ctx context.Context, groupName string, brightness int32) error {
-	if len(m.DimCalls) == 0 {
-		m.DimCalls = make(map[string]int)
+func (m *MockLight) SetBrightness(ctx context.Context, groupName string, brightness int32) error {
+	if len(m.SetBrightnessCalls) == 0 {
+		m.SetBrightnessCalls = make(map[string]int)
 	}
-	m.DimCalls[groupName]++
+	m.SetBrightnessCalls[groupName]++
 	return nil
 }
 
@@ -69,10 +69,10 @@ func (m *MockLight) Toggle(ctx context.Context, groupName string) error {
 	return nil
 }
 
-func (m *MockLight) SetTemp(ctx context.Context, groupName string, temp int32) error {
-	if len(m.SetTempCalls) == 0 {
-		m.SetTempCalls = make(map[string]int)
+func (m *MockLight) SetColorTemp(ctx context.Context, groupName string, temp int32) error {
+	if len(m.SetColorTempCalls) == 0 {
+		m.SetColorTempCalls = make(map[string]int)
 	}
-	m.SetTempCalls[groupName]++
+	m.SetColorTempCalls[groupName]++
 	return nil
 }
