@@ -164,8 +164,11 @@ func (z *Zone) Flush(ctx context.Context) error {
 
 type Zones struct {
 	lock   *sync.Mutex
-	state  map[string]*Zone
 	states []*Zone
+}
+
+func (z *Zones) GetZones() []*Zone {
+	return z.states
 }
 
 func (z *Zones) GetZone(name string) *Zone {
@@ -177,10 +180,6 @@ func (z *Zones) GetZone(name string) *Zone {
 		if zone.Name() == name {
 			return zone
 		}
-	}
-
-	if zone, ok := z.state[name]; ok {
-		return zone
 	}
 
 	if len(z.states) == 0 {

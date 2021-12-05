@@ -99,6 +99,8 @@ func (z *Znet) initLights() (services.Service, error) {
 
 	s.AddHandler(zigbee)
 
+	s.SetColorTempScheduler(lights.StaticColorTempSchedule())
+
 	lights.RegisterLightsServer(z.Server.GRPC, s)
 	z.lights = s
 
@@ -107,7 +109,6 @@ func (z *Znet) initLights() (services.Service, error) {
 
 func (z *Znet) initInventory() (services.Service, error) {
 	i, err := inventory.NewLDAPServer(z.cfg.Inventory, z.logger)
-
 	if err != nil {
 		return nil, err
 	}
@@ -165,8 +166,6 @@ func (z *Znet) initHarvester() (services.Service, error) {
 func (z *Znet) initServer() (services.Service, error) {
 	z.cfg.Server.MetricsNamespace = metricsNamespace
 	z.cfg.Server.ExcludeRequestInLog = true
-
-	// cortex.DisableSignalHandling(&t.cfg.Server)
 
 	server, err := server.New(z.cfg.Server)
 	if err != nil {

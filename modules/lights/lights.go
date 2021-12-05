@@ -5,6 +5,7 @@ import (
 	"sort"
 	"strings"
 	sync "sync"
+	"time"
 
 	"github.com/go-kit/log"
 	"github.com/go-kit/log/level"
@@ -20,11 +21,11 @@ const (
 	brightnessLow  = 100
 	brightnessHigh = 254
 
-	// nightTemp     = 500
-	eveningTemp = 400
-	// lateafternoon = 300
-	// day           = 200
-	morningTemp = 100
+	eveningTemp       = 500
+	lateafternoonTemp = 400
+	dayTemp           = 300
+	morningTemp       = 200
+	firstlightTemp    = 100
 
 	nightVisionColor = `#FF00FF`
 	defaultWhite     = `#FFFFFF`
@@ -47,6 +48,14 @@ type Lights struct {
 }
 
 var defaultColorPool = []string{"#006c7f", "#e32636", "#b0bf1a"}
+var defaultColorTemperatureMap = map[ColorTemperature]int32{
+	ColorTemperature_FIRSTLIGHT:    firstlightTemp,
+	ColorTemperature_MORNING:       morningTemp,
+	ColorTemperature_DAY:           dayTemp,
+	ColorTemperature_LATEAFTERNOON: lateafternoonTemp,
+	ColorTemperature_EVENING:       eveningTemp,
+}
+var defaultScheduleDuration = time.Minute * 10
 
 // NewLights creates and returns a new Lights object based on the received
 // configuration.
@@ -71,6 +80,7 @@ func (l *Lights) starting(ctx context.Context) error {
 }
 
 func (l *Lights) running(ctx context.Context) error {
+	l.runColorTempScheduler(ctx)
 	<-ctx.Done()
 	return nil
 }
@@ -92,6 +102,25 @@ func (l *Lights) SetColorTempScheduler(c ColorTempSchedulerFunc) {
 	defer l.Unlock()
 
 	l.colorTempScheduler = c
+}
+
+func (l *Lights) runColorTempScheduler(ctx context.Context) {
+	ticker := time.NewTicker(defaultScheduleDuration)
+
+	go func(ctx context.Context) {
+		zones := l.zones.GetZones()
+		for _, room := range l.cfg.Rooms {
+			z := l.zones.GetZone(room.Name)
+			z.SetHandlers(l.handlers...)
+		}
+
+		for range ticker.C {
+			for _, z := range zones {
+				temp := l.colorTempScheduler().MostRecent()
+				_ = z.SetColorTemperature(ctx, defaultColorTemperatureMap[temp])
+			}
+		}
+	}(ctx)
 }
 
 // ActionHandler is called when an action is requested against a light group.
