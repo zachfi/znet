@@ -152,6 +152,9 @@ func (l *Lights) ActionHandler(ctx context.Context, action *iot.Action) error {
 	case "single", "press":
 		return z.Toggle(ctx)
 	case "on", "double", "tap", "rotate_right", "slide":
+		z.color = defaultWhite
+		z.brightness = brightnessHigh
+
 		return z.On(ctx)
 		// if err := z.On(ctx); err != nil {
 		// 	return err
@@ -162,11 +165,11 @@ func (l *Lights) ActionHandler(ctx context.Context, action *iot.Action) error {
 		return z.Off(ctx)
 	case "quadruple", "flip90", "flip180", "fall":
 		return z.RandomColor(ctx, l.cfg.PartyColors)
-	case "hold", "release", "rotate_left":
+	case "hold", "rotate_left":
 		return z.SetBrightness(ctx, brightnessLow)
 	case "many":
 		return z.Alert(ctx)
-	case "wakeup": // do nothing
+	case "wakeup", "release": // do nothing
 		return nil
 	default:
 		return errors.Wrap(ErrUnknownActionEvent, action.Event)

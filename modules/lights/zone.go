@@ -49,15 +49,12 @@ func (z *Zone) SetHandlers(handlers ...Handler) {
 
 func (z *Zone) SetColorTemperature(ctx context.Context, colorTemp int32) error {
 	z.colorTemp = colorTemp
-
-	return z.SetState(ctx, ZoneState_DIM)
+	return z.flush(ctx)
 }
 
 func (z *Zone) SetBrightness(ctx context.Context, brightness int32) error {
 	z.brightness = brightness
-
-	return z.SetState(ctx, ZoneState_DIM)
-	// return z.SetState(ctx, ZoneState_ON)
+	return z.SetState(ctx, ZoneState_ON)
 }
 
 func (z *Zone) Off(ctx context.Context) error {
@@ -126,7 +123,7 @@ func (z *Zone) flush(ctx context.Context) error {
 
 // Flush handles pushing the current state out to each of the hnadlers.
 func (z *Zone) Flush(ctx context.Context) error {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "zone.Handle")
+	span, ctx := opentracing.StartSpanFromContext(ctx, "zone.Flush")
 	defer span.Finish()
 
 	switch z.state {
@@ -148,8 +145,6 @@ func (z *Zone) Flush(ctx context.Context) error {
 				return fmt.Errorf("%s random color: %w", z.name, ErrHandlerFailed)
 			}
 		}
-	case ZoneState_DIM:
-		return z.handleBrightness(ctx)
 	case ZoneState_NIGHTVISION:
 		z.color = nightVisionColor
 		return z.handleColor(ctx)
@@ -197,9 +192,6 @@ func (z *Zones) GetZone(name string) *Zone {
 }
 
 func (z *Zone) handleOn(ctx context.Context) error {
-	z.color = defaultWhite
-	z.brightness = brightnessHigh
-
 	for _, h := range z.handlers {
 		err := h.On(ctx, z.name)
 		if err != nil {

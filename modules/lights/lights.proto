@@ -10,12 +10,12 @@ enum ZoneState {
   OFFTIMER = 2;
   COLOR = 3;
   RANDOMCOLOR = 4;
-  DIM = 5;
+  /* DIM = 5; */
 
   ////
-  NIGHTVISION = 6;
-  EVENINGVISION = 7;
-  MORNINGVISION = 8;
+  NIGHTVISION = 5;
+  EVENINGVISION = 6;
+  MORNINGVISION = 7;
 }
 
 enum ColorTemperature {

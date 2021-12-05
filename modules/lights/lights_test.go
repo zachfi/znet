@@ -160,13 +160,16 @@ func TestNamedTimerHandler(t *testing.T) {
 					{
 						Name: "zone1",
 						States: []StateSpec{
-							{State: ZoneState_DIM, Event: "Later"},
+							{State: ZoneState_ON, Event: "Later"},
 						},
 					},
 				},
 			},
 			mock: &MockLight{
+				OnCalls:            map[string]int{"zone1": 1},
 				SetBrightnessCalls: map[string]int{"zone1": 1},
+				SetColorTempCalls:  map[string]int{"zone1": 1},
+				SetColorCalls:      map[string]int{"zone1": 1},
 			},
 		},
 		// "Alert": {
@@ -317,7 +320,10 @@ func TestActionHandler(t *testing.T) {
 				},
 			},
 			mock: &MockLight{
+				SetColorCalls:      map[string]int{"zone1": 1},
+				SetColorTempCalls:  map[string]int{"zone1": 1},
 				SetBrightnessCalls: map[string]int{"zone1": 1},
+				OnCalls:            map[string]int{"zone1": 1},
 			},
 		},
 		"release": {
@@ -332,9 +338,21 @@ func TestActionHandler(t *testing.T) {
 					},
 				},
 			},
-			mock: &MockLight{
-				SetBrightnessCalls: map[string]int{"zone1": 1},
+			mock: &MockLight{},
+		},
+		"wakeup": {
+			action: &iot.Action{
+				Event: "release",
+				Zone:  "zone1",
 			},
+			config: Config{
+				Rooms: []Room{
+					{
+						Name: "zone1",
+					},
+				},
+			},
+			mock: &MockLight{},
 		},
 		"many": {
 			action: &iot.Action{
@@ -354,7 +372,8 @@ func TestActionHandler(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
+	for name, tc := range cases {
+		t.Logf("test: %s", name)
 		h := &MockLight{}
 
 		l, err := New(tc.config, logger)
