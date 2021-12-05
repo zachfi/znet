@@ -328,7 +328,7 @@ func (l *Telemetry) handleZigbeeReport(ctx context.Context, request *inventory.I
 
 	msg, err := iot.ReadZigbeeMessage(discovery.ObjectId, discovery.Message, discovery.Endpoint...)
 	if err != nil {
-		return errors.Wrap(err, "error reading zigbee message")
+		return errors.Wrap(err, "failed to read zigbee message")
 	}
 
 	if msg == nil {

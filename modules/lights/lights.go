@@ -113,12 +113,17 @@ func (l *Lights) runColorTempScheduler(ctx context.Context) {
 			z := l.zones.GetZone(room.Name)
 			z.SetHandlers(l.handlers...)
 		}
-
-		for range ticker.C {
+		update := func() {
 			for _, z := range zones {
 				temp := l.colorTempScheduler().MostRecent()
 				_ = z.SetColorTemperature(ctx, defaultColorTemperatureMap[temp])
 			}
+		}
+
+		update()
+
+		for range ticker.C {
+			update()
 		}
 	}(ctx)
 }

@@ -12,6 +12,8 @@ func NewZone(name string, handlers ...Handler) *Zone {
 	z := &Zone{}
 	z.lock = new(sync.Mutex)
 	z.SetName(name)
+	// default
+	z.colorTemp = dayTemp
 
 	return z
 }
