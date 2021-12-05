@@ -21,8 +21,10 @@ type Room struct {
 }
 
 type StateSpec struct {
-	State ZoneState `yaml:"state"`
-	Event string    `yaml:"event"`
+	State      ZoneState         `yaml:"state"`
+	Brightness *Brightness       `yaml:"brightness,omitempty"`
+	ColorTemp  *ColorTemperature `yaml:"color_temp,omitempty"`
+	Event      string            `yaml:"event"`
 }
 
 // Implements the Unmarshaler interface of the yaml pkg.
@@ -41,6 +43,24 @@ func (s *StateSpec) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		if k == "state" {
 			if val, ok := ZoneState_value[v]; ok {
 				s.State = ZoneState(val)
+			} else {
+				return fmt.Errorf("cannot unmarshal '%s' into %T", v, s.State)
+			}
+		}
+
+		if k == "brightness" {
+			if val, ok := Brightness_value[v]; ok {
+				b := Brightness(val)
+				s.Brightness = &b
+			} else {
+				return fmt.Errorf("cannot unmarshal '%s' into %T", v, s.State)
+			}
+		}
+
+		if k == "color_temp" {
+			if val, ok := ColorTemperature_value[v]; ok {
+				b := ColorTemperature(val)
+				s.ColorTemp = &b
 			} else {
 				return fmt.Errorf("cannot unmarshal '%s' into %T", v, s.State)
 			}

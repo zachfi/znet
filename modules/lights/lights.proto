@@ -26,6 +26,12 @@ enum ColorTemperature {
   EVENING = 4;
 }
 
+enum Brightness {
+  FULL = 0;
+  DIM = 1;
+  LOW = 2;
+}
+
 message LightGroup {
   string type = 1;
   int32 id = 2;

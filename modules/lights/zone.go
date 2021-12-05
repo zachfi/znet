@@ -15,6 +15,9 @@ func NewZone(name string, handlers ...Handler) *Zone {
 	// default
 	z.colorTemp = dayTemp
 
+	z.brightnessMap = defaultBrightnessMap
+	z.colorTempMap = defaultColorTemperatureMap
+
 	return z
 }
 
@@ -29,12 +32,27 @@ type Zone struct {
 	colorTemp  int32
 	handlers   []Handler
 	state      ZoneState
+
+	colorTempMap  map[ColorTemperature]int32
+	brightnessMap map[Brightness]int32
 }
 
 func (z *Zone) SetName(name string) {
 	z.lock.Lock()
 	defer z.lock.Unlock()
 	z.name = name
+}
+
+func (z *Zone) SetBrightnessMap(m map[Brightness]int32) {
+	z.lock.Lock()
+	defer z.lock.Unlock()
+	z.brightnessMap = m
+}
+
+func (z *Zone) SetColorTemperatureMap(m map[ColorTemperature]int32) {
+	z.lock.Lock()
+	defer z.lock.Unlock()
+	z.colorTempMap = m
 }
 
 func (z *Zone) Name() string {
@@ -47,13 +65,13 @@ func (z *Zone) SetHandlers(handlers ...Handler) {
 	z.handlers = handlers
 }
 
-func (z *Zone) SetColorTemperature(ctx context.Context, colorTemp int32) error {
-	z.colorTemp = colorTemp
-	return z.flush(ctx)
+func (z *Zone) SetColorTemperature(ctx context.Context, colorTemp ColorTemperature) error {
+	z.colorTemp = z.colorTempMap[colorTemp]
+	return z.SetState(ctx, ZoneState_ON)
 }
 
-func (z *Zone) SetBrightness(ctx context.Context, brightness int32) error {
-	z.brightness = brightness
+func (z *Zone) SetBrightness(ctx context.Context, brightness Brightness) error {
+	z.brightness = z.brightnessMap[brightness]
 	return z.SetState(ctx, ZoneState_ON)
 }
 
@@ -69,7 +87,7 @@ func (z *Zone) Toggle(ctx context.Context) error {
 	for _, h := range z.handlers {
 		err := h.Toggle(ctx, z.Name())
 		if err != nil {
-			return fmt.Errorf("%s random color: %w", z.name, ErrHandlerFailed)
+			return fmt.Errorf("%s toggle: %w", z.name, ErrHandlerFailed)
 		}
 	}
 
@@ -80,7 +98,7 @@ func (z *Zone) Alert(ctx context.Context) error {
 	for _, h := range z.handlers {
 		err := h.Alert(ctx, z.Name())
 		if err != nil {
-			return fmt.Errorf("%s random color: %w", z.name, ErrHandlerFailed)
+			return fmt.Errorf("%s alert: %w", z.name, ErrHandlerFailed)
 		}
 	}
 

@@ -55,6 +55,11 @@ var defaultColorTemperatureMap = map[ColorTemperature]int32{
 	ColorTemperature_LATEAFTERNOON: lateafternoonTemp,
 	ColorTemperature_EVENING:       eveningTemp,
 }
+var defaultBrightnessMap = map[Brightness]int32{
+	Brightness_FULL: brightnessHigh,
+	Brightness_DIM:  brightnessLow,
+	Brightness_LOW:  90,
+}
 var defaultScheduleDuration = time.Minute * 10
 
 // NewLights creates and returns a new Lights object based on the received
@@ -116,7 +121,7 @@ func (l *Lights) runColorTempScheduler(ctx context.Context) {
 		update := func() {
 			for _, z := range zones {
 				temp := l.colorTempScheduler().MostRecent()
-				_ = z.SetColorTemperature(ctx, defaultColorTemperatureMap[temp])
+				_ = z.SetColorTemperature(ctx, temp)
 			}
 		}
 
@@ -153,7 +158,7 @@ func (l *Lights) ActionHandler(ctx context.Context, action *iot.Action) error {
 		return z.Toggle(ctx)
 	case "on", "double", "tap", "rotate_right", "slide":
 		z.color = defaultWhite
-		z.brightness = brightnessHigh
+		z.brightness = z.brightnessMap[Brightness_FULL]
 
 		return z.On(ctx)
 		// if err := z.On(ctx); err != nil {
@@ -166,7 +171,7 @@ func (l *Lights) ActionHandler(ctx context.Context, action *iot.Action) error {
 	case "quadruple", "flip90", "flip180", "fall":
 		return z.RandomColor(ctx, l.cfg.PartyColors)
 	case "hold", "rotate_left":
-		return z.SetBrightness(ctx, brightnessLow)
+		return z.SetBrightness(ctx, Brightness_DIM)
 	case "many":
 		return z.Alert(ctx)
 	case "wakeup", "release": // do nothing
@@ -232,6 +237,20 @@ func (l *Lights) SetRoomForEvent(ctx context.Context, event string) error {
 		for _, s := range zone.States {
 			if !strings.EqualFold(event, s.Event) {
 				continue
+			}
+
+			if s.Brightness != nil {
+				err := z.SetBrightness(ctx, *s.Brightness)
+				if err != nil {
+					return err
+				}
+			}
+
+			if s.ColorTemp != nil {
+				err := z.SetColorTemperature(ctx, *s.ColorTemp)
+				if err != nil {
+					return err
+				}
 			}
 
 			return z.SetState(ctx, s.State)
