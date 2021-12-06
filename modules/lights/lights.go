@@ -18,9 +18,6 @@ import (
 )
 
 const (
-	brightnessLow  = 100
-	brightnessHigh = 254
-
 	eveningTemp       = 500
 	lateafternoonTemp = 400
 	dayTemp           = 300
@@ -56,8 +53,8 @@ var defaultColorTemperatureMap = map[ColorTemperature]int32{
 	ColorTemperature_EVENING:       eveningTemp,
 }
 var defaultBrightnessMap = map[Brightness]int32{
-	Brightness_FULL: brightnessHigh,
-	Brightness_DIM:  brightnessLow,
+	Brightness_FULL: 254,
+	Brightness_DIM:  100,
 	Brightness_LOW:  90,
 }
 var defaultScheduleDuration = time.Minute * 10

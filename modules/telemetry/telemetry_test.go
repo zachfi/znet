@@ -76,7 +76,6 @@ func TestReportIOTDevice_lights_handling(t *testing.T) {
 			Zone: "dungeon",
 			Handler: &lights.MockLight{
 				OnCalls:            map[string]int{"dungeon": 1},
-				SetColorCalls:      map[string]int{"dungeon": 1},
 				SetColorTempCalls:  map[string]int{"dungeon": 1},
 				SetBrightnessCalls: map[string]int{"dungeon": 1},
 			},
@@ -106,7 +105,6 @@ func TestReportIOTDevice_lights_handling(t *testing.T) {
 			Handler: &lights.MockLight{
 				OnCalls:            map[string]int{"dungeon": 1},
 				SetBrightnessCalls: map[string]int{"dungeon": 1},
-				SetColorCalls:      map[string]int{"dungeon": 1},
 				SetColorTempCalls:  map[string]int{"dungeon": 1},
 			},
 		},

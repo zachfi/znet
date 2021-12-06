@@ -134,7 +134,6 @@ func TestNamedTimerHandler(t *testing.T) {
 				OnCalls:            map[string]int{"zone1": 1},
 				SetBrightnessCalls: map[string]int{"zone1": 1},
 				SetColorTempCalls:  map[string]int{"zone1": 1},
-				SetColorCalls:      map[string]int{"zone1": 1},
 			},
 		},
 		"off": {
@@ -169,7 +168,6 @@ func TestNamedTimerHandler(t *testing.T) {
 				OnCalls:            map[string]int{"zone1": 1},
 				SetBrightnessCalls: map[string]int{"zone1": 1},
 				SetColorTempCalls:  map[string]int{"zone1": 1},
-				SetColorCalls:      map[string]int{"zone1": 1},
 			},
 		},
 		// "Alert": {
@@ -202,7 +200,9 @@ func TestNamedTimerHandler(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
+	for name, tc := range cases {
+		t.Logf("test: %s", name)
+
 		h := &MockLight{}
 
 		l, err := New(tc.config, logger)
@@ -271,7 +271,6 @@ func TestActionHandler(t *testing.T) {
 			mock: &MockLight{
 				OnCalls:            map[string]int{"zone1": 1},
 				SetBrightnessCalls: map[string]int{"zone1": 1},
-				SetColorCalls:      map[string]int{"zone1": 1},
 				SetColorTempCalls:  map[string]int{"zone1": 1},
 			},
 		},
@@ -320,10 +319,9 @@ func TestActionHandler(t *testing.T) {
 				},
 			},
 			mock: &MockLight{
-				SetColorCalls:      map[string]int{"zone1": 1},
-				SetColorTempCalls:  map[string]int{"zone1": 1},
-				SetBrightnessCalls: map[string]int{"zone1": 1},
 				OnCalls:            map[string]int{"zone1": 1},
+				SetBrightnessCalls: map[string]int{"zone1": 1},
+				SetColorTempCalls:  map[string]int{"zone1": 1},
 			},
 		},
 		"release": {

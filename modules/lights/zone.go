@@ -209,6 +209,9 @@ func (z *Zones) GetZone(name string) *Zone {
 	return zone
 }
 
+// handleOn takes care of the behavior when the light is set to On.  This
+// includes brightness and color temperature.  The color hue of the light is
+// handled by ZoneState_COLOR.
 func (z *Zone) handleOn(ctx context.Context) error {
 	for _, h := range z.handlers {
 		err := h.On(ctx, z.name)
@@ -218,11 +221,6 @@ func (z *Zone) handleOn(ctx context.Context) error {
 	}
 
 	err := z.handleBrightness(ctx)
-	if err != nil {
-		return err
-	}
-
-	err = z.handleColor(ctx)
 	if err != nil {
 		return err
 	}
