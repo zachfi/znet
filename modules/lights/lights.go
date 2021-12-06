@@ -25,7 +25,6 @@ const (
 	firstlightTemp    = 100
 
 	nightVisionColor = `#FF00FF`
-	defaultWhite     = `#FFFFFF`
 )
 
 // Lights holds the information necessary to communicate with lighting
