@@ -92,14 +92,18 @@ func (z *Znet) initLights() (services.Service, error) {
 		return nil, err
 	}
 
+	scheduler, err := lights.StaticColorTempSchedule(z.cfg.Lights.TimeZone)
+	if err != nil {
+		return nil, err
+	}
+
 	zigbee, err := lights.NewZigbeeLight(z.cfg.Lights, mqttClient, invClient)
 	if err != nil {
 		return nil, err
 	}
 
 	s.AddHandler(zigbee)
-
-	s.SetColorTempScheduler(lights.StaticColorTempSchedule())
+	s.SetColorTempScheduler(scheduler)
 
 	lights.RegisterLightsServer(z.Server.GRPC, s)
 	z.lights = s

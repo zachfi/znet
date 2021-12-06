@@ -2,14 +2,29 @@ package lights
 
 import "time"
 
-func StaticColorTempSchedule() ColorTempSchedulerFunc {
-	return func() ColorTempSchedule {
-		firstlight, _ := timeOfDayToday("02:00:00", "UTC")
-		morning, _ := timeOfDayToday("13:00:00", "UTC")
-		day, _ := timeOfDayToday("16:00:00", "UTC")
-		lateafternoon, _ := timeOfDayToday("23:00:00", "UTC")
-		evening, _ := timeOfDayToday("02:00:00", "UTC")
+func StaticColorTempSchedule(timezone string) (ColorTempSchedulerFunc, error) {
+	firstlight, err := timeOfDayToday("02:00:00", timezone)
+	if err != nil {
+		return nil, err
+	}
+	morning, err := timeOfDayToday("13:00:00", timezone)
+	if err != nil {
+		return nil, err
+	}
+	day, err := timeOfDayToday("16:00:00", timezone)
+	if err != nil {
+		return nil, err
+	}
+	lateafternoon, err := timeOfDayToday("23:00:00", timezone)
+	if err != nil {
+		return nil, err
+	}
+	evening, err := timeOfDayToday("02:00:00", timezone)
+	if err != nil {
+		return nil, err
+	}
 
+	return func() ColorTempSchedule {
 		return ColorTempSchedule{
 			ColorTemperature_FIRSTLIGHT:    *firstlight,
 			ColorTemperature_MORNING:       *morning,
@@ -17,7 +32,7 @@ func StaticColorTempSchedule() ColorTempSchedulerFunc {
 			ColorTemperature_LATEAFTERNOON: *lateafternoon,
 			ColorTemperature_EVENING:       *evening,
 		}
-	}
+	}, nil
 }
 
 // timeOfDayToday takes a time, and replaces the date to be the same time, but today.
