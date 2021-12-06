@@ -9,7 +9,7 @@ type Config struct {
 	Rooms       []Room     `yaml:"rooms"`
 	Hue         *HueConfig `yaml:"hue,omitempty"`
 	PartyColors []string   `yaml:"party_colors,omitempty"`
-	TimeZone    string     `yaml:"timezone"`
+	TimeZone    string     `yaml:"timezone" json:"timezone"`
 }
 
 // Room is a collection of device entries.
