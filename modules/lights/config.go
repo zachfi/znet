@@ -6,18 +6,14 @@ import (
 
 // Config is the configuration for Lights
 type Config struct {
-	Rooms       []Room     `yaml:"rooms"`
-	Hue         *HueConfig `yaml:"hue,omitempty"`
-	PartyColors []string   `yaml:"party_colors,omitempty"`
-	TimeZone    string     `yaml:"timezone" json:"timezone"`
+	Rooms       []Room   `yaml:"rooms"`
+	PartyColors []string `yaml:"party_colors,omitempty"`
+	TimeZone    string   `yaml:"timezone" json:"timezone"`
 }
 
 // Room is a collection of device entries.
 type Room struct {
-	Name   string `yaml:"name"`
-	IDs    []int  `yaml:"ids"`
-	HueIDs []int  `yaml:"hue"`
-
+	Name   string      `yaml:"name"`
 	States []StateSpec `yaml:"states"`
 }
 
@@ -69,12 +65,6 @@ func (s *StateSpec) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	}
 
 	return nil
-}
-
-// HueConfig is the configuration for Philips Hue.
-type HueConfig struct {
-	Endpoint string `yaml:"endpoint"`
-	User     string `yaml:"user"`
 }
 
 // Room return the Room object for a room given by name.
