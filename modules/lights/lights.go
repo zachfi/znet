@@ -124,8 +124,13 @@ func (l *Lights) runColorTempScheduler(ctx context.Context) {
 
 		update()
 
-		for range ticker.C {
-			update()
+		for {
+			select {
+			case <-ticker.C:
+				update()
+			case <-ctx.Done():
+				return
+			}
 		}
 	}(ctx)
 }
@@ -154,8 +159,10 @@ func (l *Lights) ActionHandler(ctx context.Context, action *iot.Action) error {
 	case "single", "press":
 		return z.Toggle(ctx)
 	case "on", "double", "tap", "rotate_right", "slide":
-		z.color = defaultWhite
-		z.brightness = z.brightnessMap[Brightness_FULL]
+		err := z.SetBrightness(ctx, Brightness_FULL)
+		if err != nil {
+			return err
+		}
 
 		return z.On(ctx)
 		// if err := z.On(ctx); err != nil {
@@ -168,7 +175,12 @@ func (l *Lights) ActionHandler(ctx context.Context, action *iot.Action) error {
 	case "quadruple", "flip90", "flip180", "fall":
 		return z.RandomColor(ctx, l.cfg.PartyColors)
 	case "hold", "rotate_left":
-		return z.SetBrightness(ctx, Brightness_DIM)
+		err := z.SetBrightness(ctx, Brightness_DIM)
+		if err != nil {
+			return err
+		}
+
+		return z.On(ctx)
 	case "many":
 		return z.Alert(ctx)
 	case "wakeup", "release": // do nothing
@@ -226,6 +238,7 @@ func (l *Lights) NamedTimerHandler(ctx context.Context, e string) error {
 	return l.SetRoomForEvent(ctx, e)
 }
 
+// SetRoomForEvent is used to handle an event based on the room configuation.
 func (l *Lights) SetRoomForEvent(ctx context.Context, event string) error {
 	for _, zone := range l.cfg.Rooms {
 		z := l.zones.GetZone(zone.Name)

@@ -67,12 +67,12 @@ func (z *Zone) SetHandlers(handlers ...Handler) {
 
 func (z *Zone) SetColorTemperature(ctx context.Context, colorTemp ColorTemperature) error {
 	z.colorTemp = z.colorTempMap[colorTemp]
-	return z.SetState(ctx, ZoneState_ON)
+	return nil
 }
 
 func (z *Zone) SetBrightness(ctx context.Context, brightness Brightness) error {
 	z.brightness = z.brightnessMap[brightness]
-	return z.SetState(ctx, ZoneState_ON)
+	return nil
 }
 
 func (z *Zone) Off(ctx context.Context) error {
