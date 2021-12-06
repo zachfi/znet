@@ -20,7 +20,6 @@ type zigbeeLight struct {
 }
 
 const defaultTransitionTime = 0.5
-const slowTransitionTime = 5
 
 func NewZigbeeLight(cfg Config, mqttClient mqtt.Client, inv inventory.Inventory) (Handler, error) {
 	return &zigbeeLight{
@@ -312,7 +311,7 @@ func (l zigbeeLight) SetColorTemp(ctx context.Context, groupName string, temp in
 
 		topic := fmt.Sprintf("zigbee2mqtt/%s/set", devices[i].Name)
 		message := map[string]interface{}{
-			"transition": slowTransitionTime,
+			"transition": defaultTransitionTime,
 			"color_temp": temp,
 		}
 
