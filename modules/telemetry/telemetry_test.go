@@ -60,12 +60,12 @@ func TestReportIOTDevice_lights_handling(t *testing.T) {
 	buf := &bytes.Buffer{}
 	logger := log.NewLogfmtLogger(buf)
 
-	testCases := []struct {
+	testCases := map[string]struct {
 		Handler *lights.MockLight
 		Req     *inventory.IOTDevice
 		Zone    string
 	}{
-		{
+		"double": {
 			Req: &inventory.IOTDevice{
 				DeviceDiscovery: &iot.DeviceDiscovery{
 					ObjectId:  zigbeeDeviceName,
@@ -75,12 +75,12 @@ func TestReportIOTDevice_lights_handling(t *testing.T) {
 			},
 			Zone: "dungeon",
 			Handler: &lights.MockLight{
-				OnCalls:       map[string]int{"dungeon": 1},
-				SetColorCalls: map[string]int{"dungeon": 1},
-				DimCalls:      map[string]int{"dungeon": 1},
+				OnCalls:            map[string]int{"dungeon": 1},
+				SetColorTempCalls:  map[string]int{"dungeon": 1},
+				SetBrightnessCalls: map[string]int{"dungeon": 1},
 			},
 		},
-		{
+		"single": {
 			Req: &inventory.IOTDevice{
 				DeviceDiscovery: &iot.DeviceDiscovery{
 					ObjectId:  zigbeeDeviceName,
@@ -93,7 +93,7 @@ func TestReportIOTDevice_lights_handling(t *testing.T) {
 				ToggleCalls: map[string]int{"dungeon": 1},
 			},
 		},
-		{
+		"hold": {
 			Req: &inventory.IOTDevice{
 				DeviceDiscovery: &iot.DeviceDiscovery{
 					ObjectId:  zigbeeDeviceName,
@@ -103,10 +103,12 @@ func TestReportIOTDevice_lights_handling(t *testing.T) {
 			},
 			Zone: "dungeon",
 			Handler: &lights.MockLight{
-				DimCalls: map[string]int{"dungeon": 1},
+				OnCalls:            map[string]int{"dungeon": 1},
+				SetBrightnessCalls: map[string]int{"dungeon": 1},
+				SetColorTempCalls:  map[string]int{"dungeon": 1},
 			},
 		},
-		{
+		"quadruple": {
 			Req: &inventory.IOTDevice{
 				DeviceDiscovery: &iot.DeviceDiscovery{
 					ObjectId:  zigbeeDeviceName,
@@ -119,7 +121,7 @@ func TestReportIOTDevice_lights_handling(t *testing.T) {
 				RandomColorCalls: map[string]int{"dungeon": 1},
 			},
 		},
-		{
+		"triple": {
 			Req: &inventory.IOTDevice{
 				DeviceDiscovery: &iot.DeviceDiscovery{
 					ObjectId:  zigbeeDeviceName,
@@ -134,7 +136,8 @@ func TestReportIOTDevice_lights_handling(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testCases {
+	for name, tc := range testCases {
+		t.Logf("test: %s", name)
 
 		lightsConfig := lights.Config{
 			PartyColors: []string{"#f33333"},
@@ -225,6 +228,27 @@ func TestReportIOTDevice_bridge_state(t *testing.T) {
 				DeviceDiscovery: &iot.DeviceDiscovery{
 					ObjectId:  "bridge",
 					Component: "zigbee2mqtt",
+					Endpoint:  []string{"logging"},
+					Message: []byte(`
+          {
+            "level":"info",
+            "message":"MQTT publish: topic 'zigbee2mqtt/0x00158d0006fafbeb',
+              payload '{
+              \"battery\":91,
+              \"humidity\":29.3,
+              \"linkquality\":86,
+              \"pressure\":839,
+              \"temperature\":21.27,
+              \"voltage\":2985}'"
+					}`),
+				},
+			},
+		},
+		{
+			Req: &inventory.IOTDevice{
+				DeviceDiscovery: &iot.DeviceDiscovery{
+					ObjectId:  "bridge",
+					Component: "zigbee2mqtt",
 					Endpoint:  []string{"devices"},
 					Message:   sampleDevices,
 				},
@@ -262,6 +286,7 @@ func TestReportIOTDevice_bridge_state(t *testing.T) {
 	// zigbee2mqtt/bridge/log {"message":"interview_successful","meta":{"description":"Hue white A60 bulb E27","friendly_name":"0x00178801042131ca","model":"9290011370","supported":true,"vendor":"Philips"},"type":"pairing"}
 	// zigbee2mqtt/0x001788010898e9c1 {"brightness":254,"color":{"x":0.2061,"y":0.083},"color_temp":160,"linkquality":68,"state":"OFF","update_available":true}
 	// zigbee2mqtt/bridge/log {"message":"Update available for '0x001788010898e9c1'","meta":{"device":"0x001788010898e9c1","status":"available"},"type":"ota_update"}
+	// zigbee2mqtt/bridge/logging {"level":"info","message":"MQTT publish: topic 'zigbee2mqtt/0x00158d0006fafbeb', payload '{\"battery\":91,\"humidity\":29.3,\"linkquality\":86,\"pressure\":839,\"temperature\":21.27,\"voltage\":2985}'"}
 
 	for _, tc := range testCases {
 

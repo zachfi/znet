@@ -19,5 +19,9 @@ docker-login:
 docker:
 	docker build -t xaque208/znet .
 
+docker-snapshot: docker
+	docker tag xaque208/znet:latest xaque208/znet:${PROJECT_VER}
+	docker push xaque208/znet:${PROJECT_VER}
+
 
 .PHONY: docker-login

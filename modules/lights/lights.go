@@ -2,26 +2,29 @@ package lights
 
 import (
 	"context"
-	"fmt"
 	"sort"
+	"strings"
 	sync "sync"
+	"time"
 
 	"github.com/go-kit/log"
 	"github.com/go-kit/log/level"
 	"github.com/grafana/dskit/services"
 	"github.com/mpvl/unique"
 	"github.com/opentracing/opentracing-go"
+	"github.com/pkg/errors"
 
 	"github.com/xaque208/znet/pkg/iot"
 )
 
 const (
-	brightnessLow  = 100
-	brightnessHigh = 254
+	eveningTemp       = 500
+	lateafternoonTemp = 400
+	dayTemp           = 300
+	morningTemp       = 200
+	firstlightTemp    = 100
 
-	nightTemp   = 500
-	eveningTemp = 300
-	morningTemp = 100
+	nightVisionColor = `#FF00FF`
 )
 
 // Lights holds the information necessary to communicate with lighting
@@ -35,11 +38,25 @@ type Lights struct {
 	logger log.Logger
 
 	sync.Mutex
-	handlers []Handler
-	zones    *Zones
+	handlers           []Handler
+	colorTempScheduler ColorTempSchedulerFunc
+	zones              *Zones
 }
 
 var defaultColorPool = []string{"#006c7f", "#e32636", "#b0bf1a"}
+var defaultColorTemperatureMap = map[ColorTemperature]int32{
+	ColorTemperature_FIRSTLIGHT:    firstlightTemp,
+	ColorTemperature_MORNING:       morningTemp,
+	ColorTemperature_DAY:           dayTemp,
+	ColorTemperature_LATEAFTERNOON: lateafternoonTemp,
+	ColorTemperature_EVENING:       eveningTemp,
+}
+var defaultBrightnessMap = map[Brightness]int32{
+	Brightness_FULL: 254,
+	Brightness_DIM:  100,
+	Brightness_LOW:  90,
+}
+var defaultScheduleDuration = time.Minute * 10
 
 // NewLights creates and returns a new Lights object based on the received
 // configuration.
@@ -48,6 +65,10 @@ func New(cfg Config, logger log.Logger) (*Lights, error) {
 		cfg:    &cfg,
 		logger: log.With(logger, "module", "lights"),
 		zones:  &Zones{},
+	}
+
+	if len(l.cfg.PartyColors) == 0 {
+		l.cfg.PartyColors = defaultColorPool
 	}
 
 	l.Service = services.NewBasicService(l.starting, l.running, l.stopping)
@@ -60,6 +81,7 @@ func (l *Lights) starting(ctx context.Context) error {
 }
 
 func (l *Lights) running(ctx context.Context) error {
+	l.runColorTempScheduler(ctx)
 	<-ctx.Done()
 	return nil
 }
@@ -76,6 +98,42 @@ func (l *Lights) AddHandler(h Handler) {
 	l.handlers = append(l.handlers, h)
 }
 
+func (l *Lights) SetColorTempScheduler(c ColorTempSchedulerFunc) {
+	l.Lock()
+	defer l.Unlock()
+
+	l.colorTempScheduler = c
+}
+
+func (l *Lights) runColorTempScheduler(ctx context.Context) {
+	ticker := time.NewTicker(defaultScheduleDuration)
+
+	go func(ctx context.Context) {
+		zones := l.zones.GetZones()
+		for _, room := range l.cfg.Rooms {
+			z := l.zones.GetZone(room.Name)
+			z.SetHandlers(l.handlers...)
+		}
+		update := func() {
+			for _, z := range zones {
+				temp := l.colorTempScheduler().MostRecent()
+				_ = z.SetColorTemperature(ctx, temp)
+			}
+		}
+
+		update()
+
+		for {
+			select {
+			case <-ticker.C:
+				update()
+			case <-ctx.Done():
+				return
+			}
+		}
+	}(ctx)
+}
+
 // ActionHandler is called when an action is requested against a light group.
 // The action speciefies the a button press and a room to give enough context
 // for how to change the behavior of the lights in response to the action.
@@ -86,74 +144,49 @@ func (l *Lights) ActionHandler(ctx context.Context, action *iot.Action) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	room := l.getRoom(action.Zone)
-	if room == nil {
-		return fmt.Errorf("%w: %s", ErrRoomNotFound, action.Zone)
-	}
+	z := l.zones.GetZone(action.Zone)
+	z.SetHandlers(l.handlers...)
 
 	_ = level.Debug(l.logger).Log("msg", "room action",
-		"room_name", room.Name,
+		"name", z.Name(),
 		"zone", action.Zone,
 		"device", action.Device,
 		"event", action.Event,
 	)
 
-	request := &LightGroupRequest{
-		Brightness: brightnessHigh,
-		Color:      "#ffffff",
-		Colors:     l.cfg.PartyColors,
-		Name:       room.Name,
-	}
-
 	switch action.Event {
 	case "single", "press":
-		_, err := l.Toggle(ctx, request)
-		return err
+		return z.Toggle(ctx)
 	case "on", "double", "tap", "rotate_right", "slide":
-		_, err := l.On(ctx, request)
+		err := z.SetBrightness(ctx, Brightness_FULL)
 		if err != nil {
 			return err
 		}
 
-		_, err = l.Dim(ctx, request)
-		if err != nil {
-			return err
-		}
+		return z.On(ctx)
+		// if err := z.On(ctx); err != nil {
+		// 	return err
+		// }
 
-		_, err = l.SetColor(ctx, request)
-		return err
+		// return nil
 	case "off", "triple":
-		_, err := l.Off(ctx, request)
-		return err
+		return z.Off(ctx)
 	case "quadruple", "flip90", "flip180", "fall":
-		_, err := l.RandomColor(ctx, request)
-		return err
-	case "hold", "release", "rotate_left":
-		request.Brightness = brightnessLow
-		_, err := l.Dim(ctx, request)
-		return err
+		return z.RandomColor(ctx, l.cfg.PartyColors)
+	case "hold", "rotate_left":
+		err := z.SetBrightness(ctx, Brightness_DIM)
+		if err != nil {
+			return err
+		}
+
+		return z.On(ctx)
 	case "many":
-		_, err := l.Alert(ctx, request)
-		return err
-	case "wakeup": // do nothing
+		return z.Alert(ctx)
+	case "wakeup", "release": // do nothing
 		return nil
 	default:
-		return fmt.Errorf("%s: %w", action.Event, ErrUnknownActionEvent)
+		return errors.Wrap(ErrUnknownActionEvent, action.Event)
 	}
-}
-
-func (l *Lights) getRoom(name string) *Room {
-	if l.cfg == nil {
-		return nil
-	}
-
-	for _, room := range l.cfg.Rooms {
-		if room.Name == name {
-			return &room
-		}
-	}
-
-	return nil
 }
 
 // configuredEventNames is a collection of events that are configured in the
@@ -170,12 +203,10 @@ func (l *Lights) configuredEventNames() ([]string, error) {
 		return nil, ErrNoRoomsConfigured
 	}
 
-	for _, r := range l.cfg.Rooms {
-		names = append(names, r.On...)
-		names = append(names, r.Off...)
-		names = append(names, r.Alert...)
-		names = append(names, r.Toggle...)
-		names = append(names, r.Dim...)
+	for _, z := range l.cfg.Rooms {
+		for _, s := range z.States {
+			names = append(names, s.Event)
+		}
 	}
 
 	sort.Strings(names)
@@ -206,147 +237,34 @@ func (l *Lights) NamedTimerHandler(ctx context.Context, e string) error {
 	return l.SetRoomForEvent(ctx, e)
 }
 
+// SetRoomForEvent is used to handle an event based on the room configuation.
 func (l *Lights) SetRoomForEvent(ctx context.Context, event string) error {
-	for _, room := range l.cfg.Rooms {
-		for _, o := range room.On {
-			if o == event {
-				_, err := l.On(ctx,
-					&LightGroupRequest{
-						Name:  room.Name,
-						State: ZoneState_ON,
-					})
-				return err
-			}
-		}
+	for _, zone := range l.cfg.Rooms {
+		z := l.zones.GetZone(zone.Name)
+		z.SetHandlers(l.handlers...)
 
-		for _, o := range room.Off {
-			if o == event {
-				req := &LightGroupRequest{Name: room.Name}
-				_, err := l.Off(ctx, req)
-				return err
+		for _, s := range zone.States {
+			if !strings.EqualFold(event, s.Event) {
+				continue
 			}
-		}
 
-		for _, o := range room.Dim {
-			if o == event {
-				req := &LightGroupRequest{Name: room.Name, Brightness: 110}
-				_, err := l.Dim(ctx, req)
-				return err
+			if s.Brightness != nil {
+				err := z.SetBrightness(ctx, *s.Brightness)
+				if err != nil {
+					return err
+				}
 			}
-		}
 
-		for _, o := range room.Alert {
-			if o == event {
-				req := &LightGroupRequest{Name: room.Name}
-				_, err := l.Alert(ctx, req)
-				return err
+			if s.ColorTemp != nil {
+				err := z.SetColorTemperature(ctx, *s.ColorTemp)
+				if err != nil {
+					return err
+				}
 			}
+
+			return z.SetState(ctx, s.State)
 		}
 	}
 
 	return nil
-}
-
-// Alert calls Alert() on each handler.
-func (l *Lights) Alert(ctx context.Context, req *LightGroupRequest) (*LightResponse, error) {
-	for _, h := range l.handlers {
-		err := h.Alert(ctx, req.Name)
-		if err != nil {
-			_ = level.Error(l.logger).Log("err", err.Error())
-		}
-	}
-
-	return &LightResponse{}, nil
-}
-
-// Dim calls Dim() on each handler.
-func (l *Lights) Dim(ctx context.Context, req *LightGroupRequest) (*LightResponse, error) {
-	z := l.zones.GetZone(req.Name)
-	z.SetHandlers(l.handlers...)
-
-	err := z.Dim(ctx, req.Brightness)
-	if err != nil {
-		return nil, err
-	}
-
-	return &LightResponse{}, nil
-}
-
-// Off calls Off() on each handler.
-func (l *Lights) Off(ctx context.Context, req *LightGroupRequest) (*LightResponse, error) {
-	z := l.zones.GetZone(req.Name)
-	z.SetHandlers(l.handlers...)
-
-	err := z.Off(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return &LightResponse{}, nil
-}
-
-// On calls On() on each handler.
-func (l *Lights) On(ctx context.Context, req *LightGroupRequest) (*LightResponse, error) {
-	z := l.zones.GetZone(req.Name)
-	z.SetHandlers(l.handlers...)
-
-	err := z.On(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return &LightResponse{}, nil
-}
-
-func (l *Lights) RandomColor(ctx context.Context, req *LightGroupRequest) (*LightResponse, error) {
-	var colors []string
-
-	if len(req.Colors) == 0 {
-		_ = level.Debug(l.logger).Log("msg", "using default colors")
-		colors = defaultColorPool
-	} else {
-		colors = req.Colors
-	}
-
-	z := l.zones.GetZone(req.Name)
-	z.SetHandlers(l.handlers...)
-
-	err := z.RandomColor(ctx, colors)
-	if err != nil {
-		return nil, err
-	}
-
-	return &LightResponse{}, nil
-}
-
-func (l *Lights) SetColor(ctx context.Context, req *LightGroupRequest) (*LightResponse, error) {
-	if req.Color == "" {
-		return nil, fmt.Errorf("request missing color spec")
-	}
-
-	z := l.zones.GetZone(req.Name)
-	z.SetHandlers(l.handlers...)
-
-	err := z.SetColor(ctx, req.Color)
-	if err != nil {
-		return nil, err
-	}
-
-	return &LightResponse{}, nil
-}
-
-func (l *Lights) Toggle(ctx context.Context, req *LightGroupRequest) (*LightResponse, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "Lights.Toggle")
-	defer span.Finish()
-
-	for _, h := range l.handlers {
-		handlerSpan, handlerCtx := opentracing.StartSpanFromContext(ctx, fmt.Sprintf("%T.Toggle()", h))
-		err := h.Toggle(handlerCtx, req.Name)
-		if err != nil {
-			_ = level.Error(l.logger).Log("err", err.Error())
-		}
-		handlerSpan.Finish()
-	}
-
-	return &LightResponse{}, nil
 }

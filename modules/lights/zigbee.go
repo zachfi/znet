@@ -20,7 +20,6 @@ type zigbeeLight struct {
 }
 
 const defaultTransitionTime = 0.5
-const slowTransitionTime = 5
 
 func NewZigbeeLight(cfg Config, mqttClient mqtt.Client, inv inventory.Inventory) (Handler, error) {
 	return &zigbeeLight{
@@ -173,7 +172,7 @@ func (l zigbeeLight) Off(ctx context.Context, groupName string) error {
 	return nil
 }
 
-func (l zigbeeLight) Dim(ctx context.Context, groupName string, brightness int32) error {
+func (l zigbeeLight) SetBrightness(ctx context.Context, groupName string, brightness int32) error {
 	span, _ := opentracing.StartSpanFromContext(ctx, "zigbeeLight.Dim")
 	defer span.Finish()
 
@@ -291,7 +290,7 @@ func (l zigbeeLight) RandomColor(ctx context.Context, groupName string, hex []st
 	return nil
 }
 
-func (l zigbeeLight) SetTemp(ctx context.Context, groupName string, temp int32) error {
+func (l zigbeeLight) SetColorTemp(ctx context.Context, groupName string, temp int32) error {
 	span, _ := opentracing.StartSpanFromContext(ctx, "zigbeeLight.SetTemp")
 	defer span.Finish()
 
@@ -312,7 +311,7 @@ func (l zigbeeLight) SetTemp(ctx context.Context, groupName string, temp int32) 
 
 		topic := fmt.Sprintf("zigbee2mqtt/%s/set", devices[i].Name)
 		message := map[string]interface{}{
-			"transition": slowTransitionTime,
+			"transition": defaultTransitionTime,
 			"color_temp": temp,
 		}
 

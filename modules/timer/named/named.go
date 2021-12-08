@@ -88,7 +88,7 @@ func (t *Named) stopping(_ error) error {
 	return nil
 }
 
-//connect implements evenets.Producer
+// Connect implements events.Producer
 func (t *Named) Connect(ctx context.Context) error {
 	_ = t.logger.Log("msg", "starting eventProducer")
 

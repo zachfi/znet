@@ -6,29 +6,16 @@
 
 > It isn't the destination, but the journey.
 
-    agent       Run a znet agent
-    arpwatch    Export Junos ARP data Pometheus
-    builder     Run a git repo builder
-    completion  Generates zsh completion scripts
-    gitwatch    Run a git watcher
-    harvest     Run an mqtt harvester
-    help        Help about any command
-    inv         Report on inventory
-    lights      Collect status of the HUE lights for reporting
-    netconfig   Configure Junos Devices
-    server      Listen for commands/events/messages sent to the RPC server
-    timer       Run a timer
-    version     Show znet version
+    Usage of ./bin/linux/znet:
+      -config.file value
+          Configuration file to load
+      -target string
+          target module (default "all")
 
-## Daemons
+## Modules
 
-This project consists of a few daemons.
-
-### Server
-
-`znet server`
-
-The zNet server is the gRPC server that has a few tasks.
+This project consists of a few modules that are all loaded by default, some of
+which are dependencies for a few key modules.
 
 #### Inventory
 
@@ -59,22 +46,11 @@ information. When an observation is made, the data is sent to the server for
 handling. This might mean updating the data in the inventory database, or it
 might mean some other alert.
 
-#### Events
+#### Harvester
 
-There is also a somewhat generalized eventing framework to allow various
-components of the system to send events into the gRPC server. The server can
-then forward those events to subscribers, either local or remote. This allows
-events from one component to propagate to other parts of the system to perform
-actions, store data, update metrics or something else.
+The harvester is used to read Zigbee messages from an MQTT bus that are
+produced using [Zigbee2mqtt][z2m]. These messages are used to perform various
+actions against the server for actions such as changing the state of other
+Zigbee devices, such as lights, or other such event driven motivations.
 
-### Agent
-
-The agent receives events as part of a subscription call to the events server.
-These events are used to trigger lighting changes, or execute commands based on
-configuration.
-
-### Builder
-
-The builder receives events as part of a subscription call to the events
-server.  This allows the builder to keep tabs on git repos, and perform certain
-actions based on a configuration stored with the repository.
+[z2m]: https://www.zigbee2mqtt.io/
