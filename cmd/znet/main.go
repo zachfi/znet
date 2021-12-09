@@ -26,7 +26,6 @@ import (
 	"github.com/go-kit/log/level"
 	"github.com/grafana/dskit/flagext"
 	"github.com/pkg/errors"
-	"github.com/weaveworks/common/tracing"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/propagation"
@@ -36,9 +35,6 @@ import (
 
 	"google.golang.org/grpc"
 	"gopkg.in/yaml.v2"
-
-	jaegerConfig "github.com/uber/jaeger-client-go/config"
-	jaegerLogger "github.com/uber/jaeger-client-go/log"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/version"
@@ -140,31 +136,12 @@ func loadConfig() (*znet.Config, error) {
 	return config, nil
 }
 
-func installOpenTracingTracer(config *znet.Config, logger log.Logger) (func(), error) {
-	_ = level.Info(logger).Log("msg", "initializing OpenTracing tracer")
-
-	// Setting the environment variable JAEGER_AGENT_HOST enables tracing
-	trace, err := tracing.NewFromEnv(fmt.Sprintf("%s-%s", appName, config.Target),
-		jaegerConfig.Logger(jaegerLogger.StdLogger),
-	)
-	if err != nil {
-		return nil, errors.Wrap(err, "error initializing tracer")
-	}
-
-	return func() {
-		if err := trace.Close(); err != nil {
-			_ = level.Error(logger).Log("msg", "error closing tracing", "err", err)
-			os.Exit(1)
-		}
-	}, nil
-}
-
 func installOpenTelemetryTracer(config *znet.Config, logger log.Logger) (func(), error) {
 	if config.OtelEndpoint == "" {
 		return func() {}, nil
 	}
 
-	level.Info(logger).Log("msg", "initialising OpenTelemetry tracer")
+	_ = level.Info(logger).Log("msg", "initialising OpenTelemetry tracer")
 
 	ctx := context.Background()
 
@@ -204,7 +181,7 @@ func installOpenTelemetryTracer(config *znet.Config, logger log.Logger) (func(),
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 		if err := tracerProvider.Shutdown(ctx); err != nil {
-			level.Error(logger).Log("msg", "OpenTelemetry trace provider failed to shutdown", "err", err)
+			_ = level.Error(logger).Log("msg", "OpenTelemetry trace provider failed to shutdown", "err", err)
 			os.Exit(1)
 		}
 	}
