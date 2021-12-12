@@ -9,6 +9,8 @@
     Usage of ./bin/linux/znet:
       -config.file value
           Configuration file to load
+      -otel_endpoint string
+          otel endpoint, eg: tempo:4317
       -target string
           target module (default "all")
 
