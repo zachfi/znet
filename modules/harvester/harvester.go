@@ -65,7 +65,7 @@ func (h *Harvester) running(ctx context.Context) error {
 			DeviceDiscovery: discovery,
 		}
 
-		_, err = h.telemetryClient.ReportIOTDevice(context.Background(), iotDevice)
+		_, err = h.telemetryClient.ReportIOTDevice(ctx, iotDevice)
 		if err != nil {
 			_ = level.Error(h.logger).Log("err", err.Error())
 		}
