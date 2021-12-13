@@ -27,6 +27,9 @@ import (
 	"github.com/weaveworks/common/tracing"
 	"gopkg.in/yaml.v2"
 
+	jaegerConfig "github.com/uber/jaeger-client-go/config"
+	jaegerLogger "github.com/uber/jaeger-client-go/log"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/version"
 
@@ -128,13 +131,16 @@ func loadConfig() (*znet.Config, error) {
 }
 
 func installOpenTracingTracer(config *znet.Config, logger log.Logger) (func(), error) {
-	_ = level.Info(logger).Log("msg", "initialising OpenTracing tracer")
+	_ = level.Info(logger).Log("msg", "initializing OpenTracing tracer")
 
 	// Setting the environment variable JAEGER_AGENT_HOST enables tracing
-	trace, err := tracing.NewFromEnv(fmt.Sprintf("%s-%s", appName, config.Target))
+	trace, err := tracing.NewFromEnv(fmt.Sprintf("%s-%s", appName, config.Target),
+		jaegerConfig.Logger(jaegerLogger.StdLogger),
+	)
 	if err != nil {
-		return nil, errors.Wrap(err, "error initialising tracer")
+		return nil, errors.Wrap(err, "error initializing tracer")
 	}
+
 	return func() {
 		if err := trace.Close(); err != nil {
 			_ = level.Error(logger).Log("msg", "error closing tracing", "err", err)
