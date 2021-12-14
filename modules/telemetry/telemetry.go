@@ -10,9 +10,9 @@ import (
 	"github.com/go-kit/log"
 	"github.com/go-kit/log/level"
 	"github.com/grafana/dskit/services"
-	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
+	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -321,8 +321,8 @@ func (l *Telemetry) handleZigbeeReport(ctx context.Context, request *inventory.I
 		return fmt.Errorf("unable to read zigbee report from nil request")
 	}
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "handleZigbeeReport")
-	defer span.Finish()
+	span := trace.SpanFromContext(ctx)
+	defer span.End()
 
 	discovery := request.DeviceDiscovery
 
@@ -415,8 +415,8 @@ func (l *Telemetry) handleZigbeeReport(ctx context.Context, request *inventory.I
 }
 
 func (l *Telemetry) handleZigbeeDevices(ctx context.Context, m iot.ZigbeeBridgeMessageDevices) error {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "handleZigbeeDevices")
-	defer span.Finish()
+	span := trace.SpanFromContext(ctx)
+	defer span.End()
 
 	now := time.Now()
 
@@ -462,8 +462,8 @@ func (l *Telemetry) handleZigbeeDevices(ctx context.Context, m iot.ZigbeeBridgeM
 }
 
 func (l *Telemetry) handleZigbeeDeviceUpdate(ctx context.Context, m iot.ZigbeeBridgeLog) error {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "handleZigbeeDeviceUpdate")
-	defer span.Finish()
+	span := trace.SpanFromContext(ctx)
+	defer span.End()
 
 	// zigbee2mqtt/bridge/request/device/ota_update/update
 	_ = level.Debug(l.logger).Log("msg", "upgrade report",

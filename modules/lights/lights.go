@@ -11,8 +11,8 @@ import (
 	"github.com/go-kit/log/level"
 	"github.com/grafana/dskit/services"
 	"github.com/mpvl/unique"
-	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/xaque208/znet/pkg/iot"
 )
@@ -138,11 +138,11 @@ func (l *Lights) runColorTempScheduler(ctx context.Context) {
 // The action speciefies the a button press and a room to give enough context
 // for how to change the behavior of the lights in response to the action.
 func (l *Lights) ActionHandler(ctx context.Context, action *iot.Action) error {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "Lights.ActionHandler")
-	defer span.Finish()
-
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
+
+	span := trace.SpanFromContext(ctx)
+	defer span.End()
 
 	z := l.zones.GetZone(action.Zone)
 	z.SetHandlers(l.handlers...)
@@ -216,6 +216,9 @@ func (l *Lights) configuredEventNames() ([]string, error) {
 }
 
 func (l *Lights) NamedTimerHandler(ctx context.Context, e string) error {
+	span := trace.SpanFromContext(ctx)
+	defer span.End()
+
 	names, err := l.configuredEventNames()
 	if err != nil {
 		return err
@@ -239,6 +242,9 @@ func (l *Lights) NamedTimerHandler(ctx context.Context, e string) error {
 
 // SetRoomForEvent is used to handle an event based on the room configuation.
 func (l *Lights) SetRoomForEvent(ctx context.Context, event string) error {
+	span := trace.SpanFromContext(ctx)
+	defer span.End()
+
 	for _, zone := range l.cfg.Rooms {
 		z := l.zones.GetZone(zone.Name)
 		z.SetHandlers(l.handlers...)

@@ -172,6 +172,7 @@ func installOpenTelemetryTracer(config *znet.Config, logger log.Logger) (func(),
 		sdktrace.WithResource(res),
 		sdktrace.WithSpanProcessor(bsp),
 	)
+
 	otel.SetTracerProvider(tracerProvider)
 
 	// set global propagator to tracecontext (the default is no-op).
