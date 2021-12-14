@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/Masterminds/sprig/v3 v3.2.2
 	github.com/client9/misspell v0.3.4
-	github.com/git-chglog/git-chglog v0.15.0
+	github.com/git-chglog/git-chglog v0.15.1
 	github.com/golangci/golangci-lint v1.43.0
 	github.com/goreleaser/goreleaser v1.1.0
 	github.com/psampaz/go-mod-outdated v0.8.0
