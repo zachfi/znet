@@ -27,6 +27,7 @@ import (
 	"github.com/weaveworks/common/tracing"
 	"gopkg.in/yaml.v2"
 
+	"github.com/opentracing/opentracing-go"
 	jaegerConfig "github.com/uber/jaeger-client-go/config"
 	jaegerLogger "github.com/uber/jaeger-client-go/log"
 
@@ -62,7 +63,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	shutdownTracer, err := installOpenTracingTracer(cfg, logger)
+	shutdownTracer, err := installOpenTracingTracerNew(cfg, logger)
 	if err != nil {
 		_ = level.Error(logger).Log("msg", "error initialising tracer", "err", err)
 		os.Exit(1)
@@ -143,6 +144,34 @@ func installOpenTracingTracer(config *znet.Config, logger log.Logger) (func(), e
 
 	return func() {
 		if err := trace.Close(); err != nil {
+			_ = level.Error(logger).Log("msg", "error closing tracing", "err", err)
+			os.Exit(1)
+		}
+	}, nil
+}
+
+func installOpenTracingTracerNew(config *znet.Config, logger log.Logger) (func(), error) {
+	jaegerCfg := jaegerConfig.Configuration{
+		ServiceName: "znet",
+		Reporter: &jaegerConfig.ReporterConfig{
+			LogSpans:          true,
+			CollectorEndpoint: config.TracingEndpoint,
+		},
+	}
+
+	tracer, closer, err := jaegerCfg.NewTracer(
+		jaegerConfig.Logger(jaegerLogger.StdLogger),
+	)
+
+	if err != nil {
+		_ = level.Error(logger).Log("msg", "failed to create new tracer", "err", err)
+		os.Exit(1)
+	}
+
+	opentracing.SetGlobalTracer(tracer)
+
+	return func() {
+		if err := closer.Close(); err != nil {
 			_ = level.Error(logger).Log("msg", "error closing tracing", "err", err)
 			os.Exit(1)
 		}

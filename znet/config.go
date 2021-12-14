@@ -19,7 +19,8 @@ import (
 )
 
 type Config struct {
-	Target string `yaml:"target"`
+	Target          string `yaml:"target"`
+	TracingEndpoint string `yaml:"tracing_endpoint"`
 
 	// Environments []config.EnvironmentConfig `yaml:"environments,omitempty"`
 	// Vault        config.VaultConfig         `yaml:"vault,omitempty"`
@@ -67,4 +68,5 @@ func loadYamlFile(filename string, d interface{}) error {
 func (c *Config) RegisterFlagsAndApplyDefaults(prefix string, f *flag.FlagSet) {
 	c.Target = All
 	f.StringVar(&c.Target, "target", All, "target module")
+	f.StringVar(&c.TracingEndpoint, "tracing.endpoint", "", "The Jaeger tracing endpoint")
 }
