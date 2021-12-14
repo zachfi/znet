@@ -129,6 +129,11 @@ github.com/go-kit/log/term
 github.com/go-ldap/ldap/v3
 # github.com/go-logfmt/logfmt v0.5.1
 github.com/go-logfmt/logfmt
+# github.com/go-logr/logr v1.2.1
+github.com/go-logr/logr
+github.com/go-logr/logr/funcr
+# github.com/go-logr/stdr v1.2.0
+github.com/go-logr/stdr
 # github.com/gogo/googleapis v1.1.0
 github.com/gogo/googleapis/google/rpc
 # github.com/gogo/protobuf v1.3.2
@@ -372,7 +377,10 @@ github.com/weaveworks/promrus
 github.com/xanzy/ssh-agent
 # github.com/ziutek/telnet v0.0.0-20180329124119-c3b780dc415b
 github.com/ziutek/telnet
-# go.opentelemetry.io/otel v1.2.0
+# go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.28.0
+go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc
+go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc/internal
+# go.opentelemetry.io/otel v1.3.0
 go.opentelemetry.io/otel
 go.opentelemetry.io/otel/attribute
 go.opentelemetry.io/otel/baggage
@@ -395,7 +403,7 @@ go.opentelemetry.io/otel/sdk/instrumentation
 go.opentelemetry.io/otel/sdk/internal
 go.opentelemetry.io/otel/sdk/resource
 go.opentelemetry.io/otel/sdk/trace
-# go.opentelemetry.io/otel/trace v1.2.0
+# go.opentelemetry.io/otel/trace v1.3.0
 go.opentelemetry.io/otel/trace
 # go.opentelemetry.io/proto/otlp v0.11.0
 go.opentelemetry.io/proto/otlp/collector/trace/v1

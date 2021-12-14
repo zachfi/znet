@@ -12,13 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/*
-Package propagation contains OpenTelemetry context propagators.
+package otelgrpc
 
-OpenTelemetry propagators are used to extract and inject context data from and
-into messages exchanged by applications. The propagator supported by this
-package is the W3C Trace Context encoding
-(https://www.w3.org/TR/trace-context/), and W3C Baggage
-(https://www.w3.org/TR/baggage/).
-*/
-package propagation // import "go.opentelemetry.io/otel/propagation"
+// Version is the current release version of the gRPC instrumentation.
+func Version() string {
+	return "0.27.0"
+	// This string is updated by the pre_release.sh script during release
+}
+
+// SemVersion is the semantic version to be supplied to tracer/meter creation.
+func SemVersion() string {
+	return "semver:" + Version()
+}
