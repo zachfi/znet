@@ -102,7 +102,7 @@ func ReadZigbeeMessage(objectID string, payload []byte, endpoint ...string) (int
 				return m, nil
 			}
 		}
-		return nil, fmt.Errorf("unhandled bridge endpoint: %s", endpoint)
+		return nil, fmt.Errorf("unhandled bridge endpoint: %s: %+v", endpoint, string(payload))
 	default:
 		if len(endpoint) == 0 {
 			m := ZigbeeMessage{}
