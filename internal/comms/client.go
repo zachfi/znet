@@ -6,8 +6,7 @@ import (
 
 	"github.com/go-kit/log"
 	"github.com/go-kit/log/level"
-	otgrpc "github.com/opentracing-contrib/go-grpc"
-	"github.com/opentracing/opentracing-go"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
@@ -16,8 +15,6 @@ import (
 
 // StandardRPCClient implements enough to get standard gRPC client connection.
 func StandardRPCClient(serverAddress string, cfg config.Config, logger log.Logger) *grpc.ClientConn {
-	var opts []grpc.DialOption
-
 	roots, err := CABundle(cfg.Vault)
 	if err != nil {
 		_ = level.Error(logger).Log("err", err)
@@ -38,11 +35,11 @@ func StandardRPCClient(serverAddress string, cfg config.Config, logger log.Logge
 		GetCertificate:       c.GetCertificate,
 	}
 
-	// opts = append(opts, grpc.WithInsecure())
-	opts = append(opts, grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
-	// opts = append(opts, grpc.WithBlock())
-	opts = append(opts, grpc.WithUnaryInterceptor(otgrpc.OpenTracingClientInterceptor(opentracing.GlobalTracer())))
-	opts = append(opts, grpc.WithStreamInterceptor(otgrpc.OpenTracingStreamClientInterceptor(opentracing.GlobalTracer())))
+	opts := []grpc.DialOption{
+		grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)),
+		grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor()),
+		grpc.WithStreamInterceptor(otelgrpc.StreamClientInterceptor()),
+	}
 
 	conn, err := grpc.Dial(serverAddress, opts...)
 	if err != nil {
@@ -53,13 +50,12 @@ func StandardRPCClient(serverAddress string, cfg config.Config, logger log.Logge
 }
 
 func SlimRPCClient(serverAddress string, logger log.Logger) *grpc.ClientConn {
-	var opts []grpc.DialOption
-
-	opts = append(opts, grpc.WithInsecure())
-	// opts = append(opts, grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
-	// opts = append(opts, grpc.WithBlock())
-	opts = append(opts, grpc.WithUnaryInterceptor(otgrpc.OpenTracingClientInterceptor(opentracing.GlobalTracer())))
-	opts = append(opts, grpc.WithStreamInterceptor(otgrpc.OpenTracingStreamClientInterceptor(opentracing.GlobalTracer())))
+	opts := []grpc.DialOption{
+		grpc.WithInsecure(),
+		grpc.WithBlock(),
+		grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor()),
+		grpc.WithStreamInterceptor(otelgrpc.StreamClientInterceptor()),
+	}
 
 	_ = level.Debug(logger).Log("msg", "dialing gRPC", "server_address", serverAddress)
 

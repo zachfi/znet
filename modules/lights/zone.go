@@ -5,7 +5,7 @@ import (
 	"fmt"
 	sync "sync"
 
-	"github.com/opentracing/opentracing-go"
+	"go.opentelemetry.io/otel/trace"
 )
 
 func NewZone(name string, handlers ...Handler) *Zone {
@@ -116,8 +116,9 @@ func (z *Zone) RandomColor(ctx context.Context, colors []string) error {
 }
 
 func (z *Zone) SetState(ctx context.Context, state ZoneState) error {
-	span, _ := opentracing.StartSpanFromContext(ctx, "zone.SetState")
-	defer span.Finish()
+
+	span := trace.SpanFromContext(ctx)
+	defer span.End()
 
 	z.lock.Lock()
 	defer z.lock.Unlock()
@@ -141,8 +142,8 @@ func (z *Zone) flush(ctx context.Context) error {
 
 // Flush handles pushing the current state out to each of the hnadlers.
 func (z *Zone) Flush(ctx context.Context) error {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "zone.Flush")
-	defer span.Finish()
+	span := trace.SpanFromContext(ctx)
+	defer span.End()
 
 	switch z.state {
 	case ZoneState_ON:
