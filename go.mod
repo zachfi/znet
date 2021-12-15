@@ -17,7 +17,7 @@ require (
 	github.com/go-ldap/ldap/v3 v3.4.1
 	github.com/go-test/deep v1.0.7 // indirect
 	github.com/golang/protobuf v1.5.2
-	github.com/grafana/dskit v0.0.0-20211202064213-c026bbd1e878
+	github.com/grafana/dskit v0.0.0-20211214135016-f9348ca50c45
 	github.com/grpc-ecosystem/go-grpc-middleware v1.2.2 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-retryablehttp v0.6.7 // indirect
@@ -43,7 +43,7 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/stretchr/testify v1.7.0
-	github.com/uber/jaeger-client-go v2.29.1+incompatible // indirect
+	github.com/uber/jaeger-client-go v2.29.1+incompatible
 	github.com/uber/jaeger-lib v2.4.1+incompatible // indirect
 	github.com/weaveworks/common v0.0.0-20211109170639-0684aab3d884
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.28.0
