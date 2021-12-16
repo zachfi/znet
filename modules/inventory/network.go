@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/opentracing/opentracing-go"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/go-kit/log/level"
 	ldap "github.com/go-ldap/ldap/v3"
@@ -37,8 +37,8 @@ func (i *LDAPInventory) CreateNetworkHost(ctx context.Context, x *NetworkHost) (
 		return nil, fmt.Errorf("unable to create nil NetworkHost")
 	}
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "CreateNetworkHost")
-	defer span.Finish()
+	spanCtx, span := i.tracer.Start(ctx, "CreateNetworkHost")
+	defer span.End()
 	if x.Name == "" {
 		return nil, fmt.Errorf("unable to create a node with no Name set")
 	}
@@ -52,14 +52,17 @@ func (i *LDAPInventory) CreateNetworkHost(ctx context.Context, x *NetworkHost) (
 	a.Attribute("objectClass", []string{"networkHost", "top"})
 	a.Attribute("cn", []string{x.Name})
 
-	level.Debug(i.logger).Log("msg", "creating new networkHost", "class", fmt.Sprintf("%+v", a))
+	level.Debug(i.logger).Log("msg", "creating new networkHost",
+		"class", fmt.Sprintf("%+v", a),
+		"traceID", trace.SpanContextFromContext(spanCtx).TraceID().String(),
+	)
 
-	ldapClientSpan, _ := opentracing.StartSpanFromContext(ctx, "ldapClient.Add")
+	_, ldapClientSpan := i.tracer.Start(ctx, "ldapClient.Add")
 	err = i.ldapClient.Add(a)
+	ldapClientSpan.End()
 	if err != nil {
 		return nil, err
 	}
-	ldapClientSpan.Finish()
 
 	return i.UpdateNetworkHost(ctx, x)
 }
@@ -70,8 +73,8 @@ func (i *LDAPInventory) UpdateNetworkHost(ctx context.Context, x *NetworkHost) (
 		return nil, fmt.Errorf("unable to update nil NetworkHost")
 	}
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "UpdateNetworkHost")
-	defer span.Finish()
+	spanCtx, span := i.tracer.Start(ctx, "UpdateNetworkHost")
+	defer span.End()
 	if x.Dn == "" {
 		return nil, fmt.Errorf("unable to update a node with no Dn set")
 	}
@@ -117,14 +120,17 @@ func (i *LDAPInventory) UpdateNetworkHost(ctx context.Context, x *NetworkHost) (
 		a.Replace("networkHostLastSeen", []string{x.LastSeen.AsTime().Format(time.RFC3339)})
 	}
 
-	level.Debug(i.logger).Log("msg", "updating networkHost", "class", fmt.Sprintf("%+v", a))
+	level.Debug(i.logger).Log("msg", "updating networkHost",
+		"class", fmt.Sprintf("%+v", a),
+		"traceID", trace.SpanContextFromContext(spanCtx).TraceID().String(),
+	)
 
-	ldapClientSpan, _ := opentracing.StartSpanFromContext(ctx, "ldapClient.Modify")
+	_, ldapClientSpan := i.tracer.Start(ctx, "UpdateNetworkHost")
 	err = i.ldapClient.Modify(a)
+	ldapClientSpan.End()
 	if err != nil {
 		return nil, err
 	}
-	ldapClientSpan.Finish()
 
 	return i.FetchNetworkHost(ctx, x.Name)
 }
@@ -132,10 +138,10 @@ func (i *LDAPInventory) UpdateNetworkHost(ctx context.Context, x *NetworkHost) (
 // FetchNetworkHost will retrieve a NetworkHost by name.
 func (i *LDAPInventory) FetchNetworkHost(ctx context.Context, name string) (*NetworkHost, error) {
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "FetchNetworkHost")
-	defer span.Finish()
+	spanCtx, span := i.tracer.Start(ctx, "FetchNetworkHost")
+	defer span.End()
 
-	results, err := i.ListNetworkHosts(ctx)
+	results, err := i.ListNetworkHosts(spanCtx)
 	if err != nil {
 		return nil, err
 	}
@@ -158,8 +164,8 @@ func (i *LDAPInventory) ListNetworkHosts(ctx context.Context) ([]NetworkHost, er
 		return nil, fmt.Errorf("unable to ListNetworkHosts() with nil LDAP client")
 	}
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "ListNetworkHost")
-	defer span.Finish()
+	spanCtx, span := i.tracer.Start(ctx, "ListNetworkHost")
+	defer span.End()
 
 	var xxx []NetworkHost
 	searchRequest := ldap.NewSearchRequest(
@@ -174,9 +180,9 @@ func (i *LDAPInventory) ListNetworkHosts(ctx context.Context) ([]NetworkHost, er
 	attempts := 0
 	for attempts < 3 {
 		attempts += 1
-		ldapClientSpan, _ := opentracing.StartSpanFromContext(ctx, "ldapClient.Search")
+		_, ldapClientSpan := i.tracer.Start(spanCtx, "ListNetworkHost")
 		sr, err := i.ldapClient.Search(searchRequest)
-		ldapClientSpan.Finish()
+		ldapClientSpan.End()
 		if err != nil && ldap.IsErrorWithCode(err, 200) {
 			level.Info(i.logger).Log("msg", "connection is closed, trying to reconnect")
 			if err = i.reconnect(); err != nil {
@@ -266,8 +272,8 @@ func (i *LDAPInventory) CreateNetworkID(ctx context.Context, x *NetworkID) (*Net
 		return nil, fmt.Errorf("unable to create nil NetworkID")
 	}
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "CreateNetworkID")
-	defer span.Finish()
+	spanCtx, span := i.tracer.Start(ctx, "CreateNetworkID")
+	defer span.End()
 	if x.Name == "" {
 		return nil, fmt.Errorf("unable to create a node with no Name set")
 	}
@@ -281,14 +287,17 @@ func (i *LDAPInventory) CreateNetworkID(ctx context.Context, x *NetworkID) (*Net
 	a.Attribute("objectClass", []string{"networkId", "top"})
 	a.Attribute("cn", []string{x.Name})
 
-	level.Debug(i.logger).Log("msg", "creating new networkId", "class", fmt.Sprintf("%+v", a))
+	level.Debug(i.logger).Log("msg", "creating new networkId",
+		"class", fmt.Sprintf("%+v", a),
+		"traceID", trace.SpanContextFromContext(spanCtx).TraceID().String(),
+	)
 
-	ldapClientSpan, _ := opentracing.StartSpanFromContext(ctx, "ldapClient.Add")
+	_, ldapClientSpan := i.tracer.Start(ctx, "ldapClient.Add")
 	err = i.ldapClient.Add(a)
+	ldapClientSpan.End()
 	if err != nil {
 		return nil, err
 	}
-	ldapClientSpan.Finish()
 
 	return i.UpdateNetworkID(ctx, x)
 }
@@ -299,8 +308,8 @@ func (i *LDAPInventory) UpdateNetworkID(ctx context.Context, x *NetworkID) (*Net
 		return nil, fmt.Errorf("unable to update nil NetworkID")
 	}
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "UpdateNetworkID")
-	defer span.Finish()
+	spanCtx, span := i.tracer.Start(ctx, "UpdateNetworkID")
+	defer span.End()
 	if x.Dn == "" {
 		return nil, fmt.Errorf("unable to update a node with no Dn set")
 	}
@@ -324,14 +333,17 @@ func (i *LDAPInventory) UpdateNetworkID(ctx context.Context, x *NetworkID) (*Net
 		a.Replace("networkIdLastSeen", []string{x.LastSeen.AsTime().Format(time.RFC3339)})
 	}
 
-	level.Debug(i.logger).Log("msg", "updating networkId", "class", fmt.Sprintf("%+v", a))
+	level.Debug(i.logger).Log("msg", "updating networkId",
+		"class", fmt.Sprintf("%+v", a),
+		"traceID", trace.SpanContextFromContext(spanCtx).TraceID().String(),
+	)
 
-	ldapClientSpan, _ := opentracing.StartSpanFromContext(ctx, "ldapClient.Modify")
+	_, ldapClientSpan := i.tracer.Start(ctx, "UpdateNetworkID")
 	err = i.ldapClient.Modify(a)
+	ldapClientSpan.End()
 	if err != nil {
 		return nil, err
 	}
-	ldapClientSpan.Finish()
 
 	return i.FetchNetworkID(ctx, x.Name)
 }
@@ -339,10 +351,10 @@ func (i *LDAPInventory) UpdateNetworkID(ctx context.Context, x *NetworkID) (*Net
 // FetchNetworkID will retrieve a NetworkID by name.
 func (i *LDAPInventory) FetchNetworkID(ctx context.Context, name string) (*NetworkID, error) {
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "FetchNetworkID")
-	defer span.Finish()
+	spanCtx, span := i.tracer.Start(ctx, "FetchNetworkID")
+	defer span.End()
 
-	results, err := i.ListNetworkIDs(ctx)
+	results, err := i.ListNetworkIDs(spanCtx)
 	if err != nil {
 		return nil, err
 	}
@@ -365,8 +377,8 @@ func (i *LDAPInventory) ListNetworkIDs(ctx context.Context) ([]NetworkID, error)
 		return nil, fmt.Errorf("unable to ListNetworkIDs() with nil LDAP client")
 	}
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "ListNetworkID")
-	defer span.Finish()
+	spanCtx, span := i.tracer.Start(ctx, "ListNetworkID")
+	defer span.End()
 
 	var xxx []NetworkID
 	searchRequest := ldap.NewSearchRequest(
@@ -381,9 +393,9 @@ func (i *LDAPInventory) ListNetworkIDs(ctx context.Context) ([]NetworkID, error)
 	attempts := 0
 	for attempts < 3 {
 		attempts += 1
-		ldapClientSpan, _ := opentracing.StartSpanFromContext(ctx, "ldapClient.Search")
+		_, ldapClientSpan := i.tracer.Start(spanCtx, "ListNetworkID")
 		sr, err := i.ldapClient.Search(searchRequest)
-		ldapClientSpan.Finish()
+		ldapClientSpan.End()
 		if err != nil && ldap.IsErrorWithCode(err, 200) {
 			level.Info(i.logger).Log("msg", "connection is closed, trying to reconnect")
 			if err = i.reconnect(); err != nil {
@@ -461,8 +473,8 @@ func (i *LDAPInventory) CreateL3Network(ctx context.Context, x *L3Network) (*L3N
 		return nil, fmt.Errorf("unable to create nil L3Network")
 	}
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "CreateL3Network")
-	defer span.Finish()
+	spanCtx, span := i.tracer.Start(ctx, "CreateL3Network")
+	defer span.End()
 	if x.Name == "" {
 		return nil, fmt.Errorf("unable to create a node with no Name set")
 	}
@@ -476,14 +488,17 @@ func (i *LDAPInventory) CreateL3Network(ctx context.Context, x *L3Network) (*L3N
 	a.Attribute("objectClass", []string{"l3Network", "top"})
 	a.Attribute("cn", []string{x.Name})
 
-	level.Debug(i.logger).Log("msg", "creating new l3Network", "class", fmt.Sprintf("%+v", a))
+	level.Debug(i.logger).Log("msg", "creating new l3Network",
+		"class", fmt.Sprintf("%+v", a),
+		"traceID", trace.SpanContextFromContext(spanCtx).TraceID().String(),
+	)
 
-	ldapClientSpan, _ := opentracing.StartSpanFromContext(ctx, "ldapClient.Add")
+	_, ldapClientSpan := i.tracer.Start(ctx, "ldapClient.Add")
 	err = i.ldapClient.Add(a)
+	ldapClientSpan.End()
 	if err != nil {
 		return nil, err
 	}
-	ldapClientSpan.Finish()
 
 	return i.UpdateL3Network(ctx, x)
 }
@@ -494,8 +509,8 @@ func (i *LDAPInventory) UpdateL3Network(ctx context.Context, x *L3Network) (*L3N
 		return nil, fmt.Errorf("unable to update nil L3Network")
 	}
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "UpdateL3Network")
-	defer span.Finish()
+	spanCtx, span := i.tracer.Start(ctx, "UpdateL3Network")
+	defer span.End()
 	if x.Dn == "" {
 		return nil, fmt.Errorf("unable to update a node with no Dn set")
 	}
@@ -516,14 +531,17 @@ func (i *LDAPInventory) UpdateL3Network(ctx context.Context, x *L3Network) (*L3N
 		a.Replace("l3NetworkDescription", []string{x.Description})
 	}
 
-	level.Debug(i.logger).Log("msg", "updating l3Network", "class", fmt.Sprintf("%+v", a))
+	level.Debug(i.logger).Log("msg", "updating l3Network",
+		"class", fmt.Sprintf("%+v", a),
+		"traceID", trace.SpanContextFromContext(spanCtx).TraceID().String(),
+	)
 
-	ldapClientSpan, _ := opentracing.StartSpanFromContext(ctx, "ldapClient.Modify")
+	_, ldapClientSpan := i.tracer.Start(ctx, "UpdateL3Network")
 	err = i.ldapClient.Modify(a)
+	ldapClientSpan.End()
 	if err != nil {
 		return nil, err
 	}
-	ldapClientSpan.Finish()
 
 	return i.FetchL3Network(ctx, x.Name)
 }
@@ -531,10 +549,10 @@ func (i *LDAPInventory) UpdateL3Network(ctx context.Context, x *L3Network) (*L3N
 // FetchL3Network will retrieve a L3Network by name.
 func (i *LDAPInventory) FetchL3Network(ctx context.Context, name string) (*L3Network, error) {
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "FetchL3Network")
-	defer span.Finish()
+	spanCtx, span := i.tracer.Start(ctx, "FetchL3Network")
+	defer span.End()
 
-	results, err := i.ListL3Networks(ctx)
+	results, err := i.ListL3Networks(spanCtx)
 	if err != nil {
 		return nil, err
 	}
@@ -557,8 +575,8 @@ func (i *LDAPInventory) ListL3Networks(ctx context.Context) ([]L3Network, error)
 		return nil, fmt.Errorf("unable to ListL3Networks() with nil LDAP client")
 	}
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "ListL3Network")
-	defer span.Finish()
+	spanCtx, span := i.tracer.Start(ctx, "ListL3Network")
+	defer span.End()
 
 	var xxx []L3Network
 	searchRequest := ldap.NewSearchRequest(
@@ -573,9 +591,9 @@ func (i *LDAPInventory) ListL3Networks(ctx context.Context) ([]L3Network, error)
 	attempts := 0
 	for attempts < 3 {
 		attempts += 1
-		ldapClientSpan, _ := opentracing.StartSpanFromContext(ctx, "ldapClient.Search")
+		_, ldapClientSpan := i.tracer.Start(spanCtx, "ListL3Network")
 		sr, err := i.ldapClient.Search(searchRequest)
-		ldapClientSpan.Finish()
+		ldapClientSpan.End()
 		if err != nil && ldap.IsErrorWithCode(err, 200) {
 			level.Info(i.logger).Log("msg", "connection is closed, trying to reconnect")
 			if err = i.reconnect(); err != nil {
@@ -632,8 +650,8 @@ func (i *LDAPInventory) CreateInetNetwork(ctx context.Context, x *InetNetwork) (
 		return nil, fmt.Errorf("unable to create nil InetNetwork")
 	}
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "CreateInetNetwork")
-	defer span.Finish()
+	spanCtx, span := i.tracer.Start(ctx, "CreateInetNetwork")
+	defer span.End()
 	if x.Name == "" {
 		return nil, fmt.Errorf("unable to create a node with no Name set")
 	}
@@ -647,14 +665,17 @@ func (i *LDAPInventory) CreateInetNetwork(ctx context.Context, x *InetNetwork) (
 	a.Attribute("objectClass", []string{"inetNetwork", "top"})
 	a.Attribute("cn", []string{x.Name})
 
-	level.Debug(i.logger).Log("msg", "creating new inetNetwork", "class", fmt.Sprintf("%+v", a))
+	level.Debug(i.logger).Log("msg", "creating new inetNetwork",
+		"class", fmt.Sprintf("%+v", a),
+		"traceID", trace.SpanContextFromContext(spanCtx).TraceID().String(),
+	)
 
-	ldapClientSpan, _ := opentracing.StartSpanFromContext(ctx, "ldapClient.Add")
+	_, ldapClientSpan := i.tracer.Start(ctx, "ldapClient.Add")
 	err = i.ldapClient.Add(a)
+	ldapClientSpan.End()
 	if err != nil {
 		return nil, err
 	}
-	ldapClientSpan.Finish()
 
 	return i.UpdateInetNetwork(ctx, x)
 }
@@ -665,8 +686,8 @@ func (i *LDAPInventory) UpdateInetNetwork(ctx context.Context, x *InetNetwork) (
 		return nil, fmt.Errorf("unable to update nil InetNetwork")
 	}
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "UpdateInetNetwork")
-	defer span.Finish()
+	spanCtx, span := i.tracer.Start(ctx, "UpdateInetNetwork")
+	defer span.End()
 	if x.Dn == "" {
 		return nil, fmt.Errorf("unable to update a node with no Dn set")
 	}
@@ -684,14 +705,17 @@ func (i *LDAPInventory) UpdateInetNetwork(ctx context.Context, x *InetNetwork) (
 		a.Replace("inetNetworkDynamicRange", []string{x.DynamicRange})
 	}
 
-	level.Debug(i.logger).Log("msg", "updating inetNetwork", "class", fmt.Sprintf("%+v", a))
+	level.Debug(i.logger).Log("msg", "updating inetNetwork",
+		"class", fmt.Sprintf("%+v", a),
+		"traceID", trace.SpanContextFromContext(spanCtx).TraceID().String(),
+	)
 
-	ldapClientSpan, _ := opentracing.StartSpanFromContext(ctx, "ldapClient.Modify")
+	_, ldapClientSpan := i.tracer.Start(ctx, "UpdateInetNetwork")
 	err = i.ldapClient.Modify(a)
+	ldapClientSpan.End()
 	if err != nil {
 		return nil, err
 	}
-	ldapClientSpan.Finish()
 
 	return i.FetchInetNetwork(ctx, x.Name)
 }
@@ -699,10 +723,10 @@ func (i *LDAPInventory) UpdateInetNetwork(ctx context.Context, x *InetNetwork) (
 // FetchInetNetwork will retrieve a InetNetwork by name.
 func (i *LDAPInventory) FetchInetNetwork(ctx context.Context, name string) (*InetNetwork, error) {
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "FetchInetNetwork")
-	defer span.Finish()
+	spanCtx, span := i.tracer.Start(ctx, "FetchInetNetwork")
+	defer span.End()
 
-	results, err := i.ListInetNetworks(ctx)
+	results, err := i.ListInetNetworks(spanCtx)
 	if err != nil {
 		return nil, err
 	}
@@ -725,8 +749,8 @@ func (i *LDAPInventory) ListInetNetworks(ctx context.Context) ([]InetNetwork, er
 		return nil, fmt.Errorf("unable to ListInetNetworks() with nil LDAP client")
 	}
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "ListInetNetwork")
-	defer span.Finish()
+	spanCtx, span := i.tracer.Start(ctx, "ListInetNetwork")
+	defer span.End()
 
 	var xxx []InetNetwork
 	searchRequest := ldap.NewSearchRequest(
@@ -741,9 +765,9 @@ func (i *LDAPInventory) ListInetNetworks(ctx context.Context) ([]InetNetwork, er
 	attempts := 0
 	for attempts < 3 {
 		attempts += 1
-		ldapClientSpan, _ := opentracing.StartSpanFromContext(ctx, "ldapClient.Search")
+		_, ldapClientSpan := i.tracer.Start(spanCtx, "ListInetNetwork")
 		sr, err := i.ldapClient.Search(searchRequest)
-		ldapClientSpan.Finish()
+		ldapClientSpan.End()
 		if err != nil && ldap.IsErrorWithCode(err, 200) {
 			level.Info(i.logger).Log("msg", "connection is closed, trying to reconnect")
 			if err = i.reconnect(); err != nil {
@@ -793,8 +817,8 @@ func (i *LDAPInventory) CreateInet6Network(ctx context.Context, x *Inet6Network)
 		return nil, fmt.Errorf("unable to create nil Inet6Network")
 	}
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "CreateInet6Network")
-	defer span.Finish()
+	spanCtx, span := i.tracer.Start(ctx, "CreateInet6Network")
+	defer span.End()
 	if x.Name == "" {
 		return nil, fmt.Errorf("unable to create a node with no Name set")
 	}
@@ -808,14 +832,17 @@ func (i *LDAPInventory) CreateInet6Network(ctx context.Context, x *Inet6Network)
 	a.Attribute("objectClass", []string{"inet6Network", "top"})
 	a.Attribute("cn", []string{x.Name})
 
-	level.Debug(i.logger).Log("msg", "creating new inet6Network", "class", fmt.Sprintf("%+v", a))
+	level.Debug(i.logger).Log("msg", "creating new inet6Network",
+		"class", fmt.Sprintf("%+v", a),
+		"traceID", trace.SpanContextFromContext(spanCtx).TraceID().String(),
+	)
 
-	ldapClientSpan, _ := opentracing.StartSpanFromContext(ctx, "ldapClient.Add")
+	_, ldapClientSpan := i.tracer.Start(ctx, "ldapClient.Add")
 	err = i.ldapClient.Add(a)
+	ldapClientSpan.End()
 	if err != nil {
 		return nil, err
 	}
-	ldapClientSpan.Finish()
 
 	return i.UpdateInet6Network(ctx, x)
 }
@@ -826,8 +853,8 @@ func (i *LDAPInventory) UpdateInet6Network(ctx context.Context, x *Inet6Network)
 		return nil, fmt.Errorf("unable to update nil Inet6Network")
 	}
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "UpdateInet6Network")
-	defer span.Finish()
+	spanCtx, span := i.tracer.Start(ctx, "UpdateInet6Network")
+	defer span.End()
 	if x.Dn == "" {
 		return nil, fmt.Errorf("unable to update a node with no Dn set")
 	}
@@ -842,14 +869,17 @@ func (i *LDAPInventory) UpdateInet6Network(ctx context.Context, x *Inet6Network)
 		a.Replace("inet6NetworkGateway", []string{x.Gateway})
 	}
 
-	level.Debug(i.logger).Log("msg", "updating inet6Network", "class", fmt.Sprintf("%+v", a))
+	level.Debug(i.logger).Log("msg", "updating inet6Network",
+		"class", fmt.Sprintf("%+v", a),
+		"traceID", trace.SpanContextFromContext(spanCtx).TraceID().String(),
+	)
 
-	ldapClientSpan, _ := opentracing.StartSpanFromContext(ctx, "ldapClient.Modify")
+	_, ldapClientSpan := i.tracer.Start(ctx, "UpdateInet6Network")
 	err = i.ldapClient.Modify(a)
+	ldapClientSpan.End()
 	if err != nil {
 		return nil, err
 	}
-	ldapClientSpan.Finish()
 
 	return i.FetchInet6Network(ctx, x.Name)
 }
@@ -857,10 +887,10 @@ func (i *LDAPInventory) UpdateInet6Network(ctx context.Context, x *Inet6Network)
 // FetchInet6Network will retrieve a Inet6Network by name.
 func (i *LDAPInventory) FetchInet6Network(ctx context.Context, name string) (*Inet6Network, error) {
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "FetchInet6Network")
-	defer span.Finish()
+	spanCtx, span := i.tracer.Start(ctx, "FetchInet6Network")
+	defer span.End()
 
-	results, err := i.ListInet6Networks(ctx)
+	results, err := i.ListInet6Networks(spanCtx)
 	if err != nil {
 		return nil, err
 	}
@@ -883,8 +913,8 @@ func (i *LDAPInventory) ListInet6Networks(ctx context.Context) ([]Inet6Network, 
 		return nil, fmt.Errorf("unable to ListInet6Networks() with nil LDAP client")
 	}
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "ListInet6Network")
-	defer span.Finish()
+	spanCtx, span := i.tracer.Start(ctx, "ListInet6Network")
+	defer span.End()
 
 	var xxx []Inet6Network
 	searchRequest := ldap.NewSearchRequest(
@@ -899,9 +929,9 @@ func (i *LDAPInventory) ListInet6Networks(ctx context.Context) ([]Inet6Network, 
 	attempts := 0
 	for attempts < 3 {
 		attempts += 1
-		ldapClientSpan, _ := opentracing.StartSpanFromContext(ctx, "ldapClient.Search")
+		_, ldapClientSpan := i.tracer.Start(spanCtx, "ListInet6Network")
 		sr, err := i.ldapClient.Search(searchRequest)
-		ldapClientSpan.Finish()
+		ldapClientSpan.End()
 		if err != nil && ldap.IsErrorWithCode(err, 200) {
 			level.Info(i.logger).Log("msg", "connection is closed, trying to reconnect")
 			if err = i.reconnect(); err != nil {
@@ -958,8 +988,8 @@ func (i *LDAPInventory) CreateZigbeeDevice(ctx context.Context, x *ZigbeeDevice)
 		return nil, fmt.Errorf("unable to create nil ZigbeeDevice")
 	}
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "CreateZigbeeDevice")
-	defer span.Finish()
+	spanCtx, span := i.tracer.Start(ctx, "CreateZigbeeDevice")
+	defer span.End()
 	if x.Name == "" {
 		return nil, fmt.Errorf("unable to create a node with no Name set")
 	}
@@ -973,14 +1003,17 @@ func (i *LDAPInventory) CreateZigbeeDevice(ctx context.Context, x *ZigbeeDevice)
 	a.Attribute("objectClass", []string{"zigbeeDevice", "top"})
 	a.Attribute("cn", []string{x.Name})
 
-	level.Debug(i.logger).Log("msg", "creating new zigbeeDevice", "class", fmt.Sprintf("%+v", a))
+	level.Debug(i.logger).Log("msg", "creating new zigbeeDevice",
+		"class", fmt.Sprintf("%+v", a),
+		"traceID", trace.SpanContextFromContext(spanCtx).TraceID().String(),
+	)
 
-	ldapClientSpan, _ := opentracing.StartSpanFromContext(ctx, "ldapClient.Add")
+	_, ldapClientSpan := i.tracer.Start(ctx, "ldapClient.Add")
 	err = i.ldapClient.Add(a)
+	ldapClientSpan.End()
 	if err != nil {
 		return nil, err
 	}
-	ldapClientSpan.Finish()
 
 	return i.UpdateZigbeeDevice(ctx, x)
 }
@@ -991,8 +1024,8 @@ func (i *LDAPInventory) UpdateZigbeeDevice(ctx context.Context, x *ZigbeeDevice)
 		return nil, fmt.Errorf("unable to update nil ZigbeeDevice")
 	}
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "UpdateZigbeeDevice")
-	defer span.Finish()
+	spanCtx, span := i.tracer.Start(ctx, "UpdateZigbeeDevice")
+	defer span.End()
 	if x.Dn == "" {
 		return nil, fmt.Errorf("unable to update a node with no Dn set")
 	}
@@ -1034,14 +1067,17 @@ func (i *LDAPInventory) UpdateZigbeeDevice(ctx context.Context, x *ZigbeeDevice)
 		a.Replace("zigbeeDeviceModelId", []string{x.ModelId})
 	}
 
-	level.Debug(i.logger).Log("msg", "updating zigbeeDevice", "class", fmt.Sprintf("%+v", a))
+	level.Debug(i.logger).Log("msg", "updating zigbeeDevice",
+		"class", fmt.Sprintf("%+v", a),
+		"traceID", trace.SpanContextFromContext(spanCtx).TraceID().String(),
+	)
 
-	ldapClientSpan, _ := opentracing.StartSpanFromContext(ctx, "ldapClient.Modify")
+	_, ldapClientSpan := i.tracer.Start(ctx, "UpdateZigbeeDevice")
 	err = i.ldapClient.Modify(a)
+	ldapClientSpan.End()
 	if err != nil {
 		return nil, err
 	}
-	ldapClientSpan.Finish()
 
 	return i.FetchZigbeeDevice(ctx, x.Name)
 }
@@ -1049,10 +1085,10 @@ func (i *LDAPInventory) UpdateZigbeeDevice(ctx context.Context, x *ZigbeeDevice)
 // FetchZigbeeDevice will retrieve a ZigbeeDevice by name.
 func (i *LDAPInventory) FetchZigbeeDevice(ctx context.Context, name string) (*ZigbeeDevice, error) {
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "FetchZigbeeDevice")
-	defer span.Finish()
+	spanCtx, span := i.tracer.Start(ctx, "FetchZigbeeDevice")
+	defer span.End()
 
-	results, err := i.ListZigbeeDevices(ctx)
+	results, err := i.ListZigbeeDevices(spanCtx)
 	if err != nil {
 		return nil, err
 	}
@@ -1075,8 +1111,8 @@ func (i *LDAPInventory) ListZigbeeDevices(ctx context.Context) ([]ZigbeeDevice, 
 		return nil, fmt.Errorf("unable to ListZigbeeDevices() with nil LDAP client")
 	}
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "ListZigbeeDevice")
-	defer span.Finish()
+	spanCtx, span := i.tracer.Start(ctx, "ListZigbeeDevice")
+	defer span.End()
 
 	var xxx []ZigbeeDevice
 	searchRequest := ldap.NewSearchRequest(
@@ -1091,9 +1127,9 @@ func (i *LDAPInventory) ListZigbeeDevices(ctx context.Context) ([]ZigbeeDevice, 
 	attempts := 0
 	for attempts < 3 {
 		attempts += 1
-		ldapClientSpan, _ := opentracing.StartSpanFromContext(ctx, "ldapClient.Search")
+		_, ldapClientSpan := i.tracer.Start(spanCtx, "ListZigbeeDevice")
 		sr, err := i.ldapClient.Search(searchRequest)
-		ldapClientSpan.Finish()
+		ldapClientSpan.End()
 		if err != nil && ldap.IsErrorWithCode(err, 200) {
 			level.Info(i.logger).Log("msg", "connection is closed, trying to reconnect")
 			if err = i.reconnect(); err != nil {
@@ -1170,8 +1206,8 @@ func (i *LDAPInventory) CreateIOTZone(ctx context.Context, x *IOTZone) (*IOTZone
 		return nil, fmt.Errorf("unable to create nil IOTZone")
 	}
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "CreateIOTZone")
-	defer span.Finish()
+	spanCtx, span := i.tracer.Start(ctx, "CreateIOTZone")
+	defer span.End()
 	if x.Name == "" {
 		return nil, fmt.Errorf("unable to create a node with no Name set")
 	}
@@ -1185,14 +1221,17 @@ func (i *LDAPInventory) CreateIOTZone(ctx context.Context, x *IOTZone) (*IOTZone
 	a.Attribute("objectClass", []string{"iotZone", "top"})
 	a.Attribute("cn", []string{x.Name})
 
-	level.Debug(i.logger).Log("msg", "creating new iotZone", "class", fmt.Sprintf("%+v", a))
+	level.Debug(i.logger).Log("msg", "creating new iotZone",
+		"class", fmt.Sprintf("%+v", a),
+		"traceID", trace.SpanContextFromContext(spanCtx).TraceID().String(),
+	)
 
-	ldapClientSpan, _ := opentracing.StartSpanFromContext(ctx, "ldapClient.Add")
+	_, ldapClientSpan := i.tracer.Start(ctx, "ldapClient.Add")
 	err = i.ldapClient.Add(a)
+	ldapClientSpan.End()
 	if err != nil {
 		return nil, err
 	}
-	ldapClientSpan.Finish()
 
 	return i.UpdateIOTZone(ctx, x)
 }
@@ -1203,8 +1242,8 @@ func (i *LDAPInventory) UpdateIOTZone(ctx context.Context, x *IOTZone) (*IOTZone
 		return nil, fmt.Errorf("unable to update nil IOTZone")
 	}
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "UpdateIOTZone")
-	defer span.Finish()
+	spanCtx, span := i.tracer.Start(ctx, "UpdateIOTZone")
+	defer span.End()
 	if x.Dn == "" {
 		return nil, fmt.Errorf("unable to update a node with no Dn set")
 	}
@@ -1216,14 +1255,17 @@ func (i *LDAPInventory) UpdateIOTZone(ctx context.Context, x *IOTZone) (*IOTZone
 		a.Replace("iotZoneDescription", []string{x.Description})
 	}
 
-	level.Debug(i.logger).Log("msg", "updating iotZone", "class", fmt.Sprintf("%+v", a))
+	level.Debug(i.logger).Log("msg", "updating iotZone",
+		"class", fmt.Sprintf("%+v", a),
+		"traceID", trace.SpanContextFromContext(spanCtx).TraceID().String(),
+	)
 
-	ldapClientSpan, _ := opentracing.StartSpanFromContext(ctx, "ldapClient.Modify")
+	_, ldapClientSpan := i.tracer.Start(ctx, "UpdateIOTZone")
 	err = i.ldapClient.Modify(a)
+	ldapClientSpan.End()
 	if err != nil {
 		return nil, err
 	}
-	ldapClientSpan.Finish()
 
 	return i.FetchIOTZone(ctx, x.Name)
 }
@@ -1231,10 +1273,10 @@ func (i *LDAPInventory) UpdateIOTZone(ctx context.Context, x *IOTZone) (*IOTZone
 // FetchIOTZone will retrieve a IOTZone by name.
 func (i *LDAPInventory) FetchIOTZone(ctx context.Context, name string) (*IOTZone, error) {
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "FetchIOTZone")
-	defer span.Finish()
+	spanCtx, span := i.tracer.Start(ctx, "FetchIOTZone")
+	defer span.End()
 
-	results, err := i.ListIOTZones(ctx)
+	results, err := i.ListIOTZones(spanCtx)
 	if err != nil {
 		return nil, err
 	}
@@ -1257,8 +1299,8 @@ func (i *LDAPInventory) ListIOTZones(ctx context.Context) ([]IOTZone, error) {
 		return nil, fmt.Errorf("unable to ListIOTZones() with nil LDAP client")
 	}
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "ListIOTZone")
-	defer span.Finish()
+	spanCtx, span := i.tracer.Start(ctx, "ListIOTZone")
+	defer span.End()
 
 	var xxx []IOTZone
 	searchRequest := ldap.NewSearchRequest(
@@ -1273,9 +1315,9 @@ func (i *LDAPInventory) ListIOTZones(ctx context.Context) ([]IOTZone, error) {
 	attempts := 0
 	for attempts < 3 {
 		attempts += 1
-		ldapClientSpan, _ := opentracing.StartSpanFromContext(ctx, "ldapClient.Search")
+		_, ldapClientSpan := i.tracer.Start(spanCtx, "ListIOTZone")
 		sr, err := i.ldapClient.Search(searchRequest)
-		ldapClientSpan.Finish()
+		ldapClientSpan.End()
 		if err != nil && ldap.IsErrorWithCode(err, 200) {
 			level.Info(i.logger).Log("msg", "connection is closed, trying to reconnect")
 			if err = i.reconnect(); err != nil {

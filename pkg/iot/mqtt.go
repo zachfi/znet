@@ -1,6 +1,8 @@
 package iot
 
 import (
+	"time"
+
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/go-kit/log"
 	"github.com/go-kit/log/level"
@@ -12,10 +14,13 @@ func NewMQTTClient(cfg MQTTConfig, logger log.Logger) (mqtt.Client, error) {
 	mqttOpts := mqtt.NewClientOptions()
 	mqttOpts.AddBroker(cfg.URL)
 	mqttOpts.SetCleanSession(true)
+	mqttOpts.SetAutoReconnect(true)
+	mqttOpts.SetConnectRetry(true)
+	mqttOpts.SetConnectRetryInterval(10 * time.Second)
 
 	if cfg.Username != "" && cfg.Password != "" {
-		mqttOpts.Username = cfg.Username
-		mqttOpts.Password = cfg.Password
+		mqttOpts.SetUsername(cfg.Username)
+		mqttOpts.SetPassword(cfg.Password)
 	}
 
 	mqttClient = mqtt.NewClient(mqttOpts)
