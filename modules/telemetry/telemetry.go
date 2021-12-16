@@ -437,11 +437,12 @@ func (l *Telemetry) handleZigbeeDevices(ctx context.Context, m iot.ZigbeeMessage
 	now := time.Now()
 
 	for _, d := range m {
+
 		x := &inventory.ZigbeeDevice{
 			Name:     d.FriendlyName,
 			LastSeen: timestamppb.New(now),
 			// IeeeAddr:        d.IeeeAddr,
-			Type:            d.Type,
+			Type:            iot.ZigbeeDeviceType(d).String(),
 			SoftwareBuildId: d.SoftwareBuildID,
 			DateCode:        d.DateCode,
 			Model:           d.Definition.Model,
