@@ -361,14 +361,14 @@ func (l *Telemetry) handleZigbeeReport(ctx context.Context, request *inventory.I
 			if strings.HasPrefix(m.Message.(string), "Update available") {
 				return l.handleZigbeeDeviceUpdate(ctx, m)
 			}
-		case "iot.ZigbeeBridgeMessageDevices":
-			return l.handleZigbeeDevices(ctx, m.Message.(iot.ZigbeeBridgeMessageDevices))
+		case "iot.ZigbeeMessageBridgeDevices":
+			return l.handleZigbeeDevices(ctx, m.Message.(iot.ZigbeeMessageBridgeDevices))
 		default:
 			return fmt.Errorf("unhandled iot.ZigbeeBridgeLog: %s", messageTypeName)
 		}
 
-	case "iot.ZigbeeBridgeMessageDevices":
-		m := msg.(iot.ZigbeeBridgeMessageDevices)
+	case "iot.ZigbeeMessageBridgeDevices":
+		m := msg.(iot.ZigbeeMessageBridgeDevices)
 
 		return l.handleZigbeeDevices(ctx, m)
 	case "iot.ZigbeeMessage":
@@ -414,7 +414,7 @@ func (l *Telemetry) handleZigbeeReport(ctx context.Context, request *inventory.I
 	return nil
 }
 
-func (l *Telemetry) handleZigbeeDevices(ctx context.Context, m iot.ZigbeeBridgeMessageDevices) error {
+func (l *Telemetry) handleZigbeeDevices(ctx context.Context, m iot.ZigbeeMessageBridgeDevices) error {
 	span := trace.SpanFromContext(ctx)
 	defer span.End()
 
@@ -428,13 +428,10 @@ func (l *Telemetry) handleZigbeeDevices(ctx context.Context, m iot.ZigbeeBridgeM
 			Type:            d.Type,
 			SoftwareBuildId: d.SoftwareBuildID,
 			DateCode:        d.DateCode,
-			Model:           d.Model,
-			Vendor:          d.Vendor,
-			// Description      : d.Description,
-			ManufacturerName: d.ManufacturerName,
-			PowerSource:      d.PowerSource,
-			ModelId:          d.ModelID,
-			// HardwareVersion:  d.HardwareVersion,
+			Model:           d.Definition.Model,
+			Vendor:          d.Definition.Vendor,
+			PowerSource:     d.PowerSource,
+			ModelId:         d.ModelID,
 		}
 
 		if x.Name == "Coordinator" {

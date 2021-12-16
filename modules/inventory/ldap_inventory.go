@@ -14,7 +14,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-// LDAPInventory holds hte coniguration and clients necessary to retrieve information from data sources.
+// LDAPInventory holds the coniguration and clients
+// necessary to retrieve information from data sources.
 type LDAPInventory struct {
 	cfg *Config
 
@@ -24,7 +25,8 @@ type LDAPInventory struct {
 	mux        sync.Mutex
 }
 
-// NewLDAPInventory returns a new Inventory object from the received config.
+// NewLDAPInventory returns a new Inventory object from the
+// received config.
 func NewLDAPInventory(cfg Config, logger log.Logger) (*LDAPInventory, error) {
 	ldapClient, err := NewLDAPClient(cfg, logger)
 	if err != nil {

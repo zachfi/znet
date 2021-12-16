@@ -82,7 +82,7 @@ func (z *Znet) initLights() (services.Service, error) {
 		return nil, err
 	}
 
-	mqttClient, err := iot.NewMQTTClient(z.cfg.IOT.MQTT)
+	mqttClient, err := iot.NewMQTTClient(z.cfg.IOT.MQTT, z.logger)
 	if err != nil {
 		return nil, err
 	}
