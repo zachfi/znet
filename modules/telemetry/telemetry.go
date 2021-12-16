@@ -12,6 +12,8 @@ import (
 	"github.com/grafana/dskit/services"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -28,6 +30,7 @@ type Telemetry struct {
 	cfg *Config
 
 	logger log.Logger
+	tracer trace.Tracer
 
 	inventory  inventory.Inventory
 	keeper     thingKeeper
@@ -42,6 +45,7 @@ func New(cfg Config, logger log.Logger, inv inventory.Inventory, lig *lights.Lig
 	s := &Telemetry{
 		cfg:    &cfg,
 		logger: log.With(logger, "module", "telemetry"),
+		tracer: otel.Tracer("telemetry"),
 
 		inventory:  inv,
 		keeper:     make(thingKeeper),
@@ -194,7 +198,10 @@ func (l *Telemetry) ReportNetworkID(ctx context.Context, request *inventory.Netw
 		return &inventory.Empty{}, fmt.Errorf("unable to fetch inventory.NetworkID with empty name")
 	}
 
-	hosts, ids, err := l.findMACs(ctx, request.MacAddress)
+	spanCtx, span := l.tracer.Start(ctx, "ReportNetworkID")
+	defer span.End()
+
+	hosts, ids, err := l.findMACs(spanCtx, request.MacAddress)
 	if err != nil {
 		return &inventory.Empty{}, err
 	}
@@ -202,7 +209,7 @@ func (l *Telemetry) ReportNetworkID(ctx context.Context, request *inventory.Netw
 	// do nothing if a host matches
 	if len(hosts) > 0 {
 		for _, x := range ids {
-			err = l.inventory.UpdateTimestamp(ctx, x.Dn, "networkHost")
+			err = l.inventory.UpdateTimestamp(spanCtx, x.Dn, "networkHost")
 			if err != nil {
 				_ = level.Error(l.logger).Log("err", err.Error())
 			}
@@ -266,13 +273,16 @@ func (l *Telemetry) ReportIOTDevice(ctx context.Context, request *inventory.IOTD
 
 	discovery := request.DeviceDiscovery
 
+	spanCtx, span := l.tracer.Start(ctx, fmt.Sprintf("ReportIOTDevice/%s/%s", discovery.Component, discovery.ObjectId))
+	defer span.End()
+
 	if discovery.ObjectId != "" {
 		telemetryIOTReport.WithLabelValues(discovery.ObjectId, discovery.Component).Inc()
 	}
 
 	switch discovery.Component {
 	case "zigbee2mqtt":
-		err = l.handleZigbeeReport(ctx, request)
+		err = l.handleZigbeeReport(spanCtx, request)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to handle zigbee report")
 		}
@@ -321,13 +331,16 @@ func (l *Telemetry) handleZigbeeReport(ctx context.Context, request *inventory.I
 		return fmt.Errorf("unable to read zigbee report from nil request")
 	}
 
-	span := trace.SpanFromContext(ctx)
+	ctx, span := l.tracer.Start(ctx, "handleZigbeeReport")
 	defer span.End()
+
+	_ = level.Debug(l.logger).Log("msg", "device report", "traceID", trace.SpanContextFromContext(ctx).TraceID().String())
 
 	discovery := request.DeviceDiscovery
 
 	msg, err := iot.ReadZigbeeMessage(discovery.ObjectId, discovery.Message, discovery.Endpoint...)
 	if err != nil {
+		span.SetStatus(codes.Error, err.Error())
 		return errors.Wrap(err, "failed to read zigbee message")
 	}
 
@@ -351,6 +364,7 @@ func (l *Telemetry) handleZigbeeReport(ctx context.Context, request *inventory.I
 		m := msg.(iot.ZigbeeBridgeLog)
 
 		if m.Message == nil {
+			span.SetStatus(codes.Error, err.Error())
 			return fmt.Errorf("unhandled iot.ZigbeeBridgeLog type: %s", m.Type)
 		}
 
@@ -415,8 +429,10 @@ func (l *Telemetry) handleZigbeeReport(ctx context.Context, request *inventory.I
 }
 
 func (l *Telemetry) handleZigbeeDevices(ctx context.Context, m iot.ZigbeeMessageBridgeDevices) error {
-	span := trace.SpanFromContext(ctx)
+	ctx, span := l.tracer.Start(ctx, "handleZigbeeDevices")
 	defer span.End()
+
+	_ = level.Debug(l.logger).Log("msg", "devices report", "traceID", trace.SpanContextFromContext(ctx).TraceID().String())
 
 	now := time.Now()
 
@@ -438,12 +454,12 @@ func (l *Telemetry) handleZigbeeDevices(ctx context.Context, m iot.ZigbeeMessage
 			continue
 		}
 
-		_, err := l.inventory.FetchZigbeeDevice(ctx, x.Name)
+		f, err := l.inventory.FetchZigbeeDevice(ctx, x.Name)
 		if err != nil {
-			_ = level.Error(l.logger).Log("err", err.Error())
-			createResult, err := l.inventory.CreateZigbeeDevice(ctx, x)
-			if err != nil {
-				return err
+			createResult, createErr := l.inventory.CreateZigbeeDevice(ctx, x)
+			if createErr != nil {
+				span.SetStatus(codes.Error, createErr.Error())
+				return createErr
 			}
 
 			_ = level.Debug(l.logger).Log("msg", "create result",
@@ -452,6 +468,13 @@ func (l *Telemetry) handleZigbeeDevices(ctx context.Context, m iot.ZigbeeMessage
 				"model", createResult.Model,
 				"zone", createResult.IotZone,
 			)
+		}
+
+		x.Dn = f.GetDn()
+		_, updateErr := l.inventory.UpdateZigbeeDevice(ctx, x)
+		if updateErr != nil {
+			span.SetStatus(codes.Error, updateErr.Error())
+			return updateErr
 		}
 	}
 

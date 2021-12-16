@@ -84,13 +84,6 @@ func (h *Harvester) running(ctx context.Context) error {
 		}
 	}()
 
-	// Publish a request for all devices.  The subscriber will read the messages
-	// and report all devices.  This will give the inventory enough to update the
-	// inventory on startup.
-	topic := "zigbee2mqtt/bridge/config/devices"
-	token := mqttClient.Publish(topic, byte(0), false, "")
-	token.Wait()
-
 	<-ctx.Done()
 
 	return nil

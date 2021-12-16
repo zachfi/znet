@@ -98,8 +98,13 @@ func (i *LDAPInventory) SetAttribute(ctx context.Context, dn, attributeName, att
 }
 
 func (i *LDAPInventory) UpdateTimestamp(ctx context.Context, dn string, object string) error {
-	_, span := i.tracer.Start(ctx, "UpdateTimestamp")
+
+	_ = level.Debug(i.logger).Log("msg", "before", "traceID", trace.SpanContextFromContext(ctx).TraceID().String())
+
+	spanCtx, span := i.tracer.Start(ctx, "UpdateTimestamp")
 	defer span.End()
+
+	_ = level.Debug(i.logger).Log("msg", "after", "traceID", trace.SpanContextFromContext(spanCtx).TraceID().String())
 
 	now := time.Now()
 

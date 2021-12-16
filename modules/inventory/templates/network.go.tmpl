@@ -39,7 +39,7 @@ func (i *LDAPInventory) Create{{.GetName}}(ctx context.Context, x *{{.GetName}})
     return nil, fmt.Errorf("unable to create nil {{.GetName}}")
   }
 
-	spanCtx, span := i.tracer.Start(ctx, "Create{{.GetName}}")
+	ctx, span := i.tracer.Start(ctx, "Create{{.GetName}}")
 	defer span.End()
 
 	{{- $objectClass := .GetName | kebabCase | lowerCamelCase }}
@@ -66,7 +66,7 @@ func (i *LDAPInventory) Create{{.GetName}}(ctx context.Context, x *{{.GetName}})
 
   level.Debug(i.logger).Log("msg", "creating new {{$objectClass}}",
     "class", fmt.Sprintf("%+v", a),
-    "traceID", trace.SpanContextFromContext(spanCtx).TraceID().String(),
+    "traceID", trace.SpanContextFromContext(ctx).TraceID().String(),
   )
 
 	_, ldapClientSpan := i.tracer.Start(ctx, "ldapClient.Add")
@@ -85,7 +85,7 @@ func (i *LDAPInventory) Update{{.GetName}}(ctx context.Context, x *{{.GetName}})
     return nil, fmt.Errorf("unable to update nil {{.GetName}}")
   }
 
-	spanCtx, span := i.tracer.Start(ctx, "Update{{.GetName}}")
+	ctx, span := i.tracer.Start(ctx, "Update{{.GetName}}")
 	defer span.End()
 
 	{{- $objectClass := .GetName | kebabCase | lowerCamelCase }}
@@ -142,8 +142,7 @@ func (i *LDAPInventory) Update{{.GetName}}(ctx context.Context, x *{{.GetName}})
   {{- end }}
 
   level.Debug(i.logger).Log("msg", "updating {{$objectClass}}",
-    "class", fmt.Sprintf("%+v", a),
-    "traceID", trace.SpanContextFromContext(spanCtx).TraceID().String(),
+    "traceID", trace.SpanContextFromContext(ctx).TraceID().String(),
   )
 
 	_, ldapClientSpan := i.tracer.Start(ctx, "Update{{.GetName}}")
@@ -160,10 +159,10 @@ func (i *LDAPInventory) Update{{.GetName}}(ctx context.Context, x *{{.GetName}})
 func (i *LDAPInventory) Fetch{{.GetName}}(ctx context.Context, name string) (*{{.GetName}}, error) {
 	{{- $varname := .GetName|snakeCase|lowerCamelCase}}
 
-	spanCtx, span := i.tracer.Start(ctx, "Fetch{{.GetName}}")
+	ctx, span := i.tracer.Start(ctx, "Fetch{{.GetName}}")
 	defer span.End()
 
-	results, err := i.List{{.GetName}}s(spanCtx)
+	results, err := i.List{{.GetName}}s(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -186,7 +185,7 @@ func (i *LDAPInventory) List{{.GetName}}s(ctx context.Context) ([]{{.GetName}}, 
 		return nil, fmt.Errorf("unable to List{{.GetName}}s() with nil LDAP client")
 	}
 
-	spanCtx, span := i.tracer.Start(ctx, "List{{.GetName}}")
+	ctx, span := i.tracer.Start(ctx, "List{{.GetName}}")
 	defer span.End()
 
   var xxx []{{.GetName}}
@@ -204,7 +203,7 @@ func (i *LDAPInventory) List{{.GetName}}s(ctx context.Context) ([]{{.GetName}}, 
   attempts := 0
   for attempts < 3 {
     attempts += 1
-    _, ldapClientSpan := i.tracer.Start(spanCtx, "List{{.GetName}}")
+    _, ldapClientSpan := i.tracer.Start(ctx, "List{{.GetName}}")
     sr, err := i.ldapClient.Search(searchRequest)
     ldapClientSpan.End()
     if err != nil && ldap.IsErrorWithCode(err, 200) {
