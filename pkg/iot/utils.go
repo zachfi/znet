@@ -18,6 +18,16 @@ type TopicPath struct {
 	Endpoint        []string
 }
 
+func ParseDiscoveryMessage(topicPath TopicPath, msg mqtt.Message) *DeviceDiscovery {
+	return &DeviceDiscovery{
+		Component: topicPath.Component,
+		NodeId:    topicPath.NodeID,
+		ObjectId:  topicPath.ObjectID,
+		Endpoint:  topicPath.Endpoint,
+		Message:   msg.Payload(),
+	}
+}
+
 func ParseTopicPath(topic string) (TopicPath, error) {
 	// <discovery_prefix>/<component>/[<node_id>/]<object_id>/config
 
@@ -73,36 +83,40 @@ func ParseTopicPath(topic string) (TopicPath, error) {
 // https://www.zigbee2mqtt.io/information/mqtt_topics_and_message_structure.html
 func ReadZigbeeMessage(objectID string, payload []byte, endpoint ...string) (interface{}, error) {
 
+	e := strings.Join(endpoint, "/")
+
 	switch objectID {
 	case "bridge":
-		if len(endpoint) == 1 {
-			// topic: zigbee2mqtt/bridge/log
-			switch endpoint[0] {
-			case "log":
-				m := ZigbeeBridgeLog{}
-				err := json.Unmarshal(payload, &m)
-				if err != nil {
-					return nil, err
-				}
-				return m, nil
-			case "state":
-				m := ZigbeeBridgeState(string(payload))
-				if m != "" {
-					return m, nil
-				}
-			case "config", "logging":
-				// do nothing for a config message
-				return nil, nil
-			case "devices":
-				m := ZigbeeBridgeMessageDevices{}
-				err := json.Unmarshal(payload, &m)
-				if err != nil {
-					return nil, err
-				}
+		// topic: zigbee2mqtt/bridge/log
+		switch e {
+		case "log":
+			m := ZigbeeBridgeLog{}
+			err := json.Unmarshal(payload, &m)
+			if err != nil {
+				return nil, err
+			}
+			return m, nil
+		case "state":
+			m := ZigbeeBridgeState(string(payload))
+			if m != "" {
 				return m, nil
 			}
+		case "config", "logging":
+			// do nothing for a config message
+			return nil, nil
+		case "devices":
+			m := ZigbeeMessageBridgeDevices{}
+			err := json.Unmarshal(payload, &m)
+			if err != nil {
+				return nil, err
+			}
+			return m, nil
+		case "info", "groups", "extensions":
+			return nil, nil
+		case "config/devices": //the publish channel to ask for devices
+			return nil, nil
 		}
-		return nil, fmt.Errorf("unhandled bridge endpoint: %s: %+v", endpoint, string(payload))
+		return nil, fmt.Errorf("unhandled bridge endpoint: %s", e)
 	default:
 		if len(endpoint) == 0 {
 			m := ZigbeeMessage{}
@@ -170,27 +184,49 @@ func ReadMessage(objectID string, payload []byte, endpoint ...string) (interface
 	return nil, nil
 }
 
-func NewMQTTClient(cfg MQTTConfig) (mqtt.Client, error) {
-	var mqttClient mqtt.Client
+func ZigbeeDeviceType(z ZigbeeBridgeDevice) DeviceType {
 
-	mqttOpts := mqtt.NewClientOptions()
-	mqttOpts.AddBroker(cfg.URL)
-	mqttOpts.SetCleanSession(true)
-
-	if cfg.Username != "" && cfg.Password != "" {
-		mqttOpts.Username = cfg.Username
-		mqttOpts.Password = cfg.Password
+	switch z.Type {
+	case "Coordinator":
+		return Coordinator
 	}
 
-	mqttClient = mqtt.NewClient(mqttOpts)
+	switch z.Definition.Vendor {
+	case "Philips":
+		switch z.ModelID {
+		case "LCA003", "LWB014":
+			return BasicLight
+		case "ROM001":
+			return Button
+		}
 
-	if token := mqttClient.Connect(); token.Wait() && token.Error() != nil {
-		log.Error(token.Error())
-	} else {
-		log.WithFields(log.Fields{
-			"url": cfg.URL,
-		}).Debug("connected to MQTT")
+	case "Xiaomi":
+		switch z.Definition.Model {
+		case "WXKG11LM":
+			return Button
+		}
+
+		switch z.ModelID {
+		case "lumi.sensor_switch":
+			return Button
+		case "lumi.sensor_motion.aq2":
+			return Motion
+		case "lumi.weather":
+			return Temperature
+		case "lumi.sensor_cube.aqgl01":
+			return Button
+		case "lumi.remote.b1acn01":
+			return Button
+		case "lumi.sensor_wleak.aq1":
+			return Leak
+		}
+
+	case "SONOFF":
+		switch z.Definition.Model {
+		case "S31ZB":
+			return Relay
+		}
 	}
 
-	return mqttClient, nil
+	return Unknown
 }

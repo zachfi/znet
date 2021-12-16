@@ -3,6 +3,13 @@ package iot
 type DeviceType int
 
 const (
-	BasicLight = iota
+	Unknown = iota
+	Coordinator
+	BasicLight
 	ColorLight
+	Relay
+	Leak
+	Button
+	Motion
+	Temperature
 )

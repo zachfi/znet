@@ -83,7 +83,7 @@ message ZigbeeDevice {
   string date_code = 8;
   string model = 9;
   string vendor = 10;
-  string manufacturer_name = 11;
+  string manufacturer_name = 11; // Remove in favor vendor
   string power_source = 12;
   string model_id = 13;
 }

@@ -50,7 +50,7 @@ func (z *ZigbeeBridgeLog) UnmarshalJSON(data []byte) error {
 			return err
 		}
 
-		m := ZigbeeBridgeMessageDevices{}
+		m := ZigbeeMessageBridgeDevices{}
 		err = json.Unmarshal(j, &m)
 		if err != nil {
 			return err
@@ -68,22 +68,41 @@ func (z *ZigbeeBridgeLog) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-type ZigbeeBridgeMessageDevices []struct {
-	IeeeAddr         string `json:"ieeeAddr"`
-	Type             string `json:"type"`
-	NetworkAddress   int    `json:"networkAddress"`
-	FriendlyName     string `json:"friendly_name"`
-	SoftwareBuildID  string `json:"softwareBuildID,omitempty"`
-	DateCode         string `json:"dateCode,omitempty"`
-	LastSeen         int64  `json:"lastSeen"`
-	Model            string `json:"model,omitempty"`
-	Vendor           string `json:"vendor,omitempty"`
-	Description      string `json:"description,omitempty"`
-	ManufacturerID   int    `json:"manufacturerID,omitempty"`
-	ManufacturerName string `json:"manufacturerName,omitempty"`
-	PowerSource      string `json:"powerSource,omitempty"`
-	ModelID          string `json:"modelID,omitempty"`
-	HardwareVersion  int    `json:"hardwareVersion,omitempty"`
+type ZigbeeMessageBridgeDevices []ZigbeeBridgeDevice
+
+type ZigbeeBridgeDevice struct {
+	IeeeAddress    string `json:"ieee_address"`
+	Type           string `json:"type"`
+	NetworkAddress int    `json:"network_address"`
+	Supported      bool   `json:"supported"`
+	FriendlyName   string `json:"friendly_name"`
+	Endpoints      struct {
+		Num1 struct {
+			Bindings             []interface{} `json:"bindings"`
+			ConfiguredReportings []interface{} `json:"configured_reportings"`
+			Clusters             struct {
+				Input  []string      `json:"input"`
+				Output []interface{} `json:"output"`
+			} `json:"clusters"`
+		} `json:"1"`
+	} `json:"endpoints"`
+	Definition  ZigbeeBridgeDeviceDefinition `json:"definition"`
+	PowerSource string                       `json:"power_source"`
+	DateCode    string                       `json:"date_code"`
+	ModelID     string                       `json:"model_id"`
+	Scenes      []struct {
+		ID   int    `json:"id"`
+		Name string `json:"name"`
+	} `json:"scenes"`
+	Interviewing       bool   `json:"interviewing"`
+	InterviewCompleted bool   `json:"interview_completed"`
+	SoftwareBuildID    string `json:"software_build_id,omitempty"`
+}
+
+type ZigbeeBridgeDeviceDefinition struct {
+	Model       string `json:"model"`
+	Vendor      string `json:"vendor"`
+	Description string `json:"description"`
 }
 
 type WifiMessage struct {

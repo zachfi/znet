@@ -45,7 +45,6 @@ func (h *Harvester) starting(ctx context.Context) error {
 }
 
 func (h *Harvester) running(ctx context.Context) error {
-
 	var onMessageReceived mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 		topicPath, err := iot.ParseTopicPath(msg.Topic())
 		if err != nil {
@@ -53,13 +52,7 @@ func (h *Harvester) running(ctx context.Context) error {
 			return
 		}
 
-		discovery := &iot.DeviceDiscovery{
-			Component: topicPath.Component,
-			NodeId:    topicPath.NodeID,
-			ObjectId:  topicPath.ObjectID,
-			Endpoint:  topicPath.Endpoint,
-			Message:   msg.Payload(),
-		}
+		discovery := iot.ParseDiscoveryMessage(topicPath, msg)
 
 		iotDevice := &inventory.IOTDevice{
 			DeviceDiscovery: discovery,
@@ -71,48 +64,16 @@ func (h *Harvester) running(ctx context.Context) error {
 		}
 	}
 
-	mqttOpts := mqtt.NewClientOptions()
-	mqttOpts.AddBroker(h.cfg.MQTT.URL)
-	mqttOpts.SetCleanSession(true)
-	mqttOpts.OnConnect = func(c mqtt.Client) {
-		token := c.Subscribe(h.cfg.MQTT.Topic, 0, onMessageReceived)
-		token.Wait()
-		if token.Error() != nil {
-			_ = level.Error(h.logger).Log("err", token.Error())
-		}
+	mqttClient, err := iot.NewMQTTClient(h.cfg.MQTT, h.logger)
+	if err != nil {
+		return err
 	}
 
-	if h.cfg.MQTT.Username != "" && h.cfg.MQTT.Password != "" {
-		mqttOpts.Username = h.cfg.MQTT.Username
-		mqttOpts.Password = h.cfg.MQTT.Password
-	}
-
-	mqttClient := mqtt.NewClient(mqttOpts)
-
-	if token := mqttClient.Connect(); token.Wait() && token.Error() != nil {
+	token := mqttClient.Subscribe(h.cfg.MQTT.Topic, 0, onMessageReceived)
+	token.Wait()
+	if token.Error() != nil {
 		_ = level.Error(h.logger).Log("err", token.Error())
-	} else {
-		_ = level.Debug(h.logger).Log("msg", "mqtt connected", "url", h.cfg.MQTT.URL)
 	}
-
-	// 	log.WithFields(log.Fields{
-	// 		"http": listenAddr,
-	// 	}).Debug("listening")
-	//
-	// 	go func() {
-	// 		sig := <-sigs
-	// 		log.Warnf("caught signal: %s", sig.String())
-	//
-	// 		done <- true
-	// 	}()
-	//
-	// 	<-done
-	//
-	// 	if token := mqttClient.Unsubscribe(mqttTopic); token.Wait() && token.Error() != nil {
-	// 		log.Error(token.Error())
-	// 	}
-	//
-	// 	mqttClient.Disconnect(250)
 
 	<-ctx.Done()
 
