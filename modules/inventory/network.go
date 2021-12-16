@@ -121,7 +121,6 @@ func (i *LDAPInventory) UpdateNetworkHost(ctx context.Context, x *NetworkHost) (
 	}
 
 	level.Debug(i.logger).Log("msg", "updating networkHost",
-		"class", fmt.Sprintf("%+v", a),
 		"traceID", trace.SpanContextFromContext(ctx).TraceID().String(),
 	)
 
@@ -334,7 +333,6 @@ func (i *LDAPInventory) UpdateNetworkID(ctx context.Context, x *NetworkID) (*Net
 	}
 
 	level.Debug(i.logger).Log("msg", "updating networkId",
-		"class", fmt.Sprintf("%+v", a),
 		"traceID", trace.SpanContextFromContext(ctx).TraceID().String(),
 	)
 
@@ -532,7 +530,6 @@ func (i *LDAPInventory) UpdateL3Network(ctx context.Context, x *L3Network) (*L3N
 	}
 
 	level.Debug(i.logger).Log("msg", "updating l3Network",
-		"class", fmt.Sprintf("%+v", a),
 		"traceID", trace.SpanContextFromContext(ctx).TraceID().String(),
 	)
 
@@ -706,7 +703,6 @@ func (i *LDAPInventory) UpdateInetNetwork(ctx context.Context, x *InetNetwork) (
 	}
 
 	level.Debug(i.logger).Log("msg", "updating inetNetwork",
-		"class", fmt.Sprintf("%+v", a),
 		"traceID", trace.SpanContextFromContext(ctx).TraceID().String(),
 	)
 
@@ -870,7 +866,6 @@ func (i *LDAPInventory) UpdateInet6Network(ctx context.Context, x *Inet6Network)
 	}
 
 	level.Debug(i.logger).Log("msg", "updating inet6Network",
-		"class", fmt.Sprintf("%+v", a),
 		"traceID", trace.SpanContextFromContext(ctx).TraceID().String(),
 	)
 
@@ -1068,7 +1063,6 @@ func (i *LDAPInventory) UpdateZigbeeDevice(ctx context.Context, x *ZigbeeDevice)
 	}
 
 	level.Debug(i.logger).Log("msg", "updating zigbeeDevice",
-		"class", fmt.Sprintf("%+v", a),
 		"traceID", trace.SpanContextFromContext(ctx).TraceID().String(),
 	)
 
@@ -1256,7 +1250,6 @@ func (i *LDAPInventory) UpdateIOTZone(ctx context.Context, x *IOTZone) (*IOTZone
 	}
 
 	level.Debug(i.logger).Log("msg", "updating iotZone",
-		"class", fmt.Sprintf("%+v", a),
 		"traceID", trace.SpanContextFromContext(ctx).TraceID().String(),
 	)
 
