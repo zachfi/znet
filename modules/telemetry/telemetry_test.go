@@ -275,6 +275,16 @@ func TestReportIOTDevice_bridge_state(t *testing.T) {
 					"0x00178801087fc8c8": 1,
 					"0x001788010898e9c1": 1,
 				},
+				UpdateZigbeeDeviceCalls: map[string]int{
+					"0x00158d0003960d06": 1,
+					"0x00158d0004238a36": 1,
+					"0x00158d0004238a81": 1,
+					"0x00178801042131ca": 1,
+					"0x0017880104215e6a": 1,
+					"0x0017880104650857": 1,
+					"0x00178801087fc8c8": 1,
+					"0x001788010898e9c1": 1,
+				},
 			},
 		},
 	}

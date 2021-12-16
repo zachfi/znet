@@ -12,6 +12,8 @@ import (
 	"github.com/go-kit/log/level"
 	ldap "github.com/go-ldap/ldap/v3"
 	"github.com/pkg/errors"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // LDAPInventory holds the coniguration and clients
@@ -20,6 +22,7 @@ type LDAPInventory struct {
 	cfg *Config
 
 	logger log.Logger
+	tracer trace.Tracer
 
 	ldapClient *ldap.Conn
 	mux        sync.Mutex
@@ -37,6 +40,7 @@ func NewLDAPInventory(cfg Config, logger log.Logger) (*LDAPInventory, error) {
 		cfg:        &cfg,
 		logger:     logger,
 		ldapClient: ldapClient,
+		tracer:     otel.Tracer("harvester"),
 	}
 
 	return i, nil
@@ -74,7 +78,9 @@ func (i *LDAPInventory) reconnect() error {
 	return nil
 }
 
-func (i *LDAPInventory) SetAttribute(dn, attributeName, attributeValue string, replace bool) error {
+func (i *LDAPInventory) SetAttribute(ctx context.Context, dn, attributeName, attributeValue string, replace bool) error {
+	_, span := i.tracer.Start(ctx, "SetAttribute")
+	defer span.End()
 
 	modify := ldap.NewModifyRequest(dn, nil)
 	if replace {
@@ -92,10 +98,18 @@ func (i *LDAPInventory) SetAttribute(dn, attributeName, attributeValue string, r
 }
 
 func (i *LDAPInventory) UpdateTimestamp(ctx context.Context, dn string, object string) error {
+
+	_ = level.Debug(i.logger).Log("msg", "before", "traceID", trace.SpanContextFromContext(ctx).TraceID().String())
+
+	spanCtx, span := i.tracer.Start(ctx, "UpdateTimestamp")
+	defer span.End()
+
+	_ = level.Debug(i.logger).Log("msg", "after", "traceID", trace.SpanContextFromContext(spanCtx).TraceID().String())
+
 	now := time.Now()
 
 	objectName := fmt.Sprintf("%sLastSeen", object)
-	return i.SetAttribute(dn, objectName, now.Format(time.RFC3339), true)
+	return i.SetAttribute(ctx, dn, objectName, now.Format(time.RFC3339), true)
 }
 
 // NewLDAPClient constructs an LDAP client to return.

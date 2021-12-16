@@ -8,7 +8,7 @@ import (
 	"time"
 	"context"
 
-	"github.com/opentracing/opentracing-go"
+	"go.opentelemetry.io/otel/trace"
 
 	ldap "github.com/go-ldap/ldap/v3"
 	"github.com/go-kit/log/level"
@@ -39,8 +39,8 @@ func (i *LDAPInventory) Create{{.GetName}}(ctx context.Context, x *{{.GetName}})
     return nil, fmt.Errorf("unable to create nil {{.GetName}}")
   }
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "Create{{.GetName}}")
-	defer span.Finish()
+	ctx, span := i.tracer.Start(ctx, "Create{{.GetName}}")
+	defer span.End()
 
 	{{- $objectClass := .GetName | kebabCase | lowerCamelCase }}
   if x.Name == "" {
@@ -64,14 +64,17 @@ func (i *LDAPInventory) Create{{.GetName}}(ctx context.Context, x *{{.GetName}})
     {{- end }}
   {{- end }}
 
-  level.Debug(i.logger).Log("msg", "creating new {{$objectClass}}", "class", fmt.Sprintf("%+v", a))
+  level.Debug(i.logger).Log("msg", "creating new {{$objectClass}}",
+    "class", fmt.Sprintf("%+v", a),
+    "traceID", trace.SpanContextFromContext(ctx).TraceID().String(),
+  )
 
-  ldapClientSpan, _ := opentracing.StartSpanFromContext(ctx, "ldapClient.Add")
+	_, ldapClientSpan := i.tracer.Start(ctx, "ldapClient.Add")
 	err = i.ldapClient.Add(a)
+	ldapClientSpan.End()
 	if err != nil {
 		return nil, err
 	}
-  ldapClientSpan.Finish()
 
 	return i.Update{{.GetName}}(ctx, x)
 }
@@ -82,8 +85,8 @@ func (i *LDAPInventory) Update{{.GetName}}(ctx context.Context, x *{{.GetName}})
     return nil, fmt.Errorf("unable to update nil {{.GetName}}")
   }
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "Update{{.GetName}}")
-	defer span.Finish()
+	ctx, span := i.tracer.Start(ctx, "Update{{.GetName}}")
+	defer span.End()
 
 	{{- $objectClass := .GetName | kebabCase | lowerCamelCase }}
 	if x.Dn == "" {
@@ -138,14 +141,16 @@ func (i *LDAPInventory) Update{{.GetName}}(ctx context.Context, x *{{.GetName}})
 		{{- end }}
   {{- end }}
 
-  level.Debug(i.logger).Log("msg", "updating {{$objectClass}}", "class", fmt.Sprintf("%+v", a))
+  level.Debug(i.logger).Log("msg", "updating {{$objectClass}}",
+    "traceID", trace.SpanContextFromContext(ctx).TraceID().String(),
+  )
 
-	ldapClientSpan, _ := opentracing.StartSpanFromContext(ctx, "ldapClient.Modify")
+	_, ldapClientSpan := i.tracer.Start(ctx, "Update{{.GetName}}")
 	err = i.ldapClient.Modify(a)
+	ldapClientSpan.End()
 	if err != nil {
 		return nil, err
 	}
-	ldapClientSpan.Finish()
 
 	return i.Fetch{{.GetName}}(ctx, x.Name)
 }
@@ -154,8 +159,8 @@ func (i *LDAPInventory) Update{{.GetName}}(ctx context.Context, x *{{.GetName}})
 func (i *LDAPInventory) Fetch{{.GetName}}(ctx context.Context, name string) (*{{.GetName}}, error) {
 	{{- $varname := .GetName|snakeCase|lowerCamelCase}}
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "Fetch{{.GetName}}")
-	defer span.Finish()
+	ctx, span := i.tracer.Start(ctx, "Fetch{{.GetName}}")
+	defer span.End()
 
 	results, err := i.List{{.GetName}}s(ctx)
 	if err != nil {
@@ -180,8 +185,8 @@ func (i *LDAPInventory) List{{.GetName}}s(ctx context.Context) ([]{{.GetName}}, 
 		return nil, fmt.Errorf("unable to List{{.GetName}}s() with nil LDAP client")
 	}
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "List{{.GetName}}")
-	defer span.Finish()
+	ctx, span := i.tracer.Start(ctx, "List{{.GetName}}")
+	defer span.End()
 
   var xxx []{{.GetName}}
 
@@ -198,9 +203,9 @@ func (i *LDAPInventory) List{{.GetName}}s(ctx context.Context) ([]{{.GetName}}, 
   attempts := 0
   for attempts < 3 {
     attempts += 1
-    ldapClientSpan, _ := opentracing.StartSpanFromContext(ctx, "ldapClient.Search")
+    _, ldapClientSpan := i.tracer.Start(ctx, "List{{.GetName}}")
     sr, err := i.ldapClient.Search(searchRequest)
-    ldapClientSpan.Finish()
+    ldapClientSpan.End()
     if err != nil && ldap.IsErrorWithCode(err, 200) {
       level.Info(i.logger).Log("msg", "connection is closed, trying to reconnect")
       if err = i.reconnect(); err != nil {

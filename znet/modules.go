@@ -60,7 +60,7 @@ func (z *Znet) setupModuleManager() error {
 		Lights:    {Server},
 		Telemetry: {Server, Inventory, Lights},
 
-		Harvester: {Server},
+		Harvester: {Server, Telemetry},
 		Timer:     {Server},
 		All:       {Server, Telemetry, Timer, Harvester},
 	}

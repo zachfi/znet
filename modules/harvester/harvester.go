@@ -8,6 +8,8 @@ import (
 	"github.com/go-kit/log/level"
 	"github.com/grafana/dskit/services"
 	"github.com/pkg/errors"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc"
 
 	"github.com/xaque208/znet/modules/inventory"
@@ -20,6 +22,7 @@ type Harvester struct {
 	cfg *Config
 
 	logger log.Logger
+	tracer trace.Tracer
 
 	conn            *grpc.ClientConn
 	telemetryClient telemetry.TelemetryClient
@@ -30,6 +33,7 @@ func New(cfg Config, logger log.Logger, conn *grpc.ClientConn) (*Harvester, erro
 		cfg:    &cfg,
 		logger: log.With(logger, "module", "harvester"),
 		conn:   conn,
+		tracer: otel.Tracer("harvester"),
 	}
 
 	h.Service = services.NewBasicService(h.starting, h.running, h.stopping)
@@ -46,6 +50,9 @@ func (h *Harvester) starting(ctx context.Context) error {
 
 func (h *Harvester) running(ctx context.Context) error {
 	var onMessageReceived mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
+		spanCtx, span := h.tracer.Start(ctx, "messageReceived")
+		defer span.End()
+
 		topicPath, err := iot.ParseTopicPath(msg.Topic())
 		if err != nil {
 			_ = level.Error(h.logger).Log("err", errors.Wrap(err, "failed to parse topic path"))
@@ -58,7 +65,7 @@ func (h *Harvester) running(ctx context.Context) error {
 			DeviceDiscovery: discovery,
 		}
 
-		_, err = h.telemetryClient.ReportIOTDevice(ctx, iotDevice)
+		_, err = h.telemetryClient.ReportIOTDevice(spanCtx, iotDevice)
 		if err != nil {
 			_ = level.Error(h.logger).Log("err", err.Error())
 		}
@@ -69,11 +76,13 @@ func (h *Harvester) running(ctx context.Context) error {
 		return err
 	}
 
-	token := mqttClient.Subscribe(h.cfg.MQTT.Topic, 0, onMessageReceived)
-	token.Wait()
-	if token.Error() != nil {
-		_ = level.Error(h.logger).Log("err", token.Error())
-	}
+	go func() {
+		token := mqttClient.Subscribe(h.cfg.MQTT.Topic, 0, onMessageReceived)
+		token.Wait()
+		if token.Error() != nil {
+			_ = level.Error(h.logger).Log("err", token.Error())
+		}
+	}()
 
 	<-ctx.Done()
 

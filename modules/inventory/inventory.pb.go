@@ -644,7 +644,7 @@ type ZigbeeDevice struct {
 	DateCode         string                 `protobuf:"bytes,8,opt,name=date_code,json=dateCode,proto3" json:"date_code,omitempty"`
 	Model            string                 `protobuf:"bytes,9,opt,name=model,proto3" json:"model,omitempty"`
 	Vendor           string                 `protobuf:"bytes,10,opt,name=vendor,proto3" json:"vendor,omitempty"`
-	ManufacturerName string                 `protobuf:"bytes,11,opt,name=manufacturer_name,json=manufacturerName,proto3" json:"manufacturer_name,omitempty"`
+	ManufacturerName string                 `protobuf:"bytes,11,opt,name=manufacturer_name,json=manufacturerName,proto3" json:"manufacturer_name,omitempty"` // Remove in favor vendor
 	PowerSource      string                 `protobuf:"bytes,12,opt,name=power_source,json=powerSource,proto3" json:"power_source,omitempty"`
 	ModelId          string                 `protobuf:"bytes,13,opt,name=model_id,json=modelId,proto3" json:"model_id,omitempty"`
 }

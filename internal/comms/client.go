@@ -52,7 +52,6 @@ func StandardRPCClient(serverAddress string, cfg config.Config, logger log.Logge
 func SlimRPCClient(serverAddress string, logger log.Logger) *grpc.ClientConn {
 	opts := []grpc.DialOption{
 		grpc.WithInsecure(),
-		grpc.WithBlock(),
 		grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor()),
 		grpc.WithStreamInterceptor(otelgrpc.StreamClientInterceptor()),
 	}
