@@ -97,7 +97,7 @@ func (z *Znet) initLights() (services.Service, error) {
 		return nil, err
 	}
 
-	zigbee, err := lights.NewZigbeeLight(z.cfg.Lights, mqttClient, invClient)
+	zigbee, err := lights.NewZigbeeLight(z.cfg.Lights, mqttClient, invClient, z.logger)
 	if err != nil {
 		return nil, err
 	}

@@ -7,8 +7,11 @@ import (
 	"math/rand"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
-	"github.com/opentracing/opentracing-go"
-	log "github.com/sirupsen/logrus"
+	"github.com/go-kit/log"
+	"github.com/go-kit/log/level"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/xaque208/znet/modules/inventory"
 	"github.com/xaque208/znet/pkg/iot"
@@ -18,21 +21,26 @@ type zigbeeLight struct {
 	cfg        *Config
 	inv        inventory.Inventory
 	mqttClient mqtt.Client
+
+	logger log.Logger
+	tracer trace.Tracer
 }
 
 const defaultTransitionTime = 0.5
 
-func NewZigbeeLight(cfg Config, mqttClient mqtt.Client, inv inventory.Inventory) (Handler, error) {
+func NewZigbeeLight(cfg Config, mqttClient mqtt.Client, inv inventory.Inventory, logger log.Logger) (Handler, error) {
 	return &zigbeeLight{
 		cfg:        &cfg,
 		inv:        inv,
 		mqttClient: mqttClient,
+		logger:     log.With(logger, "light", "zigbee"),
+		tracer:     otel.Tracer("zigbeeLight"),
 	}, nil
 }
 
 func (l zigbeeLight) Toggle(ctx context.Context, groupName string) error {
-	span, _ := opentracing.StartSpanFromContext(ctx, "zigbeeLight.Toggle")
-	defer span.Finish()
+	ctx, span := l.tracer.Start(ctx, "Toggle")
+	defer span.End()
 
 	devices, err := l.inv.ListZigbeeDevices(ctx)
 	if err != nil {
@@ -56,7 +64,8 @@ func (l zigbeeLight) Toggle(ctx context.Context, groupName string) error {
 
 		m, err := json.Marshal(message)
 		if err != nil {
-			log.Error(err)
+			span.SetStatus(codes.Error, err.Error())
+			_ = level.Error(l.logger).Log("err", err.Error())
 			continue
 		}
 
@@ -67,8 +76,8 @@ func (l zigbeeLight) Toggle(ctx context.Context, groupName string) error {
 }
 
 func (l zigbeeLight) Alert(ctx context.Context, groupName string) error {
-	span, _ := opentracing.StartSpanFromContext(ctx, "zigbeeLight.Alert")
-	defer span.Finish()
+	ctx, span := l.tracer.Start(ctx, "Alert")
+	defer span.End()
 
 	devices, err := l.inv.ListZigbeeDevices(ctx)
 	if err != nil {
@@ -92,7 +101,8 @@ func (l zigbeeLight) Alert(ctx context.Context, groupName string) error {
 
 		m, err := json.Marshal(message)
 		if err != nil {
-			log.Error(err)
+			span.SetStatus(codes.Error, err.Error())
+			_ = level.Error(l.logger).Log("err", err.Error())
 			continue
 		}
 
@@ -102,8 +112,8 @@ func (l zigbeeLight) Alert(ctx context.Context, groupName string) error {
 }
 
 func (l zigbeeLight) On(ctx context.Context, groupName string) error {
-	span, _ := opentracing.StartSpanFromContext(ctx, "zigbeeLight.On")
-	defer span.Finish()
+	ctx, span := l.tracer.Start(ctx, "On")
+	defer span.End()
 
 	devices, err := l.inv.ListZigbeeDevices(ctx)
 	if err != nil {
@@ -127,7 +137,8 @@ func (l zigbeeLight) On(ctx context.Context, groupName string) error {
 
 		m, err := json.Marshal(message)
 		if err != nil {
-			log.Error(err)
+			span.SetStatus(codes.Error, err.Error())
+			_ = level.Error(l.logger).Log("err", err.Error())
 			continue
 		}
 
@@ -137,8 +148,8 @@ func (l zigbeeLight) On(ctx context.Context, groupName string) error {
 }
 
 func (l zigbeeLight) Off(ctx context.Context, groupName string) error {
-	span, _ := opentracing.StartSpanFromContext(ctx, "zigbeeLight.Off")
-	defer span.Finish()
+	ctx, span := l.tracer.Start(ctx, "Off")
+	defer span.End()
 
 	devices, err := l.inv.ListZigbeeDevices(ctx)
 	if err != nil {
@@ -146,7 +157,6 @@ func (l zigbeeLight) Off(ctx context.Context, groupName string) error {
 	}
 
 	for i := range devices {
-		deviceSpan, _ := opentracing.StartSpanFromContext(ctx, devices[i].Name)
 		if !isLightDevice(&devices[i]) {
 			continue
 		}
@@ -163,19 +173,19 @@ func (l zigbeeLight) Off(ctx context.Context, groupName string) error {
 
 		m, err := json.Marshal(message)
 		if err != nil {
-			log.Error(err)
+			span.SetStatus(codes.Error, err.Error())
+			_ = level.Error(l.logger).Log("err", err.Error())
 			continue
 		}
 
 		l.mqttClient.Publish(topic, byte(0), false, string(m))
-		deviceSpan.Finish()
 	}
 	return nil
 }
 
 func (l zigbeeLight) SetBrightness(ctx context.Context, groupName string, brightness int32) error {
-	span, _ := opentracing.StartSpanFromContext(ctx, "zigbeeLight.Dim")
-	defer span.Finish()
+	ctx, span := l.tracer.Start(ctx, "SetBrightness")
+	defer span.End()
 
 	devices, err := l.inv.ListZigbeeDevices(ctx)
 	if err != nil {
@@ -183,7 +193,6 @@ func (l zigbeeLight) SetBrightness(ctx context.Context, groupName string, bright
 	}
 
 	for i := range devices {
-		deviceSpan, _ := opentracing.StartSpanFromContext(ctx, devices[i].Name)
 		if !isLightDevice(&devices[i]) {
 			continue
 		}
@@ -200,20 +209,20 @@ func (l zigbeeLight) SetBrightness(ctx context.Context, groupName string, bright
 
 		m, err := json.Marshal(message)
 		if err != nil {
-			log.Error(err)
+			span.SetStatus(codes.Error, err.Error())
+			_ = level.Error(l.logger).Log("err", err.Error())
 			continue
 		}
 
 		l.mqttClient.Publish(topic, byte(0), false, string(m))
-		deviceSpan.Finish()
 	}
 
 	return nil
 }
 
 func (l zigbeeLight) SetColor(ctx context.Context, groupName string, hex string) error {
-	span, _ := opentracing.StartSpanFromContext(ctx, "zigbeeLight.SetColor")
-	defer span.Finish()
+	ctx, span := l.tracer.Start(ctx, "SetColor")
+	defer span.End()
 
 	devices, err := l.inv.ListZigbeeDevices(ctx)
 	if err != nil {
@@ -221,7 +230,6 @@ func (l zigbeeLight) SetColor(ctx context.Context, groupName string, hex string)
 	}
 
 	for i := range devices {
-		deviceSpan, _ := opentracing.StartSpanFromContext(ctx, devices[i].Name)
 		if !isColorLightDevice(&devices[i]) {
 			continue
 		}
@@ -240,20 +248,20 @@ func (l zigbeeLight) SetColor(ctx context.Context, groupName string, hex string)
 
 		m, err := json.Marshal(message)
 		if err != nil {
-			log.Error(err)
+			span.SetStatus(codes.Error, err.Error())
+			_ = level.Error(l.logger).Log("err", err.Error())
 			continue
 		}
 
 		l.mqttClient.Publish(topic, byte(0), false, string(m))
-		deviceSpan.Finish()
 	}
 
 	return nil
 }
 
 func (l zigbeeLight) RandomColor(ctx context.Context, groupName string, hex []string) error {
-	span, _ := opentracing.StartSpanFromContext(ctx, "zigbeeLight.RandomColor")
-	defer span.Finish()
+	ctx, span := l.tracer.Start(ctx, "RandomColor")
+	defer span.End()
 
 	devices, err := l.inv.ListZigbeeDevices(ctx)
 	if err != nil {
@@ -261,7 +269,6 @@ func (l zigbeeLight) RandomColor(ctx context.Context, groupName string, hex []st
 	}
 
 	for i := range devices {
-		deviceSpan, _ := opentracing.StartSpanFromContext(ctx, devices[i].Name)
 		if !isColorLightDevice(&devices[i]) {
 			continue
 		}
@@ -280,20 +287,20 @@ func (l zigbeeLight) RandomColor(ctx context.Context, groupName string, hex []st
 
 		m, err := json.Marshal(message)
 		if err != nil {
-			log.Error(err)
+			span.SetStatus(codes.Error, err.Error())
+			_ = level.Error(l.logger).Log("err", err.Error())
 			continue
 		}
 
 		l.mqttClient.Publish(topic, byte(0), false, string(m))
-		deviceSpan.Finish()
 	}
 
 	return nil
 }
 
 func (l zigbeeLight) SetColorTemp(ctx context.Context, groupName string, temp int32) error {
-	span, _ := opentracing.StartSpanFromContext(ctx, "zigbeeLight.SetTemp")
-	defer span.Finish()
+	ctx, span := l.tracer.Start(ctx, "SetColorTemp")
+	defer span.End()
 
 	devices, err := l.inv.ListZigbeeDevices(ctx)
 	if err != nil {
@@ -301,7 +308,6 @@ func (l zigbeeLight) SetColorTemp(ctx context.Context, groupName string, temp in
 	}
 
 	for i := range devices {
-		deviceSpan, _ := opentracing.StartSpanFromContext(ctx, devices[i].Name)
 		if !isColorLightDevice(&devices[i]) {
 			continue
 		}
@@ -318,12 +324,12 @@ func (l zigbeeLight) SetColorTemp(ctx context.Context, groupName string, temp in
 
 		m, err := json.Marshal(message)
 		if err != nil {
-			log.Error(err)
+			span.SetStatus(codes.Error, err.Error())
+			_ = level.Error(l.logger).Log("err", err.Error())
 			continue
 		}
 
 		l.mqttClient.Publish(topic, byte(0), false, string(m))
-		deviceSpan.Finish()
 	}
 
 	return nil

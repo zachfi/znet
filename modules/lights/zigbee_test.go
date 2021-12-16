@@ -23,7 +23,7 @@ func TestZigbeeLight_New(t *testing.T) {
 
 	ctx := context.Background()
 
-	l, err := NewZigbeeLight(Config{}, mqttClient, invClient)
+	l, err := NewZigbeeLight(Config{}, mqttClient, invClient, nil)
 	require.NoError(t, err)
 	require.NotNil(t, l)
 
