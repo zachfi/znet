@@ -194,8 +194,10 @@ func ZigbeeDeviceType(z ZigbeeBridgeDevice) DeviceType {
 	switch z.Definition.Vendor {
 	case "Philips":
 		switch z.ModelID {
-		case "LCA003", "LWB014":
+		case "LWB014":
 			return BasicLight
+		case "LCA003":
+			return ColorLight
 		case "ROM001":
 			return Button
 		}

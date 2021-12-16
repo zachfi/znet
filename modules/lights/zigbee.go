@@ -11,6 +11,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/xaque208/znet/modules/inventory"
+	"github.com/xaque208/znet/pkg/iot"
 )
 
 type zigbeeLight struct {
@@ -329,23 +330,30 @@ func (l zigbeeLight) SetColorTemp(ctx context.Context, groupName string, temp in
 }
 
 func isLightDevice(z *inventory.ZigbeeDevice) bool {
-	switch z.Vendor {
-	case "Philips":
-		if z.Type == "Router" {
-			return true
-		}
+	switch zigbeeDeviceType(z) {
+	case iot.ColorLight, iot.BasicLight, iot.Relay:
+		return true
 	}
 
 	return false
 }
 
 func isColorLightDevice(z *inventory.ZigbeeDevice) bool {
-	switch z.Vendor {
-	case "Philips":
-		if z.ModelId == "LCA003" {
-			return true
-		}
+	switch zigbeeDeviceType(z) {
+	case iot.ColorLight:
+		return true
 	}
 
 	return false
+}
+
+func zigbeeDeviceType(z *inventory.ZigbeeDevice) iot.DeviceType {
+
+	d := iot.ZigbeeBridgeDevice{}
+	d.Definition.Vendor = z.GetVendor()
+	d.Definition.Model = z.GetModel()
+	d.ModelID = z.GetModelId()
+
+	return iot.ZigbeeDeviceType(d)
+
 }
