@@ -170,6 +170,7 @@ func (z *Znet) initHarvester() (services.Service, error) {
 func (z *Znet) initServer() (services.Service, error) {
 	z.cfg.Server.MetricsNamespace = metricsNamespace
 	z.cfg.Server.ExcludeRequestInLog = true
+	z.cfg.Server.RegisterInstrumentation = true
 
 	server, err := server.New(z.cfg.Server)
 	if err != nil {
