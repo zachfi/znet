@@ -5,12 +5,15 @@ import (
 )
 
 type ZigbeeMessage struct {
-	Action      string `json:"action,omitempty"`
-	Battery     int    `json:"battery,omitempty"`
-	Illuminance int    `json:"illuminance,omitempty"`
-	LinkQuality int    `json:"linkquality,omitempty"`
-	Occupancy   bool   `json:"occupancy,omitempty"`
-	Voltage     int    `json:"voltage,omitempty"`
+	Action      *string `json:"action,omitempty"`
+	Battery     *int    `json:"battery,omitempty"`
+	Illuminance *int    `json:"illuminance,omitempty"`
+	LinkQuality *int    `json:"linkquality,omitempty"`
+	Occupancy   *bool   `json:"occupancy,omitempty"`
+	Tamper      *bool   `json:"tamper,omitempty"`
+	Temperature *int    `json:"temperature,omitempty"`
+	Voltage     *int    `json:"voltage,omitempty"`
+	WaterLeak   *bool   `json:"water_leak,omitempty"`
 }
 
 type ZigbeeBridgeState string
