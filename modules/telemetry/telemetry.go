@@ -388,13 +388,7 @@ func (l *Telemetry) handleZigbeeReport(ctx context.Context, request *inventory.I
 	case "iot.ZigbeeMessage":
 		m := msg.(iot.ZigbeeMessage)
 
-		if m.Battery > 0 {
-			telemetryIOTBatteryPercent.WithLabelValues(request.DeviceDiscovery.ObjectId, request.DeviceDiscovery.Component).Set(float64(m.Battery))
-		}
-
-		if m.LinkQuality > 0 {
-			telemetryIOTLinkQuality.WithLabelValues(request.DeviceDiscovery.ObjectId, request.DeviceDiscovery.Component).Set(float64(m.LinkQuality))
-		}
+		updateZigbeeMessageMetrics(m, request)
 
 		x := &inventory.ZigbeeDevice{
 			Name:     request.DeviceDiscovery.ObjectId,
@@ -411,9 +405,9 @@ func (l *Telemetry) handleZigbeeReport(ctx context.Context, request *inventory.I
 			}
 		}
 
-		if m.Action != "" {
+		if m.Action != nil {
 			action := &iot.Action{
-				Event:  m.Action,
+				Event:  *m.Action,
 				Device: x.Name,
 				Zone:   result.IotZone,
 			}
@@ -620,4 +614,46 @@ func (l *Telemetry) handleWifiReport(request *inventory.IOTDevice) error {
 	}
 
 	return nil
+}
+
+func updateZigbeeMessageMetrics(m iot.ZigbeeMessage, request *inventory.IOTDevice) {
+	if m.Battery != nil {
+		telemetryIOTBatteryPercent.WithLabelValues(request.DeviceDiscovery.ObjectId, request.DeviceDiscovery.Component).Set(float64(*m.Battery))
+	}
+
+	if m.LinkQuality != nil {
+		telemetryIOTLinkQuality.WithLabelValues(request.DeviceDiscovery.ObjectId, request.DeviceDiscovery.Component).Set(float64(*m.LinkQuality))
+	}
+
+	if m.Temperature != nil {
+		telemetryIOTTemperature.WithLabelValues(request.DeviceDiscovery.ObjectId, request.DeviceDiscovery.Component).Set(float64(*m.Temperature))
+	}
+
+	if m.Illuminance != nil {
+		telemetryIOTIlluminance.WithLabelValues(request.DeviceDiscovery.ObjectId, request.DeviceDiscovery.Component).Set(float64(*m.Illuminance))
+	}
+
+	if m.Occupancy != nil {
+		if *m.Occupancy {
+			telemetryIOTOccupancy.WithLabelValues(request.DeviceDiscovery.ObjectId, request.DeviceDiscovery.Component).Set(float64(1))
+		} else {
+			telemetryIOTOccupancy.WithLabelValues(request.DeviceDiscovery.ObjectId, request.DeviceDiscovery.Component).Set(float64(0))
+		}
+	}
+
+	if m.WaterLeak != nil {
+		if *m.WaterLeak {
+			telemetryIOTWaterLeak.WithLabelValues(request.DeviceDiscovery.ObjectId, request.DeviceDiscovery.Component).Set(float64(1))
+		} else {
+			telemetryIOTWaterLeak.WithLabelValues(request.DeviceDiscovery.ObjectId, request.DeviceDiscovery.Component).Set(float64(0))
+		}
+	}
+
+	if m.Tamper != nil {
+		if *m.Tamper {
+			telemetryIOTTamper.WithLabelValues(request.DeviceDiscovery.ObjectId, request.DeviceDiscovery.Component).Set(float64(1))
+		} else {
+			telemetryIOTTamper.WithLabelValues(request.DeviceDiscovery.ObjectId, request.DeviceDiscovery.Component).Set(float64(0))
+		}
+	}
 }

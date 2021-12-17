@@ -11,25 +11,50 @@ var (
 		Help: "The total number of notice calls that include an unhandled object ID.",
 	}, []string{"object_id", "component"})
 
-	telemetryIOTReport = prometheus.NewCounterVec(prometheus.CounterOpts{
+	telemetryIOTReport = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "rpc_telemetry_object_report",
 		Help: "The total number of notice calls for an object ID.",
 	}, []string{"object_id", "component"})
 
-	telemetryIOTBatteryPercent = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+	telemetryIOTBatteryPercent = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "rpc_telemetry_iot_battery_percent",
 		Help: "The reported batter percentage remaining.",
 	}, []string{"object_id", "component"})
 
-	telemetryIOTLinkQuality = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+	telemetryIOTLinkQuality = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "rpc_telemetry_iot_link_quality",
 		Help: "The reported link quality",
 	}, []string{"object_id", "component"})
 
-	telemetryIOTBridgeState = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+	telemetryIOTBridgeState = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "rpc_telemetry_iot_bridge_state",
 		Help: "The reported bridge state",
 	}, []string{})
+
+	telemetryIOTOccupancy = promauto.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "rpc_telemetry_iot_occupancy",
+		Help: "Occupancy binary",
+	}, []string{"object_id", "component"})
+
+	telemetryIOTWaterLeak = promauto.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "rpc_telemetry_iot_water_leak",
+		Help: "Water leak binary",
+	}, []string{"object_id", "component"})
+
+	telemetryIOTTemperature = promauto.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "rpc_telemetry_iot_temperature",
+		Help: "Sensor Temperature(C)",
+	}, []string{"object_id", "component"})
+
+	telemetryIOTTamper = promauto.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "rpc_telemetry_iot_tamper",
+		Help: "Tamper binary",
+	}, []string{"object_id", "component"})
+
+	telemetryIOTIlluminance = promauto.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "rpc_telemetry_iot_illuminance",
+		Help: "Illuminance(LQI)",
+	}, []string{"object_id", "component"})
 
 	//
 	waterTemperature = prometheus.NewGaugeVec(prometheus.GaugeOpts{
@@ -60,12 +85,6 @@ var (
 
 func init() {
 	prometheus.MustRegister(
-		// telemetryIOTUnhandledReport,
-		telemetryIOTReport,
-		telemetryIOTBatteryPercent,
-		telemetryIOTLinkQuality,
-		telemetryIOTBridgeState,
-
 		airHeatindex,
 		airHumidity,
 		airTemperature,
