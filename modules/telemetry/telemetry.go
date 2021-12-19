@@ -23,6 +23,8 @@ import (
 	"github.com/xaque208/znet/pkg/iot"
 )
 
+const defaultExpiry = 5 * time.Minute
+
 type Telemetry struct {
 	UnimplementedTelemetryServer
 
@@ -63,7 +65,7 @@ func New(cfg Config, logger log.Logger, inv inventory.Inventory, lig *lights.Lig
 
 			// Expire the old entries
 			for k, v := range tMap {
-				if time.Since(v) > (300 * time.Second) {
+				if time.Since(v) > defaultExpiry {
 					_ = level.Info(s.logger).Log("msg", "expiring",
 						"device", k,
 					)
@@ -388,22 +390,17 @@ func (l *Telemetry) handleZigbeeReport(ctx context.Context, request *inventory.I
 	case "iot.ZigbeeMessage":
 		m := msg.(iot.ZigbeeMessage)
 
-		updateZigbeeMessageMetrics(m, request)
-
 		x := &inventory.ZigbeeDevice{
 			Name:     request.DeviceDiscovery.ObjectId,
 			LastSeen: timestamppb.New(now),
 		}
 
-		result, err := l.inventory.FetchZigbeeDevice(ctx, x.Name)
+		result, err := l.fetchZigbeeDevice(ctx, x)
 		if err != nil {
-			_ = level.Warn(l.logger).Log("msg", err.Error())
-
-			result, err = l.inventory.CreateZigbeeDevice(ctx, x)
-			if err != nil {
-				return err
-			}
+			return err
 		}
+
+		l.updateZigbeeMessageMetrics(m, request, result)
 
 		if m.Action != nil {
 			action := &iot.Action{
@@ -616,44 +613,66 @@ func (l *Telemetry) handleWifiReport(request *inventory.IOTDevice) error {
 	return nil
 }
 
-func updateZigbeeMessageMetrics(m iot.ZigbeeMessage, request *inventory.IOTDevice) {
+func (l *Telemetry) updateZigbeeMessageMetrics(m iot.ZigbeeMessage, request *inventory.IOTDevice, device *inventory.ZigbeeDevice) {
+	var zone string
+
+	if val := device.GetIotZone(); val != "" {
+		zone = val
+	}
+
+	deviceName := request.DeviceDiscovery.ObjectId
+	component := request.DeviceDiscovery.Component
+
 	if m.Battery != nil {
-		telemetryIOTBatteryPercent.WithLabelValues(request.DeviceDiscovery.ObjectId, request.DeviceDiscovery.Component).Set(float64(*m.Battery))
+		telemetryIOTBatteryPercent.WithLabelValues(deviceName, component, zone).Set(float64(*m.Battery))
 	}
 
 	if m.LinkQuality != nil {
-		telemetryIOTLinkQuality.WithLabelValues(request.DeviceDiscovery.ObjectId, request.DeviceDiscovery.Component).Set(float64(*m.LinkQuality))
+		telemetryIOTLinkQuality.WithLabelValues(deviceName, component, zone).Set(float64(*m.LinkQuality))
 	}
 
 	if m.Temperature != nil {
-		telemetryIOTTemperature.WithLabelValues(request.DeviceDiscovery.ObjectId, request.DeviceDiscovery.Component).Set(float64(*m.Temperature))
+		telemetryIOTTemperature.WithLabelValues(deviceName, component, zone).Set(float64(*m.Temperature))
 	}
 
 	if m.Illuminance != nil {
-		telemetryIOTIlluminance.WithLabelValues(request.DeviceDiscovery.ObjectId, request.DeviceDiscovery.Component).Set(float64(*m.Illuminance))
+		telemetryIOTIlluminance.WithLabelValues(deviceName, component, zone).Set(float64(*m.Illuminance))
 	}
 
 	if m.Occupancy != nil {
 		if *m.Occupancy {
-			telemetryIOTOccupancy.WithLabelValues(request.DeviceDiscovery.ObjectId, request.DeviceDiscovery.Component).Set(float64(1))
+			telemetryIOTOccupancy.WithLabelValues(deviceName, component, zone).Set(float64(1))
 		} else {
-			telemetryIOTOccupancy.WithLabelValues(request.DeviceDiscovery.ObjectId, request.DeviceDiscovery.Component).Set(float64(0))
+			telemetryIOTOccupancy.WithLabelValues(deviceName, component, zone).Set(float64(0))
 		}
 	}
 
 	if m.WaterLeak != nil {
 		if *m.WaterLeak {
-			telemetryIOTWaterLeak.WithLabelValues(request.DeviceDiscovery.ObjectId, request.DeviceDiscovery.Component).Set(float64(1))
+			telemetryIOTWaterLeak.WithLabelValues(deviceName, component, zone).Set(float64(1))
 		} else {
-			telemetryIOTWaterLeak.WithLabelValues(request.DeviceDiscovery.ObjectId, request.DeviceDiscovery.Component).Set(float64(0))
+			telemetryIOTWaterLeak.WithLabelValues(deviceName, component, zone).Set(float64(0))
 		}
 	}
 
 	if m.Tamper != nil {
 		if *m.Tamper {
-			telemetryIOTTamper.WithLabelValues(request.DeviceDiscovery.ObjectId, request.DeviceDiscovery.Component).Set(float64(1))
+			telemetryIOTTamper.WithLabelValues(deviceName, component, zone).Set(float64(1))
 		} else {
-			telemetryIOTTamper.WithLabelValues(request.DeviceDiscovery.ObjectId, request.DeviceDiscovery.Component).Set(float64(0))
+			telemetryIOTTamper.WithLabelValues(deviceName, component, zone).Set(float64(0))
 		}
 	}
+}
+
+func (l *Telemetry) fetchZigbeeDevice(ctx context.Context, x *inventory.ZigbeeDevice) (*inventory.ZigbeeDevice, error) {
+
+	result, err := l.inventory.FetchZigbeeDevice(ctx, x.Name)
+	if err != nil {
+		result, err = l.inventory.CreateZigbeeDevice(ctx, x)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return result, nil
 }

@@ -19,12 +19,12 @@ var (
 	telemetryIOTBatteryPercent = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "rpc_telemetry_iot_battery_percent",
 		Help: "The reported batter percentage remaining.",
-	}, []string{"object_id", "component"})
+	}, []string{"object_id", "component", "zone"})
 
 	telemetryIOTLinkQuality = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "rpc_telemetry_iot_link_quality",
 		Help: "The reported link quality",
-	}, []string{"object_id", "component"})
+	}, []string{"object_id", "component", "zone"})
 
 	telemetryIOTBridgeState = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "rpc_telemetry_iot_bridge_state",
@@ -34,27 +34,27 @@ var (
 	telemetryIOTOccupancy = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "rpc_telemetry_iot_occupancy",
 		Help: "Occupancy binary",
-	}, []string{"object_id", "component"})
+	}, []string{"object_id", "component", "zone"})
 
 	telemetryIOTWaterLeak = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "rpc_telemetry_iot_water_leak",
 		Help: "Water leak binary",
-	}, []string{"object_id", "component"})
+	}, []string{"object_id", "component", "zone"})
 
 	telemetryIOTTemperature = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "rpc_telemetry_iot_temperature",
 		Help: "Sensor Temperature(C)",
-	}, []string{"object_id", "component"})
+	}, []string{"object_id", "component", "zone"})
 
 	telemetryIOTTamper = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "rpc_telemetry_iot_tamper",
 		Help: "Tamper binary",
-	}, []string{"object_id", "component"})
+	}, []string{"object_id", "component", "zone"})
 
 	telemetryIOTIlluminance = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "rpc_telemetry_iot_illuminance",
 		Help: "Illuminance(LQI)",
-	}, []string{"object_id", "component"})
+	}, []string{"object_id", "component", "zone"})
 
 	//
 	waterTemperature = prometheus.NewGaugeVec(prometheus.GaugeOpts{
