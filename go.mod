@@ -25,7 +25,6 @@ require (
 	github.com/hashicorp/vault/api v1.3.0
 	github.com/hashicorp/vault/sdk v0.3.0
 	github.com/iancoleman/strcase v0.2.0
-	github.com/imdario/mergo v0.3.12
 	github.com/johanbrandhorst/certify v1.9.0
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 	github.com/lib/pq v1.10.3 // indirect
