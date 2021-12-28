@@ -25,7 +25,7 @@ type LDAPInventory struct {
 	tracer trace.Tracer
 
 	ldapClient *ldap.Conn
-	mux        sync.Mutex
+	mux        *sync.Mutex
 }
 
 // NewLDAPInventory returns a new Inventory object from the
