@@ -390,15 +390,15 @@ go.opentelemetry.io/otel/internal/baggage
 go.opentelemetry.io/otel/internal/global
 go.opentelemetry.io/otel/propagation
 go.opentelemetry.io/otel/semconv/v1.7.0
-# go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.2.0
+# go.opentelemetry.io/otel/exporters/otlp/internal/retry v1.3.0
+go.opentelemetry.io/otel/exporters/otlp/internal/retry
+# go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.3.0
 go.opentelemetry.io/otel/exporters/otlp/otlptrace
-go.opentelemetry.io/otel/exporters/otlp/otlptrace/internal/connection
 go.opentelemetry.io/otel/exporters/otlp/otlptrace/internal/otlpconfig
-go.opentelemetry.io/otel/exporters/otlp/otlptrace/internal/retry
 go.opentelemetry.io/otel/exporters/otlp/otlptrace/internal/tracetransform
-# go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.2.0
+# go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.3.0
 go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc
-# go.opentelemetry.io/otel/sdk v1.2.0
+# go.opentelemetry.io/otel/sdk v1.3.0
 go.opentelemetry.io/otel/sdk/instrumentation
 go.opentelemetry.io/otel/sdk/internal
 go.opentelemetry.io/otel/sdk/resource
