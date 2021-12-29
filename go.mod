@@ -18,10 +18,9 @@ require (
 	github.com/golang/protobuf v1.5.2
 	github.com/grafana/dskit v0.0.0-20211229145507-fded26153e7b
 	github.com/grpc-ecosystem/go-grpc-middleware v1.2.2 // indirect
-	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-retryablehttp v0.6.7 // indirect
 	github.com/hashicorp/hcl v1.0.1-vault-3 // indirect
-	github.com/hashicorp/vault/api v1.3.0
+	github.com/hashicorp/vault/api v1.3.1
 	github.com/hashicorp/vault/sdk v0.3.0
 	github.com/iancoleman/strcase v0.2.0
 	github.com/johanbrandhorst/certify v1.9.0
