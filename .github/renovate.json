@@ -12,5 +12,6 @@
   "labels": [
     "dependencies"
   ],
-  "prConcurrentLimit": 4
+  "prConcurrentLimit": 4,
+  "automerge": true
 }
