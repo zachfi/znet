@@ -125,7 +125,7 @@ github.com/go-git/go-git/v5/utils/merkletrie/noder
 github.com/go-kit/log
 github.com/go-kit/log/level
 github.com/go-kit/log/term
-# github.com/go-ldap/ldap/v3 v3.4.1
+# github.com/go-ldap/ldap/v3 v3.4.2
 github.com/go-ldap/ldap/v3
 # github.com/go-logfmt/logfmt v0.5.1
 github.com/go-logfmt/logfmt

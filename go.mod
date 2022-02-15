@@ -13,7 +13,7 @@ require (
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/go-kit/log v0.2.0
-	github.com/go-ldap/ldap/v3 v3.4.1
+	github.com/go-ldap/ldap/v3 v3.4.2
 	github.com/go-test/deep v1.0.7 // indirect
 	github.com/golang/protobuf v1.5.2
 	github.com/grafana/dskit v0.0.0-20220211095946-19921f863583
