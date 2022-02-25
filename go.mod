@@ -20,8 +20,8 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.2.2 // indirect
 	github.com/hashicorp/go-retryablehttp v0.6.7 // indirect
 	github.com/hashicorp/hcl v1.0.1-vault-3 // indirect
-	github.com/hashicorp/vault/api v1.3.1
-	github.com/hashicorp/vault/sdk v0.3.0
+	github.com/hashicorp/vault/api v1.4.1
+	github.com/hashicorp/vault/sdk v0.4.1
 	github.com/iancoleman/strcase v0.2.0
 	github.com/johanbrandhorst/certify v1.9.0
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
