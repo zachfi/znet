@@ -16,7 +16,7 @@ require (
 	github.com/go-ldap/ldap/v3 v3.4.2
 	github.com/go-test/deep v1.0.7 // indirect
 	github.com/golang/protobuf v1.5.2
-	github.com/grafana/dskit v0.0.0-20220211095946-19921f863583
+	github.com/grafana/dskit v0.0.0-20220331160727-49faf69f72ca
 	github.com/grpc-ecosystem/go-grpc-middleware v1.2.2 // indirect
 	github.com/hashicorp/go-retryablehttp v0.6.7 // indirect
 	github.com/hashicorp/hcl v1.0.1-vault-3 // indirect
