@@ -339,7 +339,7 @@ github.com/sercand/kuberesolver
 github.com/sergi/go-diff/diffmatchpatch
 # github.com/sirupsen/logrus v1.8.1
 github.com/sirupsen/logrus
-# github.com/stretchr/testify v1.7.0
+# github.com/stretchr/testify v1.7.1
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
 # github.com/uber/jaeger-client-go v2.29.1+incompatible

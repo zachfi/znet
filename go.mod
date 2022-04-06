@@ -38,7 +38,7 @@ require (
 	github.com/scottdware/go-junos v0.0.0-20200809143445-1805793fac10
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/objx v0.2.0 // indirect
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.7.1
 	github.com/uber/jaeger-client-go v2.29.1+incompatible // indirect
 	github.com/uber/jaeger-lib v2.4.1+incompatible // indirect
 	github.com/weaveworks/common v0.0.0-20211222122857-933588f98737

@@ -9,7 +9,7 @@ require (
 	github.com/golangci/golangci-lint v1.44.2
 	github.com/goreleaser/goreleaser v1.5.0
 	github.com/psampaz/go-mod-outdated v0.8.0
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.7.1
 	golang.org/x/tools v0.1.9
 	gotest.tools/gotestsum v1.7.0
 	moul.io/protoc-gen-gotemplate v1.11.2
