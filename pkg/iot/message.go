@@ -6,7 +6,7 @@ import (
 
 type ZigbeeMessage struct {
 	Action      *string  `json:"action,omitempty"`
-	Battery     *int     `json:"battery,omitempty"`
+	Battery     *float32 `json:"battery,omitempty"`
 	Illuminance *int     `json:"illuminance,omitempty"`
 	LinkQuality *int     `json:"linkquality,omitempty"`
 	Occupancy   *bool    `json:"occupancy,omitempty"`
