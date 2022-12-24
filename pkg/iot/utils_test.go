@@ -262,3 +262,61 @@ func TestReadZigbeeMessage(t *testing.T) {
 	}
 
 }
+
+func TestZigbeeDeviceType(t *testing.T) {
+	t.Parallel()
+
+	cases := []struct {
+		bridgeDevice ZigbeeBridgeDevice
+		devType      DeviceType
+	}{
+		{
+			bridgeDevice: ZigbeeBridgeDevice{
+				Type: "Coordinator",
+			},
+			devType: Coordinator,
+		},
+		{
+			bridgeDevice: ZigbeeBridgeDevice{
+				Definition: ZigbeeBridgeDeviceDefinition{
+					Vendor: "Philips",
+				},
+				ModelID: "LCA003",
+			},
+			devType: ColorLight,
+		},
+		{
+			bridgeDevice: ZigbeeBridgeDevice{
+				Definition: ZigbeeBridgeDeviceDefinition{
+					Vendor: "Philips",
+				},
+				ModelID: "LCB002",
+			},
+			devType: ColorLight,
+		},
+		{
+			bridgeDevice: ZigbeeBridgeDevice{
+				Definition: ZigbeeBridgeDeviceDefinition{
+					Vendor: "SONOFF",
+					Model:  "S31ZB",
+				},
+			},
+			devType: Relay,
+		},
+		{
+			bridgeDevice: ZigbeeBridgeDevice{
+				Definition: ZigbeeBridgeDeviceDefinition{
+					Vendor: "SONOFF",
+					Model:  "S40ZBTPB",
+				},
+			},
+			devType: Relay,
+		},
+	}
+
+	for _, tc := range cases {
+		x := ZigbeeDeviceType(tc.bridgeDevice)
+		require.Equal(t, tc.devType, x)
+	}
+
+}

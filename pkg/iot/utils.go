@@ -196,10 +196,12 @@ func ZigbeeDeviceType(z ZigbeeBridgeDevice) DeviceType {
 		switch z.ModelID {
 		case "LWB014":
 			return BasicLight
-		case "LCA003":
-			return ColorLight
 		case "ROM001":
 			return Button
+		default:
+			if strings.HasPrefix(z.ModelID, "LC") {
+				return ColorLight
+			}
 		}
 
 	case "Xiaomi":
@@ -224,8 +226,9 @@ func ZigbeeDeviceType(z ZigbeeBridgeDevice) DeviceType {
 		}
 
 	case "SONOFF":
-		switch z.Definition.Model {
-		case "S31ZB":
+		relayRegex := regexp.MustCompile(`^S[0-9]{2}ZB.*$`)
+		match := relayRegex.FindAllString(z.Definition.Model, -1)
+		if len(match) == 1 {
 			return Relay
 		}
 	}
