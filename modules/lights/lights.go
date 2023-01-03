@@ -52,9 +52,12 @@ var defaultColorTemperatureMap = map[ColorTemperature]int32{
 	ColorTemperature_EVENING:       eveningTemp,
 }
 var defaultBrightnessMap = map[Brightness]int32{
-	Brightness_FULL: 254,
-	Brightness_DIM:  100,
-	Brightness_LOW:  90,
+	Brightness_FULL:    254,
+	Brightness_DIMPLUS: 120,
+	Brightness_DIM:     100,
+	Brightness_LOWPLUS: 95,
+	Brightness_LOW:     90,
+	Brightness_VERYLOW: 80,
 }
 var defaultScheduleDuration = time.Minute * 10
 
@@ -164,11 +167,6 @@ func (l *Lights) ActionHandler(ctx context.Context, action *iot.Action) error {
 		}
 
 		return z.On(ctx)
-		// if err := z.On(ctx); err != nil {
-		// 	return err
-		// }
-
-		// return nil
 	case "off", "triple", "off_press":
 		return z.Off(ctx)
 	case "quadruple", "flip90", "flip180", "fall":
@@ -181,9 +179,19 @@ func (l *Lights) ActionHandler(ctx context.Context, action *iot.Action) error {
 
 		return z.On(ctx)
 	case "up_press":
-		return z.SetBrightness(ctx, Brightness_DIM)
+		err := z.IncrementBrightness(ctx)
+		if err != nil {
+			return err
+		}
+
+		return z.On(ctx)
 	case "down_press":
-		return z.SetBrightness(ctx, Brightness_LOW)
+		err := z.DecrementBrightness(ctx)
+		if err != nil {
+			return err
+		}
+
+		return z.On(ctx)
 	case "many":
 		return z.Alert(ctx)
 	case "wakeup", "release": // do nothing

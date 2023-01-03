@@ -8,7 +8,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-func NewZone(name string, handlers ...Handler) *Zone {
+func NewZone(name string) *Zone {
 	z := &Zone{}
 	z.lock = new(sync.Mutex)
 	z.SetName(name)
@@ -72,6 +72,34 @@ func (z *Zone) SetColorTemperature(ctx context.Context, colorTemp ColorTemperatu
 
 func (z *Zone) SetBrightness(ctx context.Context, brightness Brightness) error {
 	z.brightness = z.brightnessMap[brightness]
+	return nil
+}
+
+func (z *Zone) IncrementBrightness(ctx context.Context) error {
+	var currentBri Brightness
+	for k, v := range z.brightnessMap {
+		if v == z.brightness {
+			currentBri = k
+		}
+	}
+
+	if currentBri > 0 {
+		z.brightness = z.brightnessMap[currentBri-1]
+	}
+	return nil
+}
+
+func (z *Zone) DecrementBrightness(ctx context.Context) error {
+	var currentBri Brightness
+	for k, v := range z.brightnessMap {
+		if v == z.brightness {
+			currentBri = k
+		}
+	}
+
+	if currentBri < 5 {
+		z.brightness = z.brightnessMap[currentBri+1]
+	}
 	return nil
 }
 

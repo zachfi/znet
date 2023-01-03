@@ -34,7 +34,7 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.7.0"
 
 	"google.golang.org/grpc"
-	"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/version"

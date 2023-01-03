@@ -7,11 +7,12 @@
 package lights
 
 import (
+	reflect "reflect"
+	sync "sync"
+
 	proto "github.com/golang/protobuf/proto"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	reflect "reflect"
-	sync "sync"
 )
 
 const (
@@ -148,9 +149,12 @@ func (ColorTemperature) EnumDescriptor() ([]byte, []int) {
 type Brightness int32
 
 const (
-	Brightness_FULL Brightness = 0
-	Brightness_DIM  Brightness = 1
-	Brightness_LOW  Brightness = 2
+	Brightness_FULL    Brightness = 0
+	Brightness_DIMPLUS Brightness = 1
+	Brightness_DIM     Brightness = 2
+	Brightness_LOWPLUS Brightness = 3
+	Brightness_LOW     Brightness = 4
+	Brightness_VERYLOW Brightness = 5
 )
 
 // Enum value maps for Brightness.

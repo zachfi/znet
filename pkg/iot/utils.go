@@ -29,7 +29,7 @@ func ParseDiscoveryMessage(topicPath TopicPath, msg mqtt.Message) *DeviceDiscove
 }
 
 func ParseTopicPath(topic string) (TopicPath, error) {
-	// <discovery_prefix>/<component>/[<node_id>/]<object_id>/config
+	// <discovery_prefix>/<component>/[<node_id>]/<object_id>/config
 
 	var tp TopicPath
 	tp.Endpoint = make([]string, 0)
