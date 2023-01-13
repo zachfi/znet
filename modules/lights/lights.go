@@ -169,7 +169,7 @@ func (l *Lights) ActionHandler(ctx context.Context, action *iot.Action) error {
 		return z.On(ctx)
 	case "off", "triple", "off_press":
 		return z.Off(ctx)
-	case "quadruple", "flip90", "flip180", "fall":
+	case "quadruple", "flip90", "flip180", "fall", "button_3_press":
 		return z.RandomColor(ctx, l.cfg.PartyColors)
 	case "hold", "rotate_left", "button_2_press":
 		err := z.SetBrightness(ctx, Brightness_DIM)
