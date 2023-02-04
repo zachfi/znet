@@ -1,8 +1,8 @@
 package timer
 
 import (
-	"github.com/xaque208/znet/internal/astro"
-	"github.com/xaque208/znet/modules/timer/named"
+	"github.com/zachfi/znet/internal/astro"
+	"github.com/zachfi/znet/modules/timer/named"
 )
 
 type Config struct {

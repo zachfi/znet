@@ -3,7 +3,7 @@ package comms
 import (
 	"net/http"
 
-	"github.com/xaque208/znet/internal/config"
+	"github.com/zachfi/znet/internal/config"
 )
 
 // HTTPServerFunc is used to create a new HTTP server using a received config.

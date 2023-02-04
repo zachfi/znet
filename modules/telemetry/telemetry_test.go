@@ -11,9 +11,9 @@ import (
 	"github.com/go-kit/log"
 	"github.com/stretchr/testify/require"
 
-	"github.com/xaque208/znet/modules/inventory"
-	"github.com/xaque208/znet/modules/lights"
-	"github.com/xaque208/znet/pkg/iot"
+	"github.com/zachfi/znet/modules/inventory"
+	"github.com/zachfi/znet/modules/lights"
+	"github.com/zachfi/znet/pkg/iot"
 )
 
 var zigbeeDeviceName = "0x00158d0004238a81"

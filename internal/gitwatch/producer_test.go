@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/xaque208/znet/pkg/events"
+	"github.com/zachfi/znet/pkg/events"
 )
 
 func TestProducer_interface(t *testing.T) {

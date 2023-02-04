@@ -13,8 +13,8 @@ import (
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 
-	"github.com/xaque208/znet/modules/inventory"
-	"github.com/xaque208/znet/pkg/iot"
+	"github.com/zachfi/znet/modules/inventory"
+	"github.com/zachfi/znet/pkg/iot"
 )
 
 type zigbeeLight struct {

@@ -12,12 +12,12 @@ import (
 	"github.com/weaveworks/common/server"
 	"github.com/weaveworks/common/signals"
 
-	"github.com/xaque208/znet/modules/harvester"
-	"github.com/xaque208/znet/modules/inventory"
-	"github.com/xaque208/znet/modules/lights"
-	"github.com/xaque208/znet/modules/telemetry"
-	"github.com/xaque208/znet/modules/timer"
-	"github.com/xaque208/znet/pkg/util"
+	"github.com/zachfi/znet/modules/harvester"
+	"github.com/zachfi/znet/modules/inventory"
+	"github.com/zachfi/znet/modules/lights"
+	"github.com/zachfi/znet/modules/telemetry"
+	"github.com/zachfi/znet/modules/timer"
+	"github.com/zachfi/znet/pkg/util"
 )
 
 const metricsNamespace = "znet"

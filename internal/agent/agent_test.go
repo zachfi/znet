@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/xaque208/znet/internal/config"
+	"github.com/zachfi/znet/internal/config"
 )
 
 func TestAgent_emptyConfig(t *testing.T) {

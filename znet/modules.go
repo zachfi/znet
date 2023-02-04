@@ -10,15 +10,15 @@ import (
 	"github.com/pkg/errors"
 	"github.com/weaveworks/common/server"
 
-	"github.com/xaque208/znet/internal/astro"
-	"github.com/xaque208/znet/internal/comms"
-	"github.com/xaque208/znet/modules/harvester"
-	"github.com/xaque208/znet/modules/inventory"
-	"github.com/xaque208/znet/modules/lights"
-	"github.com/xaque208/znet/modules/telemetry"
-	"github.com/xaque208/znet/modules/timer"
-	"github.com/xaque208/znet/modules/timer/named"
-	"github.com/xaque208/znet/pkg/iot"
+	"github.com/zachfi/znet/internal/astro"
+	"github.com/zachfi/znet/internal/comms"
+	"github.com/zachfi/znet/modules/harvester"
+	"github.com/zachfi/znet/modules/inventory"
+	"github.com/zachfi/znet/modules/lights"
+	"github.com/zachfi/znet/modules/telemetry"
+	"github.com/zachfi/znet/modules/timer"
+	"github.com/zachfi/znet/modules/timer/named"
+	"github.com/zachfi/znet/pkg/iot"
 )
 
 const (

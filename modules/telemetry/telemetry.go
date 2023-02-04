@@ -18,9 +18,9 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/xaque208/znet/modules/inventory"
-	"github.com/xaque208/znet/modules/lights"
-	"github.com/xaque208/znet/pkg/iot"
+	"github.com/zachfi/znet/modules/inventory"
+	"github.com/zachfi/znet/modules/lights"
+	"github.com/zachfi/znet/pkg/iot"
 )
 
 const defaultExpiry = 5 * time.Minute

@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
-	"github.com/xaque208/znet/internal/config"
+	"github.com/zachfi/znet/internal/config"
 )
 
 // RPCServerFunc is used to create a new RPC server using a received config.

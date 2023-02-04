@@ -8,8 +8,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/xaque208/znet/modules/inventory"
-	"github.com/xaque208/znet/pkg/iot"
+	"github.com/zachfi/znet/modules/inventory"
+	"github.com/zachfi/znet/pkg/iot"
 )
 
 func TestZigbeeLight_interface(t *testing.T) {

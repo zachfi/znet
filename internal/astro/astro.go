@@ -15,8 +15,8 @@ import (
 	"github.com/prometheus/common/model"
 	grpc "google.golang.org/grpc"
 
-	"github.com/xaque208/znet/modules/lights"
-	"github.com/xaque208/znet/pkg/events"
+	"github.com/zachfi/znet/modules/lights"
+	"github.com/zachfi/znet/pkg/events"
 )
 
 type Astro struct {

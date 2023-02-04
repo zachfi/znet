@@ -12,7 +12,7 @@ import (
 	grpc "google.golang.org/grpc"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/xaque208/znet/pkg/events"
+	"github.com/zachfi/znet/pkg/events"
 )
 
 type Named struct {

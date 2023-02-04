@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
-	"github.com/xaque208/znet/internal/config"
+	"github.com/zachfi/znet/internal/config"
 )
 
 // StandardRPCClient implements enough to get standard gRPC client connection.

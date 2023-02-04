@@ -10,9 +10,9 @@ import (
 	junos "github.com/scottdware/go-junos"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/xaque208/znet/internal/config"
-	"github.com/xaque208/znet/modules/inventory"
-	"github.com/xaque208/znet/modules/telemetry"
+	"github.com/zachfi/znet/internal/config"
+	"github.com/zachfi/znet/modules/inventory"
+	"github.com/zachfi/znet/modules/telemetry"
 )
 
 // Agent is an RPC client worker bee.
