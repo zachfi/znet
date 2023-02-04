@@ -7,8 +7,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
-	"github.com/xaque208/znet/internal/comms"
-	"github.com/xaque208/znet/internal/config"
+	"github.com/zachfi/znet/internal/comms"
+	"github.com/zachfi/znet/internal/config"
 )
 
 // Agent is an RPC client worker bee.

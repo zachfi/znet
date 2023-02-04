@@ -14,7 +14,7 @@ import (
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel/trace"
 
-	"github.com/xaque208/znet/pkg/iot"
+	"github.com/zachfi/znet/pkg/iot"
 )
 
 const (

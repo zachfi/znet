@@ -39,8 +39,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/version"
 
-	"github.com/xaque208/znet/pkg/util"
-	"github.com/xaque208/znet/znet"
+	"github.com/zachfi/znet/pkg/util"
+	"github.com/zachfi/znet/znet"
 )
 
 const appName = "znet"

@@ -8,7 +8,7 @@ package inventory
 
 import (
 	proto "github.com/golang/protobuf/proto"
-	iot "github.com/xaque208/znet/pkg/iot"
+	iot "github.com/zachfi/znet/pkg/iot"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"

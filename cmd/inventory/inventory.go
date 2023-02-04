@@ -12,10 +12,10 @@ import (
 // "google.golang.org/grpc/codes"
 // "google.golang.org/grpc/status"
 
-// "github.com/xaque208/znet/znet"
-// "github.com/xaque208/znet/internal/comms"
-// "github.com/xaque208/znet/internal/config"
-// "github.com/xaque208/znet/modules/inventory"
+// "github.com/zachfi/znet/znet"
+// "github.com/zachfi/znet/internal/comms"
+// "github.com/zachfi/znet/internal/config"
+// "github.com/zachfi/znet/modules/inventory"
 )
 
 /* var inventoryCommand = &cobra.Command{ */

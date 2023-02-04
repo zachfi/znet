@@ -8,8 +8,8 @@ import (
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 
-	"github.com/xaque208/znet/internal/astro"
-	"github.com/xaque208/znet/modules/timer/named"
+	"github.com/zachfi/znet/internal/astro"
+	"github.com/zachfi/znet/modules/timer/named"
 
 	"github.com/grafana/dskit/services"
 )

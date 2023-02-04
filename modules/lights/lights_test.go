@@ -10,7 +10,7 @@ import (
 	"github.com/go-kit/log"
 	"github.com/stretchr/testify/require"
 
-	"github.com/xaque208/znet/pkg/iot"
+	"github.com/zachfi/znet/pkg/iot"
 )
 
 func TestNewLights(t *testing.T) {

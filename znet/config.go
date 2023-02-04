@@ -9,13 +9,13 @@ import (
 	"github.com/weaveworks/common/server"
 	"gopkg.in/yaml.v2"
 
-	"github.com/xaque208/znet/internal/config"
-	"github.com/xaque208/znet/modules/harvester"
-	"github.com/xaque208/znet/modules/inventory"
-	"github.com/xaque208/znet/modules/lights"
-	"github.com/xaque208/znet/modules/telemetry"
-	"github.com/xaque208/znet/modules/timer"
-	"github.com/xaque208/znet/pkg/iot"
+	"github.com/zachfi/znet/internal/config"
+	"github.com/zachfi/znet/modules/harvester"
+	"github.com/zachfi/znet/modules/inventory"
+	"github.com/zachfi/znet/modules/lights"
+	"github.com/zachfi/znet/modules/telemetry"
+	"github.com/zachfi/znet/modules/timer"
+	"github.com/zachfi/znet/pkg/iot"
 )
 
 type Config struct {

@@ -9,8 +9,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 
-	"github.com/xaque208/znet/internal/config"
-	"github.com/xaque208/znet/pkg/continuous"
+	"github.com/zachfi/znet/internal/config"
+	"github.com/zachfi/znet/pkg/continuous"
 )
 
 type buildServer struct {

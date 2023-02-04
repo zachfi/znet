@@ -8,11 +8,11 @@ import (
 
 	"google.golang.org/grpc"
 
-	"github.com/xaque208/znet/internal/agent"
+	"github.com/zachfi/znet/internal/agent"
 
-	"github.com/xaque208/znet/internal/config"
-	"github.com/xaque208/znet/pkg/continuous"
-	"github.com/xaque208/znet/pkg/events"
+	"github.com/zachfi/znet/internal/config"
+	"github.com/zachfi/znet/pkg/continuous"
+	"github.com/zachfi/znet/pkg/events"
 
 	log "github.com/sirupsen/logrus"
 )

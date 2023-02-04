@@ -1,4 +1,4 @@
-module github.com/xaque208/znet
+module github.com/zachfi/znet
 
 go 1.13
 

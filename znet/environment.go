@@ -5,8 +5,8 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/xaque208/znet/internal/comms"
-	"github.com/xaque208/znet/internal/config"
+	"github.com/zachfi/znet/internal/comms"
+	"github.com/zachfi/znet/internal/config"
 )
 
 // LoadEnvironment reads reads environment variables out of vault for return.
