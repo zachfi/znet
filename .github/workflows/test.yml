@@ -36,8 +36,8 @@ jobs:
       - name: Integration Tests
         run: make test-integration
 
-      - name: Coverage Report
-        run: make cover-report
+      # - name: Coverage Report
+      #   run: make cover-report
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-actions@v3
+      # - name: Upload coverage to Codecov
+      #   uses: codecov/codecov-actions@v3
