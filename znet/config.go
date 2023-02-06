@@ -9,6 +9,7 @@ import (
 	"github.com/weaveworks/common/server"
 	"gopkg.in/yaml.v2"
 
+	ztrace "github.com/zachfi/zkit/pkg/tracing"
 	"github.com/zachfi/znet/internal/config"
 	"github.com/zachfi/znet/modules/harvester"
 	"github.com/zachfi/znet/modules/inventory"
@@ -19,8 +20,9 @@ import (
 )
 
 type Config struct {
-	Target       string `yaml:"target"`
-	OtelEndpoint string `yaml:"otel_endpoint"`
+	Target string `yaml:"target"`
+
+	Tracing ztrace.Config `yaml:"tracing,omitempty"`
 
 	// Environments []config.EnvironmentConfig `yaml:"environments,omitempty"`
 	// Vault        config.VaultConfig         `yaml:"vault,omitempty"`
@@ -68,5 +70,4 @@ func loadYamlFile(filename string, d interface{}) error {
 func (c *Config) RegisterFlagsAndApplyDefaults(prefix string, f *flag.FlagSet) {
 	c.Target = All
 	f.StringVar(&c.Target, "target", All, "target module")
-	f.StringVar(&c.OtelEndpoint, "otel_endpoint", "", "otel endpoint, eg: tempo:4317")
 }
