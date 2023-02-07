@@ -11,13 +11,11 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/grpc-ecosystem/go-grpc-middleware"
 	otgrpc "github.com/opentracing-contrib/go-grpc"
 	"github.com/opentracing/opentracing-go"
 	"github.com/sercand/kuberesolver"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/balancer/roundrobin"
 
 	"github.com/weaveworks/common/httpgrpc"
 	"github.com/weaveworks/common/logging"
@@ -132,14 +130,15 @@ func NewClient(address string) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
+	const grpcServiceConfig = `{"loadBalancingPolicy":"round_robin"}`
 
 	dialOptions := []grpc.DialOption{
-		grpc.WithBalancerName(roundrobin.Name),
+		grpc.WithDefaultServiceConfig(grpcServiceConfig),
 		grpc.WithInsecure(),
-		grpc.WithUnaryInterceptor(grpc_middleware.ChainUnaryClient(
+		grpc.WithChainUnaryInterceptor(
 			otgrpc.OpenTracingClientInterceptor(opentracing.GlobalTracer()),
 			middleware.ClientUserHeaderInterceptor,
-		)),
+		),
 	}
 
 	conn, err := grpc.Dial(address, dialOptions...)

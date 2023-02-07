@@ -43,8 +43,6 @@ require (
 	github.com/zachfi/zkit v0.1.0
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.28.0
 	go.opentelemetry.io/otel v1.12.0
-	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.12.0
-	go.opentelemetry.io/otel/sdk v1.12.0
 	go.opentelemetry.io/otel/trace v1.12.0
 	golang.org/x/crypto v0.0.0-20221012134737-56aed061732a
 	golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac // indirect
