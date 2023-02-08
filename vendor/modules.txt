@@ -495,7 +495,7 @@ github.com/weaveworks/promrus
 # github.com/xanzy/ssh-agent v0.3.0
 ## explicit
 github.com/xanzy/ssh-agent
-# github.com/zachfi/zkit v0.1.0
+# github.com/zachfi/zkit v0.1.1-0.20230208223842-a7f09fc8efea
 ## explicit; go 1.19
 github.com/zachfi/zkit/pkg/tracing
 # github.com/ziutek/telnet v0.0.0-20180329124119-c3b780dc415b

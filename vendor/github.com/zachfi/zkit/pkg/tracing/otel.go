@@ -18,11 +18,6 @@ import (
 	"google.golang.org/grpc"
 )
 
-type Config struct {
-	OtelEndpoint string `yaml:"otel_endpoint"`
-	OrgID        string `yaml:"org_id"`
-}
-
 func InstallOpenTelemetryTracer(config *Config, logger log.Logger, appName, version string) (func(), error) {
 	if config.OtelEndpoint == "" {
 		return func() {}, nil

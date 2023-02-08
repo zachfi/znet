@@ -71,4 +71,5 @@ func loadYamlFile(filename string, d interface{}) error {
 func (c *Config) RegisterFlagsAndApplyDefaults(prefix string, f *flag.FlagSet) {
 	c.Target = All
 	f.StringVar(&c.Target, "target", All, "target module")
+	c.Tracing.RegisterFlagsAndApplyDefaults("tracing", f)
 }

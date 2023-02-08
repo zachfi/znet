@@ -856,8 +856,8 @@ github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9de
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
-github.com/zachfi/zkit v0.1.0 h1:pt48L6MOZTVK1Pt5DX7yzIzXgoUAC5yywdjcahfJ22Q=
-github.com/zachfi/zkit v0.1.0/go.mod h1:QTPG6L/3drF7O41K013lbRW5wnXIxY3pV8IsSlKhe2E=
+github.com/zachfi/zkit v0.1.1-0.20230208223842-a7f09fc8efea h1:iW/yqCNrYBXIVW+/svZ70yTa96WM65TPe0LG3OXwJaQ=
+github.com/zachfi/zkit v0.1.1-0.20230208223842-a7f09fc8efea/go.mod h1:QTPG6L/3drF7O41K013lbRW5wnXIxY3pV8IsSlKhe2E=
 github.com/ziutek/mymysql v1.5.4/go.mod h1:LMSpPZ6DbqWFxNCHW77HeMg9I646SAhApZ/wKdgO/C0=
 github.com/ziutek/telnet v0.0.0-20180329124119-c3b780dc415b h1:VfPXB/wCGGt590QhD1bOpv2J/AmC/RJNTg/Q59HKSB0=
 github.com/ziutek/telnet v0.0.0-20180329124119-c3b780dc415b/go.mod h1:IZpXDfkJ6tWD3PhBK5YzgQT+xJWh7OsdwiG8hA2MkO4=
