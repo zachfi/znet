@@ -2,7 +2,7 @@ package znet
 
 import (
 	"flag"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"github.com/pkg/errors"
@@ -10,6 +10,7 @@ import (
 	"gopkg.in/yaml.v2"
 
 	ztrace "github.com/zachfi/zkit/pkg/tracing"
+
 	"github.com/zachfi/znet/internal/config"
 	"github.com/zachfi/znet/modules/harvester"
 	"github.com/zachfi/znet/modules/inventory"
@@ -54,7 +55,7 @@ func LoadConfig(file string) (Config, error) {
 
 // loadYamlFile unmarshals a YAML file into the received interface{} or returns an error.
 func loadYamlFile(filename string, d interface{}) error {
-	yamlFile, err := ioutil.ReadFile(filename)
+	yamlFile, err := os.ReadFile(filename)
 	if err != nil {
 		return err
 	}

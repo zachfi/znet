@@ -35,7 +35,6 @@ linters-settings:
 linters:
   disable-all: true
   enable:
-    - deadcode
     - errcheck
     - gocyclo
     - godox
@@ -47,10 +46,8 @@ linters:
     - lll
     - misspell
     - staticcheck
-    - structcheck
     - unconvert
     - unused
-    - varcheck
     - vet
 
 issues:

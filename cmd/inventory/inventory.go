@@ -1,7 +1,6 @@
 // Code generated, do not edit
 package cmd
 
-import (
 // "context"
 // "io"
 
@@ -16,7 +15,6 @@ import (
 // "github.com/zachfi/znet/internal/comms"
 // "github.com/zachfi/znet/internal/config"
 // "github.com/zachfi/znet/modules/inventory"
-)
 
 /* var inventoryCommand = &cobra.Command{ */
 /* 	Use:     "inventory", */

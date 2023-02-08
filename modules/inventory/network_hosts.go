@@ -1,7 +1,6 @@
 package inventory
 
 import (
-	"io/ioutil"
 	"net"
 	"os"
 
@@ -19,7 +18,7 @@ func SSHAgent() ssh.AuthMethod {
 
 // PublicKeyFile builds the AuthMethod for SSH.
 func PublicKeyFile(file string) ssh.AuthMethod {
-	buffer, err := ioutil.ReadFile(file)
+	buffer, err := os.ReadFile(file)
 	if err != nil {
 		return nil
 	}

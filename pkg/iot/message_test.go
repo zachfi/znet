@@ -6,7 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"strings"
 	"testing"
@@ -74,7 +74,7 @@ func TestZigbeeBridgeLog_devices(t *testing.T) {
 		require.NoError(t, err)
 		defer jsonFile.Close()
 
-		byteValue, err := ioutil.ReadAll(jsonFile)
+		byteValue, err := io.ReadAll(jsonFile)
 		require.NoError(t, err)
 		obj := ZigbeeMessageBridgeDevices{}
 		err = json.Unmarshal(byteValue, &obj)

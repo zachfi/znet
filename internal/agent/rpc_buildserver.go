@@ -3,7 +3,7 @@ package agent
 import (
 	context "context"
 	"fmt"
-	"io/ioutil"
+	"os"
 	sync "sync"
 
 	log "github.com/sirupsen/logrus"
@@ -140,7 +140,7 @@ func (b *buildServer) loadRepoConfig(cacheDir string) (*config.RepoConfig, error
 
 	configPath := fmt.Sprintf("%s/.build.yaml", cacheDir)
 
-	yamlFile, err := ioutil.ReadFile(configPath)
+	yamlFile, err := os.ReadFile(configPath)
 	if err != nil {
 		return nil, err
 	}

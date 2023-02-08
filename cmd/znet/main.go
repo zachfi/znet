@@ -29,6 +29,7 @@ import (
 	"github.com/prometheus/common/version"
 
 	t "github.com/zachfi/zkit/pkg/tracing"
+
 	"github.com/zachfi/znet/pkg/util"
 	"github.com/zachfi/znet/znet"
 )

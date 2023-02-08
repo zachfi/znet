@@ -8,7 +8,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"sync"
 	"time"
 
@@ -47,7 +47,7 @@ func newCertify(vaultConfig *config.VaultConfig, tlsConfig *config.TLSConfig) (*
 
 	if tlsConfig.CAFile != "" {
 		// The CA for vault is the Puppet CA, which is available locally.
-		b, _ := ioutil.ReadFile(tlsConfig.CAFile)
+		b, _ := os.ReadFile(tlsConfig.CAFile)
 		cp := x509.NewCertPool()
 		if !cp.AppendCertsFromPEM(b) {
 			log.WithFields(log.Fields{
