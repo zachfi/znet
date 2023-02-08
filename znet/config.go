@@ -2,12 +2,14 @@ package znet
 
 import (
 	"flag"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"github.com/pkg/errors"
 	"github.com/weaveworks/common/server"
 	"gopkg.in/yaml.v2"
+
+	ztrace "github.com/zachfi/zkit/pkg/tracing"
 
 	"github.com/zachfi/znet/internal/config"
 	"github.com/zachfi/znet/modules/harvester"
@@ -19,8 +21,9 @@ import (
 )
 
 type Config struct {
-	Target       string `yaml:"target"`
-	OtelEndpoint string `yaml:"otel_endpoint"`
+	Target string `yaml:"target"`
+
+	Tracing ztrace.Config `yaml:"tracing,omitempty"`
 
 	// Environments []config.EnvironmentConfig `yaml:"environments,omitempty"`
 	// Vault        config.VaultConfig         `yaml:"vault,omitempty"`
@@ -52,7 +55,7 @@ func LoadConfig(file string) (Config, error) {
 
 // loadYamlFile unmarshals a YAML file into the received interface{} or returns an error.
 func loadYamlFile(filename string, d interface{}) error {
-	yamlFile, err := ioutil.ReadFile(filename)
+	yamlFile, err := os.ReadFile(filename)
 	if err != nil {
 		return err
 	}
@@ -68,5 +71,4 @@ func loadYamlFile(filename string, d interface{}) error {
 func (c *Config) RegisterFlagsAndApplyDefaults(prefix string, f *flag.FlagSet) {
 	c.Target = All
 	f.StringVar(&c.Target, "target", All, "target module")
-	f.StringVar(&c.OtelEndpoint, "otel_endpoint", "", "otel endpoint, eg: tempo:4317")
 }

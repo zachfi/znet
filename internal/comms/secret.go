@@ -2,7 +2,6 @@ package comms
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"time"
 
@@ -52,7 +51,7 @@ func NewSecretClient(config config.VaultConfig) (*api.Client, error) {
 	if envToken != "" {
 		token = envToken
 	} else if config.TokenPath != "" {
-		cachedToken, err := ioutil.ReadFile(config.TokenPath)
+		cachedToken, err := os.ReadFile(config.TokenPath)
 		if err != nil {
 			log.Error(err)
 		}

@@ -7,11 +7,13 @@
 package telemetry
 
 import (
+	reflect "reflect"
+
 	proto "github.com/golang/protobuf/proto"
-	inventory "github.com/zachfi/znet/modules/inventory"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	reflect "reflect"
+
+	inventory "github.com/zachfi/znet/modules/inventory"
 )
 
 const (

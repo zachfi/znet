@@ -1,7 +1,7 @@
 package agent
 
 import (
-	"io/ioutil"
+	"io"
 	"os/exec"
 
 	"gopkg.in/ini.v1"
@@ -42,8 +42,8 @@ func runCommand(name string, arg ...string) (*CommandResult, error) {
 		return nil, err
 	}
 
-	outResult, _ := ioutil.ReadAll(stdout)
-	errResult, _ := ioutil.ReadAll(stderr)
+	outResult, _ := io.ReadAll(stdout)
+	errResult, _ := io.ReadAll(stderr)
 
 	if err := cmd.Wait(); err != nil {
 		return nil, err

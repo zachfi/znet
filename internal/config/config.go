@@ -1,7 +1,7 @@
 package config
 
 import (
-	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	log "github.com/sirupsen/logrus"
@@ -27,7 +27,7 @@ func LoadConfig(file string) (*Config, error) {
 
 // loadYamlFile unmarshals a YAML file into the received interface{} or returns an error.
 func loadYamlFile(filename string, d interface{}) error {
-	yamlFile, err := ioutil.ReadFile(filename)
+	yamlFile, err := os.ReadFile(filename)
 	if err != nil {
 		return err
 	}

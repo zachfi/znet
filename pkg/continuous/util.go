@@ -2,7 +2,6 @@ package continuous
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
@@ -55,7 +54,7 @@ func SSHPublicKey(url string, SSHKeyPath string) (*ssh.PublicKeys, error) {
 	// shold load the ssh key to proceed.
 	if !strings.HasPrefix(url, "https") && SSHKeyPath != "" {
 		var publicKey *ssh.PublicKeys
-		sshKey, _ := ioutil.ReadFile(SSHKeyPath)
+		sshKey, _ := os.ReadFile(SSHKeyPath)
 		publicKey, keyError := ssh.NewPublicKeys("git", sshKey, "")
 		if keyError != nil {
 			return nil, fmt.Errorf("error while loading public key: %s", keyError)
