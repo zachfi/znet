@@ -28,11 +28,6 @@ builds:
       - goos: freebsd
         goarch: arm
 
-archives:
-  - replacements:
-      freebsd: FreeBSD
-      linux: Linux
-      amd64: x86_64
 checksum:
   name_template: "{{ .ProjectName }}_checksums.txt"
 snapshot:
