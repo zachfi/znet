@@ -1,4 +1,4 @@
-FROM alpine:3.15 as certs
+FROM alpine:3.17 as certs
 COPY ./bin/linux/znet /bin/znet
 RUN chmod 0700 /bin/znet
 RUN mkdir /var/znet
