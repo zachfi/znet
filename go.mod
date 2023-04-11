@@ -9,7 +9,7 @@ require (
 	github.com/eclipse/paho.mqtt.golang v1.3.5
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/go-kit/log v0.2.1
-	github.com/go-ldap/ldap/v3 v3.4.2
+	github.com/go-ldap/ldap/v3 v3.4.4
 	github.com/grafana/dskit v0.0.0-20220331160727-49faf69f72ca
 	github.com/hashicorp/vault/api v1.4.1
 	github.com/hashicorp/vault/sdk v0.4.1
@@ -38,7 +38,7 @@ require (
 )
 
 require (
-	github.com/Azure/go-ntlmssp v0.0.0-20200615164410-66371956d46c // indirect
+	github.com/Azure/go-ntlmssp v0.0.0-20220621081337-cb9428e4ac1e // indirect
 	github.com/HdrHistogram/hdrhistogram-go v1.0.1 // indirect
 	github.com/Juniper/go-netconf v0.1.1 // indirect
 	github.com/Microsoft/go-winio v0.4.16 // indirect
@@ -58,7 +58,7 @@ require (
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/felixge/httpsnoop v1.0.1 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
-	github.com/go-asn1-ber/asn1-ber v1.5.1 // indirect
+	github.com/go-asn1-ber/asn1-ber v1.5.4 // indirect
 	github.com/go-git/gcfg v1.5.0 // indirect
 	github.com/go-git/go-billy/v5 v5.3.1 // indirect
 	github.com/go-logfmt/logfmt v0.5.1 // indirect
