@@ -30,6 +30,9 @@ enum Brightness {
   FULL = 0;
   DIM = 1;
   LOW = 2;
+  DIMPLUS = 3;
+  LOWPLUS = 4;
+  VERYLOW = 5;
 }
 
 message LightGroup {
