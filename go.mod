@@ -22,7 +22,7 @@ require (
 	github.com/prometheus/client_golang v1.14.0
 	github.com/prometheus/common v0.39.0
 	github.com/scottdware/go-junos v0.0.0-20200809143445-1805793fac10
-	github.com/sirupsen/logrus v1.8.1
+	github.com/sirupsen/logrus v1.9.0
 	github.com/stretchr/testify v1.8.1
 	github.com/weaveworks/common v0.0.0-20230208133027-16871410fca4
 	github.com/zachfi/zkit v0.1.1-0.20230208223842-a7f09fc8efea
