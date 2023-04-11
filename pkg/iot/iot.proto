@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package iot;
 
-option go_package = "github.com/xaque208/znet/pkg/iot";
+option go_package = "github.com/zachfi/znet/pkg/iot";
 
 message Empty {}
 

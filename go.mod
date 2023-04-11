@@ -10,7 +10,6 @@ require (
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/go-kit/log v0.2.1
 	github.com/go-ldap/ldap/v3 v3.4.2
-	github.com/golang/protobuf v1.5.2
 	github.com/grafana/dskit v0.0.0-20220331160727-49faf69f72ca
 	github.com/hashicorp/vault/api v1.4.1
 	github.com/hashicorp/vault/sdk v0.4.1
@@ -70,6 +69,7 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/gogo/status v1.1.0 // indirect
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
+	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect

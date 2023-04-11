@@ -1,8 +1,8 @@
 # zNet
 
-[![PkgGoDev](https://pkg.go.dev/badge/github.com/xaque208/znet)](https://pkg.go.dev/github.com/xaque208/znet)
-![Build Status](https://github.com/xaque208/znet/workflows/Compiling/badge.svg)
-[![Coverage Status](https://coveralls.io/repos/github/xaque208/znet/badge.svg)](https://coveralls.io/github/xaque208/znet)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/zachfi/znet)](https://pkg.go.dev/github.com/zachfi/znet)
+![Build Status](https://github.com/zachfi/znet/workflows/Compiling/badge.svg)
+[![Coverage Status](https://coveralls.io/repos/github/zachfi/znet/badge.svg)](https://coveralls.io/github/zachfi/znet)
 
 > It isn't the destination, but the journey.
 

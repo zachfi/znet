@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package telemetry;
 
-option go_package = "github.com/xaque208/znet/modules/telemetry";
+option go_package = "github.com/zachfi/znet/modules/telemetry";
 
 import "modules/inventory/inventory.proto";
 
