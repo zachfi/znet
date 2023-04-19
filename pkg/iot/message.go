@@ -12,6 +12,7 @@ type ZigbeeMessage struct {
 	Occupancy   *bool    `json:"occupancy,omitempty"`
 	Tamper      *bool    `json:"tamper,omitempty"`
 	Temperature *float32 `json:"temperature,omitempty"`
+	Humidity    *int     `json:"humidity,omitempty"`
 	Voltage     *int     `json:"voltage,omitempty"`
 	WaterLeak   *bool    `json:"water_leak,omitempty"`
 }

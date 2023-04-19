@@ -635,6 +635,10 @@ func (l *Telemetry) updateZigbeeMessageMetrics(m iot.ZigbeeMessage, request *inv
 		telemetryIOTTemperature.WithLabelValues(deviceName, component, zone).Set(float64(*m.Temperature))
 	}
 
+	if m.Humidity != nil {
+		telemetryIOTHumidity.WithLabelValues(deviceName, component, zone).Set(float64(*m.Humidity))
+	}
+
 	if m.Illuminance != nil {
 		telemetryIOTIlluminance.WithLabelValues(deviceName, component, zone).Set(float64(*m.Illuminance))
 	}

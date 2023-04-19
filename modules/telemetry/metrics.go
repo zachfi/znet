@@ -46,6 +46,11 @@ var (
 		Help: "Sensor Temperature(C)",
 	}, []string{"object_id", "component", "zone"})
 
+	telemetryIOTHumidity = promauto.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "rpc_telemetry_iot_humidity",
+		Help: "Sensor Humidity",
+	}, []string{"object_id", "component", "zone"})
+
 	telemetryIOTTamper = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "rpc_telemetry_iot_tamper",
 		Help: "Tamper binary",
