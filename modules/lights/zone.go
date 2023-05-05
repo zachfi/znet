@@ -9,14 +9,14 @@ import (
 )
 
 func NewZone(name string) *Zone {
-	z := &Zone{}
-	z.lock = new(sync.Mutex)
-	z.SetName(name)
-	// default
-	z.colorTemp = dayTemp
+	z := &Zone{
+		lock:          new(sync.Mutex),
+		colorTemp:     dayTemp,
+		brightnessMap: defaultBrightnessMap,
+		colorTempMap:  defaultColorTemperatureMap,
+	}
 
-	z.brightnessMap = defaultBrightnessMap
-	z.colorTempMap = defaultColorTemperatureMap
+	z.SetName(name)
 
 	return z
 }
@@ -112,11 +112,25 @@ func (z *Zone) On(ctx context.Context) error {
 }
 
 func (z *Zone) Toggle(ctx context.Context) error {
-	for _, h := range z.handlers {
-		err := h.Toggle(ctx, z.Name())
-		if err != nil {
-			return fmt.Errorf("%s toggle: %w", z.name, ErrHandlerFailed)
+
+	switch z.state {
+	case ZoneState_ON:
+		for _, h := range z.handlers {
+			err := h.Off(ctx, z.Name())
+			if err != nil {
+				return fmt.Errorf("%s Off: %w", z.name, ErrHandlerFailed)
+			}
 		}
+
+	case ZoneState_OFF:
+		for _, h := range z.handlers {
+			err := h.On(ctx, z.Name())
+			if err != nil {
+				return fmt.Errorf("%s On: %w", z.name, ErrHandlerFailed)
+			}
+		}
+	default:
+		return fmt.Errorf("unhandled toggle from current state: %s", z.state)
 	}
 
 	return nil

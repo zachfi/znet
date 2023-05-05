@@ -60,11 +60,6 @@ func TestZigbeeLight_New(t *testing.T) {
 	require.NoError(t, l.RandomColor(ctx, "group1", []string{"#006c7f"}))
 	require.Equal(t, "zigbee2mqtt/testdevice1/set", mqttClient.LastPublishTopic)
 	require.Equal(t, `{"color":{"hex":"#006c7f"},"transition":0.5}`, mqttClient.LastPublishPayload)
-
-	require.NoError(t, l.Toggle(ctx, "group1"))
-	require.Equal(t, "zigbee2mqtt/testdevice1/set", mqttClient.LastPublishTopic)
-	require.Equal(t, `{"state":"TOGGLE","transition":0.5}`, mqttClient.LastPublishPayload)
-
 }
 
 func TestIsLightDevice(t *testing.T) {

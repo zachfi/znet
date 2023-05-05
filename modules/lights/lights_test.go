@@ -253,7 +253,7 @@ func TestActionHandler(t *testing.T) {
 				Zone:  "zone",
 			},
 			mock: &MockLight{
-				ToggleCalls: map[string]int{"zone": 1},
+				OffCalls: map[string]int{"zone": 1},
 			},
 		},
 		"double": {

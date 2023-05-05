@@ -6,12 +6,12 @@ import (
 
 type ZigbeeMessage struct {
 	Action       *string  `json:"action,omitempty"`
-	Battery      *float32 `json:"battery,omitempty"`
+	Battery      *float64 `json:"battery,omitempty"`
 	Illuminance  *int     `json:"illuminance,omitempty"`
 	LinkQuality  *int     `json:"linkquality,omitempty"`
 	Occupancy    *bool    `json:"occupancy,omitempty"`
 	Tamper       *bool    `json:"tamper,omitempty"`
-	Temperature  *float32 `json:"temperature,omitempty"`
+	Temperature  *float64 `json:"temperature,omitempty"`
 	Humidity     *float64 `json:"humidity,omitempty"`
 	Voltage      *int     `json:"voltage,omitempty"`
 	WaterLeak    *bool    `json:"water_leak,omitempty"`

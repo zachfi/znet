@@ -11,5 +11,4 @@ type Handler interface {
 	SetBrightness(context.Context, string, int32) error
 	SetColor(context.Context, string, string) error
 	SetColorTemp(context.Context, string, int32) error
-	Toggle(context.Context, string) error
 }

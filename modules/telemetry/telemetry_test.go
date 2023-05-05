@@ -90,7 +90,7 @@ func TestReportIOTDevice_lights_handling(t *testing.T) {
 			},
 			Zone: "dungeon",
 			Handler: &lights.MockLight{
-				ToggleCalls: map[string]int{"dungeon": 1},
+				OffCalls: map[string]int{"dungeon": 1},
 			},
 		},
 		"hold": {

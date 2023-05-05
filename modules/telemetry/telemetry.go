@@ -625,7 +625,7 @@ func (l *Telemetry) updateZigbeeMessageMetrics(m iot.ZigbeeMessage, request *inv
 	component := request.DeviceDiscovery.Component
 
 	if m.Battery != nil {
-		telemetryIOTBatteryPercent.WithLabelValues(deviceName, component, zone).Set(float64(*m.Battery))
+		telemetryIOTBatteryPercent.WithLabelValues(deviceName, component, zone).Set(*m.Battery)
 	}
 
 	if m.LinkQuality != nil {
@@ -633,19 +633,19 @@ func (l *Telemetry) updateZigbeeMessageMetrics(m iot.ZigbeeMessage, request *inv
 	}
 
 	if m.Temperature != nil {
-		telemetryIOTTemperature.WithLabelValues(deviceName, component, zone).Set(float64(*m.Temperature))
+		telemetryIOTTemperature.WithLabelValues(deviceName, component, zone).Set(*m.Temperature)
 	}
 
 	if m.Humidity != nil {
-		telemetryIOTHumidity.WithLabelValues(deviceName, component, zone).Set(float64(*m.Humidity))
+		telemetryIOTHumidity.WithLabelValues(deviceName, component, zone).Set(*m.Humidity)
 	}
 
 	if m.Co2 != nil {
-		telemetryIOTCo2.WithLabelValues(deviceName, component, zone).Set(float64(*m.Co2))
+		telemetryIOTCo2.WithLabelValues(deviceName, component, zone).Set(*m.Co2)
 	}
 
 	if m.Formaldehyde != nil {
-		telemetryIOTFormaldehyde.WithLabelValues(deviceName, component, zone).Set(float64(*m.Formaldehyde))
+		telemetryIOTFormaldehyde.WithLabelValues(deviceName, component, zone).Set(*m.Formaldehyde)
 	}
 
 	if m.VOC != nil {
