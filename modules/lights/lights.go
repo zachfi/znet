@@ -178,14 +178,14 @@ func (l *Lights) ActionHandler(ctx context.Context, action *iot.Action) error {
 		}
 
 		return z.On(ctx)
-	case "up_press", "dial_rotate_right_slow", "dial_rotate_right_fast", "dial_rotate_right_step":
+	case "up_press", "dial_rotate_right_slow", "dial_rotate_right_fast", "dial_rotate_right_step", "brightness_step_up":
 		err := z.IncrementBrightness(ctx)
 		if err != nil {
 			return err
 		}
 
 		return z.On(ctx)
-	case "down_press", "dial_rotate_left_slow", "dial_rotate_left_fast", "dial_rotate_left_step":
+	case "down_press", "dial_rotate_left_slow", "dial_rotate_left_fast", "dial_rotate_left_step", "brightness_step_down":
 		err := z.DecrementBrightness(ctx)
 		if err != nil {
 			return err
