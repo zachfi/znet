@@ -51,6 +51,21 @@ var (
 		Help: "Sensor Humidity",
 	}, []string{"object_id", "component", "zone"})
 
+	telemetryIOTFormaldehyde = promauto.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "rpc_telemetry_iot_formaldehyde",
+		Help: "Sensor Formaldehyde",
+	}, []string{"object_id", "component", "zone"})
+
+	telemetryIOTCo2 = promauto.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "rpc_telemetry_iot_co2",
+		Help: "Sensor Humidity",
+	}, []string{"object_id", "component", "zone"})
+
+	telemetryIOTVoc = promauto.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "rpc_telemetry_iot_voc",
+		Help: "Sensor volatile organic compounds",
+	}, []string{"object_id", "component", "zone"})
+
 	telemetryIOTTamper = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "rpc_telemetry_iot_tamper",
 		Help: "Tamper binary",

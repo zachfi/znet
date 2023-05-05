@@ -569,6 +569,7 @@ func (l *Telemetry) handleAirReport(request *inventory.IOTDevice) error {
 		if m.Humidity != nil {
 			airHumidity.WithLabelValues(discovery.NodeId).Set(float64(*m.Humidity))
 		}
+
 		if m.HeatIndex != nil {
 			airHeatindex.WithLabelValues(discovery.NodeId).Set(float64(*m.HeatIndex))
 		}
@@ -637,6 +638,18 @@ func (l *Telemetry) updateZigbeeMessageMetrics(m iot.ZigbeeMessage, request *inv
 
 	if m.Humidity != nil {
 		telemetryIOTHumidity.WithLabelValues(deviceName, component, zone).Set(float64(*m.Humidity))
+	}
+
+	if m.Co2 != nil {
+		telemetryIOTCo2.WithLabelValues(deviceName, component, zone).Set(float64(*m.Co2))
+	}
+
+	if m.Formaldehyde != nil {
+		telemetryIOTFormaldehyde.WithLabelValues(deviceName, component, zone).Set(float64(*m.Formaldehyde))
+	}
+
+	if m.VOC != nil {
+		telemetryIOTVoc.WithLabelValues(deviceName, component, zone).Set(float64(*m.VOC))
 	}
 
 	if m.Illuminance != nil {

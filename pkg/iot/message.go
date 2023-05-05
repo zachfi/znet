@@ -5,16 +5,19 @@ import (
 )
 
 type ZigbeeMessage struct {
-	Action      *string  `json:"action,omitempty"`
-	Battery     *float32 `json:"battery,omitempty"`
-	Illuminance *int     `json:"illuminance,omitempty"`
-	LinkQuality *int     `json:"linkquality,omitempty"`
-	Occupancy   *bool    `json:"occupancy,omitempty"`
-	Tamper      *bool    `json:"tamper,omitempty"`
-	Temperature *float32 `json:"temperature,omitempty"`
-	Humidity    *int     `json:"humidity,omitempty"`
-	Voltage     *int     `json:"voltage,omitempty"`
-	WaterLeak   *bool    `json:"water_leak,omitempty"`
+	Action       *string  `json:"action,omitempty"`
+	Battery      *float32 `json:"battery,omitempty"`
+	Illuminance  *int     `json:"illuminance,omitempty"`
+	LinkQuality  *int     `json:"linkquality,omitempty"`
+	Occupancy    *bool    `json:"occupancy,omitempty"`
+	Tamper       *bool    `json:"tamper,omitempty"`
+	Temperature  *float32 `json:"temperature,omitempty"`
+	Humidity     *float64 `json:"humidity,omitempty"`
+	Voltage      *int     `json:"voltage,omitempty"`
+	WaterLeak    *bool    `json:"water_leak,omitempty"`
+	Co2          *float64 `json:"co2,omitempty"`
+	Formaldehyde *float64 `json:"formaldehyd,omitempty"`
+	VOC          *int     `json:"voc,omitempty"`
 }
 
 type ZigbeeBridgeState string
