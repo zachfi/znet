@@ -112,28 +112,14 @@ func (z *Zone) On(ctx context.Context) error {
 }
 
 func (z *Zone) Toggle(ctx context.Context) error {
-
 	switch z.state {
 	case ZoneState_ON:
-		for _, h := range z.handlers {
-			err := h.Off(ctx, z.Name())
-			if err != nil {
-				return fmt.Errorf("%s Off: %w", z.name, ErrHandlerFailed)
-			}
-		}
-
+		return z.SetState(ctx, ZoneState_OFF)
 	case ZoneState_OFF:
-		for _, h := range z.handlers {
-			err := h.On(ctx, z.Name())
-			if err != nil {
-				return fmt.Errorf("%s On: %w", z.name, ErrHandlerFailed)
-			}
-		}
+		return z.SetState(ctx, ZoneState_ON)
 	default:
 		return fmt.Errorf("unhandled toggle from current state: %s", z.state)
 	}
-
-	return nil
 }
 
 func (z *Zone) Alert(ctx context.Context) error {
