@@ -1,3 +1,26 @@
+<a name="v0.32.13"></a>
+## [v0.32.13] - 2023-05-10
+<a name="v0.32.12"></a>
+## [v0.32.12] - 2023-05-05
+<a name="v0.32.11"></a>
+## [v0.32.11] - 2023-05-05
+<a name="v0.32.10"></a>
+## [v0.32.10] - 2023-05-05
+<a name="v0.32.9"></a>
+## [v0.32.9] - 2023-05-05
+<a name="v0.32.8"></a>
+## [v0.32.8] - 2023-05-05
+<a name="v0.32.7"></a>
+## [v0.32.7] - 2023-04-19
+### Features
+- add support for humidity messages
+
+<a name="v0.32.6"></a>
+## [v0.32.6] - 2023-04-11
+<a name="v0.32.5"></a>
+## [v0.32.5] - 2023-02-08
+<a name="v0.32.4"></a>
+## [v0.32.4] - 2023-02-08
 <a name="v0.32.3"></a>
 ## [v0.32.3] - 2023-02-08
 <a name="v0.32.2"></a>
@@ -50,10 +73,10 @@
 - **deps:** update github.com/weaveworks/common commit hash to 933588f
 - **deps:** update module github.com/goreleaser/goreleaser to v1.2.2
 
-<a name="v0.30.23"></a>
-## [v0.30.23] - 2021-12-19
 <a name="v0.31.3"></a>
 ## [v0.31.3] - 2021-12-19
+<a name="v0.30.23"></a>
+## [v0.30.23] - 2021-12-19
 <a name="v0.31.2"></a>
 ## [v0.31.2] - 2021-12-17
 ### Bug Fixes
@@ -307,10 +330,10 @@
 ## [v0.28.6] - 2020-12-08
 <a name="v0.28.5"></a>
 ## [v0.28.5] - 2020-12-08
-<a name="v0.28.3"></a>
-## [v0.28.3] - 2020-12-06
 <a name="v0.28.4"></a>
 ## [v0.28.4] - 2020-12-06
+<a name="v0.28.3"></a>
+## [v0.28.3] - 2020-12-06
 ### Bug Fixes
 - **build:** adjust workflow syntax
 
@@ -708,34 +731,34 @@
 
 <a name="v0.12.17"></a>
 ## [v0.12.17] - 2020-04-24
-<a name="v0.12.18"></a>
-## [v0.12.18] - 2020-04-24
 <a name="v0.12.15"></a>
 ## [v0.12.15] - 2020-04-24
+<a name="v0.12.19"></a>
+## [v0.12.19] - 2020-04-24
 <a name="v0.12.20"></a>
 ## [v0.12.20] - 2020-04-24
 <a name="v0.12.21"></a>
 ## [v0.12.21] - 2020-04-24
-<a name="v0.12.16"></a>
-## [v0.12.16] - 2020-04-24
-<a name="v0.12.14"></a>
-## [v0.12.14] - 2020-04-24
 <a name="v0.12.22"></a>
 ## [v0.12.22] - 2020-04-24
-<a name="v0.12.19"></a>
-## [v0.12.19] - 2020-04-24
+<a name="v0.12.14"></a>
+## [v0.12.14] - 2020-04-24
+<a name="v0.12.16"></a>
+## [v0.12.16] - 2020-04-24
+<a name="v0.12.18"></a>
+## [v0.12.18] - 2020-04-24
 <a name="v0.12.10"></a>
 ## [v0.12.10] - 2020-04-24
-<a name="v0.12.12"></a>
-## [v0.12.12] - 2020-04-24
+<a name="v0.12.11"></a>
+## [v0.12.11] - 2020-04-24
 <a name="v0.12.13"></a>
 ## [v0.12.13] - 2020-04-24
 <a name="v0.12.8"></a>
 ## [v0.12.8] - 2020-04-24
 <a name="v0.12.9"></a>
 ## [v0.12.9] - 2020-04-24
-<a name="v0.12.11"></a>
-## [v0.12.11] - 2020-04-24
+<a name="v0.12.12"></a>
+## [v0.12.12] - 2020-04-24
 <a name="v0.12.7"></a>
 ## [v0.12.7] - 2020-04-24
 <a name="v0.12.5"></a>
@@ -980,237 +1003,247 @@
 ## [v0.0.2] - 2018-09-03
 <a name="v0.0.1"></a>
 ## v0.0.1 - 2018-09-03
-[Unreleased]: https://github.com/zachfi/znet/compare/v0.32.3...HEAD
-[v0.32.3]: https://github.com/zachfi/znet/compare/v0.32.2...v0.32.3
-[v0.32.2]: https://github.com/zachfi/znet/compare/v0.32.1...v0.32.2
-[v0.32.1]: https://github.com/zachfi/znet/compare/v0.32.0...v0.32.1
-[v0.32.0]: https://github.com/zachfi/znet/compare/v0.31.9...v0.32.0
-[v0.31.9]: https://github.com/zachfi/znet/compare/v0.31.8...v0.31.9
-[v0.31.8]: https://github.com/zachfi/znet/compare/v0.31.7...v0.31.8
-[v0.31.7]: https://github.com/zachfi/znet/compare/v0.31.6...v0.31.7
-[v0.31.6]: https://github.com/zachfi/znet/compare/v0.31.5...v0.31.6
-[v0.31.5]: https://github.com/zachfi/znet/compare/v0.31.4...v0.31.5
-[v0.31.4]: https://github.com/zachfi/znet/compare/v0.30.23...v0.31.4
-[v0.30.23]: https://github.com/zachfi/znet/compare/v0.31.3...v0.30.23
-[v0.31.3]: https://github.com/zachfi/znet/compare/v0.31.2...v0.31.3
-[v0.31.2]: https://github.com/zachfi/znet/compare/v0.31.1...v0.31.2
-[v0.31.1]: https://github.com/zachfi/znet/compare/v0.31.0...v0.31.1
-[v0.31.0]: https://github.com/zachfi/znet/compare/v0.30.22...v0.31.0
-[v0.30.22]: https://github.com/zachfi/znet/compare/v0.30.21...v0.30.22
-[v0.30.21]: https://github.com/zachfi/znet/compare/v0.30.20...v0.30.21
-[v0.30.20]: https://github.com/zachfi/znet/compare/v0.30.19...v0.30.20
-[v0.30.19]: https://github.com/zachfi/znet/compare/v0.30.18...v0.30.19
-[v0.30.18]: https://github.com/zachfi/znet/compare/v0.30.17...v0.30.18
-[v0.30.17]: https://github.com/zachfi/znet/compare/v0.30.16...v0.30.17
-[v0.30.16]: https://github.com/zachfi/znet/compare/v0.30.15...v0.30.16
-[v0.30.15]: https://github.com/zachfi/znet/compare/v0.30.14...v0.30.15
-[v0.30.14]: https://github.com/zachfi/znet/compare/v0.30.13...v0.30.14
-[v0.30.13]: https://github.com/zachfi/znet/compare/v0.30.12...v0.30.13
-[v0.30.12]: https://github.com/zachfi/znet/compare/v0.30.11...v0.30.12
-[v0.30.11]: https://github.com/zachfi/znet/compare/v0.30.10...v0.30.11
-[v0.30.10]: https://github.com/zachfi/znet/compare/v0.30.9...v0.30.10
-[v0.30.9]: https://github.com/zachfi/znet/compare/v0.30.8...v0.30.9
-[v0.30.8]: https://github.com/zachfi/znet/compare/v0.30.7...v0.30.8
-[v0.30.7]: https://github.com/zachfi/znet/compare/v0.30.6...v0.30.7
-[v0.30.6]: https://github.com/zachfi/znet/compare/v0.30.5...v0.30.6
-[v0.30.5]: https://github.com/zachfi/znet/compare/v0.30.4...v0.30.5
-[v0.30.4]: https://github.com/zachfi/znet/compare/v0.30.3...v0.30.4
-[v0.30.3]: https://github.com/zachfi/znet/compare/v0.30.2...v0.30.3
-[v0.30.2]: https://github.com/zachfi/znet/compare/v0.30.1...v0.30.2
-[v0.30.1]: https://github.com/zachfi/znet/compare/v0.30.0...v0.30.1
-[v0.30.0]: https://github.com/zachfi/znet/compare/v0.29.14...v0.30.0
-[v0.29.14]: https://github.com/zachfi/znet/compare/v0.29.13...v0.29.14
-[v0.29.13]: https://github.com/zachfi/znet/compare/v0.29.12...v0.29.13
-[v0.29.12]: https://github.com/zachfi/znet/compare/v0.29.11...v0.29.12
-[v0.29.11]: https://github.com/zachfi/znet/compare/v0.29.10...v0.29.11
-[v0.29.10]: https://github.com/zachfi/znet/compare/v0.29.9...v0.29.10
-[v0.29.9]: https://github.com/zachfi/znet/compare/v0.29.8...v0.29.9
-[v0.29.8]: https://github.com/zachfi/znet/compare/v0.29.7...v0.29.8
-[v0.29.7]: https://github.com/zachfi/znet/compare/v0.29.6...v0.29.7
-[v0.29.6]: https://github.com/zachfi/znet/compare/v0.29.5...v0.29.6
-[v0.29.5]: https://github.com/zachfi/znet/compare/v0.29.4...v0.29.5
-[v0.29.4]: https://github.com/zachfi/znet/compare/v0.29.3...v0.29.4
-[v0.29.3]: https://github.com/zachfi/znet/compare/v0.29.2...v0.29.3
-[v0.29.2]: https://github.com/zachfi/znet/compare/v0.29.1...v0.29.2
-[v0.29.1]: https://github.com/zachfi/znet/compare/v0.29.0...v0.29.1
-[v0.29.0]: https://github.com/zachfi/znet/compare/v0.28.6...v0.29.0
-[v0.28.6]: https://github.com/zachfi/znet/compare/v0.28.5...v0.28.6
-[v0.28.5]: https://github.com/zachfi/znet/compare/v0.28.3...v0.28.5
-[v0.28.3]: https://github.com/zachfi/znet/compare/v0.28.4...v0.28.3
-[v0.28.4]: https://github.com/zachfi/znet/compare/v0.28.2...v0.28.4
-[v0.28.2]: https://github.com/zachfi/znet/compare/v0.28.1...v0.28.2
-[v0.28.1]: https://github.com/zachfi/znet/compare/v0.28.0...v0.28.1
-[v0.28.0]: https://github.com/zachfi/znet/compare/v0.27.10...v0.28.0
-[v0.27.10]: https://github.com/zachfi/znet/compare/v0.27.9...v0.27.10
-[v0.27.9]: https://github.com/zachfi/znet/compare/v0.27.8...v0.27.9
-[v0.27.8]: https://github.com/zachfi/znet/compare/v0.27.7...v0.27.8
-[v0.27.7]: https://github.com/zachfi/znet/compare/v0.27.6...v0.27.7
-[v0.27.6]: https://github.com/zachfi/znet/compare/v0.27.5...v0.27.6
-[v0.27.5]: https://github.com/zachfi/znet/compare/v0.27.4...v0.27.5
-[v0.27.4]: https://github.com/zachfi/znet/compare/v0.27.3...v0.27.4
-[v0.27.3]: https://github.com/zachfi/znet/compare/v0.27.2...v0.27.3
-[v0.27.2]: https://github.com/zachfi/znet/compare/v0.27.1...v0.27.2
-[v0.27.1]: https://github.com/zachfi/znet/compare/v0.27.0...v0.27.1
-[v0.27.0]: https://github.com/zachfi/znet/compare/v0.26.2...v0.27.0
-[v0.26.2]: https://github.com/zachfi/znet/compare/v0.26.1...v0.26.2
-[v0.26.1]: https://github.com/zachfi/znet/compare/v0.26.0...v0.26.1
-[v0.26.0]: https://github.com/zachfi/znet/compare/v0.25.3...v0.26.0
-[v0.25.3]: https://github.com/zachfi/znet/compare/v0.25.2...v0.25.3
-[v0.25.2]: https://github.com/zachfi/znet/compare/v0.25.1...v0.25.2
-[v0.25.1]: https://github.com/zachfi/znet/compare/v0.25.0...v0.25.1
-[v0.25.0]: https://github.com/zachfi/znet/compare/v0.24.7...v0.25.0
-[v0.24.7]: https://github.com/zachfi/znet/compare/v0.24.6...v0.24.7
-[v0.24.6]: https://github.com/zachfi/znet/compare/v0.24.5...v0.24.6
-[v0.24.5]: https://github.com/zachfi/znet/compare/v0.24.4...v0.24.5
-[v0.24.4]: https://github.com/zachfi/znet/compare/v0.24.3...v0.24.4
-[v0.24.3]: https://github.com/zachfi/znet/compare/v0.23.4...v0.24.3
-[v0.23.4]: https://github.com/zachfi/znet/compare/v0.24.2...v0.23.4
-[v0.24.2]: https://github.com/zachfi/znet/compare/v0.24.1...v0.24.2
-[v0.24.1]: https://github.com/zachfi/znet/compare/v0.24.0...v0.24.1
-[v0.24.0]: https://github.com/zachfi/znet/compare/v0.23.3...v0.24.0
-[v0.23.3]: https://github.com/zachfi/znet/compare/v0.23.2...v0.23.3
-[v0.23.2]: https://github.com/zachfi/znet/compare/v0.23.1...v0.23.2
-[v0.23.1]: https://github.com/zachfi/znet/compare/v0.23.0...v0.23.1
-[v0.23.0]: https://github.com/zachfi/znet/compare/v0.22.0...v0.23.0
-[v0.22.0]: https://github.com/zachfi/znet/compare/v0.21.4...v0.22.0
-[v0.21.4]: https://github.com/zachfi/znet/compare/v0.21.3...v0.21.4
-[v0.21.3]: https://github.com/zachfi/znet/compare/v0.21.2...v0.21.3
-[v0.21.2]: https://github.com/zachfi/znet/compare/v0.21.1...v0.21.2
-[v0.21.1]: https://github.com/zachfi/znet/compare/v0.21.0...v0.21.1
-[v0.21.0]: https://github.com/zachfi/znet/compare/v0.20.6...v0.21.0
-[v0.20.6]: https://github.com/zachfi/znet/compare/v0.20.5...v0.20.6
-[v0.20.5]: https://github.com/zachfi/znet/compare/v0.20.4...v0.20.5
-[v0.20.4]: https://github.com/zachfi/znet/compare/v0.20.3...v0.20.4
-[v0.20.3]: https://github.com/zachfi/znet/compare/v0.20.2...v0.20.3
-[v0.20.2]: https://github.com/zachfi/znet/compare/v0.20.1...v0.20.2
-[v0.20.1]: https://github.com/zachfi/znet/compare/v0.20.0...v0.20.1
-[v0.20.0]: https://github.com/zachfi/znet/compare/v0.19.0...v0.20.0
-[v0.19.0]: https://github.com/zachfi/znet/compare/v0.18.3...v0.19.0
-[v0.18.3]: https://github.com/zachfi/znet/compare/v0.18.2...v0.18.3
-[v0.18.2]: https://github.com/zachfi/znet/compare/v0.18.1...v0.18.2
-[v0.18.1]: https://github.com/zachfi/znet/compare/v0.18.0...v0.18.1
-[v0.18.0]: https://github.com/zachfi/znet/compare/v0.17.3...v0.18.0
-[v0.17.3]: https://github.com/zachfi/znet/compare/v0.17.2...v0.17.3
-[v0.17.2]: https://github.com/zachfi/znet/compare/v0.17.1...v0.17.2
-[v0.17.1]: https://github.com/zachfi/znet/compare/v0.17.0...v0.17.1
-[v0.17.0]: https://github.com/zachfi/znet/compare/v0.16.7...v0.17.0
-[v0.16.7]: https://github.com/zachfi/znet/compare/v0.16.6...v0.16.7
-[v0.16.6]: https://github.com/zachfi/znet/compare/v0.16.5...v0.16.6
-[v0.16.5]: https://github.com/zachfi/znet/compare/v0.16.4...v0.16.5
-[v0.16.4]: https://github.com/zachfi/znet/compare/v0.16.3...v0.16.4
-[v0.16.3]: https://github.com/zachfi/znet/compare/v0.16.2...v0.16.3
-[v0.16.2]: https://github.com/zachfi/znet/compare/v0.16.1...v0.16.2
-[v0.16.1]: https://github.com/zachfi/znet/compare/v0.16.0...v0.16.1
-[v0.16.0]: https://github.com/zachfi/znet/compare/v0.15.0...v0.16.0
-[v0.15.0]: https://github.com/zachfi/znet/compare/v0.14.9...v0.15.0
-[v0.14.9]: https://github.com/zachfi/znet/compare/v0.14.8...v0.14.9
-[v0.14.8]: https://github.com/zachfi/znet/compare/v0.14.7...v0.14.8
-[v0.14.7]: https://github.com/zachfi/znet/compare/v0.14.6...v0.14.7
-[v0.14.6]: https://github.com/zachfi/znet/compare/v0.14.5...v0.14.6
-[v0.14.5]: https://github.com/zachfi/znet/compare/v0.14.4...v0.14.5
-[v0.14.4]: https://github.com/zachfi/znet/compare/v0.14.3...v0.14.4
-[v0.14.3]: https://github.com/zachfi/znet/compare/v0.14.2...v0.14.3
-[v0.14.2]: https://github.com/zachfi/znet/compare/v0.14.1...v0.14.2
-[v0.14.1]: https://github.com/zachfi/znet/compare/v0.14.0...v0.14.1
-[v0.14.0]: https://github.com/zachfi/znet/compare/v0.13.14...v0.14.0
-[v0.13.14]: https://github.com/zachfi/znet/compare/v0.13.13...v0.13.14
-[v0.13.13]: https://github.com/zachfi/znet/compare/v0.13.12...v0.13.13
-[v0.13.12]: https://github.com/zachfi/znet/compare/v0.13.11...v0.13.12
-[v0.13.11]: https://github.com/zachfi/znet/compare/v0.13.10...v0.13.11
-[v0.13.10]: https://github.com/zachfi/znet/compare/v0.13.9...v0.13.10
-[v0.13.9]: https://github.com/zachfi/znet/compare/v0.13.8...v0.13.9
-[v0.13.8]: https://github.com/zachfi/znet/compare/v0.13.7...v0.13.8
-[v0.13.7]: https://github.com/zachfi/znet/compare/v0.13.6...v0.13.7
-[v0.13.6]: https://github.com/zachfi/znet/compare/v0.13.5...v0.13.6
-[v0.13.5]: https://github.com/zachfi/znet/compare/v0.13.4...v0.13.5
-[v0.13.4]: https://github.com/zachfi/znet/compare/v0.13.3...v0.13.4
-[v0.13.3]: https://github.com/zachfi/znet/compare/v0.13.1...v0.13.3
-[v0.13.1]: https://github.com/zachfi/znet/compare/v0.13.0...v0.13.1
-[v0.13.0]: https://github.com/zachfi/znet/compare/v0.13.2...v0.13.0
-[v0.13.2]: https://github.com/zachfi/znet/compare/v0.12.17...v0.13.2
-[v0.12.17]: https://github.com/zachfi/znet/compare/v0.12.18...v0.12.17
-[v0.12.18]: https://github.com/zachfi/znet/compare/v0.12.15...v0.12.18
-[v0.12.15]: https://github.com/zachfi/znet/compare/v0.12.20...v0.12.15
-[v0.12.20]: https://github.com/zachfi/znet/compare/v0.12.21...v0.12.20
-[v0.12.21]: https://github.com/zachfi/znet/compare/v0.12.16...v0.12.21
-[v0.12.16]: https://github.com/zachfi/znet/compare/v0.12.14...v0.12.16
-[v0.12.14]: https://github.com/zachfi/znet/compare/v0.12.22...v0.12.14
-[v0.12.22]: https://github.com/zachfi/znet/compare/v0.12.19...v0.12.22
-[v0.12.19]: https://github.com/zachfi/znet/compare/v0.12.10...v0.12.19
-[v0.12.10]: https://github.com/zachfi/znet/compare/v0.12.12...v0.12.10
-[v0.12.12]: https://github.com/zachfi/znet/compare/v0.12.13...v0.12.12
-[v0.12.13]: https://github.com/zachfi/znet/compare/v0.12.8...v0.12.13
-[v0.12.8]: https://github.com/zachfi/znet/compare/v0.12.9...v0.12.8
-[v0.12.9]: https://github.com/zachfi/znet/compare/v0.12.11...v0.12.9
-[v0.12.11]: https://github.com/zachfi/znet/compare/v0.12.7...v0.12.11
-[v0.12.7]: https://github.com/zachfi/znet/compare/v0.12.5...v0.12.7
-[v0.12.5]: https://github.com/zachfi/znet/compare/v0.12.6...v0.12.5
-[v0.12.6]: https://github.com/zachfi/znet/compare/v0.12.4...v0.12.6
-[v0.12.4]: https://github.com/zachfi/znet/compare/v0.12.3...v0.12.4
-[v0.12.3]: https://github.com/zachfi/znet/compare/v0.12.2...v0.12.3
-[v0.12.2]: https://github.com/zachfi/znet/compare/v0.12.1...v0.12.2
-[v0.12.1]: https://github.com/zachfi/znet/compare/v0.12.0...v0.12.1
-[v0.12.0]: https://github.com/zachfi/znet/compare/v0.11.13...v0.12.0
-[v0.11.13]: https://github.com/zachfi/znet/compare/v0.11.14...v0.11.13
-[v0.11.14]: https://github.com/zachfi/znet/compare/v0.11.12...v0.11.14
-[v0.11.12]: https://github.com/zachfi/znet/compare/v0.11.11...v0.11.12
-[v0.11.11]: https://github.com/zachfi/znet/compare/v0.11.9...v0.11.11
-[v0.11.9]: https://github.com/zachfi/znet/compare/v0.11.8...v0.11.9
-[v0.11.8]: https://github.com/zachfi/znet/compare/v0.11.7...v0.11.8
-[v0.11.7]: https://github.com/zachfi/znet/compare/v0.11.10...v0.11.7
-[v0.11.10]: https://github.com/zachfi/znet/compare/v0.11.6...v0.11.10
-[v0.11.6]: https://github.com/zachfi/znet/compare/v0.11.5...v0.11.6
-[v0.11.5]: https://github.com/zachfi/znet/compare/v0.11.4...v0.11.5
-[v0.11.4]: https://github.com/zachfi/znet/compare/v0.11.3...v0.11.4
-[v0.11.3]: https://github.com/zachfi/znet/compare/v0.11.2...v0.11.3
-[v0.11.2]: https://github.com/zachfi/znet/compare/v0.11.1...v0.11.2
-[v0.11.1]: https://github.com/zachfi/znet/compare/v0.11.0...v0.11.1
-[v0.11.0]: https://github.com/zachfi/znet/compare/v0.10.0...v0.11.0
-[v0.10.0]: https://github.com/zachfi/znet/compare/v0.9.9...v0.10.0
-[v0.9.9]: https://github.com/zachfi/znet/compare/v0.9.8...v0.9.9
-[v0.9.8]: https://github.com/zachfi/znet/compare/v0.9.7...v0.9.8
-[v0.9.7]: https://github.com/zachfi/znet/compare/v0.9.6...v0.9.7
-[v0.9.6]: https://github.com/zachfi/znet/compare/v0.9.5...v0.9.6
-[v0.9.5]: https://github.com/zachfi/znet/compare/v0.9.4...v0.9.5
-[v0.9.4]: https://github.com/zachfi/znet/compare/v0.9.3...v0.9.4
-[v0.9.3]: https://github.com/zachfi/znet/compare/v0.9.0...v0.9.3
-[v0.9.0]: https://github.com/zachfi/znet/compare/v0.9.2...v0.9.0
-[v0.9.2]: https://github.com/zachfi/znet/compare/v0.9.1...v0.9.2
-[v0.9.1]: https://github.com/zachfi/znet/compare/v0.8.3...v0.9.1
-[v0.8.3]: https://github.com/zachfi/znet/compare/v0.8.2...v0.8.3
-[v0.8.2]: https://github.com/zachfi/znet/compare/v0.8.1...v0.8.2
-[v0.8.1]: https://github.com/zachfi/znet/compare/v0.8.0...v0.8.1
-[v0.8.0]: https://github.com/zachfi/znet/compare/v0.7.11...v0.8.0
-[v0.7.11]: https://github.com/zachfi/znet/compare/v0.7.10...v0.7.11
-[v0.7.10]: https://github.com/zachfi/znet/compare/v0.7.9...v0.7.10
-[v0.7.9]: https://github.com/zachfi/znet/compare/v0.7.8...v0.7.9
-[v0.7.8]: https://github.com/zachfi/znet/compare/v0.7.7...v0.7.8
-[v0.7.7]: https://github.com/zachfi/znet/compare/v0.7.5...v0.7.7
-[v0.7.5]: https://github.com/zachfi/znet/compare/v0.7.6...v0.7.5
-[v0.7.6]: https://github.com/zachfi/znet/compare/v0.7.4...v0.7.6
-[v0.7.4]: https://github.com/zachfi/znet/compare/v0.7.3...v0.7.4
-[v0.7.3]: https://github.com/zachfi/znet/compare/v0.7.2...v0.7.3
-[v0.7.2]: https://github.com/zachfi/znet/compare/v0.7.1...v0.7.2
-[v0.7.1]: https://github.com/zachfi/znet/compare/v0.7.0...v0.7.1
-[v0.7.0]: https://github.com/zachfi/znet/compare/v0.6.4...v0.7.0
-[v0.6.4]: https://github.com/zachfi/znet/compare/v0.6.5...v0.6.4
-[v0.6.5]: https://github.com/zachfi/znet/compare/v0.6.3...v0.6.5
-[v0.6.3]: https://github.com/zachfi/znet/compare/v0.6.2...v0.6.3
-[v0.6.2]: https://github.com/zachfi/znet/compare/v0.6.1...v0.6.2
-[v0.6.1]: https://github.com/zachfi/znet/compare/v0.6.0...v0.6.1
-[v0.6.0]: https://github.com/zachfi/znet/compare/v0.5.2...v0.6.0
-[v0.5.2]: https://github.com/zachfi/znet/compare/v0.5.1...v0.5.2
-[v0.5.1]: https://github.com/zachfi/znet/compare/v0.5.0...v0.5.1
-[v0.5.0]: https://github.com/zachfi/znet/compare/v0.4.0...v0.5.0
-[v0.4.0]: https://github.com/zachfi/znet/compare/v0.3.0...v0.4.0
-[v0.3.0]: https://github.com/zachfi/znet/compare/v0.2.0...v0.3.0
-[v0.2.0]: https://github.com/zachfi/znet/compare/v0.1.0...v0.2.0
-[v0.1.0]: https://github.com/zachfi/znet/compare/v0.0.9...v0.1.0
-[v0.0.9]: https://github.com/zachfi/znet/compare/v0.0.8...v0.0.9
-[v0.0.8]: https://github.com/zachfi/znet/compare/v0.0.7...v0.0.8
-[v0.0.7]: https://github.com/zachfi/znet/compare/v0.0.6...v0.0.7
-[v0.0.6]: https://github.com/zachfi/znet/compare/v0.0.5...v0.0.6
-[v0.0.5]: https://github.com/zachfi/znet/compare/v0.0.4...v0.0.5
-[v0.0.4]: https://github.com/zachfi/znet/compare/v0.0.3...v0.0.4
-[v0.0.3]: https://github.com/zachfi/znet/compare/v0.0.2...v0.0.3
-[v0.0.2]: https://github.com/zachfi/znet/compare/v0.0.1...v0.0.2
+[Unreleased]: https://github.com/xaque208/znet/compare/v0.32.13...HEAD
+[v0.32.13]: https://github.com/xaque208/znet/compare/v0.32.12...v0.32.13
+[v0.32.12]: https://github.com/xaque208/znet/compare/v0.32.11...v0.32.12
+[v0.32.11]: https://github.com/xaque208/znet/compare/v0.32.10...v0.32.11
+[v0.32.10]: https://github.com/xaque208/znet/compare/v0.32.9...v0.32.10
+[v0.32.9]: https://github.com/xaque208/znet/compare/v0.32.8...v0.32.9
+[v0.32.8]: https://github.com/xaque208/znet/compare/v0.32.7...v0.32.8
+[v0.32.7]: https://github.com/xaque208/znet/compare/v0.32.6...v0.32.7
+[v0.32.6]: https://github.com/xaque208/znet/compare/v0.32.5...v0.32.6
+[v0.32.5]: https://github.com/xaque208/znet/compare/v0.32.4...v0.32.5
+[v0.32.4]: https://github.com/xaque208/znet/compare/v0.32.3...v0.32.4
+[v0.32.3]: https://github.com/xaque208/znet/compare/v0.32.2...v0.32.3
+[v0.32.2]: https://github.com/xaque208/znet/compare/v0.32.1...v0.32.2
+[v0.32.1]: https://github.com/xaque208/znet/compare/v0.32.0...v0.32.1
+[v0.32.0]: https://github.com/xaque208/znet/compare/v0.31.9...v0.32.0
+[v0.31.9]: https://github.com/xaque208/znet/compare/v0.31.8...v0.31.9
+[v0.31.8]: https://github.com/xaque208/znet/compare/v0.31.7...v0.31.8
+[v0.31.7]: https://github.com/xaque208/znet/compare/v0.31.6...v0.31.7
+[v0.31.6]: https://github.com/xaque208/znet/compare/v0.31.5...v0.31.6
+[v0.31.5]: https://github.com/xaque208/znet/compare/v0.31.4...v0.31.5
+[v0.31.4]: https://github.com/xaque208/znet/compare/v0.31.3...v0.31.4
+[v0.31.3]: https://github.com/xaque208/znet/compare/v0.30.23...v0.31.3
+[v0.30.23]: https://github.com/xaque208/znet/compare/v0.31.2...v0.30.23
+[v0.31.2]: https://github.com/xaque208/znet/compare/v0.31.1...v0.31.2
+[v0.31.1]: https://github.com/xaque208/znet/compare/v0.31.0...v0.31.1
+[v0.31.0]: https://github.com/xaque208/znet/compare/v0.30.22...v0.31.0
+[v0.30.22]: https://github.com/xaque208/znet/compare/v0.30.21...v0.30.22
+[v0.30.21]: https://github.com/xaque208/znet/compare/v0.30.20...v0.30.21
+[v0.30.20]: https://github.com/xaque208/znet/compare/v0.30.19...v0.30.20
+[v0.30.19]: https://github.com/xaque208/znet/compare/v0.30.18...v0.30.19
+[v0.30.18]: https://github.com/xaque208/znet/compare/v0.30.17...v0.30.18
+[v0.30.17]: https://github.com/xaque208/znet/compare/v0.30.16...v0.30.17
+[v0.30.16]: https://github.com/xaque208/znet/compare/v0.30.15...v0.30.16
+[v0.30.15]: https://github.com/xaque208/znet/compare/v0.30.14...v0.30.15
+[v0.30.14]: https://github.com/xaque208/znet/compare/v0.30.13...v0.30.14
+[v0.30.13]: https://github.com/xaque208/znet/compare/v0.30.12...v0.30.13
+[v0.30.12]: https://github.com/xaque208/znet/compare/v0.30.11...v0.30.12
+[v0.30.11]: https://github.com/xaque208/znet/compare/v0.30.10...v0.30.11
+[v0.30.10]: https://github.com/xaque208/znet/compare/v0.30.9...v0.30.10
+[v0.30.9]: https://github.com/xaque208/znet/compare/v0.30.8...v0.30.9
+[v0.30.8]: https://github.com/xaque208/znet/compare/v0.30.7...v0.30.8
+[v0.30.7]: https://github.com/xaque208/znet/compare/v0.30.6...v0.30.7
+[v0.30.6]: https://github.com/xaque208/znet/compare/v0.30.5...v0.30.6
+[v0.30.5]: https://github.com/xaque208/znet/compare/v0.30.4...v0.30.5
+[v0.30.4]: https://github.com/xaque208/znet/compare/v0.30.3...v0.30.4
+[v0.30.3]: https://github.com/xaque208/znet/compare/v0.30.2...v0.30.3
+[v0.30.2]: https://github.com/xaque208/znet/compare/v0.30.1...v0.30.2
+[v0.30.1]: https://github.com/xaque208/znet/compare/v0.30.0...v0.30.1
+[v0.30.0]: https://github.com/xaque208/znet/compare/v0.29.14...v0.30.0
+[v0.29.14]: https://github.com/xaque208/znet/compare/v0.29.13...v0.29.14
+[v0.29.13]: https://github.com/xaque208/znet/compare/v0.29.12...v0.29.13
+[v0.29.12]: https://github.com/xaque208/znet/compare/v0.29.11...v0.29.12
+[v0.29.11]: https://github.com/xaque208/znet/compare/v0.29.10...v0.29.11
+[v0.29.10]: https://github.com/xaque208/znet/compare/v0.29.9...v0.29.10
+[v0.29.9]: https://github.com/xaque208/znet/compare/v0.29.8...v0.29.9
+[v0.29.8]: https://github.com/xaque208/znet/compare/v0.29.7...v0.29.8
+[v0.29.7]: https://github.com/xaque208/znet/compare/v0.29.6...v0.29.7
+[v0.29.6]: https://github.com/xaque208/znet/compare/v0.29.5...v0.29.6
+[v0.29.5]: https://github.com/xaque208/znet/compare/v0.29.4...v0.29.5
+[v0.29.4]: https://github.com/xaque208/znet/compare/v0.29.3...v0.29.4
+[v0.29.3]: https://github.com/xaque208/znet/compare/v0.29.2...v0.29.3
+[v0.29.2]: https://github.com/xaque208/znet/compare/v0.29.1...v0.29.2
+[v0.29.1]: https://github.com/xaque208/znet/compare/v0.29.0...v0.29.1
+[v0.29.0]: https://github.com/xaque208/znet/compare/v0.28.6...v0.29.0
+[v0.28.6]: https://github.com/xaque208/znet/compare/v0.28.5...v0.28.6
+[v0.28.5]: https://github.com/xaque208/znet/compare/v0.28.4...v0.28.5
+[v0.28.4]: https://github.com/xaque208/znet/compare/v0.28.3...v0.28.4
+[v0.28.3]: https://github.com/xaque208/znet/compare/v0.28.2...v0.28.3
+[v0.28.2]: https://github.com/xaque208/znet/compare/v0.28.1...v0.28.2
+[v0.28.1]: https://github.com/xaque208/znet/compare/v0.28.0...v0.28.1
+[v0.28.0]: https://github.com/xaque208/znet/compare/v0.27.10...v0.28.0
+[v0.27.10]: https://github.com/xaque208/znet/compare/v0.27.9...v0.27.10
+[v0.27.9]: https://github.com/xaque208/znet/compare/v0.27.8...v0.27.9
+[v0.27.8]: https://github.com/xaque208/znet/compare/v0.27.7...v0.27.8
+[v0.27.7]: https://github.com/xaque208/znet/compare/v0.27.6...v0.27.7
+[v0.27.6]: https://github.com/xaque208/znet/compare/v0.27.5...v0.27.6
+[v0.27.5]: https://github.com/xaque208/znet/compare/v0.27.4...v0.27.5
+[v0.27.4]: https://github.com/xaque208/znet/compare/v0.27.3...v0.27.4
+[v0.27.3]: https://github.com/xaque208/znet/compare/v0.27.2...v0.27.3
+[v0.27.2]: https://github.com/xaque208/znet/compare/v0.27.1...v0.27.2
+[v0.27.1]: https://github.com/xaque208/znet/compare/v0.27.0...v0.27.1
+[v0.27.0]: https://github.com/xaque208/znet/compare/v0.26.2...v0.27.0
+[v0.26.2]: https://github.com/xaque208/znet/compare/v0.26.1...v0.26.2
+[v0.26.1]: https://github.com/xaque208/znet/compare/v0.26.0...v0.26.1
+[v0.26.0]: https://github.com/xaque208/znet/compare/v0.25.3...v0.26.0
+[v0.25.3]: https://github.com/xaque208/znet/compare/v0.25.2...v0.25.3
+[v0.25.2]: https://github.com/xaque208/znet/compare/v0.25.1...v0.25.2
+[v0.25.1]: https://github.com/xaque208/znet/compare/v0.25.0...v0.25.1
+[v0.25.0]: https://github.com/xaque208/znet/compare/v0.24.7...v0.25.0
+[v0.24.7]: https://github.com/xaque208/znet/compare/v0.24.6...v0.24.7
+[v0.24.6]: https://github.com/xaque208/znet/compare/v0.24.5...v0.24.6
+[v0.24.5]: https://github.com/xaque208/znet/compare/v0.24.4...v0.24.5
+[v0.24.4]: https://github.com/xaque208/znet/compare/v0.24.3...v0.24.4
+[v0.24.3]: https://github.com/xaque208/znet/compare/v0.23.4...v0.24.3
+[v0.23.4]: https://github.com/xaque208/znet/compare/v0.24.2...v0.23.4
+[v0.24.2]: https://github.com/xaque208/znet/compare/v0.24.1...v0.24.2
+[v0.24.1]: https://github.com/xaque208/znet/compare/v0.24.0...v0.24.1
+[v0.24.0]: https://github.com/xaque208/znet/compare/v0.23.3...v0.24.0
+[v0.23.3]: https://github.com/xaque208/znet/compare/v0.23.2...v0.23.3
+[v0.23.2]: https://github.com/xaque208/znet/compare/v0.23.1...v0.23.2
+[v0.23.1]: https://github.com/xaque208/znet/compare/v0.23.0...v0.23.1
+[v0.23.0]: https://github.com/xaque208/znet/compare/v0.22.0...v0.23.0
+[v0.22.0]: https://github.com/xaque208/znet/compare/v0.21.4...v0.22.0
+[v0.21.4]: https://github.com/xaque208/znet/compare/v0.21.3...v0.21.4
+[v0.21.3]: https://github.com/xaque208/znet/compare/v0.21.2...v0.21.3
+[v0.21.2]: https://github.com/xaque208/znet/compare/v0.21.1...v0.21.2
+[v0.21.1]: https://github.com/xaque208/znet/compare/v0.21.0...v0.21.1
+[v0.21.0]: https://github.com/xaque208/znet/compare/v0.20.6...v0.21.0
+[v0.20.6]: https://github.com/xaque208/znet/compare/v0.20.5...v0.20.6
+[v0.20.5]: https://github.com/xaque208/znet/compare/v0.20.4...v0.20.5
+[v0.20.4]: https://github.com/xaque208/znet/compare/v0.20.3...v0.20.4
+[v0.20.3]: https://github.com/xaque208/znet/compare/v0.20.2...v0.20.3
+[v0.20.2]: https://github.com/xaque208/znet/compare/v0.20.1...v0.20.2
+[v0.20.1]: https://github.com/xaque208/znet/compare/v0.20.0...v0.20.1
+[v0.20.0]: https://github.com/xaque208/znet/compare/v0.19.0...v0.20.0
+[v0.19.0]: https://github.com/xaque208/znet/compare/v0.18.3...v0.19.0
+[v0.18.3]: https://github.com/xaque208/znet/compare/v0.18.2...v0.18.3
+[v0.18.2]: https://github.com/xaque208/znet/compare/v0.18.1...v0.18.2
+[v0.18.1]: https://github.com/xaque208/znet/compare/v0.18.0...v0.18.1
+[v0.18.0]: https://github.com/xaque208/znet/compare/v0.17.3...v0.18.0
+[v0.17.3]: https://github.com/xaque208/znet/compare/v0.17.2...v0.17.3
+[v0.17.2]: https://github.com/xaque208/znet/compare/v0.17.1...v0.17.2
+[v0.17.1]: https://github.com/xaque208/znet/compare/v0.17.0...v0.17.1
+[v0.17.0]: https://github.com/xaque208/znet/compare/v0.16.7...v0.17.0
+[v0.16.7]: https://github.com/xaque208/znet/compare/v0.16.6...v0.16.7
+[v0.16.6]: https://github.com/xaque208/znet/compare/v0.16.5...v0.16.6
+[v0.16.5]: https://github.com/xaque208/znet/compare/v0.16.4...v0.16.5
+[v0.16.4]: https://github.com/xaque208/znet/compare/v0.16.3...v0.16.4
+[v0.16.3]: https://github.com/xaque208/znet/compare/v0.16.2...v0.16.3
+[v0.16.2]: https://github.com/xaque208/znet/compare/v0.16.1...v0.16.2
+[v0.16.1]: https://github.com/xaque208/znet/compare/v0.16.0...v0.16.1
+[v0.16.0]: https://github.com/xaque208/znet/compare/v0.15.0...v0.16.0
+[v0.15.0]: https://github.com/xaque208/znet/compare/v0.14.9...v0.15.0
+[v0.14.9]: https://github.com/xaque208/znet/compare/v0.14.8...v0.14.9
+[v0.14.8]: https://github.com/xaque208/znet/compare/v0.14.7...v0.14.8
+[v0.14.7]: https://github.com/xaque208/znet/compare/v0.14.6...v0.14.7
+[v0.14.6]: https://github.com/xaque208/znet/compare/v0.14.5...v0.14.6
+[v0.14.5]: https://github.com/xaque208/znet/compare/v0.14.4...v0.14.5
+[v0.14.4]: https://github.com/xaque208/znet/compare/v0.14.3...v0.14.4
+[v0.14.3]: https://github.com/xaque208/znet/compare/v0.14.2...v0.14.3
+[v0.14.2]: https://github.com/xaque208/znet/compare/v0.14.1...v0.14.2
+[v0.14.1]: https://github.com/xaque208/znet/compare/v0.14.0...v0.14.1
+[v0.14.0]: https://github.com/xaque208/znet/compare/v0.13.14...v0.14.0
+[v0.13.14]: https://github.com/xaque208/znet/compare/v0.13.13...v0.13.14
+[v0.13.13]: https://github.com/xaque208/znet/compare/v0.13.12...v0.13.13
+[v0.13.12]: https://github.com/xaque208/znet/compare/v0.13.11...v0.13.12
+[v0.13.11]: https://github.com/xaque208/znet/compare/v0.13.10...v0.13.11
+[v0.13.10]: https://github.com/xaque208/znet/compare/v0.13.9...v0.13.10
+[v0.13.9]: https://github.com/xaque208/znet/compare/v0.13.8...v0.13.9
+[v0.13.8]: https://github.com/xaque208/znet/compare/v0.13.7...v0.13.8
+[v0.13.7]: https://github.com/xaque208/znet/compare/v0.13.6...v0.13.7
+[v0.13.6]: https://github.com/xaque208/znet/compare/v0.13.5...v0.13.6
+[v0.13.5]: https://github.com/xaque208/znet/compare/v0.13.4...v0.13.5
+[v0.13.4]: https://github.com/xaque208/znet/compare/v0.13.3...v0.13.4
+[v0.13.3]: https://github.com/xaque208/znet/compare/v0.13.1...v0.13.3
+[v0.13.1]: https://github.com/xaque208/znet/compare/v0.13.0...v0.13.1
+[v0.13.0]: https://github.com/xaque208/znet/compare/v0.13.2...v0.13.0
+[v0.13.2]: https://github.com/xaque208/znet/compare/v0.12.17...v0.13.2
+[v0.12.17]: https://github.com/xaque208/znet/compare/v0.12.15...v0.12.17
+[v0.12.15]: https://github.com/xaque208/znet/compare/v0.12.19...v0.12.15
+[v0.12.19]: https://github.com/xaque208/znet/compare/v0.12.20...v0.12.19
+[v0.12.20]: https://github.com/xaque208/znet/compare/v0.12.21...v0.12.20
+[v0.12.21]: https://github.com/xaque208/znet/compare/v0.12.22...v0.12.21
+[v0.12.22]: https://github.com/xaque208/znet/compare/v0.12.14...v0.12.22
+[v0.12.14]: https://github.com/xaque208/znet/compare/v0.12.16...v0.12.14
+[v0.12.16]: https://github.com/xaque208/znet/compare/v0.12.18...v0.12.16
+[v0.12.18]: https://github.com/xaque208/znet/compare/v0.12.10...v0.12.18
+[v0.12.10]: https://github.com/xaque208/znet/compare/v0.12.11...v0.12.10
+[v0.12.11]: https://github.com/xaque208/znet/compare/v0.12.13...v0.12.11
+[v0.12.13]: https://github.com/xaque208/znet/compare/v0.12.8...v0.12.13
+[v0.12.8]: https://github.com/xaque208/znet/compare/v0.12.9...v0.12.8
+[v0.12.9]: https://github.com/xaque208/znet/compare/v0.12.12...v0.12.9
+[v0.12.12]: https://github.com/xaque208/znet/compare/v0.12.7...v0.12.12
+[v0.12.7]: https://github.com/xaque208/znet/compare/v0.12.5...v0.12.7
+[v0.12.5]: https://github.com/xaque208/znet/compare/v0.12.6...v0.12.5
+[v0.12.6]: https://github.com/xaque208/znet/compare/v0.12.4...v0.12.6
+[v0.12.4]: https://github.com/xaque208/znet/compare/v0.12.3...v0.12.4
+[v0.12.3]: https://github.com/xaque208/znet/compare/v0.12.2...v0.12.3
+[v0.12.2]: https://github.com/xaque208/znet/compare/v0.12.1...v0.12.2
+[v0.12.1]: https://github.com/xaque208/znet/compare/v0.12.0...v0.12.1
+[v0.12.0]: https://github.com/xaque208/znet/compare/v0.11.13...v0.12.0
+[v0.11.13]: https://github.com/xaque208/znet/compare/v0.11.14...v0.11.13
+[v0.11.14]: https://github.com/xaque208/znet/compare/v0.11.12...v0.11.14
+[v0.11.12]: https://github.com/xaque208/znet/compare/v0.11.11...v0.11.12
+[v0.11.11]: https://github.com/xaque208/znet/compare/v0.11.9...v0.11.11
+[v0.11.9]: https://github.com/xaque208/znet/compare/v0.11.8...v0.11.9
+[v0.11.8]: https://github.com/xaque208/znet/compare/v0.11.7...v0.11.8
+[v0.11.7]: https://github.com/xaque208/znet/compare/v0.11.10...v0.11.7
+[v0.11.10]: https://github.com/xaque208/znet/compare/v0.11.6...v0.11.10
+[v0.11.6]: https://github.com/xaque208/znet/compare/v0.11.5...v0.11.6
+[v0.11.5]: https://github.com/xaque208/znet/compare/v0.11.4...v0.11.5
+[v0.11.4]: https://github.com/xaque208/znet/compare/v0.11.3...v0.11.4
+[v0.11.3]: https://github.com/xaque208/znet/compare/v0.11.2...v0.11.3
+[v0.11.2]: https://github.com/xaque208/znet/compare/v0.11.1...v0.11.2
+[v0.11.1]: https://github.com/xaque208/znet/compare/v0.11.0...v0.11.1
+[v0.11.0]: https://github.com/xaque208/znet/compare/v0.10.0...v0.11.0
+[v0.10.0]: https://github.com/xaque208/znet/compare/v0.9.9...v0.10.0
+[v0.9.9]: https://github.com/xaque208/znet/compare/v0.9.8...v0.9.9
+[v0.9.8]: https://github.com/xaque208/znet/compare/v0.9.7...v0.9.8
+[v0.9.7]: https://github.com/xaque208/znet/compare/v0.9.6...v0.9.7
+[v0.9.6]: https://github.com/xaque208/znet/compare/v0.9.5...v0.9.6
+[v0.9.5]: https://github.com/xaque208/znet/compare/v0.9.4...v0.9.5
+[v0.9.4]: https://github.com/xaque208/znet/compare/v0.9.3...v0.9.4
+[v0.9.3]: https://github.com/xaque208/znet/compare/v0.9.0...v0.9.3
+[v0.9.0]: https://github.com/xaque208/znet/compare/v0.9.2...v0.9.0
+[v0.9.2]: https://github.com/xaque208/znet/compare/v0.9.1...v0.9.2
+[v0.9.1]: https://github.com/xaque208/znet/compare/v0.8.3...v0.9.1
+[v0.8.3]: https://github.com/xaque208/znet/compare/v0.8.2...v0.8.3
+[v0.8.2]: https://github.com/xaque208/znet/compare/v0.8.1...v0.8.2
+[v0.8.1]: https://github.com/xaque208/znet/compare/v0.8.0...v0.8.1
+[v0.8.0]: https://github.com/xaque208/znet/compare/v0.7.11...v0.8.0
+[v0.7.11]: https://github.com/xaque208/znet/compare/v0.7.10...v0.7.11
+[v0.7.10]: https://github.com/xaque208/znet/compare/v0.7.9...v0.7.10
+[v0.7.9]: https://github.com/xaque208/znet/compare/v0.7.8...v0.7.9
+[v0.7.8]: https://github.com/xaque208/znet/compare/v0.7.7...v0.7.8
+[v0.7.7]: https://github.com/xaque208/znet/compare/v0.7.5...v0.7.7
+[v0.7.5]: https://github.com/xaque208/znet/compare/v0.7.6...v0.7.5
+[v0.7.6]: https://github.com/xaque208/znet/compare/v0.7.4...v0.7.6
+[v0.7.4]: https://github.com/xaque208/znet/compare/v0.7.3...v0.7.4
+[v0.7.3]: https://github.com/xaque208/znet/compare/v0.7.2...v0.7.3
+[v0.7.2]: https://github.com/xaque208/znet/compare/v0.7.1...v0.7.2
+[v0.7.1]: https://github.com/xaque208/znet/compare/v0.7.0...v0.7.1
+[v0.7.0]: https://github.com/xaque208/znet/compare/v0.6.4...v0.7.0
+[v0.6.4]: https://github.com/xaque208/znet/compare/v0.6.5...v0.6.4
+[v0.6.5]: https://github.com/xaque208/znet/compare/v0.6.3...v0.6.5
+[v0.6.3]: https://github.com/xaque208/znet/compare/v0.6.2...v0.6.3
+[v0.6.2]: https://github.com/xaque208/znet/compare/v0.6.1...v0.6.2
+[v0.6.1]: https://github.com/xaque208/znet/compare/v0.6.0...v0.6.1
+[v0.6.0]: https://github.com/xaque208/znet/compare/v0.5.2...v0.6.0
+[v0.5.2]: https://github.com/xaque208/znet/compare/v0.5.1...v0.5.2
+[v0.5.1]: https://github.com/xaque208/znet/compare/v0.5.0...v0.5.1
+[v0.5.0]: https://github.com/xaque208/znet/compare/v0.4.0...v0.5.0
+[v0.4.0]: https://github.com/xaque208/znet/compare/v0.3.0...v0.4.0
+[v0.3.0]: https://github.com/xaque208/znet/compare/v0.2.0...v0.3.0
+[v0.2.0]: https://github.com/xaque208/znet/compare/v0.1.0...v0.2.0
+[v0.1.0]: https://github.com/xaque208/znet/compare/v0.0.9...v0.1.0
+[v0.0.9]: https://github.com/xaque208/znet/compare/v0.0.8...v0.0.9
+[v0.0.8]: https://github.com/xaque208/znet/compare/v0.0.7...v0.0.8
+[v0.0.7]: https://github.com/xaque208/znet/compare/v0.0.6...v0.0.7
+[v0.0.6]: https://github.com/xaque208/znet/compare/v0.0.5...v0.0.6
+[v0.0.5]: https://github.com/xaque208/znet/compare/v0.0.4...v0.0.5
+[v0.0.4]: https://github.com/xaque208/znet/compare/v0.0.3...v0.0.4
+[v0.0.3]: https://github.com/xaque208/znet/compare/v0.0.2...v0.0.3
+[v0.0.2]: https://github.com/xaque208/znet/compare/v0.0.1...v0.0.2
