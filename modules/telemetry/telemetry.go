@@ -200,7 +200,7 @@ func (l *Telemetry) ReportNetworkID(ctx context.Context, request *inventory.Netw
 		return &inventory.Empty{}, fmt.Errorf("unable to fetch inventory.NetworkID with empty name")
 	}
 
-	spanCtx, span := l.tracer.Start(ctx, "ReportNetworkID")
+	spanCtx, span := l.tracer.Start(ctx, "ReportNetworkID", trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
 
 	hosts, ids, err := l.findMACs(spanCtx, request.MacAddress)
