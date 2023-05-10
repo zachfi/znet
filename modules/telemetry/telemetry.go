@@ -13,6 +13,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/protobuf/proto"
@@ -275,8 +276,17 @@ func (l *Telemetry) ReportIOTDevice(ctx context.Context, request *inventory.IOTD
 
 	discovery := request.DeviceDiscovery
 
-	spanCtx, span := l.tracer.Start(ctx, fmt.Sprintf("ReportIOTDevice/%s/%s", discovery.Component, discovery.ObjectId))
+	spanCtx, span := l.tracer.Start(
+		ctx,
+		"ReportIOTDevice",
+		trace.WithSpanKind(trace.SpanKindServer),
+	)
 	defer span.End()
+
+	span.SetAttributes(
+		attribute.String("component", discovery.Component),
+		attribute.String("object_id", discovery.ObjectId),
+	)
 
 	if discovery.ObjectId != "" {
 		telemetryIOTReport.WithLabelValues(discovery.ObjectId, discovery.Component).Inc()
